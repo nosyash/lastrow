@@ -22,7 +22,6 @@ func WaitingRegistrations() {
 				go func() {
 					req, err := ReadRequest(conn)
 					if err != nil {
-						conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
 						conn.Close()
 						return
 					}

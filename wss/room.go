@@ -1,9 +1,9 @@
 package wss
 
 import (
+	"fmt"
 	"time"
 	"encoding/json"
-	"fmt"
 
 	"github.com/gorilla/websocket"
 )
@@ -38,11 +38,14 @@ func NewRoomHub() *Hub {
 func ( h *Hub ) WaitingActions() {
 	for {
 		select {
-			case conn := <- h.Register:
-				h.add(conn)
-				go h.read(conn)
-			case msg := <- h.Broadcast:
-				h.sendToAll(msg)
+		case conn := <- h.Register:
+			h.add(conn)
+			go h.read(conn)
+			go h.ping(conn)
+		case conn := <- h.Unregister:
+			fmt.Println("client disconnect", conn)
+		case msg := <- h.Broadcast:
+			h.send(msg)
 		}
 	}
 }
@@ -55,7 +58,21 @@ func ( h *Hub ) add ( conn *websocket.Conn ) {
 }
 
 func ( h *Hub ) read ( conn *websocket.Conn ) {
-	// For now just send all message in broadcast channel
+	defer func() {
+		conn.Close()
+		h.Unregister <- conn
+	}()
+
+
+	// If conn not send ping/pong message during 60 seconds - disconnect them
+	// and remove from hub
+	// TODO we're waiting for pong but not send ping message
+	conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+	conn.SetPongHandler(func(string) error {
+		conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+		return nil
+	})
+
 	for {
 		req, err := ReadRequest(conn)
 		if err != nil {
@@ -66,9 +83,28 @@ func ( h *Hub ) read ( conn *websocket.Conn ) {
 	}
 }
 
-func ( h *Hub ) sendToAll ( msg []byte ) {
+func ( h *Hub ) send ( msg []byte ) {
 	for _, conn := range h.hub {
 		conn.WriteMessage(websocket.TextMessage, msg)
+	}
+}
+
+func ( h *Hub ) ping ( conn *websocket.Conn ) {
+	ticker := time.NewTicker(54 * time.Second)
+	defer func() {
+		ticker.Stop()
+		conn.Close()
+		h.Unregister <- conn
+	}()
+
+	for {
+		select {
+		case <-ticker.C:
+			conn.SetWriteDeadline(time.Now().Add(60 * time.Second))
+			if err := conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				return
+			}
+		}
 	}
 }
 
@@ -80,6 +116,6 @@ func ReadRequest ( conn *websocket.Conn ) ( Request, error ) {
 		return req, err
 	}
 
-	err = json.Unmarshal(msg, &req)
+	json.Unmarshal(msg, &req)
 	return req, err
 }
