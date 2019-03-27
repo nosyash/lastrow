@@ -21,6 +21,7 @@ func NewServer ( wssPort string ) *Server {
 			WriteBufferSize: 256,
 			CheckOrigin: func(r *http.Request) bool {
 				return true
+				// Just for useful testing
 			},
 		},
 	}

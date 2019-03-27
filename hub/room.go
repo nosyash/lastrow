@@ -1,7 +1,6 @@
 package hub
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/gorilla/websocket"

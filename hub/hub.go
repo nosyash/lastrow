@@ -14,8 +14,13 @@ type RoomsHub struct {
 	hub map[string]*Hub
 }
 
+type actionRequest struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
+}
+
 type registerRequest struct {
-	Action string `json:"action"`
+	Action actionRequest `json:"action"`
 	RoomId string `json:"roomId"`
 }
 
@@ -51,8 +56,8 @@ func parseRegisterReq ( conn *websocket.Conn ) ( string, error ) {
 	}
 	
 	json.Unmarshal(msg, &regreq)
-	
-	if regreq.Action != "registration" {
+
+	if regreq.Action.Name != "connection" && regreq.Action.Type != "register" {
 		return "", errors.New("Invalid action in registration request")
 	}
 	return regreq.RoomId, nil
