@@ -1,10 +1,6 @@
-package hub
+package wss
 
 import (
-	"encoding/json"
-	"errors"
-	"fmt"
-
 	"github.com/gorilla/websocket"
 )
 
@@ -24,33 +20,22 @@ func WaitingRegistrations() {
 		select {
 			case conn := <- Register:
 				go func() {
-					roomId, err := parseRegisterReq(conn)
+					req, err := ReadRequest(conn)
 					if err != nil {
 						conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
 						conn.Close()
 						return
 					}
-					roomsHub.registerNewConn(roomId, conn)
+					if req.Action.Name == "connect" && req.Action.Type == "register" {
+						roomsHub.registerNewConn(req.RoomId, conn)
+					} else {
+						conn.Close()
+						return
+					}	
 				}()
 				break;
 		}
 	}
-}
-
-func parseRegisterReq ( conn *websocket.Conn ) ( string, error ) {
-	regreq := Request{}
-	mt, msg, err := conn.ReadMessage()
-
-	if err != nil || mt != websocket.TextMessage {
-		return "", errors.New(fmt.Sprintf("Error while trying register a new connection. %s, %d", err, mt))
-	}
-	
-	json.Unmarshal(msg, &regreq)
-
-	if regreq.Action.Name != "connection" && regreq.Action.Type != "register" {
-		return "", errors.New("Invalid action in registration request")
-	}
-	return regreq.RoomId, nil
 }
 
 func ( rh *RoomsHub ) registerNewConn ( roomId string, conn *websocket.Conn ) {
@@ -65,7 +50,10 @@ func ( rh *RoomsHub ) registerNewConn ( roomId string, conn *websocket.Conn ) {
 	// Check is there such roomId
 	// Soon. When be available room creating
 
-	rh.hub[roomId] = NewRoomHub()
-	go rh.hub[roomId].WaitingRegistrations()
+	hub := NewRoomHub()
+
+	rh.hub[roomId] = hub
+	
+	go rh.hub[roomId].WaitingActions()
 	rh.hub[roomId].Register <- conn
 }

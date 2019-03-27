@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"log"
 	
-	"lastrow/hub"
 	"github.com/gorilla/websocket"
 )
 
@@ -29,7 +28,7 @@ func NewServer ( wssPort string ) *Server {
 
 func ( s *Server ) Run() error {
 	http.HandleFunc("/", s.upgradeConnection)
-	go hub.WaitingRegistrations()
+	go WaitingRegistrations()
 	return http.ListenAndServe(s.wssPort, nil)
 }
 
@@ -39,5 +38,5 @@ func ( s *Server ) upgradeConnection ( w http.ResponseWriter, r *http.Request ) 
 		log.Println(err)
 		return
 	}
-	hub.Register <- conn
+	Register <- conn
 }

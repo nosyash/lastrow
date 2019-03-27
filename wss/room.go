@@ -1,7 +1,9 @@
-package hub
+package wss
 
 import (
 	"time"
+	"encoding/json"
+	"fmt"
 
 	"github.com/gorilla/websocket"
 )
@@ -16,6 +18,7 @@ type Hub struct {
 type Action struct {
 	Name string `json:"name"`
 	Type string `json:"type"`
+	Message string `json:"message"`
 }
 
 type Request struct {
@@ -32,7 +35,7 @@ func NewRoomHub() *Hub {
 	}
 }
 
-func ( h *Hub ) WaitingRegistrations() {
+func ( h *Hub ) WaitingActions() {
 	for {
 		select {
 			case conn := <- h.Register:
@@ -54,13 +57,12 @@ func ( h *Hub ) add ( conn *websocket.Conn ) {
 func ( h *Hub ) read ( conn *websocket.Conn ) {
 	// For now just send all message in broadcast channel
 	for {
-		mt, msg, err := conn.ReadMessage()
+		req, err := ReadRequest(conn)
 		if err != nil {
-			conn.WriteMessage(mt, []byte(err.Error()))
-			return
+			conn.Close()
+			break
 		}
-
-		h.Broadcast <- msg
+		h.Broadcast <- []byte(req.Action.Message)
 	}
 }
 
@@ -68,4 +70,16 @@ func ( h *Hub ) sendToAll ( msg []byte ) {
 	for _, conn := range h.hub {
 		conn.WriteMessage(websocket.TextMessage, msg)
 	}
+}
+
+func ReadRequest ( conn *websocket.Conn ) ( Request, error ) {
+	req := Request{}
+	_, msg, err := conn.ReadMessage()
+
+	if err != nil {
+		return req, err
+	}
+
+	err = json.Unmarshal(msg, &req)
+	return req, err
 }
