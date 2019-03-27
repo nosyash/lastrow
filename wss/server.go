@@ -27,7 +27,7 @@ func NewServer ( wssPort string ) *Server {
 }
 
 func ( s *Server ) Run() error {
-	http.HandleFunc("/", s.upgradeConnection)
+	http.HandleFunc("/ws/", s.upgradeConnection)
 	go WaitingRegistrations()
 	return http.ListenAndServe(s.wssPort, nil)
 }

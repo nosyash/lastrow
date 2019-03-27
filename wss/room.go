@@ -43,7 +43,7 @@ func ( h *Hub ) WaitingActions() {
 			go h.read(conn)
 			go h.ping(conn)
 		case conn := <- h.Unregister:
-			fmt.Println("client disconnect", conn)
+			fmt.Println(len(h.hub))
 		case msg := <- h.Broadcast:
 			h.send(msg)
 		}
@@ -66,13 +66,15 @@ func ( h *Hub ) read ( conn *websocket.Conn ) {
 
 	// If conn not send ping/pong message during 60 seconds - disconnect them
 	// and remove from hub
+
 	conn.SetReadDeadline(time.Now().Add(60 * time.Second))
 	conn.SetPongHandler(func(string) error {
 		//fmt.Println("pong!!")
 		conn.SetReadDeadline(time.Now().Add(60 * time.Second))
 		return nil
 	})
-
+	
+	// For now just send message in broadcast channel
 	for {
 		req, err := ReadRequest(conn)
 		if err != nil {
