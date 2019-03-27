@@ -14,16 +14,6 @@ type RoomsHub struct {
 	hub map[string]*Hub
 }
 
-type actionRequest struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
-}
-
-type registerRequest struct {
-	Action actionRequest `json:"action"`
-	RoomId string `json:"roomId"`
-}
-
 func WaitingRegistrations() {
 	Register = make(chan *websocket.Conn)
 	roomsHub := &RoomsHub { 
@@ -48,7 +38,7 @@ func WaitingRegistrations() {
 }
 
 func parseRegisterReq ( conn *websocket.Conn ) ( string, error ) {
-	regreq := registerRequest{}
+	regreq := Request{}
 	mt, msg, err := conn.ReadMessage()
 
 	if err != nil || mt != websocket.TextMessage {

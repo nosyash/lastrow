@@ -13,6 +13,16 @@ type Hub struct {
 	Unregister	chan *websocket.Conn
 }
 
+type Action struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
+}
+
+type Request struct {
+	Action Action `json:"action"`
+	RoomId string `json:"roomId"`
+}
+
 func NewRoomHub() *Hub {
 	return &Hub {
 		make(map[string]*websocket.Conn),
@@ -37,6 +47,7 @@ func ( h *Hub ) WaitingRegistrations() {
 func ( h *Hub ) add ( conn *websocket.Conn ) {
 	// TODO
 	// Generate unique client ID
+	// and check for re-registration
 	h.hub[time.Now().String()] = conn
 }
 
