@@ -66,9 +66,9 @@ func ( h *Hub ) read ( conn *websocket.Conn ) {
 
 	// If conn not send ping/pong message during 60 seconds - disconnect them
 	// and remove from hub
-	// TODO we're waiting for pong but not send ping message
 	conn.SetReadDeadline(time.Now().Add(60 * time.Second))
 	conn.SetPongHandler(func(string) error {
+		//fmt.Println("pong!!")
 		conn.SetReadDeadline(time.Now().Add(60 * time.Second))
 		return nil
 	})
@@ -100,6 +100,7 @@ func ( h *Hub ) ping ( conn *websocket.Conn ) {
 	for {
 		select {
 		case <-ticker.C:
+			//fmt.Println("ping")
 			conn.SetWriteDeadline(time.Now().Add(60 * time.Second))
 			if err := conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
