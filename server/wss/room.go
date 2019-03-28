@@ -43,7 +43,7 @@ func (h *Hub) add(conn *websocket.Conn) {
 	
 	uuid := getRandomUUID()
 	
-	fmt.Println("Add", uuid)
+	fmt.Printf("Add [%s]\t%s\n", uuid, conn.RemoteAddr().String())
 	h.hub[uuid] = conn
 }
 
@@ -58,7 +58,7 @@ func (h *Hub) remove(conn *websocket.Conn) {
 	}
 	
 	if uuid != "" {
-		fmt.Println("Delete", uuid)
+		fmt.Printf("Delete [%s]\t%s\n", uuid, conn.RemoteAddr().String())
 		delete(h.hub, uuid)
 	}
 }
