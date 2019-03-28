@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"lastrow/server/wss"
+	"lastrow/wss"
 )
 
 func main() {
