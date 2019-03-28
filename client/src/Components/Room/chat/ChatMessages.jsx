@@ -17,6 +17,8 @@ class ChatMessages_ extends Component {
   handleMessage = data => {
     const { messageList } = this.props;
     this.setState({ messageList });
+    const { current } = this.chatMessages;
+    current.scrollTo(0, 100000);
   };
 
   // {"action":{"name":"message","type":"send","message":"дурики"},"roomId":"bonan"}
