@@ -26,7 +26,7 @@ class RoomBase_ extends Component {
     let { cinemaMode } = localStorage;
     const { UpdateMainStates, match } = this.props;
     const { id } = match.params;
-    const { REACT_APP_API_ENDPOINT } = process.env;
+    const { REACT_APP_SOCKET_ENDPOINT } = process.env;
 
     cinemaMode = cinemaMode === 'true';
 
@@ -34,20 +34,20 @@ class RoomBase_ extends Component {
     UpdateMainStates({ cinemaMode, roomId: id });
 
     // Request connection
-    const data = {
-      action: {
-        name: 'connect',
-        type: 'register',
-        body: {
-          status: 200,
-          message: '',
-        },
-      },
-      roomID: id,
-    };
+    // const data = {
+    //   action: {
+    //     name: 'connect',
+    //     type: 'register',
+    //     body: {
+    //       status: 200,
+    //       message: '',
+    //     },
+    //   },
+    //   roomID: id,
+    // };
 
-    const request = await http.post(REACT_APP_API_ENDPOINT, JSON.stringify(data));
-    console.log(request);
+    // // console.log(request);
+    // socket.send(JSON.stringify(data));
 
     // States
     this.initEmojis();

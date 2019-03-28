@@ -14,11 +14,12 @@ class ChatInner_ extends Component {
       open: false,
       connected: false,
     };
+
     this.socket = null;
     this.webSocketConnect();
     this.socket.onopen = () => {
       this.setState({ connected: true });
-      console.log('connected');
+      this.handleConnection();
     };
     this.socket.onmessage = data => this.handleMessage(data);
     this.socket.onerror = () => {
@@ -57,6 +58,24 @@ class ChatInner_ extends Component {
     }
   };
 
+  handleConnection() {
+    const { roomI: roomID } = this.props;
+
+    const data = {
+      action: {
+        name: 'connect',
+        type: 'register',
+        body: {
+          status: 200,
+          message: '',
+        },
+      },
+      roomID,
+    };
+    // console.log(request);
+    this.socket.send(JSON.stringify(data));
+  }
+
   componentWillUnmount() {
     this.socket.close();
   }
@@ -79,7 +98,11 @@ const mapDispatchToProps = dispatch => ({
 });
 
 function mapStateToProps(state) {
-  return { messages: state.messages, list: state.messages.list };
+  return {
+    messages: state.messages,
+    list: state.messages.list,
+    roomId: state.MainStates.roomId,
+  };
 }
 
 export default connect(
