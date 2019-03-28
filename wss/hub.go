@@ -25,8 +25,8 @@ func WaitingRegistrations() {
 						conn.Close()
 						return
 					}
-					if req.Action.Name == "connect" && req.Action.Type == "register" {
-						roomsHub.registerNewConn(req.RoomId, conn)
+					if req.Action.Name == "connect" && req.Action.Type == "register" && req.RoomID != "" {
+						roomsHub.registerNewConn(req.RoomID, conn)
 					} else {
 						conn.Close()
 						return
@@ -37,10 +37,10 @@ func WaitingRegistrations() {
 	}
 }
 
-func ( rh *RoomsHub ) registerNewConn ( roomId string, conn *websocket.Conn ) {
+func ( rh *RoomsHub ) registerNewConn ( roomID string, conn *websocket.Conn ) {
 	for k := range rh.hub {
-		if k == roomId {
-			rh.hub[roomId].Register <- conn
+		if k == roomID {
+			rh.hub[roomID].Register <- conn
 			return
 		}
 	}
@@ -51,8 +51,8 @@ func ( rh *RoomsHub ) registerNewConn ( roomId string, conn *websocket.Conn ) {
 
 	hub := NewRoomHub()
 
-	rh.hub[roomId] = hub
+	rh.hub[roomID] = hub
 	
-	go rh.hub[roomId].WaitingActions()
-	rh.hub[roomId].Register <- conn
+	go rh.hub[roomID].WaitingActions()
+	rh.hub[roomID].Register <- conn
 }

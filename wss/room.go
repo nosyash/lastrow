@@ -10,7 +10,7 @@ import (
 
 type Hub struct {
 	hub map[string]*websocket.Conn
-	Broadcast	chan []byte
+	Broadcast	chan []byte 
 	Register	chan *websocket.Conn
 	Unregister	chan *websocket.Conn
 }
@@ -18,12 +18,12 @@ type Hub struct {
 type Action struct {
 	Name string `json:"name"`
 	Type string `json:"type"`
-	Message string `json:"message"`
+	Body string `json:"body"`
 }
 
 type Request struct {
 	Action Action `json:"action"`
-	RoomId string `json:"roomId"`
+	RoomID string `json:"roomId"`
 }
 
 func NewRoomHub() *Hub {
@@ -43,7 +43,7 @@ func ( h *Hub ) WaitingActions() {
 			go h.read(conn)
 			go h.ping(conn)
 		case conn := <- h.Unregister:
-			fmt.Println(len(h.hub))
+			fmt.Println(len(h.hub), conn.RemoteAddr().String())
 		case msg := <- h.Broadcast:
 			h.send(msg)
 		}
@@ -81,7 +81,7 @@ func ( h *Hub ) read ( conn *websocket.Conn ) {
 			conn.Close()
 			break
 		}
-		h.Broadcast <- []byte(req.Action.Message)
+		h.Broadcast <- []byte(req.Action.Body)
 	}
 }
 
@@ -115,6 +115,7 @@ func ReadRequest ( conn *websocket.Conn ) ( Request, error ) {
 	req := Request{}
 	_, msg, err := conn.ReadMessage()
 
+	fmt.Println(string(msg))
 	if err != nil {
 		return req, err
 	}
