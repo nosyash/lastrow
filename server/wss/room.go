@@ -23,6 +23,7 @@ func (h *Hub) WaitingActions() {
 			h.add(conn)
 			go h.read(conn)
 			go h.ping(conn)
+			go h.pong(conn)
 		case conn := <-h.Unregister:
 			fmt.Println(len(h.hub), conn.RemoteAddr().String())
 		case msg := <-h.Broadcast:
@@ -44,15 +45,6 @@ func (h *Hub) read(conn *websocket.Conn) {
 		h.Unregister <- conn
 	}()
 
-	// If conn not send ping/pong message during 60 seconds - disconnect them
-	// and remove from hub
-
-	conn.SetReadDeadline(time.Now().Add(60 * time.Second))
-	conn.SetPongHandler(func(string) error {
-		conn.SetReadDeadline(time.Now().Add(60 * time.Second))
-		return nil
-	})
-
 	// For now just send message in broadcast channel
 	for {
 		req, err := readRequest(conn)
@@ -60,6 +52,9 @@ func (h *Hub) read(conn *websocket.Conn) {
 			conn.Close()
 			break
 		}
+		
+		fmt.Printf("%s - %s\n", conn.RemoteAddr().String(), req.Action.Body.Message)
+
 		h.Broadcast <- req
 	}
 }
@@ -82,6 +77,9 @@ func (h *Hub) ping(conn *websocket.Conn) {
 		select {
 		case <-ticker.C:
 			conn.SetWriteDeadline(time.Now().Add(60 * time.Second))
+		
+			fmt.Println("ping to:", conn.RemoteAddr().String())
+			
 			if err := conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
 			}
@@ -89,4 +87,13 @@ func (h *Hub) ping(conn *websocket.Conn) {
 	}
 }
 
-
+func (h *Hub) pong(conn *websocket.Conn) {
+	conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+	conn.SetPongHandler(func(string) error {
+		
+		fmt.Println("pong from:", conn.RemoteAddr().String())
+		
+		conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+		return nil
+	})
+}
