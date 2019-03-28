@@ -33,21 +33,21 @@ class RoomBase_ extends Component {
     // Store
     UpdateMainStates({ cinemaMode, roomId: id });
 
-    // Request connection
-    // const data = {
-    //   action: {
-    //     name: 'connect',
-    //     type: 'register',
-    //     body: {
-    //       status: 200,
-    //       message: '',
-    //     },
-    //   },
-    //   roomID: id,
-    // };
+     //Request connection
+     //const data = {
+       //action: {
+         //name: 'connect',
+         //type: 'register',
+         //body: {
+           //status: 200,
+           //message: '',
+         //},
+       //},
+       //roomID: id,
+     //};
 
-    // // console.log(request);
-    // socket.send(JSON.stringify(data));
+     //// console.log(request);
+     //socket.send(JSON.stringify(data));
 
     // States
     this.initEmojis();

@@ -3,33 +3,37 @@ package wss
 import (
 	"fmt"
 	"time"
-	"encoding/json"
 
 	"github.com/gorilla/websocket"
 )
 
 type Hub struct {
 	hub map[string]*websocket.Conn
-	Broadcast	chan []byte 
+	Broadcast	chan *Package
 	Register	chan *websocket.Conn
 	Unregister	chan *websocket.Conn
+}
+
+type Package struct {
+	Action Action `json:"action"`
+	RoomID string `json:"roomID"`
 }
 
 type Action struct {
 	Name string `json:"name"`
 	Type string `json:"type"`
-	Body string `json:"body"`
+	Body ActionBody `json:"body"`
 }
 
-type Request struct {
-	Action Action `json:"action"`
-	RoomID string `json:"roomId"`
+type ActionBody struct {
+	Status int `json:"status"`
+	Message string `json:"message"`
 }
 
 func NewRoomHub() *Hub {
 	return &Hub {
 		make(map[string]*websocket.Conn),
-		make(chan []byte),
+		make(chan *Package),
 		make(chan *websocket.Conn),
 		make(chan *websocket.Conn),
 	}
@@ -69,7 +73,6 @@ func ( h *Hub ) read ( conn *websocket.Conn ) {
 
 	conn.SetReadDeadline(time.Now().Add(60 * time.Second))
 	conn.SetPongHandler(func(string) error {
-		//fmt.Println("pong!!")
 		conn.SetReadDeadline(time.Now().Add(60 * time.Second))
 		return nil
 	})
@@ -77,17 +80,19 @@ func ( h *Hub ) read ( conn *websocket.Conn ) {
 	// For now just send message in broadcast channel
 	for {
 		req, err := ReadRequest(conn)
+		fmt.Println(req.Action.Body.Message)
+
 		if err != nil {
 			conn.Close()
 			break
 		}
-		h.Broadcast <- []byte(req.Action.Body)
+		h.Broadcast <- req
 	}
 }
 
-func ( h *Hub ) send ( msg []byte ) {
+func ( h *Hub ) send ( msg *Package ) {
 	for _, conn := range h.hub {
-		conn.WriteMessage(websocket.TextMessage, msg)
+		WriteResponse(conn, msg)
 	}
 }
 
@@ -102,7 +107,6 @@ func ( h *Hub ) ping ( conn *websocket.Conn ) {
 	for {
 		select {
 		case <-ticker.C:
-			//fmt.Println("ping")
 			conn.SetWriteDeadline(time.Now().Add(60 * time.Second))
 			if err := conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
@@ -111,15 +115,12 @@ func ( h *Hub ) ping ( conn *websocket.Conn ) {
 	}
 }
 
-func ReadRequest ( conn *websocket.Conn ) ( Request, error ) {
-	req := Request{}
-	_, msg, err := conn.ReadMessage()
+func ReadRequest ( conn *websocket.Conn ) ( *Package, error ) {
+	request := &Package{}
+	err     := websocket.ReadJSON(conn, &request)
+	return request, err
+}
 
-	fmt.Println(string(msg))
-	if err != nil {
-		return req, err
-	}
-
-	json.Unmarshal(msg, &req)
-	return req, err
+func WriteResponse ( conn *websocket.Conn, pkg *Package ) {
+	websocket.WriteJSON(conn, pkg)
 }
