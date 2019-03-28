@@ -7,7 +7,7 @@ import (
 	"lastrow/server/wss"
 )
 
-func main() {	
+func main() {
 	wssAddr := os.Getenv("WSS_ADDR")
 	if wssAddr == "" {
 		log.Println("Websocket address(WSS_ADDR) was not specified. Will use default address :8080")

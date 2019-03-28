@@ -28,7 +28,7 @@ func (h *Hub) WaitingActions() {
 				h.pong(conn)
 			}()
 		case conn := <-h.Unregister:
-			go h.remove(conn)
+			h.remove(conn)
 		case msg := <-h.Broadcast:
 			h.send(msg)
 		}
