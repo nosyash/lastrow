@@ -3,6 +3,7 @@ package wss
 import "github.com/gorilla/websocket"
 
 var Register chan *websocket.Conn
+var Close chan string
 
 type RoomsHub struct {
 	rhub map[string]*Hub
@@ -13,6 +14,7 @@ type Hub struct {
 	Broadcast  chan *Package
 	Register   chan *websocket.Conn
 	Unregister chan *websocket.Conn
+	RoomID     string
 }
 
 type Package struct {
@@ -30,5 +32,3 @@ type ActionBody struct {
 	Status  int    `json:"status"`
 	Message string `json:"message"`
 }
-
-

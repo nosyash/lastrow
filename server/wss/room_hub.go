@@ -8,6 +8,7 @@ import (
 
 func WaitingRegistrations() {
 	Register = make(chan *websocket.Conn)
+	Close = make(chan string)
 	rh := &RoomsHub{
 		make(map[string]*Hub),
 	}
@@ -22,6 +23,9 @@ func WaitingRegistrations() {
 					// Send error back to this conn
 				}
 			}()
+		case roomID := <-Close:
+			fmt.Println("close", roomID)
+			delete(rh.rhub, roomID)
 		}
 	}
 }
@@ -43,7 +47,7 @@ func (rh *RoomsHub) registerNewConn(conn *websocket.Conn) error {
 	// Check is there such roomId
 	// Soon. When be available room creating
 
-	hub := NewRoomHub()
+	hub := NewRoomHub(roomID)
 	rh.rhub[roomID] = hub
 
 	go rh.rhub[roomID].WaitingActions()

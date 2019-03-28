@@ -7,12 +7,13 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func NewRoomHub() *Hub {
+func NewRoomHub(roomID string) *Hub {
 	return &Hub{
 		make(map[string]*websocket.Conn),
 		make(chan *Package),
 		make(chan *websocket.Conn),
 		make(chan *websocket.Conn),
+		roomID,
 	}
 }
 
@@ -21,11 +22,13 @@ func (h *Hub) WaitingActions() {
 		select {
 		case conn := <-h.Register:
 			h.add(conn)
-			go h.read(conn)
-			go h.ping(conn)
-			go h.pong(conn)
+			go func() {
+				h.read(conn)
+				h.ping(conn)
+				h.pong(conn)
+			}()
 		case conn := <-h.Unregister:
-			h.remove(conn)
+			go h.remove(conn)
 		case msg := <-h.Broadcast:
 			h.send(msg)
 		}
@@ -43,8 +46,8 @@ func (h *Hub) add(conn *websocket.Conn) {
 	
 	uuid := getRandomUUID()
 	
-	fmt.Printf("Add [%s]\t%s\n", uuid, conn.RemoteAddr().String())
 	h.hub[uuid] = conn
+	fmt.Printf("Add [%s]\t%s\n", uuid, conn.RemoteAddr().String())
 }
 
 func (h *Hub) remove(conn *websocket.Conn) {
@@ -58,8 +61,13 @@ func (h *Hub) remove(conn *websocket.Conn) {
 	}
 	
 	if uuid != "" {
-		fmt.Printf("Delete [%s]\t%s\n", uuid, conn.RemoteAddr().String())
 		delete(h.hub, uuid)
+		fmt.Printf("Delete [%s]\t%s\n", uuid, conn.RemoteAddr().String())
+
+		if len(h.hub) == 0 {
+			Close <- h.RoomID
+			return
+		}
 	}
 }
 
@@ -78,7 +86,8 @@ func (h *Hub) read(conn *websocket.Conn) {
 		}
 		
 		fmt.Printf("%s - %s\n", conn.RemoteAddr().String(), req.Action.Body.Message)
-
+		
+		// TODO handle incoming request
 		h.Broadcast <- req
 	}
 }
