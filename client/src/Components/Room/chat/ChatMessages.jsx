@@ -18,7 +18,7 @@ class ChatMessages_ extends Component {
   //   const { messageList } = this.props;
   //   this.setState({ messageList });
   // };
-
+  // {"action":{"name":"message","type":"send","message":"дурики"},"roomId":"bonan"}
   render() {
     const { list, selfName } = this.props;
     return (
@@ -31,11 +31,11 @@ class ChatMessages_ extends Component {
           if (regex.test(o.body)) highlight = true;
           return (
             <ChatMessage
-              color={o.color}
-              name={o.name}
-              id={o.id}
-              highlight={highlight}
-              online={o.online}
+              // color={o.color}
+              // name={o.name}
+              // id={o.id}
+              // highlight={highlight}
+              // online={o.online}
               key={i}
               renderHeader={renderHeader}
               avatar="https://up.bona.cafe/src/e2/bc820d04437e672d68a3f729e1dd99ad5b1c03.png"

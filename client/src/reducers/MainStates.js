@@ -2,6 +2,7 @@ import { UPDATE_MAIN_STATES } from '../constants/ActionTypes';
 
 const initialState = {
   cinemaMode: false,
+  roomId: '',
 };
 
 const MainStates = (state = initialState, action) => {

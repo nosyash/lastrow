@@ -36,8 +36,9 @@ class ChatInput_ extends Component {
   };
 
   handleFormSubmit = e => {
-    const { socket, profile, history } = this.props;
-    const { AppendToHistory } = this.props;
+    const { socket, history } = this.props;
+    const { AppendToHistory, roomId } = this.props;
+    // console.log(match.params);
     const { value } = e.target;
     const { selectionEnd, selectionStart } = this.input.current;
 
@@ -46,7 +47,18 @@ class ChatInput_ extends Component {
     if (e.keyCode === KEY_ENTER && !e.shiftKey) {
       e.preventDefault();
       if (value === '') return;
-      const object = { ...profile, body: value };
+      const object = {
+        action: {
+          name: 'message',
+          type: 'send',
+          body: {
+            status: 200,
+            message: value,
+          },
+        },
+        roomID: roomId,
+      };
+
       // try {
       const stringify = JSON.stringify(object);
       socket.send(stringify);
@@ -112,7 +124,11 @@ const mapDispatchToProps = dispatch => ({
   },
 });
 
-const mapStateToProps = state => ({ profile: state.profile, history: state.messages.history });
+const mapStateToProps = state => ({
+  profile: state.profile,
+  history: state.messages.history,
+  roomId: state.MainStates.roomId,
+});
 
 export default connect(
   mapStateToProps,

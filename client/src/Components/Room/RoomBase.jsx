@@ -4,6 +4,7 @@ import { CHAT_NAME_SEL, USER_ICON_SEL } from '../../constants';
 import ChatContainer from './chat/ChatContainer';
 import VideoContainer from './video/VideoContainer';
 import getEmojiList from '../../utils/InitEmojis';
+import http from '../../utils/httpServices';
 
 class RoomBase_ extends Component {
   constructor() {
@@ -21,17 +22,34 @@ class RoomBase_ extends Component {
 
   componentWillUnmount() {}
 
-  init = () => {
+  init = async () => {
     let { cinemaMode } = localStorage;
-    const { UpdateMainStates } = this.props;
+    const { UpdateMainStates, match } = this.props;
+    const { id } = match.params;
+    const { REACT_APP_API_ENDPOINT } = process.env;
 
     cinemaMode = cinemaMode === 'true';
 
     // Store
-    UpdateMainStates({ cinemaMode });
+    UpdateMainStates({ cinemaMode, roomId: id });
+
+    // Request connection
+    const data = {
+      action: {
+        name: 'connect',
+        type: 'register',
+        body: {
+          status: 200,
+          message: '',
+        },
+      },
+      roomID: id,
+    };
+
+    const request = await http.post(REACT_APP_API_ENDPOINT, JSON.stringify(data));
+    console.log(request);
 
     // States
-
     this.initEmojis();
   };
 
@@ -62,8 +80,7 @@ class RoomBase_ extends Component {
   };
 
   render() {
-    const { cinemaMode, match } = this.props;
-    const { id } = match.params;
+    const { cinemaMode } = this.props;
     return (
       <React.Fragment>
         <div className="room-container">
