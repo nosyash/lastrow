@@ -9,15 +9,6 @@ class ChatMessage_ extends Component {
   // state = {
   //   hideHeader: false,
   // };
-
-  componentWillMount() {
-    console.time(2);
-  }
-
-  componentDidMount() {
-    console.timeEnd(2);
-  }
-
   shouldComponentUpdate(nextProps, nextState) {
     return false;
   }

@@ -68,7 +68,6 @@ class ChatInput_ extends Component {
       // } catch (er) {
       // console.log('error');
       // }
-      console.log(1);
     }
 
     // TODO: Not working properly.
