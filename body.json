@@ -1,0 +1,11 @@
+{
+    "action": {
+        "name": "action-name",
+        "type": "action-type",
+        "body": {
+            "status": 200,
+            "message": "lorem"
+        }
+    },
+    "roomID": "id of current room"
+}
