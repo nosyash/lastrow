@@ -34,7 +34,7 @@ class ChatInner_ extends Component {
   }
 
   webSocketConnect = () => {
-    const { REACT_APP_SOCKET_ENDPOINT } = process.env;
+    const REACT_APP_SOCKET_ENDPOINT = 'ws://194.135.92.246:8050/';
     this.socket = new WebSocket(REACT_APP_SOCKET_ENDPOINT);
   };
 

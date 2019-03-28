@@ -25,7 +25,7 @@ func (h *Hub) WaitingActions() {
 			go h.ping(conn)
 			go h.pong(conn)
 		case conn := <-h.Unregister:
-			fmt.Println(len(h.hub), conn.RemoteAddr().String())
+			h.remove(conn)
 		case msg := <-h.Broadcast:
 			h.send(msg)
 		}
@@ -33,10 +33,34 @@ func (h *Hub) WaitingActions() {
 }
 
 func (h *Hub) add(conn *websocket.Conn) {
-	// TODO
-	// Generate unique client ID
-	// and check for re-registration
-	h.hub[time.Now().String()] = conn
+	for _, c := range h.hub {
+		if c == conn {
+			c.Close()
+			h.Unregister <- c
+			return
+		}
+	}
+	
+	uuid := getRandomUUID()
+	
+	fmt.Println("Add", uuid)
+	h.hub[uuid] = conn
+}
+
+func (h *Hub) remove(conn *websocket.Conn) {
+	var uuid string
+	
+	for u, c := range h.hub {
+		if c == conn {
+			uuid = u
+			break
+		}
+	}
+	
+	if uuid != "" {
+		fmt.Println("Delete", uuid)
+		delete(h.hub, uuid)
+	}
 }
 
 func (h *Hub) read(conn *websocket.Conn) {
