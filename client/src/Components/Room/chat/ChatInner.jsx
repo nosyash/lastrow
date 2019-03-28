@@ -45,7 +45,7 @@ class ChatInner_ extends Component {
   };
 
   handleMessage = data => {
-    const { action } = JSON.parse(data);
+    const { action } = JSON.parse(data.data);
     const { AddMessage } = this.props;
     AddMessage(action);
   };

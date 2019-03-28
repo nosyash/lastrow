@@ -80,6 +80,7 @@
     "consistent-return": 0,
     "react/display-name": 1,
     "react/no-multi-comp": 0,
+    "spaced-comment": "warn",
     "react/destructuring-assignment": "warn",
     "react/no-unused-state": "warn",
     "react/no-array-index-key": 0,
