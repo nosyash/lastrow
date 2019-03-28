@@ -22,6 +22,12 @@ class RoomBase_ extends Component {
 
   componentWillUnmount() {}
 
+  componentWillMount() {
+    const { UpdateMainStates, match } = this.props;
+    const { id } = match.params;
+    UpdateMainStates({ roomId: id });
+  }
+
   init = async () => {
     let { cinemaMode } = localStorage;
     const { UpdateMainStates, match } = this.props;

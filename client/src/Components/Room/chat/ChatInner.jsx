@@ -70,7 +70,7 @@ class ChatInner_ extends Component {
           message: '',
         },
       },
-      roomID,
+      roomID: 'test',
     };
     // console.log(request);
     this.socket.send(JSON.stringify(data));

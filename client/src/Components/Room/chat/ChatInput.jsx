@@ -62,12 +62,13 @@ class ChatInput_ extends Component {
       // try {
       const stringify = JSON.stringify(object);
       socket.send(stringify);
-      AppendToHistory(value);
+      // AppendToHistory(value);
       this.setState({ value: '' });
       resetHistoryN();
       // } catch (er) {
       // console.log('error');
       // }
+      console.log(1);
     }
 
     // TODO: Not working properly.
