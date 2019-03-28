@@ -1,0 +1,6 @@
+export const ADD_MESSAGE = 'ADD_MESSAGE';
+export const APPEND_TO_HISTORY = 'APPEND_TO_HISTORY';
+export const ADD_EMOJIS = 'ADD_EMOJIS';
+export const UPDATE_MAIN_STATES = 'UPDATE_MAIN_STATES';
+export const UPDATE_PROFILE = 'UPDATE_PROFILE';
+export const UPDATE_PLAYER = 'UPDATE_PLAYER';
