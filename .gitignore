@@ -3,7 +3,7 @@
 /build
 /client/build
 
-/go/src/pkg
+/go/pkg
 /go/src/github.com
 
 .DS_Store
