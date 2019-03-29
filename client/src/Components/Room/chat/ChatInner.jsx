@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import ChatInput from './ChatInput';
 import ListMessages from './ListMessages';
 import ChatHeader from './ChatHeader';
-import { ADD_MESSAGE } from '../../../constants/ActionTypes';
 
 class ChatInner_ extends Component {
   constructor() {

@@ -10,7 +10,6 @@ const initialState = {
 const Messages = (state = initialState, action) => {
   if (action.type === types.ADD_MESSAGE) {
     const list = state.list.slice(0);
-    console.log(state.list);
     const { history } = state;
 
     const n = list.length - MAX_MESSAGES + 1;

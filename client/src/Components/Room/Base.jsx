@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { CHAT_NAME_SEL, USER_ICON_SEL } from '../../constants';
+import { CHAT_NAME_SEL, USER_ICON_SEL, WEBSOCKET_TIMEOUT } from '../../constants';
 import ChatContainer from './chat/ChatContainer';
 import VideoContainer from './video/VideoContainer';
 import getEmojiList from '../../utils/InitEmojis';
@@ -13,11 +13,13 @@ class RoomBase_ extends Component {
     this.video = React.createRef();
     this.divider = React.createRef();
     this.socket = null;
+    this.pending = false;
   }
 
   state = {
     open: false,
     connected: false,
+    reconnecting: false,
   };
 
   componentDidMount() {
@@ -66,25 +68,54 @@ class RoomBase_ extends Component {
     socket.onclose = () => this.handleClose();
   };
 
-  webSocketConnect = () => {
-    const { REACT_APP_SOCKET_ENDPOINT: socket } = process.env;
+  resetWebSocketEvents = () => {
+    const { socket } = this;
 
+    socket.onopen = () => null;
+    socket.onmessage = () => null;
+    socket.onerror = () => null;
+    socket.onclose = () => null;
+  };
+
+  webSocketConnect = () => {
+    const { open, connected } = this.state;
+    const { REACT_APP_SOCKET_ENDPOINT: socket } = process.env;
+    if (open || connected) return;
     if (socket) this.socket = new WebSocket(socket);
-    if (!socket) console.error('no websocket address provided');
+    if (!socket) console.error('No WebSocket address was provided');
+    this.setState({ open: true });
     this.initWebSocketEvents();
   };
 
   webSocketReconnect = () => {
-    const { connected } = this.state;
-    if (connected) return;
+    const { connected, open } = this.state;
+
+    if (connected || open) return;
+
     this.webSocketConnect();
-    setTimeout(() => this.webSocketReconnect(), 2000);
+    setTimeout(() => {
+      this.webSocketReconnect();
+    }, WEBSOCKET_TIMEOUT);
   };
 
   handleOpen = () => {
-    console.log('conection opened');
-    this.setState({ connected: true });
-    this.handleFirstConnect();
+    console.log('WebSocket conection opened');
+    this.setState({ open: true });
+    this.handleHandShake();
+  };
+
+  handleError = () => {
+    // console.log('websocket error');
+    this.setState({ open: false, connected: false });
+    this.resetWebSocketEvents();
+    this.webSocketReconnect();
+  };
+
+  handleClose = () => {
+    console.log('WebSocket conection closed');
+    this.setState({ open: false, connected: false });
+    this.resetWebSocketEvents();
+    this.webSocketReconnect();
   };
 
   handleMessage = d => {
@@ -92,6 +123,8 @@ class RoomBase_ extends Component {
 
     const { data } = d;
     const { action } = JSON.parse(data);
+    const { message } = action.body;
+    if (message.trim().length === 0) return;
     const messageObject = {
       message: action.body.message,
       name: 'test',
@@ -100,18 +133,7 @@ class RoomBase_ extends Component {
     AddMessage(messageObject);
   };
 
-  handleError = () => {
-    console.log('error');
-    this.webSocketReconnect();
-  };
-
-  handleClose = () => {
-    console.log('conection closed');
-    this.setState({ connected: false });
-    this.webSocketReconnect();
-  };
-
-  handleFirstConnect() {
+  handleHandShake() {
     const { roomID } = this.props;
 
     let data = {
@@ -127,6 +149,7 @@ class RoomBase_ extends Component {
     };
     data = JSON.stringify(data);
     this.socket.send(data);
+    this.setState({ connected: true });
   }
 
   initEmojis = () => {
@@ -144,18 +167,18 @@ class RoomBase_ extends Component {
     UpdateMainStates({ cinemaMode: !cinemaMode });
   };
 
-  handleGlobalClick = e => {
-    const target = e.target || e.srcElement;
-    this.handleMatches(target);
-  };
+  // handleGlobalClick = e => {
+  //   const target = e.target || e.srcElement;
+  //   this.handleMatches(target);
+  // };
 
-  handleMatches = target => {
-    const matches = sel => target.matches(sel);
-    const closest = sel => target.closest(sel);
+  // handleMatches = target => {
+  //   const matches = sel => target.matches(sel);
+  //   const closest = sel => target.closest(sel);
 
-    if (matches(CHAT_NAME_SEL)) console.log('CHAT_NAME_SEL');
-    if (closest(USER_ICON_SEL)) console.log('USER_ICON_SEL');
-  };
+  //   if (matches(CHAT_NAME_SEL)) console.log('CHAT_NAME_SEL');
+  //   if (closest(USER_ICON_SEL)) console.log('USER_ICON_SEL');
+  // };
 
   render() {
     const { cinemaMode } = this.props;
