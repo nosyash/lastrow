@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import ChatMessage from './ChatMessage';
+import Message from './Message';
 
-class ChatMessages_ extends Component {
+class ListMessages_ extends Component {
   constructor() {
     super();
     this.chatMessages = React.createRef();
@@ -10,8 +10,14 @@ class ChatMessages_ extends Component {
 
   componentDidMount() {
     const { socket } = this.props;
-    // const { messages } = this.props;
+
     socket.addEventListener('message', data => this.handleMessage(data));
+  }
+
+  componentWillUnmount() {
+    const { socket } = this.props;
+
+    socket.removeEventListener('message', data => this.handleMessage(data));
   }
 
   handleMessage = data => {
@@ -21,7 +27,6 @@ class ChatMessages_ extends Component {
     current.scrollTo(0, 100000);
   };
 
-  // {"action":{"name":"message","type":"send","message":"дурики"},"roomID":"bonan"}
   render() {
     const { list, selfName } = this.props;
     return (
@@ -33,7 +38,7 @@ class ChatMessages_ extends Component {
           let highlight = false;
           if (regex.test(o.body)) highlight = true;
           return (
-            <ChatMessage
+            <Message
               // color={o.color}
               // name={o.name}
               // id={o.id}
@@ -55,4 +60,4 @@ function mapStateToProps(state) {
   return { list: state.messages.list, selfName: state.profile.name };
 }
 
-export default connect(mapStateToProps)(ChatMessages_);
+export default connect(mapStateToProps)(ListMessages_);

@@ -4,7 +4,6 @@ import { CHAT_NAME_SEL, USER_ICON_SEL } from '../../constants';
 import ChatContainer from './chat/ChatContainer';
 import VideoContainer from './video/VideoContainer';
 import getEmojiList from '../../utils/InitEmojis';
-import http from '../../utils/httpServices';
 import * as types from '../../constants/ActionTypes';
 
 class RoomBase_ extends Component {
@@ -26,7 +25,10 @@ class RoomBase_ extends Component {
   }
 
   componentWillUnmount() {
-    this.socket.close();
+    const { socket } = this;
+
+    socket.onclose = () => null;
+    socket.close();
   }
 
   componentWillMount() {
@@ -40,11 +42,9 @@ class RoomBase_ extends Component {
     let { cinemaMode } = localStorage;
     const { UpdateMainStates, match } = this.props;
     const { id } = match.params;
-    const { REACT_APP_SOCKET_ENDPOINT } = process.env;
-
-    cinemaMode = cinemaMode === 'true';
 
     // Store
+    cinemaMode = cinemaMode === 'true';
     UpdateMainStates({ cinemaMode, roomID: id });
 
     this.initEmojis();
@@ -73,9 +73,10 @@ class RoomBase_ extends Component {
   };
 
   webSocketReconnect = () => {
-    setTimeout(() => {
-      this.webSocketConnect();
-    }, 1000);
+    const { connected } = this.state;
+    if (connected) return;
+    this.webSocketConnect();
+    setTimeout(() => this.webSocketReconnect(), 2000);
   };
 
   handleOpen = () => {
@@ -150,8 +151,7 @@ class RoomBase_ extends Component {
   };
 
   render() {
-    const { cinemaMode, roomID } = this.props;
-    // if (!roomID) return null;
+    const { cinemaMode } = this.props;
     return (
       <React.Fragment>
         <div className="room-container">

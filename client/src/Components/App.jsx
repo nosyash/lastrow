@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { Route, Switch } from 'react-router-dom';
-import RoomBase from './Room/RoomBase';
+import RoomBase from './Room/Base';
 import BreadCrumbs from './UI/BreadCrumbs';
-import RoomListBase from './RoomList/RoomListBase';
+import RoomListBase from './RoomList/Base';
 
 class App extends Component {
   render() {
