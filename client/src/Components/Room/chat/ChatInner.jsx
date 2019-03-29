@@ -34,8 +34,9 @@ class ChatInner_ extends Component {
   }
 
   webSocketConnect = () => {
-    const { REACT_APP_SOCKET_ENDPOINT } = process.env;
-    this.socket = new WebSocket(REACT_APP_SOCKET_ENDPOINT);
+    const { REACT_APP_SOCKET_ENDPOINT: socket } = process.env;
+    if (socket) this.socket = new WebSocket(socket);
+    if (!socket) console.error('no websocket address provided');
   };
 
   webSocketReconnect = () => {
