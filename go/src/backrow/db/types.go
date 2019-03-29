@@ -12,6 +12,7 @@ type ErrorResponse struct {
 
 type Room struct {
 	Name  string `json:"name"`
+	Path  string `json:"path"`
 	Play  string `json:"play"`
 	Users string `json:"users"`
 }

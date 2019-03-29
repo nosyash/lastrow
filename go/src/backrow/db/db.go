@@ -8,11 +8,13 @@ func GetRoomList() ([]byte, error) {
 	rooms := []Room{
 		{
 			"WJSN",
+			"wjsn",
 			"WJSN - Babyface",
 			"10",
 		},
 		{
 			"Kenoshka",
+			"kenoshka",
 			"Momoland - BOOM BOOM",
 			"2",
 		},
