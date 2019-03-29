@@ -24,7 +24,6 @@ type RoomInnerResponse struct {
 }
 
 type Playlist struct {
-	Title string `json:"title"`
 	URL   string `json:"url"`
 }
 
