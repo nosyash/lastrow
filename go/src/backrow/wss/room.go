@@ -1,4 +1,4 @@
-package wss
+package wss 
 
 import (
 	"fmt"
@@ -77,6 +77,8 @@ func (h *Hub) read(conn *websocket.Conn) {
 		h.Unregister <- conn
 	}()
 
+	// TODO later
+	conn.SetReadLimit(512)
 	// For now just send message in broadcast channel
 	for {
 		req, err := readRequest(conn)

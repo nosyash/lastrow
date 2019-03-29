@@ -19,6 +19,9 @@ func NewServer(wssPort string) *Server {
 			ReadBufferSize:  512,
 			WriteBufferSize: 512,
 			CheckOrigin: func(r *http.Request) bool {
+				// TODO
+				// This just for development
+				// Check origin
 				return true
 			},
 		},
