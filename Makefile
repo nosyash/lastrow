@@ -9,3 +9,6 @@ build:
 
 dep:
 	go get github.com/gorilla/websocket
+
+build-client:
+	npm run client
