@@ -86,9 +86,9 @@ class RoomBase_ extends Component {
 
   handleMessage = d => {
     const { AddMessage } = this.props;
+
     const { data } = d;
     const { action } = JSON.parse(data);
-    console.log(action);
     AddMessage(action);
   };
 

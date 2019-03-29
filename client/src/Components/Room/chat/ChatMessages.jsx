@@ -37,8 +37,8 @@ class ChatMessages_ extends Component {
               // color={o.color}
               // name={o.name}
               // id={o.id}
-              // highlight={highlight}
-              // online={o.online}
+              highlight={highlight}
+              online
               key={i}
               renderHeader={renderHeader}
               avatar="https://up.bona.cafe/src/e2/bc820d04437e672d68a3f729e1dd99ad5b1c03.png"
