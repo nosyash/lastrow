@@ -11,7 +11,7 @@ type ErrorResponse struct {
 }
 
 type Room struct {
-	Name  string `json:"name"`
+	Title string `json:"title"`
 	Path  string `json:"path"`
 	Play  string `json:"play"`
 	Users string `json:"users"`
@@ -24,7 +24,7 @@ type RoomInnerResponse struct {
 }
 
 type Playlist struct {
-	URL   string `json:"url"`
+	URL string `json:"url"`
 }
 
 type User struct {
