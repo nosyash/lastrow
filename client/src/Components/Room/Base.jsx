@@ -26,9 +26,11 @@ class RoomBase_ extends Component {
 
   componentWillUnmount() {
     const { socket } = this;
+    const { ClearMessageList } = this.props;
 
     socket.onclose = () => null;
     socket.close();
+    ClearMessageList();
   }
 
   componentWillMount() {
@@ -86,11 +88,16 @@ class RoomBase_ extends Component {
   };
 
   handleMessage = d => {
-    const { AddMessage } = this.props;
+    const { AddMessage, roomID } = this.props;
 
     const { data } = d;
     const { action } = JSON.parse(data);
-    AddMessage(action);
+    const messageObject = {
+      message: action.body.message,
+      name: 'test',
+      roomID,
+    };
+    AddMessage(messageObject);
   };
 
   handleError = () => {
@@ -187,6 +194,9 @@ const RoomBase = connect(
     },
     AddEmojis: payload => {
       dispatch({ type: types.ADD_EMOJIS, payload });
+    },
+    ClearMessageList: () => {
+      dispatch({ type: types.CLEAR_MESSAGE_LIST });
     },
     AddMessage: payload => {
       dispatch({ type: types.ADD_MESSAGE, payload });

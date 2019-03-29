@@ -22,13 +22,6 @@ class ChatInner_ extends Component {
     );
   }
 }
-
-const mapDispatchToProps = dispatch => ({
-  AddMessage: payload => {
-    dispatch({ type: ADD_MESSAGE, payload });
-  },
-});
-
 function mapStateToProps(state) {
   return {
     messages: state.messages,
@@ -37,7 +30,4 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(ChatInner_);
+export default connect(mapStateToProps)(ChatInner_);
