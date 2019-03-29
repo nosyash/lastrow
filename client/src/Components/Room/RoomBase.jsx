@@ -5,6 +5,7 @@ import ChatContainer from './chat/ChatContainer';
 import VideoContainer from './video/VideoContainer';
 import getEmojiList from '../../utils/InitEmojis';
 import http from '../../utils/httpServices';
+import * as types from '../../constants/ActionTypes';
 
 class RoomBase_ extends Component {
   constructor() {
@@ -12,20 +13,27 @@ class RoomBase_ extends Component {
     this.chat = React.createRef();
     this.video = React.createRef();
     this.divider = React.createRef();
+    this.socket = null;
   }
 
-  state = {};
+  state = {
+    open: false,
+    connected: false,
+  };
 
   componentDidMount() {
     this.init();
   }
 
-  componentWillUnmount() {}
+  componentWillUnmount() {
+    this.socket.close();
+  }
 
   componentWillMount() {
     const { UpdateMainStates, match } = this.props;
     const { id } = match.params;
-    UpdateMainStates({ roomId: id });
+
+    UpdateMainStates({ roomID: id });
   }
 
   init = async () => {
@@ -37,30 +45,85 @@ class RoomBase_ extends Component {
     cinemaMode = cinemaMode === 'true';
 
     // Store
-    UpdateMainStates({ cinemaMode, roomId: id });
+    UpdateMainStates({ cinemaMode, roomID: id });
 
-    // Request connection
-    // const data = {
-    // action: {
-    // name: 'connect',
-    // type: 'register',
-    // body: {
-    // status: 200,
-    // message: '',
-    // },
-    // },
-    // roomID: id,
-    // };
-
-    // // console.log(request);
-    // socket.send(JSON.stringify(data));
-
-    // States
     this.initEmojis();
+    this.initWebSocket();
   };
+
+  initWebSocket = () => {
+    this.webSocketConnect();
+  };
+
+  initWebSocketEvents = () => {
+    const { socket } = this;
+
+    socket.onopen = () => this.handleOpen();
+    socket.onmessage = data => this.handleMessage(data);
+    socket.onerror = () => this.handleError();
+    socket.onclose = () => this.handleClose();
+  };
+
+  webSocketConnect = () => {
+    const { REACT_APP_SOCKET_ENDPOINT: socket } = process.env;
+
+    if (socket) this.socket = new WebSocket(socket);
+    if (!socket) console.error('no websocket address provided');
+    this.initWebSocketEvents();
+  };
+
+  webSocketReconnect = () => {
+    setTimeout(() => {
+      this.webSocketConnect();
+    }, 1000);
+  };
+
+  handleOpen = () => {
+    console.log('conection opened');
+    this.setState({ connected: true });
+    this.handleFirstConnect();
+  };
+
+  handleMessage = d => {
+    const { AddMessage } = this.props;
+    const { data } = d;
+    const { action } = JSON.parse(data);
+    console.log(action);
+    AddMessage(action);
+  };
+
+  handleError = () => {
+    console.log('error');
+    this.webSocketReconnect();
+  };
+
+  handleClose = () => {
+    console.log('conection closed');
+    this.setState({ connected: false });
+    this.webSocketReconnect();
+  };
+
+  handleFirstConnect() {
+    const { roomID } = this.props;
+
+    let data = {
+      action: {
+        name: 'connect',
+        type: 'register',
+        body: {
+          status: 200,
+          message: '',
+        },
+      },
+      roomID,
+    };
+    data = JSON.stringify(data);
+    this.socket.send(data);
+  }
 
   initEmojis = () => {
     const { AddEmojis } = this.props;
+
     const emojiList = getEmojiList();
     AddEmojis(emojiList);
   };
@@ -68,6 +131,7 @@ class RoomBase_ extends Component {
   toggleCinemaMode = () => {
     const { UpdateMainStates } = this.props;
     const { cinemaMode } = this.props;
+
     localStorage.cinemaMode = !cinemaMode;
     UpdateMainStates({ cinemaMode: !cinemaMode });
   };
@@ -86,11 +150,17 @@ class RoomBase_ extends Component {
   };
 
   render() {
-    const { cinemaMode } = this.props;
+    const { cinemaMode, roomID } = this.props;
+    // if (!roomID) return null;
     return (
       <React.Fragment>
         <div className="room-container">
-          <ChatContainer divider={this.divider} video={this.video} chat={this.chat} />
+          <ChatContainer
+            socket={this.socket}
+            divider={this.divider}
+            video={this.video}
+            chat={this.chat}
+          />
           {!cinemaMode && <div className="custom-divider" ref={this.divider} />}
           <VideoContainer videoRef={this.video}>
             <div className="main-controls">
@@ -109,13 +179,17 @@ const RoomBase = connect(
     MainStates: state.MainStates,
     cinemaMode: state.MainStates.cinemaMode,
     emojiList: state.emojis.list,
+    roomID: state.MainStates.roomID,
   }),
   dispatch => ({
     UpdateMainStates: payload => {
-      dispatch({ type: 'UPDATE_MAIN_STATES', payload });
+      dispatch({ type: types.UPDATE_MAIN_STATES, payload });
     },
     AddEmojis: payload => {
-      dispatch({ type: 'ADD_EMOJIS', payload });
+      dispatch({ type: types.ADD_EMOJIS, payload });
+    },
+    AddMessage: payload => {
+      dispatch({ type: types.ADD_MESSAGE, payload });
     },
   })
 )(RoomBase_);

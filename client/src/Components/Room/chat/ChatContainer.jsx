@@ -142,7 +142,7 @@ class ChatContainer_ extends Component {
   };
 
   render() {
-    const { chat, cinemaMode } = this.props;
+    const { chat, cinemaMode, socket } = this.props;
     const { width, top, left } = this.state;
     let { height } = this.state;
     height = cinemaMode ? height : '';
@@ -159,7 +159,7 @@ class ChatContainer_ extends Component {
             <i className="fa fa-angle-down" />
           </span>
         )}
-        <ChatInner />
+        <ChatInner socket={socket} />
       </div>
     );
   }

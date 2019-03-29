@@ -21,7 +21,7 @@ class ChatMessages_ extends Component {
     current.scrollTo(0, 100000);
   };
 
-  // {"action":{"name":"message","type":"send","message":"дурики"},"roomId":"bonan"}
+  // {"action":{"name":"message","type":"send","message":"дурики"},"roomID":"bonan"}
   render() {
     const { list, selfName } = this.props;
     return (

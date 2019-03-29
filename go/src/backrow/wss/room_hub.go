@@ -44,7 +44,7 @@ func (rh *RoomsHub) registerNewConn(conn *websocket.Conn) error {
 	}
 
 	// TODO
-	// Check is there such roomId
+	// Check is there such roomID
 	// Soon. When be available room creating
 
 	hub := NewRoomHub(roomID)

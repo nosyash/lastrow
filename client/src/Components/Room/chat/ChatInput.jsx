@@ -37,7 +37,7 @@ class ChatInput_ extends Component {
 
   handleFormSubmit = e => {
     const { socket, history } = this.props;
-    const { AppendToHistory, roomId } = this.props;
+    const { AppendToHistory, roomID } = this.props;
     // console.log(match.params);
     const { value } = e.target;
     const { selectionEnd, selectionStart } = this.input.current;
@@ -56,7 +56,7 @@ class ChatInput_ extends Component {
             message: value,
           },
         },
-        roomID: roomId,
+        roomID,
       };
 
       // try {
@@ -127,7 +127,7 @@ const mapDispatchToProps = dispatch => ({
 const mapStateToProps = state => ({
   profile: state.profile,
   history: state.messages.history,
-  roomId: state.MainStates.roomId,
+  roomID: state.MainStates.roomID,
 });
 
 export default connect(
