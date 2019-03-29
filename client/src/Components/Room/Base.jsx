@@ -81,7 +81,7 @@ class RoomBase_ extends Component {
     const { open, connected } = this.state;
     const { REACT_APP_SOCKET_ENDPOINT: socket } = process.env;
     if (open || connected) return;
-    if (socket) this.socket = new WebSocket(server);
+    if (socket) this.socket = new WebSocket(socket);
     if (!socket) console.error('No WebSocket address was provided');
     this.setState({ open: true });
     this.initWebSocketEvents();
