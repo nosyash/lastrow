@@ -5,9 +5,13 @@ import (
 	"log"
 	"os"
 	
-	"backrow/server"
+	"backrow/api"
 	"backrow/wss"
 )
+
+type Server interface {
+	Run() error
+}
 
 func main() {
 	wssAddr := os.Getenv("WSS_ADDR")
@@ -18,20 +22,16 @@ func main() {
 		wssAddr = ":8080"
 		wsAddr  = ":80"
 	}
-
-	go func() {
-		wsserver := wss.NewServer(wssAddr)
-		if err := wsserver.Run(); err != nil {
-			log.Fatal(err)
-		}
-	}()
-
-	go func() {
-		server := server.NewServer(wsAddr)
-		if err := server.Run(); err != nil {
-			log.Fatal(err)
-		}
-	}()
-
+	RunServer(wss.NewServer(wssAddr))
+	RunServer(api.NewServer(wsAddr))
+	
 	fmt.Scanln()
+}
+
+func RunServer(s Server) {
+	go func() {
+		if err := s.Run(); err != nil {
+			log.Fatal(err)
+		}
+	}()
 }

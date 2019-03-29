@@ -9,8 +9,8 @@ build:
 	go build go/src/backrow/backrow.go
 
 dep:
-	go get github.com/gorilla/websocket \
-	       github.com/gorilla/mux
+	go get -u github.com/gorilla/websocket \
+		  github.com/gorilla/mux
 
 build-client:
 	npm run client

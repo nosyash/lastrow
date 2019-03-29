@@ -8,6 +8,8 @@ import (
 )
 
 func NewRoomHub(roomID string) *Hub {
+	// TODO
+	// Create new session for room
 	return &Hub{
 		make(map[string]*websocket.Conn),
 		make(chan *Package),
@@ -44,6 +46,10 @@ func (h *Hub) add(conn *websocket.Conn) {
 		}
 	}
 	
+	// TODO
+	// change uuid on userid 
+	// add this user to session userlist
+
 	uuid := getRandomUUID()
 	
 	h.hub[uuid] = conn
@@ -53,6 +59,10 @@ func (h *Hub) add(conn *websocket.Conn) {
 func (h *Hub) remove(conn *websocket.Conn) {
 	var uuid string
 	
+	// TODO
+	// change uuid to uniq userid. soon
+	// remove user from session
+
 	for u, c := range h.hub {
 		if c == conn {
 			uuid = u
@@ -90,6 +100,8 @@ func (h *Hub) read(conn *websocket.Conn) {
 		fmt.Printf("%s - %s\n", conn.RemoteAddr().String(), req.Action.Body.Message)
 		
 		// TODO handle incoming request
+		// update playlist if request has add/or remove actions
+		// add new user with uniq userid to userlist
 		h.Broadcast <- req
 	}
 }
