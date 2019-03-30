@@ -11,10 +11,15 @@ type ErrorResponse struct {
 }
 
 type Room struct {
+	RoomID RoomID `json:"roomid"`
+	Play   string `json:"play"`
+	Users  string `json:"users"`
+}
+
+type RoomID struct {
 	Title string `json:"title"`
 	Path  string `json:"path"`
-	Play  string `json:"play"`
-	Users string `json:"users"`
+	UUID  string `json:"uuid"`
 }
 
 type RoomInnerResponse struct {

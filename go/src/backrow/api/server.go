@@ -11,9 +11,10 @@ import (
 
 type Server struct {
 	httpSrv *http.Server
+	db      *db.Database
 }
 
-func NewServer(wsAddr string) *Server {
+func NewServer(wsAddr string, db *db.Database) *Server {
 	return &Server{
 		&http.Server{
 			Addr:         wsAddr,
@@ -21,30 +22,31 @@ func NewServer(wsAddr string) *Server {
 			WriteTimeout: 10 * time.Second,
 			IdleTimeout:  60 * time.Second,
 		},
+		db,
 	}
 }
 
 func (s *Server) Run() error {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/", handleHomeRequest).Methods("GET")
-	r.HandleFunc("/r/{roomName}", handleRoomRequest).Methods("GET")
+	r.HandleFunc("/", s.handleHomeRequest).Methods("GET")
+	//r.HandleFunc("/r/{roomPath}", handleRoomRequest).Methods("GET")
 
 	s.httpSrv.Handler = r
 	s.httpSrv.ListenAndServe()
 	return nil
 }
 
-func handleHomeRequest(w http.ResponseWriter, r *http.Request) {
-	roomList, _ := db.GetRoomList()
-
+func (s *Server) handleHomeRequest(w http.ResponseWriter, r *http.Request) {
+	roomList, _ := s.db.GetRoomList()
+	
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(roomList)
 }
 
-func handleRoomRequest(w http.ResponseWriter, r *http.Request) {
-	roomInfo, _ := db.GetRoomInfo(mux.Vars(r)["roomName"])
+//func handleRoomRequest(w http.ResponseWriter, r *http.Request) {
+	//roomInfo, _ := db.GetRoomInfo(mux.Vars(r)["roomPath"])
 	
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(roomInfo)
-}
+	//w.Header().Set("Content-Type", "application/json")
+	//w.Write(roomInfo)
+//}

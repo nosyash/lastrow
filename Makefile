@@ -1,6 +1,7 @@
 export GOPATH 	= $(PWD)/go
 export WSS_ADDR = :4000
 export WS_ADDR  = :8080
+export DB_ADDR  = 0.0.0.0:27017
 
 run:
 	go run go/src/backrow/backrow.go
@@ -10,7 +11,8 @@ build:
 
 dep:
 	go get -u github.com/gorilla/websocket \
-		  github.com/gorilla/mux
+		  github.com/gorilla/mux \
+		  gopkg.in/mgo.v2
 
 build-client:
 	npm run client
