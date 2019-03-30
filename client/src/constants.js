@@ -1,3 +1,5 @@
+const { REACT_APP_API_ENDPOINT, REACT_APP_SOCKET_ENDPOINT } = process.env;
+
 // Selectors
 export const CHAT_NAME_SEL = '.chat-name';
 export const CHAT_HEADER_SEL = '.chat-header';
@@ -13,6 +15,10 @@ export const MAX_MESSAGES = 100;
 export const MAX_HISTORY = 20;
 export const MAX_MESSAGE_LENGTH = 400;
 export const WEBSOCKET_TIMEOUT = 3000;
+
+// API
+export const API_ENDPOINT = REACT_APP_API_ENDPOINT;
+export const SOCKET_ENDPOINT = REACT_APP_SOCKET_ENDPOINT;
 
 // RegExp
 export const PARAGRAPH = new RegExp(/^((.*)?)$/gim);

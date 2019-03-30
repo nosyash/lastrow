@@ -1,6 +1,11 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { CHAT_NAME_SEL, USER_ICON_SEL, WEBSOCKET_TIMEOUT } from '../../constants';
+import {
+  CHAT_NAME_SEL,
+  USER_ICON_SEL,
+  WEBSOCKET_TIMEOUT,
+  SOCKET_ENDPOINT,
+} from '../../constants';
 import ChatContainer from './chat/ChatContainer';
 import VideoContainer from './video/VideoContainer';
 import getEmojiList from '../../utils/InitEmojis';
@@ -79,10 +84,9 @@ class RoomBase_ extends Component {
 
   webSocketConnect = () => {
     const { open, connected } = this.state;
-    const { REACT_APP_SOCKET_ENDPOINT: socket } = process.env;
     if (open || connected) return;
-    if (socket) this.socket = new WebSocket(socket);
-    if (!socket) console.error('No WebSocket address was provided');
+    if (SOCKET_ENDPOINT) this.socket = new WebSocket(SOCKET_ENDPOINT);
+    if (!SOCKET_ENDPOINT) console.error('No WebSocket address was provided');
     this.setState({ open: true });
     this.initWebSocketEvents();
   };

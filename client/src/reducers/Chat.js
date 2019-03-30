@@ -14,7 +14,6 @@ const Messages = (state = initialState, action) => {
 
     const n = list.length - MAX_MESSAGES + 1;
     list.splice(0, n);
-    const { roomID } = action.payload;
     return { list: [...list, action.payload], history };
   }
 

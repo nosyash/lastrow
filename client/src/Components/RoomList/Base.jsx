@@ -1,18 +1,47 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import RoomItem from './RoomItem';
+import http from '../../utils/httpServices';
+
+import * as types from '../../constants/ActionTypes';
+import { API_ENDPOINT } from '../../constants';
 
 class RoomListBase extends Component {
-  state = {};
+  async componentDidMount() {
+    const { UpdateRoomList } = this.props;
+
+    const { data } = await http.get(API_ENDPOINT);
+    UpdateRoomList(data.rooms);
+  }
 
   render() {
+    const { rooms } = this.props;
     return (
       <div className="room-list">
-        <RoomItem title="movie1" movie="wjsn" users="5" link="/r/movie1" />
-        <RoomItem title="movie2" movie="wjsn" users="5" link="/r/movie2" />
-        <RoomItem title="movie3" movie="wjsn" users="5" link="/r/movie3" />
+        {rooms &&
+          rooms.map((r, i) => (
+            <RoomItem
+              key={i}
+              title={r.title}
+              movie={r.play}
+              users={r.users}
+              link={`/r/${r.path}`}
+            />
+          ))}
       </div>
     );
   }
 }
 
-export default RoomListBase;
+const mapDispatchToProps = dispatch => ({
+  UpdateRoomList: payload => {
+    dispatch({ type: types.UPDATE_ROOMLIST, payload });
+  },
+});
+
+const mapStateToProps = state => ({ rooms: state.Rooms.list });
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(RoomListBase);

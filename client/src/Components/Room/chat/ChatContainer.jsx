@@ -171,9 +171,7 @@ const mapDispatchToProps = dispatch => ({
   },
 });
 
-function mapStateToProps(state) {
-  return { cinemaMode: state.MainStates.cinemaMode };
-}
+const mapStateToProps = state => ({ cinemaMode: state.MainStates.cinemaMode });
 
 export default connect(
   mapStateToProps,
