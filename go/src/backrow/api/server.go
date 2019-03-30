@@ -40,7 +40,7 @@ func NewServer(wsAddr string, db *db.Database) *Server {
 	}
 }
 
-func (s *Server) Run() error {
+func (s *Server) Run() {
 	r := mux.NewRouter()
 	go ws.WaitingRegistrations()
 
@@ -48,8 +48,10 @@ func (s *Server) Run() error {
 	r.HandleFunc("/api/ws", s.upgradeConnection).Methods("GET")
 
 	s.httpSrv.Handler = r
-	s.httpSrv.ListenAndServe()
-	return nil
+	err := s.httpSrv.ListenAndServe()
+	if err != nil {
+		log.Fatalf("API server won't start because: %v", err)
+	}
 }
 
 func (s *Server) handleHomeRequest(w http.ResponseWriter, r *http.Request) {

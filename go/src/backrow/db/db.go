@@ -2,6 +2,7 @@ package db
 
 import (
 	"encoding/json"
+	"log"
 
 	"gopkg.in/mgo.v2"
 )
@@ -14,10 +15,10 @@ type Database struct {
 	uc *mgo.Collection
 }
 
-func Connect(dbAddr string) (*Database, error) {
+func Connect(dbAddr string) *Database {
 	session, err := mgo.Dial(dbAddr)
 	if err != nil {
-		return nil, err
+		log.Fatalf("Couldn't connect to the mongodb server: %v", err)
 	}
 
 	rc := session.DB("backrow").C("rooms")
@@ -27,13 +28,13 @@ func Connect(dbAddr string) (*Database, error) {
 		session,
 		rc,
 		uc,
-	}, nil
+	}
 }
 
 func (db *Database) GetRoomList() ([]byte, error) {
 	rid := []RoomID{}
 	db.rc.Find(nil).All(&rid)
-	
+
 	if len(rid) == 0 {
 		roomResp := RoomResponse{
 			200,
