@@ -10,7 +10,7 @@ class RoomListBase extends Component {
   async componentDidMount() {
     const { UpdateRoomList } = this.props;
 
-    const { data } = await http.get(API_ENDPOINT);
+    const { data } = await http.get(`${API_ENDPOINT}/rooms`);
     UpdateRoomList(data.rooms);
   }
 
