@@ -16,23 +16,23 @@ const Messages = (state = initialState, action) => {
 
       const n = list.length - MAX_MESSAGES + 1;
       list.splice(0, n);
-      return { ...initialState, list: [...list, action.payload] };
+      return { ...state, list: [...list, action.payload] };
     }
 
     case types.CLEAR_MESSAGE_LIST: {
-      return { ...initialState, list: [] };
+      return { ...state, list: [] };
     }
 
     case types.APPEND_TO_HISTORY: {
       const n = historyTemp.length - MAX_HISTORY;
       historyTemp.splice(0, n);
-      return { ...initialState, history: [...historyTemp] };
+      return { ...state, history: [...historyTemp] };
     }
 
     case types.UPDATE_USERLIST: {
       const n = historyTemp.length - MAX_HISTORY;
       historyTemp.splice(0, n);
-      return { ...initialState, users: [...action.payload] };
+      return { ...state, users: [...action.payload] };
     }
 
     default:

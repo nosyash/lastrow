@@ -6,7 +6,7 @@ const initialState = {
 };
 
 const MainStates = (state = initialState, action) => {
-  if (action.type === UPDATE_MAIN_STATES) return { ...initialState, ...action.payload };
+  if (action.type === UPDATE_MAIN_STATES) return { ...state, ...action.payload };
 
   return state;
 };
