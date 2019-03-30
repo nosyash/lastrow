@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import ReactPlayer from 'react-player';
 import { UPDATE_PLAYER } from '../../../constants/ActionTypes';
 
-class Player_ extends Component {
+class Player extends Component {
   constructor(props) {
     super(props);
     this.videoItem = null;
@@ -16,7 +16,7 @@ class Player_ extends Component {
   }
 
   render() {
-    const { player } = this.props;
+    const { media } = this.props;
     // console.log(player);
     return (
       <ReactPlayer
@@ -31,7 +31,7 @@ class Player_ extends Component {
             preload: true,
           },
         }}
-        url={player.url}
+        url={media.url}
         playing={false}
       />
       // <div className="video-player">
@@ -44,7 +44,7 @@ class Player_ extends Component {
   }
 }
 
-const mapStateToProps = state => ({ player: state.player });
+const mapStateToProps = state => ({ media: state.Media });
 const mapDispatchToProps = dispatch => ({
   UpdatePlayer: payload => {
     dispatch({ type: UPDATE_PLAYER, payload });
@@ -54,4 +54,4 @@ const mapDispatchToProps = dispatch => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(Player_);
+)(Player);

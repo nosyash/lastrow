@@ -4,7 +4,7 @@ import ChatInput from './ChatInput';
 import ListMessages from './ListMessages';
 import ChatHeader from './ChatHeader';
 
-class ChatInner_ extends Component {
+class ChatInner extends Component {
   constructor() {
     super();
     this.chatMessages = React.createRef();
@@ -23,10 +23,10 @@ class ChatInner_ extends Component {
 }
 function mapStateToProps(state) {
   return {
-    messages: state.messages,
-    list: state.messages.list,
+    messages: state.Chat,
+    list: state.Chat.list,
     roomID: state.MainStates.roomID,
   };
 }
 
-export default connect(mapStateToProps)(ChatInner_);
+export default connect(mapStateToProps)(ChatInner);

@@ -4,7 +4,7 @@ import { APPEND_TO_HISTORY } from '../../../constants/ActionTypes';
 import { KEY_UP, KEY_DOWN, KEY_ENTER } from '../../../constants/keys';
 import { MAX_MESSAGE_LENGTH } from '../../../constants';
 
-class ChatInput_ extends Component {
+class ChatInput extends Component {
   constructor() {
     super();
     this.historyN = 0;
@@ -120,11 +120,11 @@ const mapDispatchToProps = dispatch => ({
 
 const mapStateToProps = state => ({
   profile: state.profile,
-  history: state.messages.history,
+  history: state.Chat.history,
   roomID: state.MainStates.roomID,
 });
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(ChatInput_);
+)(ChatInput);

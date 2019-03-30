@@ -4,7 +4,7 @@ import safelySetInnerHTML from '../../../utils/safelySetInnerHTML ';
 import parseMarkup from '../../../utils/markup';
 import playSound from '../../../utils/HandleSounds';
 
-class ChatMessage_ extends Component {
+class ChatMessage extends Component {
   // state = {
   //   hideHeader: false,
   // };
@@ -49,7 +49,7 @@ function mapStateToProps(state) {
   return { emojiList: state.emojis.list, name: state.profile.name };
 }
 
-export default connect(mapStateToProps)(ChatMessage_);
+export default connect(mapStateToProps)(ChatMessage);
 
 const RenderMessage = props => {
   const { _ref, id, handleProfile, renderHeader, hideHeader, name, tempBody } = props;

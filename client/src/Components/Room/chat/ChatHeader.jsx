@@ -1,41 +1,15 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import MiniProfile from './MiniProfile';
 
 class ChatHeader extends Component {
-  constructor() {
-    super();
-    this.list = [
-      { name: 'AYAYA', color: '#DA3F6E', id: 1 },
-      { name: 'AYAYA', color: '#DA3F6E', id: 2 },
-      { name: 'AYAYA', color: '#DA3F6E', id: 3 },
-      { name: 'AYAYA', color: '#DA3F6E', id: 4 },
-      { name: 'AYAYA', color: '#DA3F6E', id: 5 },
-      { name: 'AYAYA', color: '#DA3F6E', id: 6 },
-      { name: 'AYAYA', color: '#DA3F6E', id: 7 },
-      { name: 'AYAYA', color: '#DA3F6E', id: 8 },
-      { name: 'AYAYA', color: '#DA3F6E', id: 9 },
-      { name: 'AYAYA', color: '#DA3F6E', id: 10 },
-      { name: 'AYAYA', color: '#DA3F6E', id: 11 },
-      { name: 'AYAYA', color: '#DA3F6E', id: 12 },
-      { name: 'AYAYA', color: '#DA3F6E', id: 13 },
-      { name: 'AYAYA', color: '#DA3F6E', id: 14 },
-      { name: 'AYAYA', color: '#DA3F6E', id: 15 },
-      { name: 'AYAYA', color: '#DA3F6E', id: 16 },
-      { name: 'AYAYA', color: '#DA3F6E', id: 17 },
-      { name: 'AYAYA', color: '#DA3F6E', id: 18 },
-    ];
-  }
-
   state = {
     showProfile: false,
     currentProfileId: 0,
-    profileList: [],
   };
 
   componentDidMount() {
     document.addEventListener('click', this.handleClick);
-    // console.log('fetch data from server');
-    this.setState({ profileList: this.list });
   }
 
   componentWillUnmount() {
@@ -53,19 +27,20 @@ class ChatHeader extends Component {
   };
 
   render() {
-    const { showProfile, currentProfileId, profileList } = this.state;
+    const { showProfile, currentProfileId } = this.state;
+    const { userList } = this.props;
     return (
       <React.Fragment>
         <div className="chat-header">
           {showProfile && <MiniProfile id={currentProfileId} />}
           <div className="chat-header_userlist">
-            {profileList.map(o => (
+            {userList.map((u, i) => (
               <UserIcon
-                onClick={() => this.handleUserClick(o.id)}
-                key={o.id}
-                name={o.name}
-                id={o.id}
-                color={o.color}
+                onClick={() => this.handleUserClick(u.id)}
+                key={i}
+                name={u.name}
+                // id={u.id}
+                color={u.name_color}
               />
             ))}
           </div>
@@ -79,20 +54,8 @@ class ChatHeader extends Component {
 }
 
 class UserIcon extends Component {
-  state = {
-    // id: '',
-    name: '',
-    color: '',
-  };
-
-  componentDidMount() {
-    // const { id } = this.props;
-    console.log('fetch data from server');
-  }
-
   render() {
-    const { id, onClick } = this.props;
-    const { name, color = '#666768' } = this.state;
+    const { id, onClick, name, color } = this.props;
     return (
       <span onClick={() => onClick(id)} title={name} _id={id} className="user-icon">
         <i style={{ color }} className="fa fa-user" />
@@ -101,4 +64,5 @@ class UserIcon extends Component {
   }
 }
 
-export default ChatHeader;
+const mapStateToProps = state => ({ userList: state.Chat.users });
+export default connect(mapStateToProps)(ChatHeader);
