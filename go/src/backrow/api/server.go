@@ -44,8 +44,8 @@ func (s *Server) Run() {
 	r := mux.NewRouter()
 	go ws.WaitingRegistrations()
 
-	r.HandleFunc("/api/rooms", s.handleHomeRequest).Methods("GET")
-	r.HandleFunc("/api/ws", s.upgradeConnection).Methods("GET")
+	r.HandleFunc("/api/rooms", s.getRooms).Methods("GET")
+	r.HandleFunc("/api/ws", s.acceptWebsocket).Methods("GET")
 
 	s.httpSrv.Handler = r
 	err := s.httpSrv.ListenAndServe()
@@ -54,14 +54,14 @@ func (s *Server) Run() {
 	}
 }
 
-func (s *Server) handleHomeRequest(w http.ResponseWriter, r *http.Request) {
+func (s *Server) getRooms(w http.ResponseWriter, r *http.Request) {
 	roomList, _ := s.db.GetRoomList()
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(roomList)
 }
 
-func (s *Server) upgradeConnection(w http.ResponseWriter, r *http.Request) {
+func (s *Server) acceptWebsocket(w http.ResponseWriter, r *http.Request) {
 	conn, err := s.upg.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)

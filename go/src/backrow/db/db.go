@@ -37,7 +37,7 @@ func (db *Database) GetRoomList() ([]byte, error) {
 
 	if len(rid) == 0 {
 		roomResp := RoomResponse{
-			200,
+			0,
 			[]Room{},
 		}
 		return json.Marshal(&roomResp)
@@ -54,7 +54,7 @@ func (db *Database) GetRoomList() ([]byte, error) {
 	}
 
 	roomResp := RoomResponse{
-		200,
+		len(rooms),
 		rooms,
 	}
 	return json.Marshal(&roomResp)

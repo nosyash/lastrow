@@ -1,13 +1,12 @@
 package db
 
 type RoomResponse struct {
-	Status int    `json:"status"`
+	Number int    `json:"number"`
 	Body   []Room `json:"rooms"`
 }
 
 type ErrorResponse struct {
-	Status int    `json:"status"`
-	Error  string `json:"error"`
+	Error string `json:"error"`
 }
 
 type Room struct {
