@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { WEBSOCKET_TIMEOUT, SOCKET_ENDPOINT } from '../../constants';
+import { WEBSOCKET_TIMEOUT, SOCKET_ENDPOINT, API_ENDPOINT } from '../../constants';
 import ChatContainer from './chat/ChatContainer';
 import VideoContainer from './video/VideoContainer';
 import getEmojiList from '../../utils/InitEmojis';
 import * as types from '../../constants/ActionTypes';
+import http from '../../utils/httpServices';
 
-class RoomBase_ extends Component {
+class RoomBase extends Component {
   constructor() {
     super();
     this.chat = React.createRef();
@@ -38,7 +39,7 @@ class RoomBase_ extends Component {
     const { UpdateMainStates, match } = this.props;
     const { id } = match.params;
 
-    UpdateMainStates({ roomID: id });
+    // UpdateMainStates({ roomID: id });
   }
 
   init = async () => {
@@ -49,9 +50,9 @@ class RoomBase_ extends Component {
     // Store
     cinemaMode = cinemaMode === 'true';
     UpdateMainStates({ cinemaMode, roomID: id });
-
     this.initEmojis();
     this.initWebSocket();
+    this.initInfo();
   };
 
   initWebSocket = () => {
@@ -157,6 +158,14 @@ class RoomBase_ extends Component {
     AddEmojis(emojiList);
   };
 
+  initInfo = async () => {
+    const { UpdateUserList, match } = this.props;
+    const { id: roomID } = match.params;
+    if (!roomID) return;
+    const { data } = await http.get(`${API_ENDPOINT}/r/${roomID}`);
+    UpdateUserList(data.users);
+  };
+
   toggleCinemaMode = () => {
     const { UpdateMainStates } = this.props;
     const { cinemaMode } = this.props;
@@ -179,7 +188,7 @@ class RoomBase_ extends Component {
   // };
 
   render() {
-    const { cinemaMode } = this.props;
+    const { cinemaMode, roomID } = this.props;
     return (
       <React.Fragment>
         <div className="room-container">
@@ -202,27 +211,33 @@ class RoomBase_ extends Component {
   }
 }
 
-const RoomBase = connect(
-  state => ({
-    MainStates: state.MainStates,
-    cinemaMode: state.MainStates.cinemaMode,
-    emojiList: state.emojis.list,
-    roomID: state.MainStates.roomID,
-  }),
-  dispatch => ({
-    UpdateMainStates: payload => {
-      dispatch({ type: types.UPDATE_MAIN_STATES, payload });
-    },
-    AddEmojis: payload => {
-      dispatch({ type: types.ADD_EMOJIS, payload });
-    },
-    ClearMessageList: () => {
-      dispatch({ type: types.CLEAR_MESSAGE_LIST });
-    },
-    AddMessage: payload => {
-      dispatch({ type: types.ADD_MESSAGE, payload });
-    },
-  })
-)(RoomBase_);
+const mapStateToProps = state => ({
+  MainStates: state.MainStates,
+  cinemaMode: state.MainStates.cinemaMode,
+  emojiList: state.emojis.list,
+  roomID: state.MainStates.roomID,
+  userList: state.Chat.users,
+});
 
-export default RoomBase;
+const mapDispatchToProps = dispatch => ({
+  UpdateMainStates: payload => {
+    dispatch({ type: types.UPDATE_MAIN_STATES, payload });
+  },
+  AddEmojis: payload => {
+    dispatch({ type: types.ADD_EMOJIS, payload });
+  },
+  ClearMessageList: () => {
+    dispatch({ type: types.CLEAR_MESSAGE_LIST });
+  },
+  AddMessage: payload => {
+    dispatch({ type: types.ADD_MESSAGE, payload });
+  },
+  UpdateUserList: payload => {
+    dispatch({ type: types.UPDATE_USERLIST, payload });
+  },
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(RoomBase);

@@ -4,7 +4,7 @@ import ChatInput from './ChatInput';
 import ListMessages from './ListMessages';
 import ChatHeader from './ChatHeader';
 
-class ChatInner_ extends Component {
+class ChatInner extends Component {
   constructor() {
     super();
     this.chatMessages = React.createRef();
@@ -29,4 +29,4 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps)(ChatInner_);
+export default connect(mapStateToProps)(ChatInner);

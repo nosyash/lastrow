@@ -10,7 +10,7 @@ import {
 import ChatInner from './ChatInner';
 import { UPDATE_MAIN_STATES } from '../../../constants/ActionTypes';
 
-class ChatContainer_ extends Component {
+class ChatContainer extends Component {
   constructor() {
     super();
     this.left = 0;
@@ -29,14 +29,15 @@ class ChatContainer_ extends Component {
   };
 
   componentDidMount() {
-    const { chatWidth, chatHeight, chatLeft, chatTop, cinemaMode } = localStorage;
+    let { chatWidth, chatHeight, chatLeft, chatTop, cinemaMode } = localStorage;
+    cinemaMode = JSON.parse(cinemaMode);
     const width = parseInt(chatWidth);
     const height = parseInt(chatHeight);
     const left = parseInt(chatLeft);
     const top = parseInt(chatTop);
 
-    const { UpdateMainStates } = this.props;
-    UpdateMainStates({ cinemaMode });
+    // const { UpdateMainStates } = this.props;
+    // UpdateMainStates({ cinemaMode });
 
     if (width) this.setState({ width });
     if (height) this.setState({ height });
@@ -176,4 +177,4 @@ const mapStateToProps = state => ({ cinemaMode: state.MainStates.cinemaMode });
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(ChatContainer_);
+)(ChatContainer);

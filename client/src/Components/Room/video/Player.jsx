@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import ReactPlayer from 'react-player';
 import { UPDATE_PLAYER } from '../../../constants/ActionTypes';
 
-class Player_ extends Component {
+class Player extends Component {
   constructor(props) {
     super(props);
     this.videoItem = null;
@@ -54,4 +54,4 @@ const mapDispatchToProps = dispatch => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(Player_);
+)(Player);

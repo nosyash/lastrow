@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Message from './Message';
 
-class ListMessages_ extends Component {
+class ListMessages extends Component {
   constructor() {
     super();
     this.chatMessages = React.createRef();
@@ -66,4 +66,4 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps)(ListMessages_);
+export default connect(mapStateToProps)(ListMessages);

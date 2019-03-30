@@ -32,7 +32,7 @@ const Messages = (state = initialState, action) => {
     case types.UPDATE_USERLIST: {
       const n = historyTemp.length - MAX_HISTORY;
       historyTemp.splice(0, n);
-      return { ...initialState, history: [...historyTemp] };
+      return { ...initialState, users: [...action.payload] };
     }
 
     default:
