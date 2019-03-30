@@ -35,13 +35,6 @@ class RoomBase extends Component {
     ClearMessageList();
   }
 
-  componentWillMount() {
-    const { UpdateMainStates, match } = this.props;
-    const { id } = match.params;
-
-    // UpdateMainStates({ roomID: id });
-  }
-
   init = async () => {
     let { cinemaMode } = localStorage;
     const { UpdateMainStates, match } = this.props;

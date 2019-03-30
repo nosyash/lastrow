@@ -1,3 +1,4 @@
+/* eslint-disable prefer-template */
 const { REACT_APP_API_ENDPOINT, REACT_APP_SOCKET_ENDPOINT } = process.env;
 
 // Selectors
@@ -17,8 +18,9 @@ export const MAX_MESSAGE_LENGTH = 400;
 export const WEBSOCKET_TIMEOUT = 3000;
 
 // API
-export const API_ENDPOINT = REACT_APP_API_ENDPOINT;
-export const SOCKET_ENDPOINT = REACT_APP_SOCKET_ENDPOINT;
+const https = window.location.protocol === 'https:';
+export const API_ENDPOINT = `//${REACT_APP_API_ENDPOINT}/api`;
+export const SOCKET_ENDPOINT = (https ? 'wss' : 'ws') + `:${API_ENDPOINT}/ws`;
 
 // RegExp
 export const PARAGRAPH = new RegExp(/^((.*)?)$/gim);
