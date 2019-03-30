@@ -120,7 +120,7 @@ const mapDispatchToProps = dispatch => ({
 
 const mapStateToProps = state => ({
   profile: state.profile,
-  history: state.messages.history,
+  history: state.Chat.history,
   roomID: state.MainStates.roomID,
 });
 

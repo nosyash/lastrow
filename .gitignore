@@ -2,7 +2,6 @@
 
 /build
 /client/build
-/client
 /public
 
 /go/pkg

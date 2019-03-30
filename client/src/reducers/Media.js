@@ -15,6 +15,7 @@ const InitialState = {
     hls: false,
     directFile: false,
   },
+  playlist: [],
 };
 
 const Player = (state = InitialState, action) => {

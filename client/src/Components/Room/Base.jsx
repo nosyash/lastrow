@@ -1,11 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import {
-  CHAT_NAME_SEL,
-  USER_ICON_SEL,
-  WEBSOCKET_TIMEOUT,
-  SOCKET_ENDPOINT,
-} from '../../constants';
+import { WEBSOCKET_TIMEOUT, SOCKET_ENDPOINT } from '../../constants';
 import ChatContainer from './chat/ChatContainer';
 import VideoContainer from './video/VideoContainer';
 import getEmojiList from '../../utils/InitEmojis';
@@ -24,7 +19,6 @@ class RoomBase_ extends Component {
   state = {
     open: false,
     connected: false,
-    reconnecting: false,
   };
 
   componentDidMount() {

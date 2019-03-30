@@ -23,8 +23,8 @@ class ChatInner_ extends Component {
 }
 function mapStateToProps(state) {
   return {
-    messages: state.messages,
-    list: state.messages.list,
+    messages: state.Chat,
+    list: state.Chat.list,
     roomID: state.MainStates.roomID,
   };
 }

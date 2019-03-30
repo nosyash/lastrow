@@ -16,7 +16,7 @@ class Player_ extends Component {
   }
 
   render() {
-    const { player } = this.props;
+    const { media } = this.props;
     // console.log(player);
     return (
       <ReactPlayer
@@ -31,7 +31,7 @@ class Player_ extends Component {
             preload: true,
           },
         }}
-        url={player.url}
+        url={media.url}
         playing={false}
       />
       // <div className="video-player">
@@ -44,7 +44,7 @@ class Player_ extends Component {
   }
 }
 
-const mapStateToProps = state => ({ player: state.player });
+const mapStateToProps = state => ({ media: state.Media });
 const mapDispatchToProps = dispatch => ({
   UpdatePlayer: payload => {
     dispatch({ type: UPDATE_PLAYER, payload });

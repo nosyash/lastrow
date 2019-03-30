@@ -11,24 +11,22 @@ class ListMessages_ extends Component {
   componentDidMount() {
     const { socket } = this.props;
 
-    socket.addEventListener('message', data => this.handleMessage(data));
+    socket.addEventListener('message', () => this.handleMessage());
   }
 
   componentWillUnmount() {
     const { socket } = this.props;
 
-    socket.removeEventListener('message', data => this.handleMessage(data));
+    socket.removeEventListener('message', () => this.handleMessage());
   }
 
-  handleMessage = data => {
-    const { messageList } = this.props;
-    this.setState({ messageList });
+  handleMessage = () => {
     const { current } = this.chatMessages;
     current.scrollTo(0, 100000);
   };
 
-  renderSingleMessage = (obj, i, selfName) => {
-    const { list, roomID } = this.props;
+  renderSingleMessage = (obj, i) => {
+    const { list, roomID, selfName } = this.props;
     let renderHeader = true;
     if (list[i - 1] && list[i - 1].name === obj.name) renderHeader = false;
     const regex = new RegExp(`@${selfName}`);
@@ -51,10 +49,10 @@ class ListMessages_ extends Component {
   };
 
   render() {
-    const { list, selfName, roomID } = this.props;
+    const { list } = this.props;
     return (
       <div ref={this.chatMessages} className="chat-messages">
-        {list.map((o, i) => this.renderSingleMessage(o, i, selfName))}
+        {list.map((o, i) => this.renderSingleMessage(o, i))}
       </div>
     );
   }
@@ -62,7 +60,7 @@ class ListMessages_ extends Component {
 
 function mapStateToProps(state) {
   return {
-    list: state.messages.list,
+    list: state.Chat.list,
     selfName: state.profile.name,
     roomID: state.MainStates.roomID,
   };

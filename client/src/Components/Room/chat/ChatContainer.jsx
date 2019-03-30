@@ -177,16 +177,3 @@ export default connect(
   mapStateToProps,
   mapDispatchToProps
 )(ChatContainer_);
-
-// const ChatContainer = connect(
-//   state => ({
-//     MainStates: state.MainStates,
-//   }),
-//   dispatch => ({
-//     UpdateMainStates: payload => {
-//       dispatch({ type: 'UPDATE_MAIN_STATES', payload });
-//     },
-//   })
-// )(ChatContainer_);
-
-// export default ChatContainer;

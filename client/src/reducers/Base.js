@@ -1,9 +1,9 @@
 import { combineReducers } from 'redux';
 import MainStates from './MainStates';
-import messages from './Chat';
+import Chat from './Chat';
 import emojis from './Emojis';
 import profile from './Profile';
-import player from './Player';
+import Media from './Media';
 import Rooms from './Rooms';
 
-export default combineReducers({ MainStates, messages, emojis, profile, player, Rooms });
+export default combineReducers({ MainStates, Chat, emojis, profile, Media, Rooms });
