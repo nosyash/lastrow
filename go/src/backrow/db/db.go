@@ -30,9 +30,11 @@ func GetRoomList() ([]byte, error) {
 func GetRoomInfo(roomName string) ([]byte, error) {
 	pl := []Playlist{
 		{
+			"WJSN Cosmic Girls 우주소녀 \" Babyface \" Lyrics (ColorCoded+Han+Rom+Eng)",
 			"https://www.youtube.com/watch?v=iNBLlmrExNw",
 		},
 		{
+			"[MV] MOMOLAND (모모랜드) _ BBoom BBoom (뿜뿜)",
 			"https://www.youtube.com/watch?v=JQGRg8XBnB4",
 		},
 	}
