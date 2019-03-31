@@ -1,3 +1,3 @@
-export const KEY_UP = 38;
-export const KEY_DOWN = 40;
-export const KEY_ENTER = 13;
+export const UP = 38;
+export const DOWN = 40;
+export const ENTER = 13;

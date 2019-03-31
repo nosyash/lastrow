@@ -477,18 +477,32 @@ body {
   height: 70px;
   max-width: 800px;
   margin: auto;
-  background: white;
+  background: aqua;
   border-radius: 4px;
 }
 
+.progress-bar_container {
+  top: 6px;
+  padding: 15px;
+  cursor: pointer;
+  left: 20px;
+  right: 20px;
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  height: 29px;
+}
+
 .progress-bar {
-  border-radius: 4px 4px 0 0;
+  border-radius: 5px;
   position: absolute;
   top: 0;
   height: 5px;
   left: 0;
   right: 0;
-  background: green;
+  bottom: 0;
+  background: yellow;
+  margin: auto;
 }
 
 .progress-bar_passed {
@@ -496,8 +510,58 @@ body {
   position: absolute;
   left: 0;
   top: 0;
+  border-radius: 5px;
   bottom: 0;
   width: 25%;
+}
+
+.scrubber_container {
+  width: 22px;
+  height: 22px;
+  position: absolute;
+  background: transparent;
+  right: -10px;
+  bottom: 0;
+  top: 0;
+  margin: auto;
+  padding: 14px;
+  cursor: pointer;
+  z-index: 1;
+  .scrubber {
+    width: 11px;
+    height: 11px;
+    position: absolute;
+    background: darkmagenta;
+    right: 5px;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    border-radius: 50%;
+    box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.12);
+  }
+}
+
+
+
+.video-time_container {
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  top: 24px;
+  left: 20px;
+  right: 20px;
+
+  font-family: Montserrat;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 12px;
+  color: darkorchid;
+  .current-time {
+
+  }
+  .duration {
+    margin-left: auto;
+  }
 }
 
 .player-inner {

@@ -36,13 +36,15 @@ class RoomBase extends Component {
   }
 
   init = async () => {
-    let { cinemaMode } = localStorage;
-    const { UpdateMainStates, match } = this.props;
+    let { cinemaMode, volume } = localStorage;
+    const { UpdateMainStates, UpdatePlayer, match } = this.props;
     const { id } = match.params;
 
     // Store
     cinemaMode = cinemaMode === 'true';
+    volume = volume || 1;
     UpdateMainStates({ cinemaMode, roomID: id });
+    UpdatePlayer({ volume });
     this.initEmojis();
     this.initWebSocket();
     this.initInfo();
@@ -229,6 +231,7 @@ const mapDispatchToProps = {
   AddMessage: payload => ({ type: types.ADD_MESSAGE, payload }),
   UpdateUserList: payload => ({ type: types.UPDATE_USERLIST, payload }),
   SetSocketState: payload => ({ type: types.UPDATE_SOCKET_STATE, payload }),
+  UpdatePlayer: payload => ({ type: types.UPDATE_MEDIA, payload }),
 };
 
 export default connect(

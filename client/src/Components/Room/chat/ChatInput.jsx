@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import * as types from '../../../constants/ActionTypes';
-import { KEY_UP, KEY_DOWN, KEY_ENTER } from '../../../constants/keys';
+import * as keys from '../../../constants/keys';
 import { MAX_MESSAGE_LENGTH } from '../../../constants';
 
 class ChatInput extends Component {
@@ -41,7 +41,7 @@ class ChatInput extends Component {
     // const { selectionEnd, selectionStart } = this.input.current;
     // const resetHistoryN = () => (this.historyN = history.length - 1);
 
-    if (e.keyCode === KEY_ENTER && !e.shiftKey) {
+    if (e.keyCode === keys.ENTER && !e.shiftKey) {
       e.preventDefault();
       if (!socketState) return;
       if (value === '') return;
