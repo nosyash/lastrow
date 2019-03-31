@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
 	"log"
 	"net/http"
 	"time"
@@ -68,27 +67,18 @@ func (s *Server) authHandler(w http.ResponseWriter, r *http.Request) {
 	var authReq AuthRequest
 	decoder := json.NewDecoder(r.Body)
 
-	w.Header().Set("Content-Type", "application/json")
-
 	err := decoder.Decode(&authReq)
 	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write(ErrorResp(err))
 	}
 
 	switch authReq.Action {
 	case ACTION_REGISTRATION:
-		r, err := s.db.CreateNewUser(authReq.Body.Uname, authReq.Body.Passwd, authReq.Body.Email)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write(ErrorResp(err))
-		}
-		if !r {
-			w.Write(ErrorResp(errors.New("This user already exists")))
-		}
-
-		// TODO
-		// if user was created successfully - what next?
+		s.registrationUser(w, authReq.Body.Uname, authReq.Body.Passwd, authReq.Body.Email)
+	case ACTION_LOGIN:
+		s.loginUser(w, authReq.Body.Uname, authReq.Body.Passwd)
 	}
 }
 
