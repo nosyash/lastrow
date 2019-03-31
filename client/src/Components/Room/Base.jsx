@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { toast } from 'react-toastify';
 import { WEBSOCKET_TIMEOUT, SOCKET_ENDPOINT, API_ENDPOINT } from '../../constants';
 import ChatContainer from './chat/ChatContainer';
 import VideoContainer from './video/VideoContainer';
@@ -185,7 +184,7 @@ class RoomBase extends Component {
   // };
 
   render() {
-    const { cinemaMode, roomID } = this.props;
+    const { cinemaMode } = this.props;
     return (
       <React.Fragment>
         <div className="room-container">
@@ -211,8 +210,8 @@ class RoomBase extends Component {
 const mapStateToProps = state => ({
   MainStates: state.MainStates,
   cinemaMode: state.MainStates.cinemaMode,
-  emojiList: state.emojis.list,
   roomID: state.MainStates.roomID,
+  emojiList: state.emojis.list,
   userList: state.Chat.users,
 });
 

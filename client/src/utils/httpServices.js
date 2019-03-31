@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { toast, ToastPosition } from 'react-toastify';
+import { toast } from 'react-toastify';
 
 axios.interceptors.response.use(null, error => {
   if (!toast.isActive(error.response.status)) {

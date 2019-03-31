@@ -45,6 +45,7 @@ class Player extends Component {
 }
 
 const mapStateToProps = state => ({ media: state.Media });
+
 const mapDispatchToProps = {
   UpdatePlayer: payload => ({ type: UPDATE_PLAYER, payload }),
 };
