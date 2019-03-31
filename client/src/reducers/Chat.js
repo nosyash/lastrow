@@ -5,6 +5,7 @@ const initialState = {
   list: [],
   history: [],
   users: [],
+  connected: false,
 };
 
 const Messages = (state = initialState, action) => {
@@ -33,6 +34,10 @@ const Messages = (state = initialState, action) => {
       const n = historyTemp.length - MAX_HISTORY;
       historyTemp.splice(0, n);
       return { ...state, users: [...action.payload] };
+    }
+
+    case types.UPDATE_SOCKET_STATE: {
+      return { ...state, connected: action.payload };
     }
 
     default:

@@ -98,17 +98,23 @@ class RoomBase extends Component {
   };
 
   handleError = () => {
-    // console.log('websocket error');
+    const { SetSocketState } = this.props;
+
     this.setState({ open: false, connected: false });
     this.pending = false;
     this.resetWebSocketEvents(() => this.webSocketReconnect());
+
+    SetSocketState(false);
   };
 
   handleClose = () => {
+    const { SetSocketState } = this.props;
+
     console.log('WebSocket conection closed');
     this.setState({ open: false, connected: false });
     this.resetWebSocketEvents();
     this.pending = false;
+    SetSocketState(false);
     this.webSocketReconnect();
   };
 
@@ -128,7 +134,7 @@ class RoomBase extends Component {
   };
 
   handleHandShake() {
-    const { roomID } = this.props;
+    const { roomID, SetSocketState } = this.props;
 
     let data = {
       action: {
@@ -145,6 +151,7 @@ class RoomBase extends Component {
     this.socket.send(data);
     this.setState({ connected: true });
     this.pending = false;
+    SetSocketState(true);
   }
 
   initEmojis = () => {
@@ -221,6 +228,7 @@ const mapDispatchToProps = {
   ClearMessageList: () => ({ type: types.CLEAR_MESSAGE_LIST }),
   AddMessage: payload => ({ type: types.ADD_MESSAGE, payload }),
   UpdateUserList: payload => ({ type: types.UPDATE_USERLIST, payload }),
+  SetSocketState: payload => ({ type: types.UPDATE_SOCKET_STATE, payload }),
 };
 
 export default connect(
