@@ -1,5 +1,5 @@
 /* eslint-disable prefer-template */
-const { REACT_APP_API_ENDPOINT, REACT_APP_SOCKET_ENDPOINT } = process.env;
+const { REACT_APP_API_ENDPOINT } = process.env;
 
 // Selectors
 export const CHAT_NAME_SEL = '.chat-name';
@@ -15,7 +15,8 @@ export const RESIZE_OFFSET = 10;
 export const MAX_MESSAGES = 100;
 export const MAX_HISTORY = 20;
 export const MAX_MESSAGE_LENGTH = 400;
-export const WEBSOCKET_TIMEOUT = 3000;
+export const WEBSOCKET_TIMEOUT = 2000;
+export const API_FETCH_TIMEOUT = 2000;
 
 // API
 const https = window.location.protocol === 'https:';

@@ -7,6 +7,8 @@ import '../../node_modules/bootstrap/dist/css/bootstrap.css';
 // import 'font-awesome/css/font-awesome.min.css';
 // import fontawesome from '@fortawesome/fontawesome-free';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import 'react-toastify/dist/ReactToastify.css';
+
 // import regular from '@fortawesome/free-regular-svg-icons';
 // import solid from '@fortawesome/free-solid-svg-icons';
 // import brands from '@fortawesome/free-brands-svg-icons';

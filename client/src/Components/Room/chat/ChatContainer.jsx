@@ -166,11 +166,9 @@ class ChatContainer extends Component {
   }
 }
 
-const mapDispatchToProps = dispatch => ({
-  UpdateMainStates: payload => {
-    dispatch({ type: UPDATE_MAIN_STATES, payload });
-  },
-});
+const mapDispatchToProps = {
+  UpdateMainStates: payload => ({ type: UPDATE_MAIN_STATES, payload }),
+};
 
 const mapStateToProps = state => ({ cinemaMode: state.MainStates.cinemaMode });
 

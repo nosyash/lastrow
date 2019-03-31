@@ -112,11 +112,9 @@ class ChatInput extends Component {
   }
 }
 
-const mapDispatchToProps = dispatch => ({
-  AppendToHistory: payload => {
-    dispatch({ type: APPEND_TO_HISTORY, payload });
-  },
-});
+const mapDispatchToProps = {
+  AppendToHistory: payload => ({ type: APPEND_TO_HISTORY, payload }),
+};
 
 const mapStateToProps = state => ({
   profile: state.profile,
