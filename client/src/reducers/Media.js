@@ -1,7 +1,7 @@
 import * as types from '../constants/ActionTypes';
 
 const InitialState = {
-  url: 'https://stream.bona.cafe/uzzu/ep20.mp4',
+  url: 'https://up.bona.cafe/src/38/b6d94984ce80c60357f7a1d8cf346b56873a56.webm',
   duration: 0,
   currentTime: 0,
   playing: false,
@@ -25,6 +25,11 @@ const Player = (state = InitialState, action) => {
     case types.UPDATE_MEDIA_URL: {
       const url = action.payload;
       return { ...state, url };
+    }
+
+    case types.SWITCH_PLAY: {
+      const url = action.payload;
+      return { ...state, playing: !state.playing };
     }
 
     default: {

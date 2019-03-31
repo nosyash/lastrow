@@ -11,5 +11,6 @@ export const UPDATE_PROFILE = 'UPDATE_PROFILE';
 // Media
 export const UPDATE_MEDIA = 'UPDATE_MEDIA';
 export const UPDATE_MEDIA_URL = 'UPDATE_MEDIA_URL';
+export const SWITCH_PLAY = 'SWITCH_PLAY';
 
 export const UPDATE_ROOMLIST = 'UPDATE_ROOMLIST';

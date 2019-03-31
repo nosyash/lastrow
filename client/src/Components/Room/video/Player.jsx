@@ -12,7 +12,7 @@ class Player extends Component {
   }
 
   state = {
-    progress: '0%',
+    progress: 0,
   };
 
   handleReady = () => {
@@ -41,7 +41,7 @@ class Player extends Component {
     return (
       <React.Fragment>
         {this.renderPlayer()}
-        {this.renderPlayerGUI()}
+        {this.player && this.renderPlayerGUI()}
       </React.Fragment>
     );
   }
@@ -55,9 +55,11 @@ class Player extends Component {
         width="100%"
         height="100%"
         autoPlay={false}
-        progressInterval={550}
+        progressInterval={150}
         onProgress={this.handlePlaying}
         controls
+        muted
+        loop
         onReady={this.handleReady}
         playing={media.playing}
         volume={media.volume}
@@ -73,18 +75,21 @@ class Player extends Component {
   };
 
   renderPlayerGUI = () => {
-    const { media } = this.props;
+    const { media, SwitchPlay } = this.props;
     const { progress } = this.state;
     return (
       <div className="video-player">
         <div className="progress-bar_container">
           <div className="progress-bar">
-            <ProgressBar progress={progress} />
+            <ProgressBar player={this.player} progress={progress} />
           </div>
         </div>
         <div className="video-time_container">
           <div className="current-time">{formatTime(media.currentTime)}</div>
           <div className="duration">{formatTime(media.duration)}</div>
+        </div>
+        <div className="play-button">
+          <i onClick={() => SwitchPlay()} className="fa fa-pause" />
         </div>
         <div className="video-player_overflow" />
       </div>
@@ -93,9 +98,68 @@ class Player extends Component {
 }
 
 class ProgressBar_ extends Player {
+  constructor() {
+    super();
+    this.animRef = null;
+    // this.throttled = window.requestAnimationFrame(this.updatePosition);
+    window.requestAnimationFrame =
+      window.requestAnimationFrame ||
+      window.mozRequestAnimationFrame ||
+      window.webkitRequestAnimationFrame ||
+      window.msRequestAnimationFrame ||
+      function(f) {
+        return setTimeout(f, 1000 / 60);
+      };
+    window.cancelAnimationFrame =
+      window.cancelAnimationFrame ||
+      window.mozCancelAnimationFrame ||
+      function(requestID) {
+        clearTimeout(requestID);
+      }; // fall back
+    this.startTime = Date.now();
+  }
+
+  state = {
+    width: 0,
+  };
+
+  // shouldComponentUpdate(nextProps, nextState) {
+  //   const { width } = this.state;
+  //   if (nextState.width !== width) return true;
+  //   return false;
+  // }
+
+  // componentDidMount = () => {
+  //   this.updatePosition();
+  // };
+
+  // componentWillUnmount = () => {
+  //   window.cancelAnimationFrame(this.animRef);
+  // };
+
+  // componentDidUpdate(prevProps, prevState) {
+  //   const { playing } = this.props;
+  //   if (!prevProps.playing && playing) this.updatePosition();
+  //   if (prevProps.playing && !playing) window.cancelAnimationFrame(this.req);
+  // }
+
+  updatePosition = () => {
+    const { media, player } = this.props;
+    const { duration } = media;
+
+    const currentTime = player.getCurrentTime();
+    const width = (currentTime / duration) * 100;
+    this.setState({ width });
+
+    this.animRef = window.requestAnimationFrame(this.updatePosition);
+  };
+
   render() {
-    const { progress } = this.props;
-    const width = `${progress * 100}%`;
+    // let { width } = this.state;
+    let { progress: width } = this.props;
+    width *= 100;
+    width += '%';
+    // console.log(width);
     return (
       <React.Fragment>
         <div style={{ width }} className="progress-bar_passed">
@@ -110,11 +174,13 @@ class ProgressBar_ extends Player {
 
 const mapStateToProps = state => ({
   media: state.Media,
+  playing: state.Media.playing,
 });
 
 const mapDispatchToProps = {
   UpdatePlayer: payload => ({ type: types.UPDATE_MEDIA, payload }),
   UpdateMediaURL: payload => ({ type: types.UPDATE_MEDIA_URL, payload }),
+  SwitchPlay: () => ({ type: types.SWITCH_PLAY }),
 };
 
 export default connect(
