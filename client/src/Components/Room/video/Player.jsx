@@ -11,6 +11,10 @@ class Player extends Component {
     this.player = null;
   }
 
+  state = {
+    progress: '0%',
+  };
+
   handleReady = () => {
     this.updateTime();
   };
@@ -26,7 +30,11 @@ class Player extends Component {
   };
 
   handlePlaying = p => {
-    this.updateTime();
+    const { UpdatePlayer } = this.props;
+    const { played: progress, playedSeconds: currentTime } = p;
+
+    this.setState({ progress });
+    UpdatePlayer({ currentTime });
   };
 
   render() {
@@ -47,7 +55,7 @@ class Player extends Component {
         width="100%"
         height="100%"
         autoPlay={false}
-        progressInterval={500}
+        progressInterval={550}
         onProgress={this.handlePlaying}
         controls
         onReady={this.handleReady}
@@ -66,11 +74,12 @@ class Player extends Component {
 
   renderPlayerGUI = () => {
     const { media } = this.props;
+    const { progress } = this.state;
     return (
       <div className="video-player">
         <div className="progress-bar_container">
           <div className="progress-bar">
-            <ProgressBar />
+            <ProgressBar progress={progress} />
           </div>
         </div>
         <div className="video-time_container">
@@ -85,9 +94,11 @@ class Player extends Component {
 
 class ProgressBar_ extends Player {
   render() {
+    const { progress } = this.props;
+    const width = `${progress * 100}%`;
     return (
       <React.Fragment>
-        <div className="progress-bar_passed">
+        <div style={{ width }} className="progress-bar_passed">
           <div className="scrubber_container">
             <div className="scrubber" />
           </div>
