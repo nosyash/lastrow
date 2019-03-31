@@ -19,6 +19,8 @@ func main() {
 	}
 
 	db := db.Connect(dbAddr)
+	defer db.Close()
+
 	apis := api.NewServer(apiAddr, db)
 	apis.Run()
 }

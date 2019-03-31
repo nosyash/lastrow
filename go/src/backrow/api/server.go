@@ -1,6 +1,8 @@
 package api
 
 import (
+	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"time"
@@ -45,6 +47,7 @@ func (s *Server) Run() {
 	go ws.WaitingRegistrations()
 
 	r.HandleFunc("/api/rooms", s.getRooms).Methods("GET")
+	r.HandleFunc("/api/auth", s.authHandler).Methods("POST")
 	r.HandleFunc("/api/ws", s.acceptWebsocket).Methods("GET")
 
 	s.httpSrv.Handler = r
@@ -59,6 +62,34 @@ func (s *Server) getRooms(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(roomList)
+}
+
+func (s *Server) authHandler(w http.ResponseWriter, r *http.Request) {
+	var authReq AuthRequest
+	decoder := json.NewDecoder(r.Body)
+
+	w.Header().Set("Content-Type", "application/json")
+
+	err := decoder.Decode(&authReq)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write(ErrorResp(err))
+	}
+
+	switch authReq.Action {
+	case ACTION_REGISTRATION:
+		r, err := s.db.CreateNewUser(authReq.Body.Uname, authReq.Body.Passwd, authReq.Body.Email)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write(ErrorResp(err))
+		}
+		if !r {
+			w.Write(ErrorResp(errors.New("This user already exists")))
+		}
+
+		// TODO
+		// if user was created successfully - what next?
+	}
 }
 
 func (s *Server) acceptWebsocket(w http.ResponseWriter, r *http.Request) {
