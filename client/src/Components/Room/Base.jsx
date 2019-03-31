@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { toast } from 'react-toastify';
 import { WEBSOCKET_TIMEOUT, SOCKET_ENDPOINT, API_ENDPOINT } from '../../constants';
 import ChatContainer from './chat/ChatContainer';
 import VideoContainer from './video/VideoContainer';
@@ -61,13 +62,14 @@ class RoomBase extends Component {
     socket.onclose = () => this.handleClose();
   };
 
-  resetWebSocketEvents = () => {
+  resetWebSocketEvents = (callback?) => {
     const { socket } = this;
 
     socket.onopen = () => null;
     socket.onmessage = () => null;
     socket.onerror = () => null;
     socket.onclose = () => null;
+    if (callback) callback();
   };
 
   webSocketConnect = () => {
@@ -82,11 +84,11 @@ class RoomBase extends Component {
   webSocketReconnect = () => {
     const { connected, open } = this.state;
 
-    if (connected || open) return;
-
+    if (connected || open || this.pending) return;
+    this.pending = true;
     this.webSocketConnect();
     setTimeout(() => {
-      this.webSocketReconnect();
+      if (!this.pending) this.webSocketReconnect();
     }, WEBSOCKET_TIMEOUT);
   };
 
@@ -99,14 +101,15 @@ class RoomBase extends Component {
   handleError = () => {
     // console.log('websocket error');
     this.setState({ open: false, connected: false });
-    this.resetWebSocketEvents();
-    this.webSocketReconnect();
+    this.pending = false;
+    this.resetWebSocketEvents(() => this.webSocketReconnect());
   };
 
   handleClose = () => {
     console.log('WebSocket conection closed');
     this.setState({ open: false, connected: false });
     this.resetWebSocketEvents();
+    this.pending = false;
     this.webSocketReconnect();
   };
 
@@ -142,6 +145,7 @@ class RoomBase extends Component {
     data = JSON.stringify(data);
     this.socket.send(data);
     this.setState({ connected: true });
+    this.pending = false;
   }
 
   initEmojis = () => {

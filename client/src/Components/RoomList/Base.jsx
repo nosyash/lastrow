@@ -4,18 +4,32 @@ import RoomItem from './RoomItem';
 import http from '../../utils/httpServices';
 
 import * as types from '../../constants/ActionTypes';
-import { API_ENDPOINT } from '../../constants';
+import { API_ENDPOINT, API_FETCH_TIMEOUT } from '../../constants';
 
 class RoomListBase extends Component {
-  async componentDidMount() {
-    const { UpdateRoomList } = this.props;
+  state = {
+    connected: false,
+  };
 
-    const { data } = await http.get(`${API_ENDPOINT}/rooms`);
-    UpdateRoomList(data.rooms);
+  async componentDidMount() {
+    this.getRoomList();
   }
+
+  getRoomList = async () => {
+    const { UpdateRoomList } = this.props;
+    const url = `${API_ENDPOINT}/rooms`;
+    await http
+      .get(url)
+      .then(res => {
+        UpdateRoomList(res.data.rooms);
+        this.setState({ connected: true });
+      })
+      .catch(res => setTimeout(() => this.getRoomList(), API_FETCH_TIMEOUT));
+  };
 
   render() {
     const { rooms } = this.props;
+    const { connected } = this.state;
     return (
       <div className="room-list">
         {rooms &&
@@ -28,6 +42,11 @@ class RoomListBase extends Component {
               link={`/r/${r.roomid.path}`}
             />
           ))}
+        {!connected && (
+          <div className="ml-auto mr-auto spinner-grow" role="status">
+            <span className="sr-only">Loading...</span>
+          </div>
+        )}
       </div>
     );
   }

@@ -1,16 +1,14 @@
 import axios from 'axios';
-// import { toast } from 'react-toastify';
-// axios.defaults.baseURL = process.env.REACT_APP_API_URL;
-
-// export const testApi = "http://jsonplaceholder.typicode.com/posts/13";
+import { toast, ToastPosition } from 'react-toastify';
 
 axios.interceptors.response.use(null, error => {
-  const expectedError =
-    error.response && error.response.status >= 400 && error.response.status < 500;
-  // console.log(error);
-  if (!expectedError) {
-    console.log(error);
-    // toast.error('Unexpected error occured');
+  if (!toast.isActive(error.response.status)) {
+    toast.error(`Error ${error.response.status} occured`, {
+      toastId: error.response.status,
+      autoClose: 4000,
+      hideProgressBar: true,
+      pauseOnFocusLoss: false,
+    });
   }
   return Promise.reject(error);
 });
