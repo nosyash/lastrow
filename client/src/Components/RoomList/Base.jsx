@@ -22,10 +22,10 @@ class RoomListBase extends Component {
           rooms.map((r, i) => (
             <RoomItem
               key={i}
-              title={r.title}
+              title={r.roomid.title}
               movie={r.play}
               users={r.users}
-              link={`/r/${r.path}`}
+              link={`/r/${r.roomid.path}`}
             />
           ))}
       </div>
