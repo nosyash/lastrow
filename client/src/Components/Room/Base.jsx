@@ -216,23 +216,13 @@ const mapStateToProps = state => ({
   userList: state.Chat.users,
 });
 
-const mapDispatchToProps = dispatch => ({
-  UpdateMainStates: payload => {
-    dispatch({ type: types.UPDATE_MAIN_STATES, payload });
-  },
-  AddEmojis: payload => {
-    dispatch({ type: types.ADD_EMOJIS, payload });
-  },
-  ClearMessageList: () => {
-    dispatch({ type: types.CLEAR_MESSAGE_LIST });
-  },
-  AddMessage: payload => {
-    dispatch({ type: types.ADD_MESSAGE, payload });
-  },
-  UpdateUserList: payload => {
-    dispatch({ type: types.UPDATE_USERLIST, payload });
-  },
-});
+const mapDispatchToProps = {
+  UpdateMainStates: payload => ({ type: types.UPDATE_MAIN_STATES, payload }),
+  AddEmojis: payload => ({ type: types.ADD_EMOJIS, payload }),
+  ClearMessageList: () => ({ type: types.CLEAR_MESSAGE_LIST }),
+  AddMessage: payload => ({ type: types.ADD_MESSAGE, payload }),
+  UpdateUserList: payload => ({ type: types.UPDATE_USERLIST, payload }),
+};
 
 export default connect(
   mapStateToProps,

@@ -52,11 +52,9 @@ class RoomListBase extends Component {
   }
 }
 
-const mapDispatchToProps = dispatch => ({
-  UpdateRoomList: payload => {
-    dispatch({ type: types.UPDATE_ROOMLIST, payload });
-  },
-});
+const mapDispatchToProps = {
+  UpdateRoomList: payload => ({ type: types.UPDATE_ROOMLIST, payload }),
+};
 
 const mapStateToProps = state => ({ rooms: state.Rooms.list });
 
