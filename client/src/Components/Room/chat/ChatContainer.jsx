@@ -29,15 +29,11 @@ class ChatContainer extends Component {
   };
 
   componentDidMount() {
-    let { chatWidth, chatHeight, chatLeft, chatTop, cinemaMode } = localStorage;
-    cinemaMode = JSON.parse(cinemaMode);
+    const { chatWidth, chatHeight, chatLeft, chatTop } = localStorage;
     const width = parseInt(chatWidth);
     const height = parseInt(chatHeight);
     const left = parseInt(chatLeft);
     const top = parseInt(chatTop);
-
-    // const { UpdateMainStates } = this.props;
-    // UpdateMainStates({ cinemaMode });
 
     if (width) this.setState({ width });
     if (height) this.setState({ height });

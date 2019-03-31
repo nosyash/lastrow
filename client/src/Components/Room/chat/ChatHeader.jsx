@@ -65,4 +65,5 @@ class UserIcon extends Component {
 }
 
 const mapStateToProps = state => ({ userList: state.Chat.users });
+
 export default connect(mapStateToProps)(ChatHeader);

@@ -52,11 +52,11 @@ class RoomListBase extends Component {
   }
 }
 
+const mapStateToProps = state => ({ rooms: state.Rooms.list });
+
 const mapDispatchToProps = {
   UpdateRoomList: payload => ({ type: types.UPDATE_ROOMLIST, payload }),
 };
-
-const mapStateToProps = state => ({ rooms: state.Rooms.list });
 
 export default connect(
   mapStateToProps,
