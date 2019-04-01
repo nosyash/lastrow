@@ -36,6 +36,10 @@ const Player = (state = InitialState, action) => {
       return { ...state, muted: !state.muted };
     }
 
+    case types.SET_VOLUME: {
+      return { ...state, volume: action.payload };
+    }
+
     default:
       return state;
   }

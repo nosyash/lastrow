@@ -78,10 +78,12 @@ body {
 .video-container {
   overflow: hidden;
   .video-element {
-  height: 100%;
+  // height: 100%;
+  margin: auto;
   width: 100%;
   position: relative;
   overflow: hidden;
+  display: flex;
   }
   .video {
   width: 100%;
@@ -477,7 +479,7 @@ body {
   height: 70px;
   max-width: 800px;
   margin: auto;
-  background: aqua;
+  background: rgba(37, 39, 40, 0.9);
   border-radius: 4px;
   user-select: none;
   display: flex;
@@ -498,15 +500,22 @@ body {
   margin: auto 90px;
   align-items: center;
   text-align: center;
+  padding-right: 100px;
 }
 
 .play-button {
   margin: auto;
 }
 
+.volume-button {
+  width: 30px;
+  line-height: 1.8;
+  z-index: 2;
+}
+
 .progress-bar_container {
   height: 29px;
-  overflow: hidden;
+  
   position: relative;
   flex: 1;
 }
@@ -519,14 +528,15 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: yellow;
+  background: rgba(172, 175, 179, 0.4);;
   margin: auto 6px;
+  overflow: hidden;
 }
 
 .progress-bar_passed {
-  background: red;
+  background: rgba(172, 175, 179, 0.8);;
   position: absolute;
-  left: -100%;
+  left: 0;
   top: 0;
   border-radius: 5px;
   bottom: 0;
@@ -534,34 +544,33 @@ body {
 }
 
 .scrubber_container {
-  width: 24px;
   height: 24px;
   position: absolute;
   background: transparent;
-  right: -13px;
+  right: -7px;
+  left: 20px;
   bottom: 0;
   top: 0;
   margin: auto;
-  // padding: 14px;
-  cursor: pointer;
   z-index: 1;
   .scrubber {
     width: 11px;
     height: 11px;
     position: absolute;
-    background: darkmagenta;
+    background: #DBDBDB;;
     right: 8px;
     top: 0;
     bottom: 0;
     margin: auto;
     border-radius: 50%;
-    box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.12);
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.3);
   }
 }
 
 .volume-control {
   display: flex;
   flex-direction: row;
+  width: 100px;
   .progress-bar_container {
     width: 80px;
   }
@@ -570,7 +579,7 @@ body {
   }
   .progress-bar_passed { 
     left: 0;
-    width: 50%;
+    width: 100%;
   }
   .scrubber_container {
 
@@ -585,7 +594,7 @@ body {
   font-style: normal;
   font-weight: 600;
   font-size: 12px;
-  color: darkorchid;
+  color: #ACAFB3;
   width: 60px;
 }
 .current-time {
@@ -599,9 +608,12 @@ body {
 
 .player-inner {
   width: 100%;
-  height: 100%;
+  // height: 100%;
+  // display: flex;
   video {
     outline: none;
+    // height: unset!important;
+    margin: auto;
   }
 }
 
@@ -610,8 +622,9 @@ body {
 }
 
 .control {
+  color: #ACAFB3;
   cursor: pointer;
-  padding: 0 5px 5px;
+  // padding: 0 5px 5px;
 }
 
 // Cinema mode

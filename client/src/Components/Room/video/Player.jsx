@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import ReactPlayer from 'react-player';
 import * as types from '../../../constants/ActionTypes';
 import { formatTime } from '../../../utils/base';
+import { SEEK_SEL, VOLUME_SEL } from '../../../constants';
 
 class Player extends Component {
   constructor() {
@@ -10,16 +11,58 @@ class Player extends Component {
     this.videoEl = null;
     this.player = null;
     this.animRef = null;
-    this.updatePosition = null;
+    this.volume = null;
+    this.seek = null;
   }
 
-  state = {
-    progress: 0,
+  state = { moving: false };
+
+  componentDidMount() {
+    document.addEventListener('mousedown', this.handleGlobalDown);
+    document.addEventListener('mousemove', this.handleGlobalMove);
+    document.addEventListener('mouseup', this.handleGlobalUp);
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('mousedown', this.handleGlobalDown);
+    document.removeEventListener('mousemove', this.handleGlobalMove);
+    document.removeEventListener('mouseup', this.handleGlobalUp);
+  }
+
+  handleGlobalDown = e => {
+    const { moving } = this.state;
+    const { SetVolume } = this.props;
+    let { target } = e;
+
+    if (moving) return;
+
+    if (target.closest(SEEK_SEL) || target.closest(VOLUME_SEL)) {
+      this.setState({ moving: true });
+      target = target.closest(SEEK_SEL) || target.closest(VOLUME_SEL);
+      const { left, width } = target.getBoundingClientRect();
+      const offset = e.clientX - left;
+      let mult = offset / width;
+      if (mult < 0) mult = 0;
+      if (mult > 1) mult = 1;
+      if (target.closest(VOLUME_SEL)) SetVolume(mult);
+      if (target.closest(SEEK_SEL)) this.player.seekTo(mult);
+    }
   };
 
-  handleReady = () => {
-    this.updateTime();
+  handleGlobalMove = e => {
+    const { moving } = this.state;
+    if (!moving) return;
+    const { left, width } = this.seek.getBoundingClientRect();
+    const offset = e.clientX - left;
+    const mult = offset / width;
+    this.player.seekTo(mult);
   };
+
+  handleGlobalUp = () => {
+    this.setState({ moving: false });
+  };
+
+  handleReady = () => this.updateTime();
 
   updateTime = () => {
     const { UpdatePlayer } = this.props;
@@ -33,14 +76,9 @@ class Player extends Component {
 
   handlePlaying = p => {
     const { UpdatePlayer } = this.props;
-    const { played: progress, playedSeconds: currentTime } = p;
+    const { playedSeconds: currentTime } = p;
 
-    this.setState({ progress });
     UpdatePlayer({ currentTime });
-  };
-
-  handlePlay = () => {
-    // this.updatePosition();
   };
 
   render() {
@@ -59,14 +97,13 @@ class Player extends Component {
         ref={player => (this.player = player)}
         className="player-inner"
         width="100%"
-        height="100%"
+        height=""
         autoPlay={false}
         progressInterval={850}
         onProgress={this.handlePlaying}
-        // onSeek={this.updatePosition}
-        controls
+        controls={false}
         muted={media.muted}
-        loop
+        loop={false}
         onPlay={this.handlePlay}
         onPause={this.handlePause}
         onReady={this.handleReady}
@@ -93,20 +130,15 @@ class Player extends Component {
 
   renderVideoTop = () => {
     const { media } = this.props;
-    const { progress } = this.state;
     return (
       <div className="video-player_top">
         <div className="video-time current-time">{formatTime(media.currentTime)}</div>
-        <div className="progress-bar_container">
-          <div className="progress-bar">
-            <ProgressBar
-              setUpdater={callback => (this.updatePosition = callback)}
-              animReef={this.animRef}
-              player={this.player}
-              progress={progress}
-            />
-          </div>
-        </div>
+
+        <ProgressBar
+          animReef={this.animRef}
+          player={this.player}
+          seek={ref => (this.seek = ref)}
+        />
         <div className="video-time duration">{formatTime(media.duration)}</div>
       </div>
     );
@@ -128,19 +160,22 @@ class Player extends Component {
     const { videoEl } = this;
     const { media, SwitchMute } = this.props;
     const { muted } = media;
-    const width = `${videoEl.volume * 100}%`;
+    let transform = `translateX(-${100 - videoEl.volume * 100}%)`;
+    transform = muted ? 0 : transform;
     return (
       <div className="volume-control">
         <div onClick={SwitchMute} className="control volume-button">
           <i className={`fa fa-volume-${muted ? 'mute' : 'up'}`} />
         </div>
-        <div className="progress-bar_container">
+        <div
+          ref={ref => (this.volume = ref)}
+          className="progress-bar_container volume_trigger"
+        >
+          <div style={{ transform }} className="scrubber_container">
+            <div className="scrubber" />
+          </div>
           <div className="progress-bar">
-            <div style={{ width: muted ? 0 : width }} className="progress-bar_passed">
-              <div className="scrubber_container">
-                <div className="scrubber" />
-              </div>
-            </div>
+            <div style={{ transform }} className="progress-bar_passed" />
           </div>
         </div>
       </div>
@@ -168,21 +203,23 @@ class ProgressBar_ extends Player {
   }
 
   state = {
-    transform: '0%',
+    transform: 'translateX(-100%)',
   };
 
   componentDidMount = () => {
-    const { player, setUpdater } = this.props;
-    setUpdater(this.updatePosition);
     this.updatePosition();
   };
+
+  componentWillUnmount() {
+    window.cancelAnimationFrame(this.animRef);
+  }
 
   updatePosition = () => {
     const { media, player, playing } = this.props;
     const { duration } = media;
 
     const currentTime = player.getCurrentTime();
-    const transform = `translateX(${(currentTime / duration) * 100}%)`;
+    const transform = `translateX(-${100 - (currentTime / duration) * 100}%)`;
     this.setState({ transform });
     this.animRef = window.requestAnimationFrame(this.updatePosition);
   };
@@ -191,13 +228,16 @@ class ProgressBar_ extends Player {
     const { transform } = this.state;
     return (
       <React.Fragment>
-        <div
-          style={{ transform }}
-          ref={ref => (this.progress = ref)}
-          className="progress-bar_passed"
-        >
-          <div className="scrubber_container">
+        <div ref={ref => this.props.seek(ref)} className="progress-bar_container seek_trigger">
+          <div style={{ transform }} className="scrubber_container">
             <div className="scrubber" />
+          </div>
+          <div className="progress-bar">
+            <div
+              style={{ transform }}
+              ref={ref => (this.progress = ref)}
+              className="progress-bar_passed"
+            />
           </div>
         </div>
       </React.Fragment>
@@ -215,6 +255,7 @@ const mapDispatchToProps = {
   UpdateMediaURL: payload => ({ type: types.UPDATE_MEDIA_URL, payload }),
   SwitchPlay: () => ({ type: types.SWITCH_PLAY }),
   SwitchMute: () => ({ type: types.SWITCH_MUTE }),
+  SetVolume: payload => ({ type: types.SET_VOLUME, payload }),
 };
 
 export default connect(
