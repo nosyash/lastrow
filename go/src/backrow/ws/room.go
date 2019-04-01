@@ -1,4 +1,4 @@
-package ws 
+package ws
 
 import (
 	"fmt"
@@ -45,20 +45,20 @@ func (h *Hub) add(conn *websocket.Conn) {
 			return
 		}
 	}
-	
+
 	// TODO
-	// change uuid on userid 
+	// change uuid on userid
 	// add this user to session userlist
 
 	uuid := getRandomUUID()
-	
+
 	h.hub[uuid] = conn
 	fmt.Printf("Add [%s]\t%s\n", uuid, conn.RemoteAddr().String())
 }
 
 func (h *Hub) remove(conn *websocket.Conn) {
 	var uuid string
-	
+
 	// TODO
 	// change uuid to uniq userid. soon
 	// remove user from session
@@ -69,7 +69,7 @@ func (h *Hub) remove(conn *websocket.Conn) {
 			break
 		}
 	}
-	
+
 	if uuid != "" {
 		delete(h.hub, uuid)
 		fmt.Printf("Delete [%s]\t%s\n", uuid, conn.RemoteAddr().String())
@@ -87,8 +87,7 @@ func (h *Hub) read(conn *websocket.Conn) {
 		h.Unregister <- conn
 	}()
 
-	// TODO later
-	conn.SetReadLimit(512)
+	// conn.SetReadLimit(512)
 	// For now just send message in broadcast channel
 	for {
 		req, err := readRequest(conn)
@@ -96,9 +95,9 @@ func (h *Hub) read(conn *websocket.Conn) {
 			conn.Close()
 			break
 		}
-		
+
 		fmt.Printf("%s - %s\n", conn.RemoteAddr().String(), req.Action.Body.Message)
-		
+
 		// TODO handle incoming request
 		// update playlist if request has add/or remove actions
 		// add new user with uniq userid to userlist
@@ -124,9 +123,9 @@ func (h *Hub) ping(conn *websocket.Conn) {
 		select {
 		case <-ticker.C:
 			conn.SetWriteDeadline(time.Now().Add(60 * time.Second))
-		
+
 			fmt.Println("ping to:", conn.RemoteAddr().String())
-			
+
 			if err := conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
 			}
@@ -137,9 +136,9 @@ func (h *Hub) ping(conn *websocket.Conn) {
 func (h *Hub) pong(conn *websocket.Conn) {
 	conn.SetReadDeadline(time.Now().Add(60 * time.Second))
 	conn.SetPongHandler(func(string) error {
-		
+
 		fmt.Println("pong from:", conn.RemoteAddr().String())
-		
+
 		conn.SetReadDeadline(time.Now().Add(60 * time.Second))
 		return nil
 	})

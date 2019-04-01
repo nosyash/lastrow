@@ -11,7 +11,7 @@ build:
 dep:
 	go get -u github.com/gorilla/websocket \
 		  github.com/gorilla/mux \
-		  gopkg.in/mgo.v2
+		  gopkg.in/mgo.v2 \
 
 build-client:
 	npm run client

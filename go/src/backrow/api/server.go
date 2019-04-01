@@ -48,12 +48,30 @@ func (s *Server) Run() {
 	r.HandleFunc("/api/rooms", s.getRooms).Methods("GET")
 	r.HandleFunc("/api/auth", s.authHandler).Methods("POST")
 	r.HandleFunc("/api/ws", s.acceptWebsocket).Methods("GET")
+	r.HandleFunc("/api/aboutme", s.aboutMe).Methods("GET")
+
+	r.PathPrefix("/static/").Handler(http.FileServer(http.Dir("./public/")))
+	r.PathPrefix("/").Handler(s).Methods("GET")
 
 	s.httpSrv.Handler = r
 	err := s.httpSrv.ListenAndServe()
 	if err != nil {
 		log.Fatalf("API server won't start because: %v", err)
 	}
+}
+
+// NOTE
+// This is just for test
+func (s *Server) aboutMe(w http.ResponseWriter, r *http.Request) {
+	session, err := r.Cookie("session_id")
+	if err != nil || session.Value == "" {
+		return
+	}
+	s.getUserInfo(w, session.Value)
+}
+
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "./public/index.html")
 }
 
 func (s *Server) getRooms(w http.ResponseWriter, r *http.Request) {

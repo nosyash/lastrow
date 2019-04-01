@@ -12,14 +12,15 @@ type room struct {
 }
 
 type roomID struct {
-	UUID  string `json:"uuid"`
 	Title string `json:"title"`
 	Path  string `json:"path"`
+	UUID  string `json:"uuid"`
 }
 
 type roomInnerResponse struct {
 	Playlist []playlist `json:"playlist"`
-	Users    []user     `json:"users"`
+	Users    []User     `json:"users"`
+	Owners   []Owner    `json:"owners"`
 }
 
 type playlist struct {
@@ -27,16 +28,24 @@ type playlist struct {
 	URL   string `json:"url"`
 }
 
-type user struct {
+type User struct {
+	Name      string `json:"name"`
+	NameColor string `json:"color"`
+	AvatarURL string `json:"avatar"`
+	Uname     string `json:"uname"`
+	Hash      string `json:"hash"`
+	Email     string `json:"email"`
+	UUID      string `json:"uuid"`
+}
+
+type Owner struct {
 	Name        string `json:"name"`
 	NameColor   string `json:"name_color"`
 	AvatarURL   string `json:"ava_url"`
 	Permissions string `json:"permissions"`
 }
 
-type newUser struct {
-	UUID  string
-	Uname string
-	Hash  string
-	Email string
+type session struct {
+	ID   string `json:"session_id"`
+	UUID string `json:"uuid"`
 }

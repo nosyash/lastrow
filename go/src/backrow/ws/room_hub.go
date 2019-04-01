@@ -19,8 +19,10 @@ func WaitingRegistrations() {
 			go func() {
 				err := rh.registerNewConn(conn)
 				if err != nil {
-					fmt.Println(err)
-					// Send error back to this conn
+					websocket.WriteJSON(conn, &ErrorResponse{
+						err.Error(),
+					})
+					conn.Close()
 				}
 			}()
 		case roomID := <-Close:

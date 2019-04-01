@@ -1,4 +1,4 @@
-package ws 
+package ws
 
 import "github.com/gorilla/websocket"
 
@@ -15,6 +15,10 @@ type Hub struct {
 	Register   chan *websocket.Conn
 	Unregister chan *websocket.Conn
 	RoomID     string
+}
+
+type ErrorResponse struct {
+	Error string `json:"error"`
 }
 
 type Package struct {

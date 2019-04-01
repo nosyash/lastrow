@@ -1,4 +1,4 @@
-package db
+package api
 
 import (
 	"crypto/rand"
