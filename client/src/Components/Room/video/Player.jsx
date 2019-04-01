@@ -133,7 +133,6 @@ class Player extends Component {
     return (
       <div className="video-player_top">
         <div className="video-time current-time">{formatTime(media.currentTime)}</div>
-
         <ProgressBar
           animReef={this.animRef}
           player={this.player}
@@ -145,12 +144,17 @@ class Player extends Component {
   };
 
   renderVideoMid = () => {
-    const { media, SwitchPlay } = this.props;
+    const { media, SwitchPlay, cinemaMode } = this.props;
+    const { ToggleCinemaMode } = this.props;
     return (
       <div className="video-player_mid">
         {this.renderVolumeControl()}
         <div onClick={SwitchPlay} className="control play-button">
           <i className={`fa fa-${media.playing ? 'pause' : 'play'}`} />
+        </div>
+        <div onClick={ToggleCinemaMode} className="control toggle-cinemamode">
+          {!cinemaMode && <i className="fas fa-expand" />}
+          {cinemaMode && <i className="fas fa-compress" />}
         </div>
       </div>
     );
@@ -187,9 +191,9 @@ class ProgressBar_ extends Player {
   constructor() {
     super();
     window.requestAnimationFrame =
+      window.webkitRequestAnimationFrame ||
       window.requestAnimationFrame ||
       window.mozRequestAnimationFrame ||
-      window.webkitRequestAnimationFrame ||
       window.msRequestAnimationFrame ||
       function(f) {
         return setTimeout(f, 1000 / 60);
@@ -248,6 +252,8 @@ class ProgressBar_ extends Player {
 const mapStateToProps = state => ({
   media: state.Media,
   playing: state.Media.playing,
+  MainStates: state.MainStates,
+  cinemaMode: state.MainStates.cinemaMode,
 });
 
 const mapDispatchToProps = {
@@ -256,6 +262,7 @@ const mapDispatchToProps = {
   SwitchPlay: () => ({ type: types.SWITCH_PLAY }),
   SwitchMute: () => ({ type: types.SWITCH_MUTE }),
   SetVolume: payload => ({ type: types.SET_VOLUME, payload }),
+  ToggleCinemaMode: () => ({ type: types.TOGGLE_CINEMAMODE }),
 };
 
 export default connect(

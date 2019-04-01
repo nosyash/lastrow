@@ -171,14 +171,6 @@ class RoomBase extends Component {
     UpdateUserList(data.users);
   };
 
-  toggleCinemaMode = () => {
-    const { UpdateMainStates } = this.props;
-    const { cinemaMode } = this.props;
-
-    localStorage.cinemaMode = !cinemaMode;
-    UpdateMainStates({ cinemaMode: !cinemaMode });
-  };
-
   // handleGlobalClick = e => {
   //   const target = e.target || e.srcElement;
   //   this.handleMatches(target);
@@ -204,12 +196,7 @@ class RoomBase extends Component {
             chat={this.chat}
           />
           {!cinemaMode && <div className="custom-divider" ref={this.divider} />}
-          <VideoContainer videoRef={this.video}>
-            <div className="main-controls">
-              {!cinemaMode && <i onClick={this.toggleCinemaMode} className="fas fa-expand" />}
-              {cinemaMode && <i onClick={this.toggleCinemaMode} className="fas fa-compress" />}
-            </div>
-          </VideoContainer>
+          <VideoContainer videoRef={this.video} />
         </div>
       </React.Fragment>
     );
