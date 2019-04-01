@@ -6,7 +6,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-func (db *Database) CreateNewUser(uname, hash, email, uuid string) (bool, error) {
+func (db *Database) CreateNewUser(name, uname, hash, email, uuid string) (bool, error) {
 	// TODO
 	// User credentials validation
 
@@ -19,6 +19,7 @@ func (db *Database) CreateNewUser(uname, hash, email, uuid string) (bool, error)
 	}
 
 	newUser := User{
+		Name:  name,
 		Uname: uname,
 		Hash:  hash,
 		Email: email,

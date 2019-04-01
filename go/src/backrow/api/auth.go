@@ -11,16 +11,16 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
-func (s *Server) registrationUser(w http.ResponseWriter, r *http.Request, uname, passwd, email string) {
+func (s *Server) registrationUser(w http.ResponseWriter, r *http.Request, uname, passwd, email, name string) {
 	w.Header().Set("Content-Type", "application/json")
 
-	if uname == "" || passwd == "" || email == "" {
+	if uname == "" || passwd == "" || email == "" || name == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write(ErrorResp(errors.New("One or more required fields are empty")))
 		return
 	}
 
-	result, err := s.db.CreateNewUser(uname, getHashOfString(passwd), email, getRandomUUID())
+	result, err := s.db.CreateNewUser(name, uname, getHashOfString(passwd), email, getRandomUUID())
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

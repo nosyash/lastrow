@@ -95,7 +95,7 @@ func (s *Server) authHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch authReq.Action {
 	case ACTION_REGISTRATION:
-		s.registrationUser(w, r, authReq.Body.Uname, authReq.Body.Passwd, authReq.Body.Email)
+		s.registrationUser(w, r, authReq.Body.Uname, authReq.Body.Passwd, authReq.Body.Email, authReq.Body.Name)
 	case ACTION_LOGIN:
 		s.loginUser(w, r, authReq.Body.Uname, authReq.Body.Passwd)
 	case ACTION_LOGOUT:

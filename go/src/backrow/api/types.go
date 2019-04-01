@@ -12,6 +12,7 @@ type AuthRequest struct {
 type AuthBody struct {
 	Uname  string `json:"uname"`
 	Passwd string `json:"passwd"`
+	Name   string `json:"name"`
 	Email  string `json:"email"`
 }
 
