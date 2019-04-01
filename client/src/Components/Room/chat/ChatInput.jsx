@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { APPEND_TO_HISTORY } from '../../../constants/ActionTypes';
-import { KEY_UP, KEY_DOWN, KEY_ENTER } from '../../../constants/keys';
+import * as types from '../../../constants/ActionTypes';
+import * as keys from '../../../constants/keys';
 import { MAX_MESSAGE_LENGTH } from '../../../constants';
 
 class ChatInput extends Component {
@@ -36,15 +36,14 @@ class ChatInput extends Component {
   };
 
   handleFormSubmit = e => {
-    const { socket, history } = this.props;
-    const { roomID } = this.props;
+    const { socket, socketState, roomID } = this.props;
     const { value } = e.target;
-    const { selectionEnd, selectionStart } = this.input.current;
+    // const { selectionEnd, selectionStart } = this.input.current;
+    // const resetHistoryN = () => (this.historyN = history.length - 1);
 
-    const resetHistoryN = () => (this.historyN = history.length - 1);
-
-    if (e.keyCode === KEY_ENTER && !e.shiftKey) {
+    if (e.keyCode === keys.ENTER && !e.shiftKey) {
       e.preventDefault();
+      if (!socketState) return;
       if (value === '') return;
       const object = {
         action: {
@@ -61,32 +60,31 @@ class ChatInput extends Component {
       const stringify = JSON.stringify(object);
       socket.send(stringify);
       this.setState({ value: '' });
-      resetHistoryN();
+      // resetHistoryN();
     }
 
-    // TODO: Does not working properly.
-    if (
-      !(
-        selectionEnd === 0 ||
-        selectionStart === 0 ||
-        selectionEnd === value.length ||
-        selectionStart === value.length
-      )
-    )
-      return;
-    if (selectionEnd && e.keyCode === KEY_UP) {
-      this.historyN = this.historyN - 1;
-      if (this.historyN < 0) resetHistoryN();
-      const i = this.historyN;
-      this.setState({ value: history[i] });
-    }
-    if (e.keyCode === KEY_DOWN) {
-      this.historyN = this.historyN + 1;
-      console.log(this.historyN, history.length - 1);
-      if (this.historyN > history.length - 1) this.historyN = 0;
-      const i = this.historyN;
-      this.setState({ value: history[i] });
-    }
+    // if (
+    //   !(
+    //     selectionEnd === 0 ||
+    //     selectionStart === 0 ||
+    //     selectionEnd === value.length ||
+    //     selectionStart === value.length
+    //   )
+    // )
+    //   return;
+    // if (selectionEnd && e.keyCode === KEY_UP) {
+    //   this.historyN = this.historyN - 1;
+    //   if (this.historyN < 0) resetHistoryN();
+    //   const i = this.historyN;
+    //   this.setState({ value: history[i] });
+    // }
+    // if (e.keyCode === KEY_DOWN) {
+    //   this.historyN = this.historyN + 1;
+    //   console.log(this.historyN, history.length - 1);
+    //   if (this.historyN > history.length - 1) this.historyN = 0;
+    //   const i = this.historyN;
+    //   this.setState({ value: history[i] });
+    // }
   };
 
   handleInputChange = e => {
@@ -103,9 +101,9 @@ class ChatInput extends Component {
           ref={this.input}
           value={value}
           autoFocus
+          placeholder="Write something..."
           onChange={this.handleInputChange}
           className="chat-input"
-          placeholder=""
         />
       </div>
     );
@@ -116,10 +114,11 @@ const mapStateToProps = state => ({
   profile: state.profile,
   history: state.Chat.history,
   roomID: state.MainStates.roomID,
+  socketState: state.Chat.connected,
 });
 
 const mapDispatchToProps = {
-  AppendToHistory: payload => ({ type: APPEND_TO_HISTORY, payload }),
+  AppendToHistory: payload => ({ type: types.APPEND_TO_HISTORY, payload }),
 };
 
 export default connect(

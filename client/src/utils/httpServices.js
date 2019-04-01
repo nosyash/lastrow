@@ -2,6 +2,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 
 axios.interceptors.response.use(null, error => {
+  if (!error.response) return;
   if (!toast.isActive(error.response.status)) {
     toast.error(`Error ${error.response.status} occured`, {
       toastId: error.response.status,

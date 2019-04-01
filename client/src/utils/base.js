@@ -38,3 +38,17 @@ export function togglePointerEvent(element) {
 export function resetStyles(element) {
   element.style = '';
 }
+
+export const formatTime = num => {
+  const secNum = parseInt(num, 10);
+  let hours = Math.floor(secNum / 3600);
+  const minutes = Math.floor((secNum - hours * 3600) / 60);
+  let seconds = secNum - hours * 3600 - minutes * 60;
+
+  if (seconds < 10) seconds = `0${seconds}`;
+
+  if (hours === 0) hours = '';
+  else hours += ':';
+
+  return `${hours}${minutes}:${seconds}`;
+};

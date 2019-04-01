@@ -36,13 +36,15 @@ class RoomBase extends Component {
   }
 
   init = async () => {
-    let { cinemaMode } = localStorage;
-    const { UpdateMainStates, match } = this.props;
+    let { cinemaMode, volume } = localStorage;
+    const { UpdateMainStates, UpdatePlayer, match } = this.props;
     const { id } = match.params;
 
     // Store
     cinemaMode = cinemaMode === 'true';
+    volume = volume || 1;
     UpdateMainStates({ cinemaMode, roomID: id });
+    UpdatePlayer({ volume });
     this.initEmojis();
     this.initWebSocket();
     this.initInfo();
@@ -98,17 +100,23 @@ class RoomBase extends Component {
   };
 
   handleError = () => {
-    // console.log('websocket error');
+    const { SetSocketState } = this.props;
+
     this.setState({ open: false, connected: false });
     this.pending = false;
     this.resetWebSocketEvents(() => this.webSocketReconnect());
+
+    SetSocketState(false);
   };
 
   handleClose = () => {
+    const { SetSocketState } = this.props;
+
     console.log('WebSocket conection closed');
     this.setState({ open: false, connected: false });
     this.resetWebSocketEvents();
     this.pending = false;
+    SetSocketState(false);
     this.webSocketReconnect();
   };
 
@@ -128,7 +136,7 @@ class RoomBase extends Component {
   };
 
   handleHandShake() {
-    const { roomID } = this.props;
+    const { roomID, SetSocketState } = this.props;
 
     let data = {
       action: {
@@ -145,6 +153,7 @@ class RoomBase extends Component {
     this.socket.send(data);
     this.setState({ connected: true });
     this.pending = false;
+    SetSocketState(true);
   }
 
   initEmojis = () => {
@@ -160,14 +169,6 @@ class RoomBase extends Component {
     if (!roomID) return;
     const { data } = await http.get(`${API_ENDPOINT}/r/${roomID}`);
     UpdateUserList(data.users);
-  };
-
-  toggleCinemaMode = () => {
-    const { UpdateMainStates } = this.props;
-    const { cinemaMode } = this.props;
-
-    localStorage.cinemaMode = !cinemaMode;
-    UpdateMainStates({ cinemaMode: !cinemaMode });
   };
 
   // handleGlobalClick = e => {
@@ -195,12 +196,7 @@ class RoomBase extends Component {
             chat={this.chat}
           />
           {!cinemaMode && <div className="custom-divider" ref={this.divider} />}
-          <VideoContainer videoRef={this.video}>
-            <div className="main-controls">
-              {!cinemaMode && <i onClick={this.toggleCinemaMode} className="fas fa-expand" />}
-              {cinemaMode && <i onClick={this.toggleCinemaMode} className="fas fa-compress" />}
-            </div>
-          </VideoContainer>
+          <VideoContainer videoRef={this.video} />
         </div>
       </React.Fragment>
     );
@@ -221,6 +217,8 @@ const mapDispatchToProps = {
   ClearMessageList: () => ({ type: types.CLEAR_MESSAGE_LIST }),
   AddMessage: payload => ({ type: types.ADD_MESSAGE, payload }),
   UpdateUserList: payload => ({ type: types.UPDATE_USERLIST, payload }),
+  SetSocketState: payload => ({ type: types.UPDATE_SOCKET_STATE, payload }),
+  UpdatePlayer: payload => ({ type: types.UPDATE_MEDIA, payload }),
 };
 
 export default connect(

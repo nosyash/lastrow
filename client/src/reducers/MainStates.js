@@ -1,4 +1,4 @@
-import { UPDATE_MAIN_STATES } from '../constants/ActionTypes';
+import * as types from '../constants/ActionTypes';
 
 const initialState = {
   cinemaMode: false,
@@ -6,7 +6,12 @@ const initialState = {
 };
 
 const MainStates = (state = initialState, action) => {
-  if (action.type === UPDATE_MAIN_STATES) return { ...state, ...action.payload };
+  if (action.type === types.UPDATE_MAIN_STATES) return { ...state, ...action.payload };
+
+  if (action.type === types.TOGGLE_CINEMAMODE) {
+    localStorage.cinemaMode = !state.cinemaMode;
+    return { ...state, cinemaMode: !state.cinemaMode };
+  }
 
   return state;
 };

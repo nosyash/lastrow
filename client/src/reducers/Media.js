@@ -1,27 +1,48 @@
-import { UPDATE_PLAYER } from '../constants/ActionTypes';
+import * as types from '../constants/ActionTypes';
 
 const InitialState = {
-  url: 'https://stream.bona.cafe/uzzu/ep20.mp4',
-  // url: '',
-  // url: 'https://www.youtube.com/watch?v=ysz5S6PUM-U',
+  url: 'https://stream.bona.cafe/uzzu/ep35.mp4',
+  playlist: [],
   duration: 0,
   currentTime: 0,
-  paused: true,
+  playing: false,
   playbackRate: 0,
   height: 0,
   width: 0,
   volume: 1,
+  muted: false,
   kind: {
     hls: false,
     directFile: false,
   },
-  playlist: [],
 };
 
 const Player = (state = InitialState, action) => {
-  if (action.type === UPDATE_PLAYER) return action.payload;
+  switch (action.type) {
+    case types.UPDATE_MEDIA: {
+      return { ...state, ...action.payload };
+    }
 
-  return state;
+    case types.UPDATE_MEDIA_URL: {
+      const url = action.payload;
+      return { ...state, url };
+    }
+
+    case types.SWITCH_PLAY: {
+      return { ...state, playing: !state.playing };
+    }
+
+    case types.SWITCH_MUTE: {
+      return { ...state, muted: !state.muted };
+    }
+
+    case types.SET_VOLUME: {
+      return { ...state, volume: action.payload };
+    }
+
+    default:
+      return state;
+  }
 };
 
 export default Player;
