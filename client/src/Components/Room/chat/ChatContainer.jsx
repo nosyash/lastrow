@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 import { RESIZER_SEL, CHAT_HEADER_SEL, DIVIDER_SEL } from '../../../constants';
 import {
   unsetCursorStyle,
@@ -156,6 +157,10 @@ class ChatContainer extends Component {
             <i className="fa fa-angle-down" />
           </span>
         )}
+        <Link to="/" className="control go-back">
+          <i className="fa fa-arrow-left" />
+          {' Back to rooms'}
+        </Link>
         <ChatInner socket={socket} />
         <div className="control-panel" />
       </div>

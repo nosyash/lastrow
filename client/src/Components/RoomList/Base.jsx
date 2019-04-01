@@ -31,22 +31,31 @@ class RoomListBase extends Component {
     const { rooms } = this.props;
     const { connected } = this.state;
     return (
-      <div className="room-list">
-        {rooms &&
-          rooms.map((r, i) => (
-            <RoomItem
-              key={i}
-              title={r.roomid.title}
-              movie={r.play}
-              users={r.users}
-              link={`/r/${r.roomid.path}`}
-            />
-          ))}
-        {!connected && (
-          <div className="ml-auto mr-auto spinner-grow" role="status">
-            <span className="sr-only">Loading...</span>
+      <div className="main-page">
+        <div className="main-page_item sign">
+          <div className="sign_inner" />
+        </div>
+        <div className="main-page_item room-list">
+          <div className="room-list_contaier">
+            <div className="room-list_inner">
+              {rooms &&
+                rooms.map((r, i) => (
+                  <RoomItem
+                    key={i}
+                    title={r.roomid.title}
+                    movie={r.play}
+                    users={r.users}
+                    link={`/r/${r.roomid.path}`}
+                  />
+                ))}
+              {!connected && (
+                <div className="ml-auto mr-auto spinner-grow" role="status">
+                  <span className="sr-only">Loading...</span>
+                </div>
+              )}
+            </div>
           </div>
-        )}
+        </div>
       </div>
     );
   }

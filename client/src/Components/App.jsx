@@ -11,8 +11,8 @@ class App extends Component {
       <React.Fragment>
         <ToastContainer />
         <div className="top-nav">
-          <BreadCrumbs />
-          <h1 className="room_movie-name">190303 우주소녀 보나 콘서트 해피 HAPPY WJSN BONA</h1>
+          {/* <BreadCrumbs /> */}
+          {/* <h1 className="room_movie-name">190303 우주소녀 보나 콘서트 해피 HAPPY WJSN BONA</h1> */}
         </div>
         {/* <NavBar /> */}
         <Switch>

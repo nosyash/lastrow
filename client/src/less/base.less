@@ -15,11 +15,15 @@ code {
 
 a {
   color: @link;
+  &:hover {
+    color: @link;
+    opacity: 0.7;
+  }
 }
 
 #root {
   padding: 10px;
-  padding-top: 0;
+  // padding-top: 0;
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -46,7 +50,7 @@ body {
 .room-container {
   display: flex; // margin-top: 20px;
   height: 100%;
-  max-height: calc(100% - 35px);
+  max-height: calc(100% - 20px);
 }
 
 .top-nav {
@@ -348,35 +352,52 @@ body {
 }
 
 // Room list
+.main-page {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 100%;
+}
+
+.main-page_item {
+  width: 500px;
+  height: 100%;
+  display: flex;
+  margin: auto;
+}
+
 .room-list {
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow: hidden;
+  margin-left: 60px;
+}
+
+.sign {
+  margin-right: 60px;
 }
 
 .room-item {
+  display: block;
   padding: 5px;
   color: #cfcfcf;
-  width: 500px;
+  width: 100%;
   min-height: 100px;
   max-height: 200px;
   text-align: center;
-  background: @darkMain;
-  border-radius: 4px;
   margin-bottom: 20px;
   .fa {
     margin-right: 5px;
   }
   transition: 0.1s;
-  box-shadow: 0px 2px 6px rgba(0,
-  0,
-  0,
-  0.15);
   cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   &:hover {
-    box-shadow: 0px 12px 30px rgba(0, 0, 0, 0.2);
+    box-shadow: 0px 25px 30px rgba(0, 0, 0, 0.2);
     color: #dadada;
     text-decoration: none;
+    opacity: 1;
   }
 }
 
@@ -390,6 +411,29 @@ body {
 
 .room-item_users {
   margin-bottom: 2px;
+}
+
+.sign_inner, .room-list_inner, .room-list_contaier {
+  width: 530px;
+  padding-right: 15px;
+  height: 700px;
+  max-height: 100%;
+  margin: auto;
+  background: @darkMain;
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  overflow-y: auto;
+  position: relative;
+}
+
+.room-list_contaier:after {
+  content: '';
+  width: 100%;
+  height: 150px;
+  background: linear-gradient(0deg, #303030  5%, rgba(0,0,0,0) 100%);
+  display: block;
+  position: absolute;
+  bottom: 0;
 }
 
 // NavBar
@@ -631,7 +675,19 @@ body {
 .control {
   color: #ACAFB3;
   cursor: pointer;
-  // padding: 0 5px 5px;
+  &:hover {
+    color: #ACAFB3;
+    opacity: 0.8;
+    text-decoration: none;
+  }
+}
+
+.go-back {
+  line-height: 0;
+  font-size: 0.9em;
+  margin-bottom: 9px;
+  // margin-left: 2px;
+  text-align: center;
 }
 
 // Cinema mode
