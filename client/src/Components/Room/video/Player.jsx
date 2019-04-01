@@ -9,6 +9,8 @@ class Player extends Component {
     super();
     this.videoEl = null;
     this.player = null;
+    this.animRef = null;
+    this.updatePosition = null;
   }
 
   state = {
@@ -37,11 +39,15 @@ class Player extends Component {
     UpdatePlayer({ currentTime });
   };
 
+  handlePlay = () => {
+    // this.updatePosition();
+  };
+
   render() {
     return (
       <React.Fragment>
         {this.renderPlayer()}
-        {this.player && this.renderPlayerGUI()}
+        {this.player && this.videoEl && this.renderPlayerGUI()}
       </React.Fragment>
     );
   }
@@ -55,11 +61,14 @@ class Player extends Component {
         width="100%"
         height="100%"
         autoPlay={false}
-        progressInterval={150}
+        progressInterval={850}
         onProgress={this.handlePlaying}
+        // onSeek={this.updatePosition}
         controls
-        muted
+        muted={media.muted}
         loop
+        onPlay={this.handlePlay}
+        onPause={this.handlePause}
         onReady={this.handleReady}
         playing={media.playing}
         volume={media.volume}
@@ -74,24 +83,66 @@ class Player extends Component {
     );
   };
 
-  renderPlayerGUI = () => {
-    const { media, SwitchPlay } = this.props;
+  renderPlayerGUI = () => (
+    <div className="video-player">
+      {this.renderVideoTop()}
+      {this.renderVideoMid()}
+      <div className="video-player_overflow" />
+    </div>
+  );
+
+  renderVideoTop = () => {
+    const { media } = this.props;
     const { progress } = this.state;
     return (
-      <div className="video-player">
+      <div className="video-player_top">
+        <div className="video-time current-time">{formatTime(media.currentTime)}</div>
         <div className="progress-bar_container">
           <div className="progress-bar">
-            <ProgressBar player={this.player} progress={progress} />
+            <ProgressBar
+              setUpdater={callback => (this.updatePosition = callback)}
+              animReef={this.animRef}
+              player={this.player}
+              progress={progress}
+            />
           </div>
         </div>
-        <div className="video-time_container">
-          <div className="current-time">{formatTime(media.currentTime)}</div>
-          <div className="duration">{formatTime(media.duration)}</div>
+        <div className="video-time duration">{formatTime(media.duration)}</div>
+      </div>
+    );
+  };
+
+  renderVideoMid = () => {
+    const { media, SwitchPlay } = this.props;
+    return (
+      <div className="video-player_mid">
+        {this.renderVolumeControl()}
+        <div onClick={SwitchPlay} className="control play-button">
+          <i className={`fa fa-${media.playing ? 'pause' : 'play'}`} />
         </div>
-        <div className="play-button">
-          <i onClick={() => SwitchPlay()} className="fa fa-pause" />
+      </div>
+    );
+  };
+
+  renderVolumeControl = () => {
+    const { videoEl } = this;
+    const { media, SwitchMute } = this.props;
+    const { muted } = media;
+    const width = `${videoEl.volume * 100}%`;
+    return (
+      <div className="volume-control">
+        <div onClick={SwitchMute} className="control volume-button">
+          <i className={`fa fa-volume-${muted ? 'mute' : 'up'}`} />
         </div>
-        <div className="video-player_overflow" />
+        <div className="progress-bar_container">
+          <div className="progress-bar">
+            <div style={{ width: muted ? 0 : width }} className="progress-bar_passed">
+              <div className="scrubber_container">
+                <div className="scrubber" />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   };
@@ -100,8 +151,6 @@ class Player extends Component {
 class ProgressBar_ extends Player {
   constructor() {
     super();
-    this.animRef = null;
-    // this.throttled = window.requestAnimationFrame(this.updatePosition);
     window.requestAnimationFrame =
       window.requestAnimationFrame ||
       window.mozRequestAnimationFrame ||
@@ -115,54 +164,38 @@ class ProgressBar_ extends Player {
       window.mozCancelAnimationFrame ||
       function(requestID) {
         clearTimeout(requestID);
-      }; // fall back
-    this.startTime = Date.now();
+      };
   }
 
   state = {
-    width: 0,
+    transform: '0%',
   };
 
-  // shouldComponentUpdate(nextProps, nextState) {
-  //   const { width } = this.state;
-  //   if (nextState.width !== width) return true;
-  //   return false;
-  // }
-
-  // componentDidMount = () => {
-  //   this.updatePosition();
-  // };
-
-  // componentWillUnmount = () => {
-  //   window.cancelAnimationFrame(this.animRef);
-  // };
-
-  // componentDidUpdate(prevProps, prevState) {
-  //   const { playing } = this.props;
-  //   if (!prevProps.playing && playing) this.updatePosition();
-  //   if (prevProps.playing && !playing) window.cancelAnimationFrame(this.req);
-  // }
+  componentDidMount = () => {
+    const { player, setUpdater } = this.props;
+    setUpdater(this.updatePosition);
+    this.updatePosition();
+  };
 
   updatePosition = () => {
-    const { media, player } = this.props;
+    const { media, player, playing } = this.props;
     const { duration } = media;
 
     const currentTime = player.getCurrentTime();
-    const width = (currentTime / duration) * 100;
-    this.setState({ width });
-
+    const transform = `translateX(${(currentTime / duration) * 100}%)`;
+    this.setState({ transform });
     this.animRef = window.requestAnimationFrame(this.updatePosition);
   };
 
   render() {
-    // let { width } = this.state;
-    let { progress: width } = this.props;
-    width *= 100;
-    width += '%';
-    // console.log(width);
+    const { transform } = this.state;
     return (
       <React.Fragment>
-        <div style={{ width }} className="progress-bar_passed">
+        <div
+          style={{ transform }}
+          ref={ref => (this.progress = ref)}
+          className="progress-bar_passed"
+        >
           <div className="scrubber_container">
             <div className="scrubber" />
           </div>
@@ -181,6 +214,7 @@ const mapDispatchToProps = {
   UpdatePlayer: payload => ({ type: types.UPDATE_MEDIA, payload }),
   UpdateMediaURL: payload => ({ type: types.UPDATE_MEDIA_URL, payload }),
   SwitchPlay: () => ({ type: types.SWITCH_PLAY }),
+  SwitchMute: () => ({ type: types.SWITCH_MUTE }),
 };
 
 export default connect(

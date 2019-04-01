@@ -1,7 +1,8 @@
 import * as types from '../constants/ActionTypes';
 
 const InitialState = {
-  url: 'https://up.bona.cafe/src/38/b6d94984ce80c60357f7a1d8cf346b56873a56.webm',
+  url: 'https://stream.bona.cafe/uzzu/ep35.mp4',
+  playlist: [],
   duration: 0,
   currentTime: 0,
   playing: false,
@@ -9,11 +10,11 @@ const InitialState = {
   height: 0,
   width: 0,
   volume: 1,
+  muted: false,
   kind: {
     hls: false,
     directFile: false,
   },
-  playlist: [],
 };
 
 const Player = (state = InitialState, action) => {
@@ -28,13 +29,15 @@ const Player = (state = InitialState, action) => {
     }
 
     case types.SWITCH_PLAY: {
-      const url = action.payload;
       return { ...state, playing: !state.playing };
     }
 
-    default: {
-      return state;
+    case types.SWITCH_MUTE: {
+      return { ...state, muted: !state.muted };
     }
+
+    default:
+      return state;
   }
 };
 

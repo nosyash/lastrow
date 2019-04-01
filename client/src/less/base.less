@@ -480,18 +480,35 @@ body {
   background: aqua;
   border-radius: 4px;
   user-select: none;
+  display: flex;
+  flex-direction: column;
+  padding: 5px 0;
+}
+
+.video-player_top {
+  display: flex;
+  flex-direction: row;
+  margin: auto 50px;
+  align-items: center;
+}
+
+.video-player_mid {
+  display: flex;
+  flex-direction: row;
+  margin: auto 90px;
+  align-items: center;
+  text-align: center;
+}
+
+.play-button {
+  margin: auto;
 }
 
 .progress-bar_container {
-  top: 6px;
-  padding: 15px;
-  cursor: pointer;
-  left: 20px;
-  right: 20px;
-  position: absolute;
-  display: flex;
-  flex-direction: column;
   height: 29px;
+  overflow: hidden;
+  position: relative;
+  flex: 1;
 }
 
 .progress-bar {
@@ -503,17 +520,17 @@ body {
   right: 0;
   bottom: 0;
   background: yellow;
-  margin: auto;
+  margin: auto 6px;
 }
 
 .progress-bar_passed {
   background: red;
   position: absolute;
-  left: 0;
+  left: -100%;
   top: 0;
   border-radius: 5px;
   bottom: 0;
-  width: 0%;
+  width: 100%;
 }
 
 .scrubber_container {
@@ -542,26 +559,42 @@ body {
   }
 }
 
-
-
-.video-time_container {
-  position: absolute;
+.volume-control {
   display: flex;
   flex-direction: row;
-  top: 25px;
-  left: 20px;
-  right: 20px;
+  .progress-bar_container {
+    width: 80px;
+  }
+  .progress-bar {
+
+  }
+  .progress-bar_passed { 
+    left: 0;
+    width: 50%;
+  }
+  .scrubber_container {
+
+  }
+  .scrubber {
+
+  }
+}
+
+.video-time {
   font-family: Montserrat;
   font-style: normal;
   font-weight: 600;
   font-size: 12px;
   color: darkorchid;
-  .current-time {
-
-  }
-  .duration {
-    margin-left: auto;
-  }
+  width: 60px;
+}
+.current-time {
+  text-align: right;
+  margin: 0 10px;
+}
+.duration {
+  text-align: left;
+  margin: 0 10px 0 6px;
 }
 
 .player-inner {
@@ -574,6 +607,11 @@ body {
 
 .video-player_overflow {
   overflow: hidden;
+}
+
+.control {
+  cursor: pointer;
+  padding: 0 5px 5px;
 }
 
 // Cinema mode
