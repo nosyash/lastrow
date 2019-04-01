@@ -101,9 +101,9 @@ class ChatInput extends Component {
           ref={this.input}
           value={value}
           autoFocus
+          placeholder="Write something..."
           onChange={this.handleInputChange}
           className="chat-input"
-          placeholder=""
         />
       </div>
     );

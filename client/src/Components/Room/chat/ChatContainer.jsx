@@ -157,6 +157,7 @@ class ChatContainer extends Component {
           </span>
         )}
         <ChatInner socket={socket} />
+        <div className="control-panel" />
       </div>
     );
   }
