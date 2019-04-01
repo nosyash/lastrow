@@ -11,6 +11,10 @@ func (db *Database) CreateSession(session_id, user_uuid string) error {
 	})
 }
 
+func (db *Database) DeleteSession(session_id string) error {
+	return db.sc.Remove(bson.M{"session_id": session_id})
+}
+
 func (db *Database) GetSession(session_id string) (string, error) {
 	var s session
 

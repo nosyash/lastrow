@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -10,7 +11,7 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
-func (s *Server) registrationUser(w http.ResponseWriter, uname, passwd, email string) {
+func (s *Server) registrationUser(w http.ResponseWriter, r *http.Request, uname, passwd, email string) {
 	w.Header().Set("Content-Type", "application/json")
 
 	if uname == "" || passwd == "" || email == "" {
@@ -19,24 +20,23 @@ func (s *Server) registrationUser(w http.ResponseWriter, uname, passwd, email st
 		return
 	}
 
-	r, err := s.db.CreateNewUser(uname, getHashOfString(passwd), email, getRandomUUID())
+	result, err := s.db.CreateNewUser(uname, getHashOfString(passwd), email, getRandomUUID())
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(ErrorResp(err))
 		return
 	}
-	if !r {
+	if !result {
 		w.Write(ErrorResp(errors.New("This user already exists")))
 		return
 	}
 
-	// TODO
-	// if user was created successfully - what next?
+	//http.Redirect(w, r, "/", 200)
 }
 
-func (s *Server) loginUser(w http.ResponseWriter, uname, passwd string) {
-	//w.Header().Set("Content-Type", "application/json")
+func (s *Server) loginUser(w http.ResponseWriter, r *http.Request, uname, passwd string) {
+	w.Header().Set("Content-Type", "application/json")
 
 	if uname == "" || passwd == "" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -67,6 +67,19 @@ func (s *Server) loginUser(w http.ResponseWriter, uname, passwd string) {
 		Value:   session_id,
 		Expires: time.Now().Add(5 * 365 * 24 * time.Hour),
 	})
+
+	//http.Redirect(w, r, "/", 200)
+}
+
+func (s *Server) logoutUser(w http.ResponseWriter, r *http.Request, session_id string) {
+	err := s.db.DeleteSession(session_id)
+	if err != nil {
+		// TODO
+		// send error
+		// no such session
+		fmt.Println(err)
+		return
+	}
 }
 
 // NOTE

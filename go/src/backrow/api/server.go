@@ -95,9 +95,14 @@ func (s *Server) authHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch authReq.Action {
 	case ACTION_REGISTRATION:
-		s.registrationUser(w, authReq.Body.Uname, authReq.Body.Passwd, authReq.Body.Email)
+		s.registrationUser(w, r, authReq.Body.Uname, authReq.Body.Passwd, authReq.Body.Email)
 	case ACTION_LOGIN:
-		s.loginUser(w, authReq.Body.Uname, authReq.Body.Passwd)
+		s.loginUser(w, r, authReq.Body.Uname, authReq.Body.Passwd)
+	case ACTION_LOGOUT:
+		session_id, err := r.Cookie("session_id")
+		if err == nil && session_id.Value != "" {
+			s.logoutUser(w, r, session_id.Value)
+		}
 	}
 }
 
