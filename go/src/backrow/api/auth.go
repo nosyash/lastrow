@@ -85,6 +85,7 @@ func (s *Server) logoutUser(w http.ResponseWriter, r *http.Request, session_id s
 // NOTE
 // and this to
 func (s *Server) getUserInfo(w http.ResponseWriter, session_id string) {
+	w.Header().Set("Content-Type", "application/json")
 	// For now just send all information about profile, if sessiond_id is valid
 	user_uuid, _ := s.db.GetSession(session_id)
 	if user_uuid == "" {
