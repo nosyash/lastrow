@@ -1,12 +1,17 @@
 package ws
 
-import "github.com/gorilla/websocket"
+import (
+	"backrow/db"
+
+	"github.com/gorilla/websocket"
+)
 
 var Register chan *websocket.Conn
 var Close chan string
 
 type RoomsHub struct {
 	rhub map[string]*Hub
+	db   *db.Database
 }
 
 type Hub struct {
@@ -14,7 +19,8 @@ type Hub struct {
 	Broadcast  chan *Package
 	Register   chan *websocket.Conn
 	Unregister chan *websocket.Conn
-	RoomID     string
+	Path       string
+	db         *db.Database
 }
 
 type ErrorResponse struct {

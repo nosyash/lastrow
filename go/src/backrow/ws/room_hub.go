@@ -1,7 +1,11 @@
 package ws
 
 import (
+	"errors"
 	"fmt"
+	"os"
+
+	"backrow/db"
 
 	"github.com/gorilla/websocket"
 )
@@ -11,6 +15,7 @@ func WaitingRegistrations() {
 	Close = make(chan string)
 	rh := &RoomsHub{
 		make(map[string]*Hub),
+		db.Connect(os.Getenv("DB_ADDR")),
 	}
 
 	for {
@@ -33,26 +38,26 @@ func WaitingRegistrations() {
 }
 
 func (rh *RoomsHub) registerNewConn(conn *websocket.Conn) error {
-	roomID, err := acceptRegRequest(conn)
+	roomPath, err := acceptRegRequest(conn)
 	if err != nil {
 		return err
 	}
 
+	if !rh.db.RoomIsExists(roomPath) {
+		return errors.New("Unknown room path")
+	}
+
 	for room := range rh.rhub {
-		if room == roomID {
-			rh.rhub[roomID].Register <- conn
+		if room == roomPath {
+			rh.rhub[roomPath].Register <- conn
 			return nil
 		}
 	}
 
-	// TODO
-	// Check is there such roomId
-	// Soon. When be available room creating
+	hub := NewRoomHub(roomPath)
+	rh.rhub[roomPath] = hub
 
-	hub := NewRoomHub(roomID)
-	rh.rhub[roomID] = hub
-
-	go rh.rhub[roomID].WaitingActions()
-	rh.rhub[roomID].Register <- conn
+	go rh.rhub[roomPath].WaitingActions()
+	rh.rhub[roomPath].Register <- conn
 	return nil
 }

@@ -34,7 +34,7 @@ func (s *Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 	case ACTION_ROOM_CREATE:
 		s.create(w, roomReq.Body.Title, roomReq.Body.Path, session_id.Value)
 	default:
-		ErrorResponse(w, http.StatusBadRequest, errors.New("Unknow /api/room action"))
+		ErrorResponse(w, http.StatusBadRequest, errors.New("Unknown /api/room action"))
 	}
 }
 

@@ -31,15 +31,17 @@ func (s *Server) authHandler(w http.ResponseWriter, r *http.Request) {
 			s.logout(w, session_id.Value)
 		}
 	default:
-		ErrorResponse(w, http.StatusBadRequest, errors.New("Unknow /api/auth action"))
+		ErrorResponse(w, http.StatusBadRequest, errors.New("Unknown /api/auth action"))
 	}
 }
 
 func (s *Server) register(w http.ResponseWriter, uname, passwd, email, name string) {
 
-	if uname == "" || passwd == "" || email == "" || name == "" {
+	if uname == "" || passwd == "" || email == "" {
 		ErrorResponse(w, http.StatusBadRequest, errors.New("One or more required arguments are empty"))
 		return
+	} else if name == "" {
+		name = uname
 	}
 
 	if len(uname) < 4 || len(uname) > 15 {
@@ -96,6 +98,9 @@ func (s *Server) login(w http.ResponseWriter, uname, passwd string) {
 		Path:    "/",
 		Expires: time.Now().Add(5 * 365 * 24 * time.Hour),
 	})
+
+	// Send profile info
+	// nickname, email, namecolor, avatar, UUID
 }
 
 func (s *Server) logout(w http.ResponseWriter, session_id string) {

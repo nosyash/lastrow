@@ -2,12 +2,15 @@ package ws
 
 import (
 	"fmt"
+	"os"
 	"time"
+
+	"backrow/db"
 
 	"github.com/gorilla/websocket"
 )
 
-func NewRoomHub(roomID string) *Hub {
+func NewRoomHub(path string) *Hub {
 	// TODO
 	// Create new session for room
 	return &Hub{
@@ -15,7 +18,8 @@ func NewRoomHub(roomID string) *Hub {
 		make(chan *Package),
 		make(chan *websocket.Conn),
 		make(chan *websocket.Conn),
-		roomID,
+		path,
+		db.Connect(os.Getenv("DB_ADDR")),
 	}
 }
 
@@ -47,8 +51,9 @@ func (h *Hub) add(conn *websocket.Conn) {
 	}
 
 	// TODO
-	// change uuid on userid
-	// add this user to session userlist
+	// if user was successful register
+	// add them to user list in this room then
+	// send them session about this room, playlist, userlist
 
 	uuid := getRandomUUID()
 
@@ -58,10 +63,6 @@ func (h *Hub) add(conn *websocket.Conn) {
 
 func (h *Hub) remove(conn *websocket.Conn) {
 	var uuid string
-
-	// TODO
-	// change uuid to uniq userid. soon
-	// remove user from session
 
 	for u, c := range h.hub {
 		if c == conn {
@@ -75,7 +76,7 @@ func (h *Hub) remove(conn *websocket.Conn) {
 		fmt.Printf("Delete [%s]\t%s\n", uuid, conn.RemoteAddr().String())
 
 		if len(h.hub) == 0 {
-			Close <- h.RoomID
+			Close <- h.Path
 			return
 		}
 	}
@@ -88,7 +89,6 @@ func (h *Hub) read(conn *websocket.Conn) {
 	}()
 
 	// conn.SetReadLimit(512)
-	// For now just send message in broadcast channel
 	for {
 		req, err := readRequest(conn)
 		if err != nil {

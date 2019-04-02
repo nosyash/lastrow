@@ -1,4 +1,4 @@
-package ws 
+package ws
 
 import (
 	"crypto/rand"
@@ -10,6 +10,10 @@ import (
 
 func acceptRegRequest(conn *websocket.Conn) (string, error) {
 	req, err := readRequest(conn)
+
+	// TODO
+	// recive alse user uuid
+
 	if err != nil {
 		return "", err
 	}
