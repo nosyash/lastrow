@@ -21,9 +21,14 @@ class ListMessages extends Component {
   }
 
   handleMessage = () => {
+    // const { current } = this.chatMessages;
+    // current.scrollTo(0, 100000);
+  };
+
+  componentDidUpdate() {
     const { current } = this.chatMessages;
     current.scrollTo(0, 100000);
-  };
+  }
 
   renderSingleMessage = (obj, i) => {
     const { list, roomID, selfName } = this.props;

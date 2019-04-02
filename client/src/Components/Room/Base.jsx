@@ -125,6 +125,7 @@ class RoomBase extends Component {
 
     const { data } = d;
     const { action } = JSON.parse(data);
+    console.log(data);
     const { message } = action.body;
     if (message.trim().length === 0) return;
     const messageObject = {

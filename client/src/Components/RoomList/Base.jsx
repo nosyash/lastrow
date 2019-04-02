@@ -5,6 +5,7 @@ import http from '../../utils/httpServices';
 
 import * as types from '../../constants/ActionTypes';
 import { API_ENDPOINT, API_FETCH_TIMEOUT } from '../../constants';
+import LogForm from '../UI/LogForm';
 
 class RoomListBase extends Component {
   state = {
@@ -33,7 +34,7 @@ class RoomListBase extends Component {
     return (
       <div className="main-page">
         <div className="main-page_item sign">
-          <div className="sign_inner" />
+          <LogForm />
         </div>
         <div className="main-page_item room-list">
           <div className="room-list_contaier">
@@ -42,10 +43,10 @@ class RoomListBase extends Component {
                 rooms.map((r, i) => (
                   <RoomItem
                     key={i}
-                    title={r.roomid.title}
+                    title={r.title}
                     movie={r.play}
                     users={r.users}
-                    link={`/r/${r.roomid.path}`}
+                    link={`/r/${r.path}`}
                   />
                 ))}
               {!connected && (
