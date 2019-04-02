@@ -35,3 +35,9 @@ export const BOLD = new RegExp(/(\*\*)(.{1,}?)(\*\*)/gi);
 export const SPOILER = new RegExp(/(%%)(.{1,}?)(%%)/gi);
 export const PREFORMATTED = new RegExp(/(^```)((.|\n){1,})(```$)/, 'gim');
 export const EMOTE = new RegExp(/(:)(\S{1,31})(:)/, 'gim');
+
+export const toastOpts = {
+  autoClose: 4000,
+  hideProgressBar: true,
+  pauseOnFocusLoss: false,
+};

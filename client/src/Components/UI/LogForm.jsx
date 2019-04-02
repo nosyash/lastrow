@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import Joi from 'joi-browser';
+import { toast } from 'react-toastify';
 import Form from './Form';
+import http from '../../utils/httpServices';
+import { API_ENDPOINT, toastOpts } from '../../constants';
 
 class LogForm extends Form {
   state = {
@@ -12,7 +15,8 @@ class LogForm extends Form {
 
   dataSignin = { username: '', password: '' };
 
-  dataSignup = { ...this.dataSignin, email: '', passwordConfirm: '' };
+  // dataSignup = { ...this.dataSignin, email: '', passwordConfirm: '' };
+  dataSignup = { ...this.dataSignin, email: '' };
 
   signin = {
     username: Joi.string()
@@ -31,28 +35,41 @@ class LogForm extends Form {
       .required()
       .email()
       .label('Email'),
-    passwordConfirm: Joi.string()
-      .required()
-      .valid(Joi.ref('password'))
-      .options({
-        language: {
-          any: {
-            allowOnly: '!!Passwords do not match',
-          },
-        },
-      })
-      .label('Confirm password'),
+    // passwordConfirm: Joi.string()
+    //   .required()
+    //   .valid(Joi.ref('password'))
+    //   .options({
+    //     language: {
+    //       any: {
+    //         allowOnly: '!!Passwords do not match',
+    //       },
+    //     },
+    //   })
+    //   .label('Confirm password'),
   };
 
   schema = this.signin;
 
-  handleSubmit = e => {
+  handleSubmit = async e => {
+    const { signIn, data } = this.state;
     e.preventDefault();
-    console.log('submit');
+
+    const obj = {
+      action: signIn ? 'login' : 'register',
+      body: {
+        uname: data.username.trim(),
+        passwd: data.password,
+        email: !signIn ? data.email.trim() : '',
+      },
+    };
+
+    const res = await http.post(`${API_ENDPOINT}/auth`, JSON.stringify(obj));
+    const { data: resData } = res;
+    if (resData.error) toast.error(resData.error, toastOpts);
   };
 
   switchLogin = () => {
-    const { signIn, data } = this.state;
+    const { signIn } = this.state;
     this.setState({ signIn: !signIn });
     if (signIn) {
       this.schema = this.signup;
@@ -81,6 +98,14 @@ class LogForm extends Form {
           icon: 'lock',
           placeholder: 'Password',
           type: visiblePass ? 'text' : 'password',
+          element: (
+            <span
+              onClick={() => this.setState({ visiblePass: !visiblePass })}
+              className="control show-pass"
+            >
+              <i className="fas fa-eye" />
+            </span>
+          ),
         };
       case 'passwordConfirm':
         return {
@@ -103,7 +128,7 @@ class LogForm extends Form {
           {!signIn && this.renderInput(this.getOptions('email'))}
           {this.renderInput(this.getOptions('username'))}
           {this.renderInput(this.getOptions('password'))}
-          {!signIn && this.renderInput(this.getOptions('passwordConfirm'))}
+          {/* {!signIn && this.renderInput(this.getOptions('passwordConfirm'))} */}
           {this.renderButton(signIn ? 'Login' : 'Register')}
         </form>
         <div className="sign-switch_container">

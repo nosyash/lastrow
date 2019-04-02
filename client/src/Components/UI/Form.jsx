@@ -10,7 +10,7 @@ class Form extends Component {
 
   validate = () => {
     const { data } = this.state;
-    const options = { abortEarly: false };
+    const options = { abortEarly: true };
     const { error } = Joi.validate(data, this.schema, options);
     if (!error) return null;
 
@@ -20,11 +20,13 @@ class Form extends Component {
   };
 
   validateProperty = ({ name, value }) => {
+    const { signIn } = this.state;
     const obj = { [name]: value };
     const schema = { [name]: this.schema[name] };
-    if (name === 'passwordConfirm' && !this.state.signIn) {
+    if (name === 'passwordConfirm' && !signIn) {
+      const { data } = this.state;
       schema.password = this.schema.password;
-      obj.password = this.state.data.password;
+      obj.password = data.password;
     }
     const { error } = Joi.validate(obj, schema, { abortEarly: false });
     return error ? error.details[0].message : null;
