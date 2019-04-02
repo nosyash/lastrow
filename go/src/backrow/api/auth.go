@@ -30,6 +30,8 @@ func (s *Server) authHandler(w http.ResponseWriter, r *http.Request) {
 		if err == nil || session_id.Value != "" {
 			s.logout(w, session_id.Value)
 		}
+	default:
+		ErrorResponse(w, http.StatusBadRequest, errors.New("Unknow /api/auth action"))
 	}
 }
 

@@ -6,7 +6,15 @@ import (
 	"net/http"
 )
 
-func (s *Server) roomHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		roomList, _ := s.db.GetAllRooms()
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(roomList)
+		return
+	}
+
 	session_id, err := r.Cookie("session_id")
 	if err != nil || session_id.Value == "" {
 		ErrorResponse(w, http.StatusForbidden, errors.New("Non authorize request"))
@@ -25,6 +33,8 @@ func (s *Server) roomHandler(w http.ResponseWriter, r *http.Request) {
 	switch roomReq.Action {
 	case ACTION_ROOM_CREATE:
 		s.create(w, roomReq.Body.Title, roomReq.Body.Path, session_id.Value)
+	default:
+		ErrorResponse(w, http.StatusBadRequest, errors.New("Unknow /api/room action"))
 	}
 }
 
@@ -45,11 +55,4 @@ func (s *Server) create(w http.ResponseWriter, title, path, session_id string) {
 		ErrorResponse(w, http.StatusOK, err)
 		return
 	}
-}
-
-func (s *Server) getAll(w http.ResponseWriter, r *http.Request) {
-	roomList, _ := s.db.GetAllRooms()
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(roomList)
 }

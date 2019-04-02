@@ -44,8 +44,7 @@ func (s *Server) Run() {
 	r := mux.NewRouter()
 	go ws.WaitingRegistrations()
 
-	r.HandleFunc("/api/rooms", s.getAll).Methods("GET")
-	r.HandleFunc("/api/room", s.roomHandler).Methods("POST")
+	r.HandleFunc("/api/rooms", s.roomsHandler).Methods("GET", "POST")
 	r.HandleFunc("/api/auth", s.authHandler).Methods("POST")
 	r.HandleFunc("/api/ws", s.acceptWebsocket).Methods("GET")
 
