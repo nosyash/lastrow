@@ -1,12 +1,18 @@
 package api
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"net/http"
+)
 
-func ErrorResp(err error) []byte {
-	errResp := ErrorResponse{
+func ErrorResponse(w http.ResponseWriter, code int, err error) {
+	errResp := Error{
 		err.Error(),
 	}
 
 	resp, _ := json.Marshal(errResp)
-	return resp
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	w.Write(resp)
 }

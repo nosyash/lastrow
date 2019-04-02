@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	"time"
@@ -32,7 +31,7 @@ func NewServer(wsAddr string, db *db.Database) *Server {
 			ReadBufferSize:  512,
 			WriteBufferSize: 512,
 			CheckOrigin: func(r *http.Request) bool {
-				// TODO
+				// NOTE
 				// This just for development
 				// Check origin
 				return true
@@ -45,10 +44,10 @@ func (s *Server) Run() {
 	r := mux.NewRouter()
 	go ws.WaitingRegistrations()
 
-	r.HandleFunc("/api/rooms", s.getRooms).Methods("GET")
+	r.HandleFunc("/api/rooms", s.getAll).Methods("GET")
+	r.HandleFunc("/api/room", s.roomHandler).Methods("POST")
 	r.HandleFunc("/api/auth", s.authHandler).Methods("POST")
 	r.HandleFunc("/api/ws", s.acceptWebsocket).Methods("GET")
-	r.HandleFunc("/api/aboutme", s.aboutMe).Methods("GET")
 
 	r.PathPrefix("/static/").Handler(http.FileServer(http.Dir("./public/")))
 	r.PathPrefix("/").Handler(s).Methods("GET")
@@ -56,54 +55,12 @@ func (s *Server) Run() {
 	s.httpSrv.Handler = r
 	err := s.httpSrv.ListenAndServe()
 	if err != nil {
-		log.Fatalf("API server won't start because: %v", err)
+		log.Fatalf("API server won't start: %v", err)
 	}
-}
-
-// NOTE
-// This is just for test
-func (s *Server) aboutMe(w http.ResponseWriter, r *http.Request) {
-	session, err := r.Cookie("session_id")
-	if err != nil || session.Value == "" {
-		return
-	}
-	s.getUserInfo(w, session.Value)
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "./public/index.html")
-}
-
-func (s *Server) getRooms(w http.ResponseWriter, r *http.Request) {
-	roomList, _ := s.db.GetRoomList()
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(roomList)
-}
-
-func (s *Server) authHandler(w http.ResponseWriter, r *http.Request) {
-	var authReq AuthRequest
-	decoder := json.NewDecoder(r.Body)
-
-	err := decoder.Decode(&authReq)
-	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write(ErrorResp(err))
-		return
-	}
-
-	switch authReq.Action {
-	case ACTION_REGISTRATION:
-		s.registrationUser(w, r, authReq.Body.Uname, authReq.Body.Passwd, authReq.Body.Email, authReq.Body.Name)
-	case ACTION_LOGIN:
-		s.loginUser(w, r, authReq.Body.Uname, authReq.Body.Passwd)
-	case ACTION_LOGOUT:
-		session_id, err := r.Cookie("session_id")
-		if err == nil && session_id.Value != "" {
-			s.logoutUser(w, r, session_id.Value)
-		}
-	}
 }
 
 func (s *Server) acceptWebsocket(w http.ResponseWriter, r *http.Request) {

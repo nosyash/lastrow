@@ -18,7 +18,7 @@ func (db *Database) CreateNewUser(name, uname, hash, email, uuid string) (bool, 
 		return false, nil
 	}
 
-	newUser := User{
+	newUser := user{
 		Name:  name,
 		Uname: uname,
 		Hash:  hash,
@@ -33,22 +33,20 @@ func (db *Database) CreateNewUser(name, uname, hash, email, uuid string) (bool, 
 	return true, nil
 }
 
-func (db *Database) FindUser(uname, hash string) (*User, error) {
-	var foundUser User
+func (db *Database) FindUser(uname, hash string) (*user, error) {
+	var foundUser user
 
 	err := db.uc.Find(bson.M{"uname": uname, "hash": hash}).One(&foundUser)
 	return &foundUser, err
 }
 
-func (db *Database) GetUser(uuid string) (*User, error) {
-	var foundUser User
+func (db *Database) GetUser(uuid string) (*user, error) {
+	var foundUser user
 
 	err := db.uc.Find(bson.M{"uuid": uuid}).One(&foundUser)
 	return &foundUser, err
 }
 
-// TODO
-// More informative errors about what exactly exists. User with this email or user with this uname
 func (db *Database) checkUniqueUser(uname, email string) (bool, error) {
 
 	fu, err := db.uc.Find(bson.M{"uname": uname}).Count()

@@ -1,6 +1,6 @@
 package db
 
-type roomResponse struct {
+type roomList struct {
 	Number int    `json:"number"`
 	Body   []room `json:"rooms"`
 }
@@ -12,23 +12,13 @@ type room struct {
 }
 
 type roomID struct {
-	Title string `json:"title"`
-	Path  string `json:"path"`
-	UUID  string `json:"uuid"`
+	Title  string  `json:"title"`
+	Path   string  `json:"path"`
+	UUID   string  `json:"uuid"`
+	Owners []owner `json:"owners"`
 }
 
-type roomInnerResponse struct {
-	Playlist []playlist `json:"playlist"`
-	Users    []User     `json:"users"`
-	Owners   []Owner    `json:"owners"`
-}
-
-type playlist struct {
-	Title string `json:"title"`
-	URL   string `json:"url"`
-}
-
-type User struct {
+type user struct {
 	Name      string `json:"name"`
 	NameColor string `json:"color"`
 	AvatarURL string `json:"avatar"`
@@ -38,11 +28,9 @@ type User struct {
 	UUID      string `json:"uuid"`
 }
 
-type Owner struct {
-	Name        string `json:"name"`
-	NameColor   string `json:"name_color"`
-	AvatarURL   string `json:"ava_url"`
-	Permissions string `json:"permissions"`
+type owner struct {
+	UUID        string `json:"UUID"`
+	Permissions int    `json:"permissions"`
 }
 
 type session struct {

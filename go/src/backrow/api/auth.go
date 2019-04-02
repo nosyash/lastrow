@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -11,47 +10,63 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
-func (s *Server) registrationUser(w http.ResponseWriter, r *http.Request, uname, passwd, email, name string) {
-	w.Header().Set("Content-Type", "application/json")
+func (s *Server) authHandler(w http.ResponseWriter, r *http.Request) {
+	var authReq AuthRequest
+	decoder := json.NewDecoder(r.Body)
+
+	err := decoder.Decode(&authReq)
+	if err != nil {
+		ErrorResponse(w, http.StatusBadRequest, err)
+		return
+	}
+
+	switch authReq.Action {
+	case ACTION_REGISTRATION:
+		s.register(w, r, authReq.Body.Uname, authReq.Body.Passwd, authReq.Body.Email, authReq.Body.Name)
+	case ACTION_LOGIN:
+		s.login(w, r, authReq.Body.Uname, authReq.Body.Passwd)
+	case ACTION_LOGOUT:
+		session_id, err := r.Cookie("session_id")
+		if err == nil && session_id.Value != "" {
+			s.logout(w, r, session_id.Value)
+		}
+	}
+}
+
+func (s *Server) register(w http.ResponseWriter, r *http.Request, uname, passwd, email, name string) {
 
 	if uname == "" || passwd == "" || email == "" || name == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write(ErrorResp(errors.New("One or more required fields are empty")))
+		ErrorResponse(w, http.StatusBadRequest, errors.New("One or more required arguments are empty"))
 		return
 	}
 
 	result, err := s.db.CreateNewUser(name, uname, getHashOfString(passwd), email, getRandomUUID())
 
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(ErrorResp(err))
+		ErrorResponse(w, http.StatusInternalServerError, err)
 		return
 	}
 	if !result {
-		w.Write(ErrorResp(errors.New("This user already exists")))
+		ErrorResponse(w, http.StatusOK, errors.New("This user already exists"))
 		return
 	}
-
-	//http.Redirect(w, r, "/", 200)
 }
 
-func (s *Server) loginUser(w http.ResponseWriter, r *http.Request, uname, passwd string) {
+func (s *Server) login(w http.ResponseWriter, r *http.Request, uname, passwd string) {
 	w.Header().Set("Content-Type", "application/json")
 
 	if uname == "" || passwd == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write(ErrorResp(errors.New("One or more required fileds are empty")))
+		ErrorResponse(w, http.StatusBadRequest, errors.New("Username or password is empty"))
 		return
 	}
 
 	user, err := s.db.FindUser(uname, getHashOfString(passwd))
 	if err == mgo.ErrNotFound {
-		w.Write(ErrorResp(errors.New("Username or password is invalid")))
+		ErrorResponse(w, http.StatusOK, errors.New("Username or password is invalid"))
 		return
 	}
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(ErrorResp(err))
+		ErrorResponse(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -65,34 +80,15 @@ func (s *Server) loginUser(w http.ResponseWriter, r *http.Request, uname, passwd
 	http.SetCookie(w, &http.Cookie{
 		Name:    "session_id",
 		Value:   session_id,
+		Path:    "/",
 		Expires: time.Now().Add(5 * 365 * 24 * time.Hour),
 	})
-
-	//http.Redirect(w, r, "/", 200)
 }
 
-func (s *Server) logoutUser(w http.ResponseWriter, r *http.Request, session_id string) {
+func (s *Server) logout(w http.ResponseWriter, r *http.Request, session_id string) {
 	err := s.db.DeleteSession(session_id)
 	if err != nil {
-		// TODO
-		// send error
-		// no such session
-		fmt.Println(err)
+		ErrorResponse(w, http.StatusBadRequest, errors.New("Your sessiond_id is invalid"))
 		return
 	}
-}
-
-// NOTE
-// and this to
-func (s *Server) getUserInfo(w http.ResponseWriter, session_id string) {
-	w.Header().Set("Content-Type", "application/json")
-	// For now just send all information about profile, if sessiond_id is valid
-	user_uuid, _ := s.db.GetSession(session_id)
-	if user_uuid == "" {
-		return
-	}
-
-	user, _ := s.db.GetUser(user_uuid)
-	userb, _ := json.Marshal(&user)
-	w.Write(userb)
 }

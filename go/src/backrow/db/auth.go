@@ -1,6 +1,8 @@
 package db
 
 import (
+	"errors"
+
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -20,7 +22,7 @@ func (db *Database) GetSession(session_id string) (string, error) {
 
 	err := db.sc.Find(bson.M{"session_id": session_id}).One(&s)
 	if err != nil {
-		return "", nil
+		return "", errors.New("Couldn't find this session_id")
 	}
 	return s.UUID, nil
 }
