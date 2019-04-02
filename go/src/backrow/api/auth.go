@@ -22,23 +22,26 @@ func (s *Server) authHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch authReq.Action {
 	case ACTION_REGISTRATION:
-		s.register(w, r, authReq.Body.Uname, authReq.Body.Passwd, authReq.Body.Email, authReq.Body.Name)
+		s.register(w, authReq.Body.Uname, authReq.Body.Passwd, authReq.Body.Email, authReq.Body.Name)
 	case ACTION_LOGIN:
-		s.login(w, r, authReq.Body.Uname, authReq.Body.Passwd)
+		s.login(w, authReq.Body.Uname, authReq.Body.Passwd)
 	case ACTION_LOGOUT:
 		session_id, err := r.Cookie("session_id")
-		if err == nil && session_id.Value != "" {
-			s.logout(w, r, session_id.Value)
+		if err == nil || session_id.Value != "" {
+			s.logout(w, session_id.Value)
 		}
 	}
 }
 
-func (s *Server) register(w http.ResponseWriter, r *http.Request, uname, passwd, email, name string) {
+func (s *Server) register(w http.ResponseWriter, uname, passwd, email, name string) {
 
 	if uname == "" || passwd == "" || email == "" || name == "" {
 		ErrorResponse(w, http.StatusBadRequest, errors.New("One or more required arguments are empty"))
 		return
 	}
+
+	//TODO
+	// Check user creds
 
 	result, err := s.db.CreateNewUser(name, uname, getHashOfString(passwd), email, getRandomUUID())
 
@@ -52,7 +55,7 @@ func (s *Server) register(w http.ResponseWriter, r *http.Request, uname, passwd,
 	}
 }
 
-func (s *Server) login(w http.ResponseWriter, r *http.Request, uname, passwd string) {
+func (s *Server) login(w http.ResponseWriter, uname, passwd string) {
 	w.Header().Set("Content-Type", "application/json")
 
 	if uname == "" || passwd == "" {
@@ -85,10 +88,10 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request, uname, passwd str
 	})
 }
 
-func (s *Server) logout(w http.ResponseWriter, r *http.Request, session_id string) {
+func (s *Server) logout(w http.ResponseWriter, session_id string) {
 	err := s.db.DeleteSession(session_id)
 	if err != nil {
-		ErrorResponse(w, http.StatusBadRequest, errors.New("Your sessiond_id is invalid"))
+		ErrorResponse(w, http.StatusBadRequest, errors.New("Your session_id is invalid"))
 		return
 	}
 }
