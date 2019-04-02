@@ -42,8 +42,16 @@ func (s *Server) register(w http.ResponseWriter, uname, passwd, email, name stri
 		return
 	}
 
-	//TODO
-	// Check user creds
+	if len(uname) < 4 || len(uname) > 15 {
+		ErrorResponse(w, http.StatusBadRequest, errors.New("Maximum length of username is 15. Minimum is 4"))
+		return
+	} else if len(passwd) < 8 || len(passwd) > 32 {
+		ErrorResponse(w, http.StatusBadRequest, errors.New("Maximum length of password is 32. Minimum is 8"))
+		return
+	} else if len(name) < 4 || len(name) > 15 {
+		ErrorResponse(w, http.StatusBadRequest, errors.New("Maximum length of name is 15. Minimum is 4"))
+		return
+	}
 
 	result, err := s.db.CreateNewUser(name, uname, getHashOfString(passwd), email, getRandomUUID())
 

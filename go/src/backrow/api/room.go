@@ -50,6 +50,14 @@ func (s *Server) create(w http.ResponseWriter, title, path, session_id string) {
 		return
 	}
 
+	if len(title) > 20 || len(title) < 4 {
+		ErrorResponse(w, http.StatusBadRequest, errors.New("Maximum length of room title is 20. Minimum is 4"))
+		return
+	} else if len(path) > 15 || len(path) < 4 {
+		ErrorResponse(w, http.StatusBadRequest, errors.New("Maximum length of room path is 15. Minimum is 4"))
+		return
+	}
+
 	err = s.db.CreateNewRoom(title, path, user_uuid, getRandomUUID())
 	if err != nil {
 		ErrorResponse(w, http.StatusOK, err)
