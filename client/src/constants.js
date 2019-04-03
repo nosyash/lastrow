@@ -40,4 +40,5 @@ export const toastOpts = {
   autoClose: 4000,
   hideProgressBar: true,
   pauseOnFocusLoss: false,
+  newestOnTop: true,
 };
