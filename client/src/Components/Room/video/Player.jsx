@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import ReactPlayer from 'react-player';
+import { parse, stringify, stringifyVtt, resync, toMS, toSrtTime, toVttTime } from 'subtitle';
 import * as types from '../../../constants/ActionTypes';
 import { formatTime } from '../../../utils/base';
 import { SEEK_SEL, VOLUME_SEL } from '../../../constants';
+import http from '../../../utils/httpServices';
 
 class Player extends Component {
   constructor() {
@@ -21,7 +23,24 @@ class Player extends Component {
     document.addEventListener('mousedown', this.handleGlobalDown);
     document.addEventListener('mousemove', this.handleGlobalMove);
     document.addEventListener('mouseup', this.handleGlobalUp);
+
+    this.handleSubs();
   }
+
+  handleSubs = async () => {
+    const { media, UpdateSubs } = this.props;
+    if (!media || !media.subs.url) return;
+    const res = await http.get(media.subs.url).catch(error => {
+      if (error.response) console.log(error.response.status);
+      else if (error.request) console.log(error.request);
+      else console.log('Error', error.message);
+    });
+
+    if (!res) return;
+
+    const { data } = res;
+    UpdateSubs({ srt: parse(data) });
+  };
 
   componentWillUnmount() {
     document.removeEventListener('mousedown', this.handleGlobalDown);
@@ -35,6 +54,7 @@ class Player extends Component {
     let { target } = e;
 
     if (moving) return;
+    if (!this.player) return;
 
     if (target.closest(SEEK_SEL) || target.closest(VOLUME_SEL)) {
       this.setState({ moving: true });
@@ -74,11 +94,11 @@ class Player extends Component {
     UpdatePlayer({ duration, currentTime });
   };
 
-  handlePlaying = p => {
+  handlePlaying = progress => {
     const { UpdatePlayer } = this.props;
-    const { playedSeconds: currentTime } = p;
+    const { playedSeconds } = progress;
 
-    UpdatePlayer({ currentTime });
+    UpdatePlayer({ currentTime: playedSeconds });
   };
 
   render() {
@@ -124,6 +144,7 @@ class Player extends Component {
     <div className="video-player">
       {this.renderVideoTop()}
       {this.renderVideoMid()}
+      <RenderSubs videoEl={this.videoEl} />
       <div className="video-player_overflow" />
     </div>
   );
@@ -185,6 +206,49 @@ class Player extends Component {
       </div>
     );
   };
+}
+
+class RenderSubs_ extends Player {
+  componentDidMount() {
+    this.formatSubs();
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    const { subs } = this.props;
+    if (nextProps.subs.text !== subs.text) return true;
+    return false;
+  }
+
+  formatSubs = () => {
+    const { media, videoEl } = this.props;
+    const { UpdateSubs } = this.props;
+    if (!media.subs.srt) {
+      setTimeout(this.formatSubs, 50);
+      return;
+    }
+    const { currentTime } = videoEl;
+    const ms = currentTime * 1000 + 100;
+    const currentText = media.subs.text;
+    const srtObj = media.subs.srt.find(s => s.start <= ms && ms <= s.end);
+    if (!srtObj || !srtObj.text) {
+      if (currentText !== '') UpdateSubs({ text: '' });
+      setTimeout(this.formatSubs, 50);
+      return;
+    }
+    const text = srtObj.text.replace(/\n/gim, ' ').replace(/<.*>(.*)<\/.*>/gim, '$1');
+    if (currentText !== text) UpdateSubs({ text });
+
+    setTimeout(this.formatSubs, 50);
+  };
+
+  render() {
+    const { media } = this.props;
+    const { text } = media.subs;
+    if (!text) return null;
+    return <div className="subs-container">{this.renderLine(text)}</div>;
+  }
+
+  renderLine = text => <div className="subs">{text}</div>;
 }
 
 class ProgressBar_ extends Player {
@@ -251,6 +315,7 @@ class ProgressBar_ extends Player {
 
 const mapStateToProps = state => ({
   media: state.Media,
+  subs: state.Media.subs,
   playing: state.Media.playing,
   MainStates: state.MainStates,
   cinemaMode: state.MainStates.cinemaMode,
@@ -263,6 +328,7 @@ const mapDispatchToProps = {
   SwitchMute: () => ({ type: types.SWITCH_MUTE }),
   SetVolume: payload => ({ type: types.SET_VOLUME, payload }),
   ToggleCinemaMode: () => ({ type: types.TOGGLE_CINEMAMODE }),
+  UpdateSubs: payload => ({ type: types.UPDATE_SUBS, payload }),
 };
 
 export default connect(
@@ -271,3 +337,8 @@ export default connect(
 )(Player);
 
 const ProgressBar = connect(mapStateToProps)(ProgressBar_);
+
+const RenderSubs = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(RenderSubs_);

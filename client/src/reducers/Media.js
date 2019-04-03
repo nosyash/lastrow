@@ -1,7 +1,14 @@
 import * as types from '../constants/ActionTypes';
 
 const InitialState = {
-  url: 'https://stream.bona.cafe/uzzu/ep35.mp4',
+  url: 'https://stream.bona.cafe/uzzu/ep15.mp4',
+  subs: {
+    url: 'https://stream.bona.cafe/uzzu/ep15.srt',
+    text: '',
+    srt: '',
+    start: 0,
+    end: 0,
+  },
   playlist: [],
   duration: 0,
   currentTime: 0,
@@ -38,6 +45,10 @@ const Player = (state = InitialState, action) => {
 
     case types.SET_VOLUME: {
       return { ...state, volume: action.payload };
+    }
+
+    case types.UPDATE_SUBS: {
+      return { ...state, subs: { ...state.subs, ...action.payload } };
     }
 
     default:
