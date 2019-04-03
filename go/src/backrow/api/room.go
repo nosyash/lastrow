@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 func (s *Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
+
 	if r.Method == http.MethodGet {
 		roomList, _ := s.db.GetAllRooms()
 
@@ -39,6 +42,7 @@ func (s *Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) create(w http.ResponseWriter, title, path, session_id string) {
+
 	if title == "" || path == "" {
 		ErrorResponse(w, http.StatusBadRequest, errors.New("One or more required arguments are empty"))
 		return
@@ -63,4 +67,18 @@ func (s *Server) create(w http.ResponseWriter, title, path, session_id string) {
 		ErrorResponse(w, http.StatusOK, err)
 		return
 	}
+}
+
+func (s *Server) roomInnerHandler(w http.ResponseWriter, r *http.Request) {
+
+	if !s.db.RoomIsExists(mux.Vars(r)["roomPath"]) {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	return
+
+	// Client must to request his userUUID for register
+	// if room exists create websocket connection
+	// if registeration is correct server send to user playlist and userlist via websocket
 }

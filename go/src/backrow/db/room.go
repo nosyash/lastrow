@@ -63,6 +63,7 @@ func (db *Database) CreateNewRoom(title, path, userUUID, roomUUID string) error 
 }
 
 func (db *Database) RoomIsExists(path string) bool {
+
 	n, err := db.rc.Find(bson.M{"path": path}).Count()
 	if n != 0 {
 		return true

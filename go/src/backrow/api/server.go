@@ -45,6 +45,7 @@ func (s *Server) Run() {
 	go ws.WaitingRegistrations()
 
 	r.HandleFunc("/api/rooms", s.roomsHandler).Methods("GET", "POST")
+	r.HandleFunc("/api/r/{roomPath}", s.roomInnerHandler).Methods("GET")
 	r.HandleFunc("/api/auth", s.authHandler).Methods("POST")
 	r.HandleFunc("/api/ws", s.acceptWebsocket).Methods("GET")
 

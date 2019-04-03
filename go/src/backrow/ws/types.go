@@ -11,7 +11,6 @@ var Close chan string
 
 type RoomsHub struct {
 	rhub map[string]*Hub
-	db   *db.Database
 }
 
 type Hub struct {

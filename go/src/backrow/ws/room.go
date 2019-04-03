@@ -24,6 +24,7 @@ func NewRoomHub(path string) *Hub {
 }
 
 func (h *Hub) WaitingActions() {
+
 	for {
 		select {
 		case conn := <-h.Register:
@@ -42,6 +43,7 @@ func (h *Hub) WaitingActions() {
 }
 
 func (h *Hub) add(conn *websocket.Conn) {
+
 	for _, c := range h.hub {
 		if c == conn {
 			c.Close()
@@ -62,6 +64,7 @@ func (h *Hub) add(conn *websocket.Conn) {
 }
 
 func (h *Hub) remove(conn *websocket.Conn) {
+
 	var uuid string
 
 	for u, c := range h.hub {
@@ -83,6 +86,7 @@ func (h *Hub) remove(conn *websocket.Conn) {
 }
 
 func (h *Hub) read(conn *websocket.Conn) {
+
 	defer func() {
 		conn.Close()
 		h.Unregister <- conn
@@ -106,12 +110,14 @@ func (h *Hub) read(conn *websocket.Conn) {
 }
 
 func (h *Hub) send(msg *Package) {
+
 	for _, conn := range h.hub {
 		writeResponse(conn, msg)
 	}
 }
 
 func (h *Hub) ping(conn *websocket.Conn) {
+
 	ticker := time.NewTicker(54 * time.Second)
 	defer func() {
 		ticker.Stop()
@@ -134,6 +140,7 @@ func (h *Hub) ping(conn *websocket.Conn) {
 }
 
 func (h *Hub) pong(conn *websocket.Conn) {
+
 	conn.SetReadDeadline(time.Now().Add(60 * time.Second))
 	conn.SetPongHandler(func(string) error {
 

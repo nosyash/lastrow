@@ -11,6 +11,7 @@ import (
 )
 
 func (s *Server) authHandler(w http.ResponseWriter, r *http.Request) {
+
 	var authReq AuthRequest
 	decoder := json.NewDecoder(r.Body)
 
@@ -55,7 +56,8 @@ func (s *Server) register(w http.ResponseWriter, uname, passwd, email, name stri
 		return
 	}
 
-	result, err := s.db.CreateNewUser(name, uname, getHashOfString(passwd), email, getRandomUUID())
+	userUUID := getRandomUUID()
+	result, err := s.db.CreateNewUser(name, uname, getHashOfString(passwd), email, userUUID)
 
 	if err != nil {
 		ErrorResponse(w, http.StatusInternalServerError, err)
@@ -65,10 +67,13 @@ func (s *Server) register(w http.ResponseWriter, uname, passwd, email, name stri
 		ErrorResponse(w, http.StatusOK, errors.New("This user already exists"))
 		return
 	}
+	s.setUpAuthSession(w, userUUID)
+
+	// Send profile info
+	// nickname, email, namecolor, avatar, UUID
 }
 
 func (s *Server) login(w http.ResponseWriter, uname, passwd string) {
-	w.Header().Set("Content-Type", "application/json")
 
 	if uname == "" || passwd == "" {
 		ErrorResponse(w, http.StatusBadRequest, errors.New("Username or password is empty"))
@@ -84,9 +89,25 @@ func (s *Server) login(w http.ResponseWriter, uname, passwd string) {
 		ErrorResponse(w, http.StatusInternalServerError, err)
 		return
 	}
+	s.setUpAuthSession(w, user.UUID)
 
-	session_id := getRandomUUID()
-	err = s.db.CreateSession(session_id, user.UUID)
+	// Send profile info
+	// nickname, email, namecolor, avatar, UUID
+}
+
+func (s *Server) logout(w http.ResponseWriter, session_id string) {
+
+	err := s.db.DeleteSession(session_id)
+	if err != nil {
+		ErrorResponse(w, http.StatusBadRequest, errors.New("Your session_id is invalid"))
+		return
+	}
+}
+
+func (s *Server) setUpAuthSession(w http.ResponseWriter, userUUID string) {
+
+	sessionID := getRandomUUID()
+	err := s.db.CreateSession(sessionID, userUUID)
 	if err != nil {
 		log.Printf("Couldn't create auth session: %v", err)
 		return
@@ -94,19 +115,8 @@ func (s *Server) login(w http.ResponseWriter, uname, passwd string) {
 
 	http.SetCookie(w, &http.Cookie{
 		Name:    "session_id",
-		Value:   session_id,
+		Value:   sessionID,
 		Path:    "/",
 		Expires: time.Now().Add(5 * 365 * 24 * time.Hour),
 	})
-
-	// Send profile info
-	// nickname, email, namecolor, avatar, UUID
-}
-
-func (s *Server) logout(w http.ResponseWriter, session_id string) {
-	err := s.db.DeleteSession(session_id)
-	if err != nil {
-		ErrorResponse(w, http.StatusBadRequest, errors.New("Your session_id is invalid"))
-		return
-	}
 }
