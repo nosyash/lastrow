@@ -215,35 +215,36 @@ class RenderSubs_ extends Player {
 
   shouldComponentUpdate(nextProps, nextState) {
     const { subs } = this.props;
+
     if (nextProps.subs.text !== subs.text) return true;
     return false;
   }
 
   formatSubs = () => {
-    const { media, videoEl } = this.props;
+    const { subs, videoEl } = this.props;
     const { UpdateSubs } = this.props;
-    if (!media.subs.srt) {
-      setTimeout(this.formatSubs, 50);
-      return;
-    }
+
+    if (!subs.srt) return setTimeout(this.formatSubs, 50);
+
     const { currentTime } = videoEl;
     const ms = currentTime * 1000 + 100;
-    const currentText = media.subs.text;
-    const srtObj = media.subs.srt.find(s => s.start <= ms && ms <= s.end);
-    if (!srtObj || !srtObj.text) {
+    const currentText = subs.text;
+    const subObj = subs.srt.find(s => s.start <= ms && ms <= s.end);
+
+    if (!subObj) {
       if (currentText !== '') UpdateSubs({ text: '' });
-      setTimeout(this.formatSubs, 50);
-      return;
+      return setTimeout(this.formatSubs, 50);
     }
-    const text = srtObj.text.replace(/\n/gim, ' ').replace(/<.*>(.*)<\/.*>/gim, '$1');
+
+    const text = subObj.text.replace(/\n/gm, ' ').replace(/^<.*>(.*)<\/.*>$/, '$1');
     if (currentText !== text) UpdateSubs({ text });
 
     setTimeout(this.formatSubs, 50);
   };
 
   render() {
-    const { media } = this.props;
-    const { text } = media.subs;
+    const { subs } = this.props;
+    const { text } = subs;
     if (!text) return null;
     return <div className="subs-container">{this.renderLine(text)}</div>;
   }
