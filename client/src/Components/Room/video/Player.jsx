@@ -133,7 +133,8 @@ class Player extends Component {
         config={{
           youtube: {
             playerVars: { autoplay: 0, controls: 1 },
-            preload: true,
+            // TODO: Set to true
+            preload: false,
           },
         }}
       />
@@ -144,7 +145,7 @@ class Player extends Component {
     <div className="video-player">
       {this.renderVideoTop()}
       {this.renderVideoMid()}
-      <RenderSubs videoEl={this.videoEl} />
+      <SubtitlesContainer videoEl={this.videoEl} />
       <div className="video-player_overflow" />
     </div>
   );
@@ -208,7 +209,7 @@ class Player extends Component {
   };
 }
 
-class RenderSubs_ extends Player {
+class SubtitlesContainer_ extends Player {
   componentDidMount() {
     this.formatSubs();
   }
@@ -257,21 +258,20 @@ class RenderSubs_ extends Player {
 
   render() {
     const { text } = this.props.subs;
-
     if (!text) return null;
-    return (
-      <div className={`subs-container${text.length > 3 ? ' subs-container_minified' : ''}`}>
-        {text.map((el, i) => this.renderLine(el.text, i))}
-      </div>
-    );
+    return <RenderSubs text={text} />;
   }
-
-  renderLine = (text, i) => (
-    <div key={i} className="sub-line">
-      {text}
-    </div>
-  );
 }
+
+const RenderSubs = ({ text }) => (
+  <div className={`subs-container${text.length > 3 ? ' subs-container_minified' : ''}`}>
+    {text.map((el, i) => (
+      <div key={i} className="sub-line">
+        {el.text}
+      </div>
+    ))}
+  </div>
+);
 
 class ProgressBar_ extends Player {
   constructor() {
@@ -360,7 +360,7 @@ export default connect(
 
 const ProgressBar = connect(mapStateToProps)(ProgressBar_);
 
-const RenderSubs = connect(
+const SubtitlesContainer = connect(
   mapStateToProps,
   mapDispatchToProps
-)(RenderSubs_);
+)(SubtitlesContainer_);

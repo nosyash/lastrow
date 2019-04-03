@@ -28,23 +28,23 @@ class RoomBase extends Component {
 
   componentWillUnmount() {
     const { socket } = this;
-    const { ClearMessageList } = this.props;
+    const { clearMessageList } = this.props;
 
     socket.onclose = () => null;
     socket.close();
-    ClearMessageList();
+    clearMessageList();
   }
 
   init = async () => {
     let { cinemaMode, volume } = localStorage;
-    const { UpdateMainStates, UpdatePlayer, match } = this.props;
+    const { updateMainStates, updatePlayer, match } = this.props;
     const { id } = match.params;
 
     // Store
     cinemaMode = cinemaMode === 'true';
     volume = volume || 1;
-    UpdateMainStates({ cinemaMode, roomID: id });
-    UpdatePlayer({ volume });
+    updateMainStates({ cinemaMode, roomID: id });
+    updatePlayer({ volume });
     this.initEmojis();
     this.initWebSocket();
     this.initInfo();
@@ -100,28 +100,28 @@ class RoomBase extends Component {
   };
 
   handleError = () => {
-    const { SetSocketState } = this.props;
+    const { setSocketState } = this.props;
 
     this.setState({ open: false, connected: false });
     this.pending = false;
     this.resetWebSocketEvents(() => this.webSocketReconnect());
 
-    SetSocketState(false);
+    setSocketState(false);
   };
 
   handleClose = () => {
-    const { SetSocketState } = this.props;
+    const { setSocketState } = this.props;
 
     console.log('WebSocket conection closed');
     this.setState({ open: false, connected: false });
     this.resetWebSocketEvents();
     this.pending = false;
-    SetSocketState(false);
+    setSocketState(false);
     this.webSocketReconnect();
   };
 
   handleMessage = d => {
-    const { AddMessage, roomID } = this.props;
+    const { addMessage, roomID } = this.props;
 
     const { data } = d;
     const { action } = JSON.parse(data);
@@ -133,11 +133,11 @@ class RoomBase extends Component {
       name: 'test',
       roomID,
     };
-    AddMessage(messageObject);
+    addMessage(messageObject);
   };
 
   handleHandShake() {
-    const { roomID, SetSocketState } = this.props;
+    const { roomID, setSocketState } = this.props;
 
     let data = {
       action: {
@@ -154,22 +154,22 @@ class RoomBase extends Component {
     this.socket.send(data);
     this.setState({ connected: true });
     this.pending = false;
-    SetSocketState(true);
+    setSocketState(true);
   }
 
   initEmojis = () => {
-    const { AddEmojis } = this.props;
+    const { addEmojis } = this.props;
 
     const emojiList = getEmojiList();
-    AddEmojis(emojiList);
+    addEmojis(emojiList);
   };
 
   initInfo = async () => {
-    const { UpdateUserList, match } = this.props;
+    const { updateUserList, match } = this.props;
     const { id: roomID } = match.params;
     if (!roomID) return;
     const data = await http.get(`${API_ENDPOINT}/r/${roomID}`);
-    // UpdateUserList(data.users);
+    // updateUserList(data.users);
   };
 
   // handleGlobalClick = e => {
@@ -188,21 +188,24 @@ class RoomBase extends Component {
   render() {
     const { cinemaMode } = this.props;
     return (
-      <React.Fragment>
-        <div className="room-container">
-          <ChatContainer
-            socket={this.socket}
-            divider={this.divider}
-            video={this.video}
-            chat={this.chat}
-          />
-          {!cinemaMode && <div className="custom-divider" ref={this.divider} />}
-          <VideoContainer videoRef={this.video} />
-        </div>
-      </React.Fragment>
+      <RenderRoom
+        cinemaMode={cinemaMode}
+        socket={this.socket}
+        divider={this.divider}
+        video={this.video}
+        chat={this.chat}
+      />
     );
   }
 }
+
+const RenderRoom = ({ cinemaMode, socket, divider, video, chat }) => (
+  <div className="room-container">
+    <ChatContainer socket={socket} divider={divider} video={video} chat={chat} />
+    {!cinemaMode && <div className="custom-divider" ref={divider} />}
+    <VideoContainer videoRef={video} />
+  </div>
+);
 
 const mapStateToProps = state => ({
   MainStates: state.MainStates,
@@ -213,13 +216,13 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = {
-  UpdateMainStates: payload => ({ type: types.UPDATE_MAIN_STATES, payload }),
-  AddEmojis: payload => ({ type: types.ADD_EMOJIS, payload }),
-  ClearMessageList: () => ({ type: types.CLEAR_MESSAGE_LIST }),
-  AddMessage: payload => ({ type: types.ADD_MESSAGE, payload }),
-  UpdateUserList: payload => ({ type: types.UPDATE_USERLIST, payload }),
-  SetSocketState: payload => ({ type: types.UPDATE_SOCKET_STATE, payload }),
-  UpdatePlayer: payload => ({ type: types.UPDATE_MEDIA, payload }),
+  updateMainStates: payload => ({ type: types.UPDATE_MAIN_STATES, payload }),
+  addEmojis: payload => ({ type: types.ADD_EMOJIS, payload }),
+  clearMessageList: () => ({ type: types.CLEAR_MESSAGE_LIST }),
+  addMessage: payload => ({ type: types.ADD_MESSAGE, payload }),
+  updateUserList: payload => ({ type: types.UPDATE_USERLIST, payload }),
+  setSocketState: payload => ({ type: types.UPDATE_SOCKET_STATE, payload }),
+  updatePlayer: payload => ({ type: types.UPDATE_MEDIA, payload }),
 };
 
 export default connect(
