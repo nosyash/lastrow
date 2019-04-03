@@ -2,21 +2,53 @@
   .room-container {
     flex-direction: column;
   }
+
   .chat-container {
     max-width: unset;
-    width: 100%!important;
+    width: 100% !important;
     margin-bottom: 10px;
   }
-  .video-player_mid, .video-player_top {
+
+  .video-player_mid,
+  .video-player_top {
     margin: auto 0;
   }
+
   .chat-inner {
     max-height: 450px;
   }
-  .control-panel, .toggle-cinemamode {
+
+  .control-panel,
+  .toggle-cinemamode {
     display: none;
   }
+
   #root {
     height: unset;
+  }
+
+  .video-player {
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    height: 55px;
+    padding: 3px 0;
+  }
+
+  .subs-container {
+    font-size: 1em;
+    bottom: 55px;
+  }
+
+  .progress-bar_container {
+    height: 18px;
+  }
+
+  .volume-control .progress-bar_container {
+    height: 29px;
+  }
+
+  .sub-line {
+    background: hsla(0, 0%, 5%, 0.75);
   }
 }
