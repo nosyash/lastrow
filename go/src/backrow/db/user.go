@@ -44,6 +44,13 @@ func (db *Database) GetUser(uuid string) (*user, error) {
 	return &foundUser, err
 }
 
+func (db *Database) GetUserProfile(uuid string) (*userProfile, error) {
+	var foundUser userProfile
+
+	err := db.uc.Find(bson.M{"uuid": uuid}).One(&foundUser)
+	return &foundUser, err
+}
+
 func (db *Database) checkUniqueUser(uname, email string) (bool, error) {
 
 	fu, err := db.uc.Find(bson.M{"uname": uname}).Count()

@@ -52,11 +52,6 @@ func (h *Hub) add(conn *websocket.Conn) {
 		}
 	}
 
-	// TODO
-	// if user was successful register
-	// add them to user list in this room then
-	// send them session about this room, playlist, userlist
-
 	uuid := getRandomUUID()
 
 	h.hub[uuid] = conn
@@ -104,7 +99,7 @@ func (h *Hub) read(conn *websocket.Conn) {
 
 		// TODO handle incoming request
 		// update playlist if request has add/or remove actions
-		// add new user with uniq userid to userlist
+		// add new user with unique userid to userlist
 		h.Broadcast <- req
 	}
 }

@@ -22,14 +22,14 @@ func (s *Server) authHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch authReq.Action {
-	case ACTION_REGISTRATION:
+	case ACTION_ACCOUNT_REGISTRATION:
 		s.register(w, authReq.Body.Uname, authReq.Body.Passwd, authReq.Body.Email, authReq.Body.Name)
-	case ACTION_LOGIN:
+	case ACTION_ACCOUNT_LOGIN:
 		s.login(w, authReq.Body.Uname, authReq.Body.Passwd)
-	case ACTION_LOGOUT:
-		session_id, err := r.Cookie("session_id")
-		if err == nil || session_id.Value != "" {
-			s.logout(w, session_id.Value)
+	case ACTION_ACCOUNT_LOGOUT:
+		sessionID, err := r.Cookie("session_id")
+		if err == nil && sessionID.Value != "" {
+			s.logout(w, sessionID.Value)
 		}
 	default:
 		ErrorResponse(w, http.StatusBadRequest, errors.New("Unknown /api/auth action"))
@@ -68,9 +68,7 @@ func (s *Server) register(w http.ResponseWriter, uname, passwd, email, name stri
 		return
 	}
 	s.setUpAuthSession(w, userUUID)
-
-	// Send profile info
-	// nickname, email, namecolor, avatar, UUID
+	s.sendUserProfile(w, userUUID)
 }
 
 func (s *Server) login(w http.ResponseWriter, uname, passwd string) {
@@ -90,9 +88,7 @@ func (s *Server) login(w http.ResponseWriter, uname, passwd string) {
 		return
 	}
 	s.setUpAuthSession(w, user.UUID)
-
-	// Send profile info
-	// nickname, email, namecolor, avatar, UUID
+	s.sendUserProfile(w, user.UUID)
 }
 
 func (s *Server) logout(w http.ResponseWriter, session_id string) {
@@ -119,4 +115,14 @@ func (s *Server) setUpAuthSession(w http.ResponseWriter, userUUID string) {
 		Path:    "/",
 		Expires: time.Now().Add(5 * 365 * 24 * time.Hour),
 	})
+}
+
+func (s *Server) sendUserProfile(w http.ResponseWriter, userUUID string) {
+
+	user, _ := s.db.GetUserProfile(userUUID)
+
+	userAsByte, _ := json.Marshal(user)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(userAsByte)
 }

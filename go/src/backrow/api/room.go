@@ -18,8 +18,14 @@ func (s *Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session_id, err := r.Cookie("session_id")
-	if err != nil || session_id.Value == "" {
+	sessionID, err := r.Cookie("session_id")
+	if err != nil || sessionID.Value == "" {
+		ErrorResponse(w, http.StatusForbidden, errors.New("Non authorize request"))
+		return
+	}
+
+	userUUID, err := s.db.GetSession(sessionID.Value)
+	if err != nil || userUUID == "" {
 		ErrorResponse(w, http.StatusForbidden, errors.New("Non authorize request"))
 		return
 	}
@@ -35,22 +41,16 @@ func (s *Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch roomReq.Action {
 	case ACTION_ROOM_CREATE:
-		s.create(w, roomReq.Body.Title, roomReq.Body.Path, session_id.Value)
+		s.create(w, roomReq.Body.Title, roomReq.Body.Path, sessionID.Value)
 	default:
 		ErrorResponse(w, http.StatusBadRequest, errors.New("Unknown /api/room action"))
 	}
 }
 
-func (s *Server) create(w http.ResponseWriter, title, path, session_id string) {
+func (s *Server) create(w http.ResponseWriter, title, path, userUUID string) {
 
 	if title == "" || path == "" {
 		ErrorResponse(w, http.StatusBadRequest, errors.New("One or more required arguments are empty"))
-		return
-	}
-
-	user_uuid, err := s.db.GetSession(session_id)
-	if err != nil || user_uuid == "" {
-		ErrorResponse(w, http.StatusBadRequest, errors.New("Couldn't find user_uuid by your session_id"))
 		return
 	}
 
@@ -62,7 +62,7 @@ func (s *Server) create(w http.ResponseWriter, title, path, session_id string) {
 		return
 	}
 
-	err = s.db.CreateNewRoom(title, path, user_uuid, getRandomUUID())
+	err := s.db.CreateNewRoom(title, path, userUUID, getRandomUUID())
 	if err != nil {
 		ErrorResponse(w, http.StatusOK, err)
 		return
@@ -76,9 +76,12 @@ func (s *Server) roomInnerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+
+	// TODO
+	// send profile
+
 	return
 
-	// Client must to request his userUUID for register
 	// if room exists create websocket connection
 	// if registeration is correct server send to user playlist and userlist via websocket
 }

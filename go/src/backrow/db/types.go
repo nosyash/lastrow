@@ -19,6 +19,13 @@ type roomID struct {
 	Owners []owner `json:"owners"`
 }
 
+type userProfile struct {
+	Name      string `json:"name"`
+	NameColor string `json:"color"`
+	AvatarURL string `json:"avatar"`
+	UUID      string `json:"uuid"`
+}
+
 type user struct {
 	Name      string `json:"name"`
 	NameColor string `json:"color"`

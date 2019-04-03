@@ -28,9 +28,10 @@ type AuthBody struct {
 }
 
 const (
-	ACTION_REGISTRATION = "register"
-	ACTION_LOGIN        = "login"
-	ACTION_LOGOUT       = "logout"
+	ACTION_ACCOUNT_REGISTRATION = "register"
+	ACTION_ACCOUNT_LOGIN        = "login"
+	ACTION_ACCOUNT_LOGOUT       = "logout"
+	ACTION_ACCOUNT_UPDATE       = "update"
 )
 
 const (
