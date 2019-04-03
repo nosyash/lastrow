@@ -825,15 +825,28 @@ body {
   position: absolute;
   width: 100%;
   bottom: 85px;
-  background: hsla(0, 0%, 5%, 0.9);
   color: #e3e5e7;
   font-family: Merriweather;
   text-align: center;
-  padding: 10px;
-  border-radius: 5px;
   font-size: 2em;
   font-weight: 500;
   letter-spacing: -0.01em;
+  transition: 0.2s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.subs-container_minified {
+  line-height: 1.2;
+  font-size: 1.4em;
+}
+
+.sub-line {
+  background: hsla(0, 0%, 5%, 0.9);
+  margin: 2px 0;
+  border-radius: 5px;
+  padding: 5px 10px;
 }
 
 .control {

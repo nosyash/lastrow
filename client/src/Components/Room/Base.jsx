@@ -168,8 +168,8 @@ class RoomBase extends Component {
     const { UpdateUserList, match } = this.props;
     const { id: roomID } = match.params;
     if (!roomID) return;
-    const { data } = await http.get(`${API_ENDPOINT}/r/${roomID}`);
-    UpdateUserList(data.users);
+    const data = await http.get(`${API_ENDPOINT}/r/${roomID}`);
+    // UpdateUserList(data.users);
   };
 
   // handleGlobalClick = e => {

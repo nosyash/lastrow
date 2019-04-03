@@ -4,7 +4,7 @@ const InitialState = {
   url: 'https://stream.bona.cafe/uzzu/ep15.mp4',
   subs: {
     url: 'https://stream.bona.cafe/uzzu/ep15.srt',
-    text: '',
+    text: [],
     srt: '',
     start: 0,
     end: 0,

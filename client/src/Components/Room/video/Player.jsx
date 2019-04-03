@@ -213,10 +213,19 @@ class RenderSubs_ extends Player {
     this.formatSubs();
   }
 
+  componentWillUnmount() {
+    clearTimeout(this.timer);
+  }
+
+  toStr = s => JSON.stringify(s);
+
+  timer = null;
+
   shouldComponentUpdate(nextProps, nextState) {
     const { subs } = this.props;
-
-    if (nextProps.subs.text !== subs.text) return true;
+    const a = this.toStr(nextProps.subs.text);
+    const b = this.toStr(subs.text);
+    if (a !== b) return true;
     return false;
   }
 
@@ -224,32 +233,44 @@ class RenderSubs_ extends Player {
     const { subs, videoEl } = this.props;
     const { UpdateSubs } = this.props;
 
-    if (!subs.srt) return setTimeout(this.formatSubs, 50);
+    if (!subs.srt) return (this.timer = setTimeout(this.formatSubs, 80));
 
     const { currentTime } = videoEl;
     const ms = currentTime * 1000 + 100;
-    const currentText = subs.text;
-    const subObj = subs.srt.find(s => s.start <= ms && ms <= s.end);
+    const currentText = this.toStr(subs.text);
 
-    if (!subObj) {
-      if (currentText !== '') UpdateSubs({ text: '' });
-      return setTimeout(this.formatSubs, 50);
+    const text = subs.srt.filter(s => s.start <= ms && ms <= s.end).reverse();
+
+    if (this.toStr(text) === '') {
+      if (currentText !== []) UpdateSubs({ text: [] });
+      return (this.timer = setTimeout(this.formatSubs, 80));
     }
 
-    const text = subObj.text.replace(/\n/gm, ' ').replace(/^<.*>(.*)<\/.*>$/, '$1');
-    if (currentText !== text) UpdateSubs({ text });
+    text.forEach(el => {
+      el.text = el.text.replace(/\n/gm, ' ').replace(/^<.*>(.*)<\/.*>$/, '$1');
+    });
 
-    setTimeout(this.formatSubs, 50);
+    if (currentText !== this.toStr(text)) UpdateSubs({ text });
+
+    this.timer = setTimeout(this.formatSubs, 80);
   };
 
   render() {
-    const { subs } = this.props;
-    const { text } = subs;
+    const { text } = this.props.subs;
+
     if (!text) return null;
-    return <div className="subs-container">{this.renderLine(text)}</div>;
+    return (
+      <div className={`subs-container${text.length > 3 ? ' subs-container_minified' : ''}`}>
+        {text.map((el, i) => this.renderLine(el.text, i))}
+      </div>
+    );
   }
 
-  renderLine = text => <div className="subs">{text}</div>;
+  renderLine = (text, i) => (
+    <div key={i} className="sub-line">
+      {text}
+    </div>
+  );
 }
 
 class ProgressBar_ extends Player {
