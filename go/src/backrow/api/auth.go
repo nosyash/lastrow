@@ -68,7 +68,6 @@ func (s *Server) register(w http.ResponseWriter, uname, passwd, email, name stri
 		return
 	}
 	s.setUpAuthSession(w, userUUID)
-	s.sendUserProfile(w, userUUID)
 }
 
 func (s *Server) login(w http.ResponseWriter, uname, passwd string) {
@@ -88,7 +87,6 @@ func (s *Server) login(w http.ResponseWriter, uname, passwd string) {
 		return
 	}
 	s.setUpAuthSession(w, user.UUID)
-	s.sendUserProfile(w, user.UUID)
 }
 
 func (s *Server) logout(w http.ResponseWriter, session_id string) {
@@ -115,14 +113,4 @@ func (s *Server) setUpAuthSession(w http.ResponseWriter, userUUID string) {
 		Path:    "/",
 		Expires: time.Now().Add(5 * 365 * 24 * time.Hour),
 	})
-}
-
-func (s *Server) sendUserProfile(w http.ResponseWriter, userUUID string) {
-
-	user, _ := s.db.GetUserProfile(userUUID)
-
-	userAsByte, _ := json.Marshal(user)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(userAsByte)
 }
