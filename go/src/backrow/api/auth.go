@@ -64,7 +64,7 @@ func (s *Server) register(w http.ResponseWriter, uname, passwd, email, name stri
 		return
 	}
 	if !result {
-		ErrorResponse(w, http.StatusOK, errors.New("This user already exists"))
+		ErrorResponse(w, http.StatusBadRequest, errors.New("This user already exists"))
 		return
 	}
 	s.setUpAuthSession(w, userUUID)
@@ -79,7 +79,7 @@ func (s *Server) login(w http.ResponseWriter, uname, passwd string) {
 
 	user, err := s.db.FindUser(uname, getHashOfString(passwd))
 	if err == mgo.ErrNotFound {
-		ErrorResponse(w, http.StatusOK, errors.New("Username or password is invalid"))
+		ErrorResponse(w, http.StatusBadRequest, errors.New("Username or password is invalid"))
 		return
 	}
 	if err != nil {
