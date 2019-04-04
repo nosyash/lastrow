@@ -16,11 +16,10 @@ class RoomBase extends Component {
     this.divider = React.createRef();
     this.socket = null;
     this.pending = false;
+    this.timer = null;
   }
 
   state = {
-    open: false,
-    connected: false,
     exists: false,
   };
 
@@ -31,28 +30,29 @@ class RoomBase extends Component {
   componentWillUnmount() {
     const { socket } = this;
     const { clearMessageList } = this.props;
+    clearTimeout(this.timer);
+    if (socket) {
+      socket.onclose = () => null;
+      socket.close();
+    }
 
-    if (!socket) return;
-
-    socket.onclose = () => null;
-    socket.close();
     clearMessageList();
   }
 
   init = async () => {
     let { cinemaMode, volume } = localStorage;
     const { updateMainStates, updatePlayer, match, history } = this.props;
-    const { id } = match.params;
+    const { id: roomID } = match.params;
 
     // Check for room
-    const exists = await roomExist(id);
+    const exists = await roomExist(roomID);
     if (!exists) return history.push('/');
     this.setState({ exists: true });
 
     // Store
     cinemaMode = cinemaMode === 'true';
     volume = volume || 1;
-    updateMainStates({ cinemaMode, roomID: id });
+    updateMainStates({ cinemaMode, roomID });
     updatePlayer({ volume });
     this.initEmojis();
     this.initWebSocket();
@@ -83,35 +83,28 @@ class RoomBase extends Component {
   };
 
   webSocketConnect = () => {
-    const { open, connected } = this.state;
-    if (open || connected) return;
     if (SOCKET_ENDPOINT) this.socket = new WebSocket(SOCKET_ENDPOINT);
-    if (!SOCKET_ENDPOINT) console.error('No WebSocket address was provided');
-    this.setState({ open: true });
+    else console.error('Wrong WebSocket address was provided');
     this.initWebSocketEvents();
   };
 
   webSocketReconnect = () => {
-    const { connected, open } = this.state;
-
-    if (connected || open || this.pending) return;
     this.pending = true;
-    this.webSocketConnect();
-    setTimeout(() => {
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => {
+      this.webSocketConnect();
       if (!this.pending) this.webSocketReconnect();
     }, WEBSOCKET_TIMEOUT);
   };
 
   handleOpen = () => {
     console.log('WebSocket conection opened');
-    this.setState({ open: true });
     this.handleHandShake();
   };
 
   handleError = () => {
     const { setSocketState } = this.props;
 
-    this.setState({ open: false, connected: false });
     this.pending = false;
     this.resetWebSocketEvents(() => this.webSocketReconnect());
 
@@ -122,7 +115,6 @@ class RoomBase extends Component {
     const { setSocketState } = this.props;
 
     console.log('WebSocket conection closed');
-    this.setState({ open: false, connected: false });
     this.resetWebSocketEvents();
     this.pending = false;
     setSocketState(false);
@@ -148,7 +140,6 @@ class RoomBase extends Component {
     const { roomID, setSocketState } = this.props;
     console.log(api.WS_HANDSHAKE(roomID));
     this.socket.send(api.WS_HANDSHAKE(roomID));
-    this.setState({ connected: true });
     this.pending = false;
     setSocketState(true);
   }
