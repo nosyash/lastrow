@@ -2,25 +2,24 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 )
 
 func (s *Server) userHandler(w http.ResponseWriter, r *http.Request) {
-	sessionID, err := r.Cookie("session_id")
-	if err != nil || sessionID.Value == "" {
-		ErrorResponse(w, http.StatusForbidden, errors.New("Non authorize request"))
+
+	userUUID, err := s.getUserUUIDBySessionID(w, r)
+	if err != nil {
 		return
 	}
 
-	userUUID, err := s.db.GetSession(sessionID.Value)
-	if err != nil || userUUID == "" {
-		ErrorResponse(w, http.StatusForbidden, errors.New("Non authorize request"))
-		return
+	if r.Method == http.MethodGet {
+		s.getUser(w, userUUID)
 	}
+}
+
+func (s *Server) getUser(w http.ResponseWriter, userUUID string) {
 
 	user, _ := s.db.GetUserProfile(userUUID)
-
 	userAsByte, _ := json.Marshal(user)
 
 	w.Header().Set("Content-Type", "application/json")

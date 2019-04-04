@@ -18,15 +18,8 @@ func (s *Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sessionID, err := r.Cookie("session_id")
-	if err != nil || sessionID.Value == "" {
-		ErrorResponse(w, http.StatusForbidden, errors.New("Non authorize request"))
-		return
-	}
-
-	userUUID, err := s.db.GetSession(sessionID.Value)
-	if err != nil || userUUID == "" {
-		ErrorResponse(w, http.StatusForbidden, errors.New("Non authorize request"))
+	userUUID, err := s.getUserUUIDBySessionID(w, r)
+	if err != nil {
 		return
 	}
 
@@ -41,7 +34,7 @@ func (s *Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch roomReq.Action {
 	case ACTION_ROOM_CREATE:
-		s.create(w, roomReq.Body.Title, roomReq.Body.Path, sessionID.Value)
+		s.create(w, roomReq.Body.Title, roomReq.Body.Path, userUUID)
 	default:
 		ErrorResponse(w, http.StatusBadRequest, errors.New("Unknown /api/room action"))
 	}

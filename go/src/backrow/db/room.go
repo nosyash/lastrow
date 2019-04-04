@@ -68,7 +68,7 @@ func (db *Database) RoomIsExists(path string) bool {
 	n, err := db.rc.Find(bson.M{"path": path}).Count()
 	if n != 0 {
 		return true
-	} else if err != mgo.ErrNotFound {
+	} else if err != nil && err != mgo.ErrNotFound {
 		log.Println("Couldn't find room by path: %v", err)
 	}
 	return false
