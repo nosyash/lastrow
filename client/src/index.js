@@ -36,11 +36,9 @@ if (process.env.NODE_ENV === 'development') {
 export const store = tempStore;
 ReactDOM.render(
   <Provider store={store}>
-    <React.Fragment>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </React.Fragment>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </Provider>,
   document.getElementById('root')
 );
