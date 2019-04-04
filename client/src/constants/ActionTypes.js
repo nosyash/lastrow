@@ -17,4 +17,9 @@ export const SWITCH_MUTE = 'SWITCH_MUTE';
 export const SET_VOLUME = 'SET_VOLUME';
 export const UPDATE_SUBS = 'UPDATE_SUBS';
 
+// Components
+export const ADD_COMPONENT = 'ADD_COMPONENT';
+export const REMOVE_COMPONENT = 'REMOVE_COMPONENT';
+export const CLEAR_COMPONENTS = 'CLEAR_COMPONENTS';
+
 export const UPDATE_ROOMLIST = 'UPDATE_ROOMLIST';

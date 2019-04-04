@@ -31,36 +31,38 @@ class RoomListBase extends Component {
   render() {
     const { rooms } = this.props;
     const { connected } = this.state;
-    return (
-      <div className="main-page">
-        <div className="main-page_item sign">
-          <LogForm />
-        </div>
-        <div className="main-page_item room-list">
-          <div className="room-list_contaier">
-            <div className="room-list_inner">
-              {rooms &&
-                rooms.map((r, i) => (
-                  <RoomItem
-                    key={i}
-                    title={r.title}
-                    movie={r.play}
-                    users={r.users}
-                    link={`/r/${r.path}`}
-                  />
-                ))}
-              {!connected && (
-                <div className="ml-auto mr-auto spinner-grow" role="status">
-                  <span className="sr-only">Loading...</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <RenderList rooms={rooms} connected={connected} />;
   }
 }
+
+const RenderList = ({ rooms, connected }) => (
+  <div className="main-page">
+    <div className="main-page_item sign">
+      <LogForm />
+    </div>
+    <div className="main-page_item room-list">
+      <div className="room-list_contaier">
+        <div className="room-list_inner">
+          {rooms &&
+            rooms.map((r, i) => (
+              <RoomItem
+                key={i}
+                title={r.title}
+                movie={r.play}
+                users={r.users}
+                link={`/r/${r.path}`}
+              />
+            ))}
+          {!connected && (
+            <div className="ml-auto mr-auto spinner-grow" role="status">
+              <span className="sr-only">Loading...</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
 const mapStateToProps = state => ({ rooms: state.Rooms.list });
 

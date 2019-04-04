@@ -54,15 +54,13 @@ class Form extends Component {
     this.setState({ data, errors });
   };
 
-  renderButton(label) {
-    return (
-      <button type="submit" disabled={this.validate()} className="button button-submit">
-        {label}
-      </button>
-    );
-  }
+  renderButton = label => (
+    <button type="submit" disabled={this.validate()} className="button button-submit">
+      {label}
+    </button>
+  );
 
-  renderInput(opts) {
+  renderInput = opts => {
     const { data, errors } = this.state;
     const { name } = opts;
     const type = opts && opts.type ? opts.type : 'text';
@@ -80,7 +78,7 @@ class Form extends Component {
         element={opts.element}
       />
     );
-  }
+  };
 }
 
 export default Form;

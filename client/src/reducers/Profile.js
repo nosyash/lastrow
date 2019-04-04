@@ -1,15 +1,17 @@
-import { UPDATE_PROFILE } from '../constants/ActionTypes';
+import * as types from '../constants/ActionTypes';
 
 const profile = {
+  logged: undefined,
   name: 'test',
   color: 'rgb(218, 63, 110)',
   online: true,
+  uuid: '',
   id: 0,
-  avatar: null,
+  avatar: '',
 };
 
 const Profile = (state = profile, action) => {
-  if (action.type === UPDATE_PROFILE) return action.payload;
+  if (action.type === types.UPDATE_PROFILE) return { ...state, ...action.payload };
 
   return state;
 };
