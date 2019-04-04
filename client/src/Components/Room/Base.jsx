@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { WEBSOCKET_TIMEOUT, SOCKET_ENDPOINT, API_ENDPOINT } from '../../constants';
+import { WEBSOCKET_TIMEOUT, SOCKET_ENDPOINT } from '../../constants';
 import ChatContainer from './chat/ChatContainer';
 import VideoContainer from './video/VideoContainer';
 import getEmojiList from '../../utils/InitEmojis';
 import * as types from '../../constants/ActionTypes';
-import http from '../../utils/httpServices';
 import { roomExist } from '../../utils/apiRequests';
+import * as api from '../../constants/apiActions';
 
 class RoomBase extends Component {
   constructor() {
@@ -147,20 +147,7 @@ class RoomBase extends Component {
 
   handleHandShake() {
     const { roomID, setSocketState } = this.props;
-
-    let data = {
-      action: {
-        name: 'connect',
-        type: 'register',
-        body: {
-          status: 200,
-          message: '',
-        },
-      },
-      roomID,
-    };
-    data = JSON.stringify(data);
-    this.socket.send(data);
+    this.socket.send(api.WS_HANDSHAKE(roomID));
     this.setState({ connected: true });
     this.pending = false;
     setSocketState(true);
@@ -173,13 +160,13 @@ class RoomBase extends Component {
     addEmojis(emojiList);
   };
 
-  initInfo = async () => {
-    const { updateUserList, match } = this.props;
-    const { id: roomID } = match.params;
-    if (!roomID) return;
-    const data = await http.get(`${API_ENDPOINT}/r/${roomID}`);
-    // updateUserList(data.users);
-  };
+  // initInfo = async () => {
+  // const { updateUserList, match } = this.props;
+  // const { id: roomID } = match.params;
+  // if (!roomID) return;
+  // const data = await http.get(api.API_ROOM(roomID));
+  // updateUserList(data.users);
+  // };
 
   // handleGlobalClick = e => {
   //   const target = e.target || e.srcElement;

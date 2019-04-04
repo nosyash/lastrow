@@ -4,7 +4,8 @@ import RoomItem from './RoomItem';
 import http from '../../utils/httpServices';
 
 import * as types from '../../constants/ActionTypes';
-import { API_ENDPOINT, API_FETCH_TIMEOUT } from '../../constants';
+import * as api from '../../constants/apiActions';
+import { API_FETCH_TIMEOUT } from '../../constants';
 import LogForm from '../UI/LogForm';
 
 class RoomListBase extends Component {
@@ -18,7 +19,7 @@ class RoomListBase extends Component {
 
   getRoomList = async () => {
     const { UpdateRoomList } = this.props;
-    const url = `${API_ENDPOINT}/rooms`;
+    const url = api.API_ROOMS();
     await http
       .get(url)
       .then(res => {

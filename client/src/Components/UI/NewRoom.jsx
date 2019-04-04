@@ -1,11 +1,9 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
+import React from 'react';
 import Joi from 'joi-browser';
-import { toast } from 'react-toastify';
 import { withRouter } from 'react-router-dom';
 import Form from './Form';
 import http from '../../utils/httpServices';
-import { API_ENDPOINT, toastOpts } from '../../constants';
+import * as api from '../../constants/apiActions';
 
 class NewRoom extends Form {
   state = {
@@ -32,9 +30,7 @@ class NewRoom extends Form {
     const { title, path } = this.state.data;
     const { onSubmit, id, history } = this.props;
     e.preventDefault();
-    const reqObject = { action: 'room_create', body: { title, path } };
-    const reqData = JSON.stringify(reqObject);
-    const res = await http.post(`${API_ENDPOINT}/rooms`, reqData);
+    const res = await http.post(api.API_ROOMS(), api.ROOM_CREATE(title, path));
     if (!res.status) return;
     onSubmit(id);
     history.push(`/r/${path}`);

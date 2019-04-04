@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import ReactPlayer from 'react-player';
-import { parse, stringify, stringifyVtt, resync, toMS, toSrtTime, toVttTime } from 'subtitle';
+import { parse } from 'subtitle';
 import * as types from '../../../constants/ActionTypes';
 import { formatTime } from '../../../utils/base';
 import { SEEK_SEL, VOLUME_SEL } from '../../../constants';
@@ -305,7 +305,7 @@ class ProgressBar_ extends Player {
   }
 
   updatePosition = () => {
-    const { media, player, playing } = this.props;
+    const { media, player } = this.props;
     const { duration } = media;
 
     const currentTime = player.getCurrentTime();
