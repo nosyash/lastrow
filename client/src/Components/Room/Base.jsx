@@ -8,14 +8,14 @@ import * as types from '../../constants/ActionTypes';
 import { roomExist } from '../../utils/apiRequests';
 import * as api from '../../constants/apiActions';
 
+let socket = null;
+
 class RoomBase extends Component {
   constructor() {
     super();
     this.chat = React.createRef();
     this.video = React.createRef();
     this.divider = React.createRef();
-    this.socket = null;
-    this.pending = false;
     this.timer = null;
   }
 
@@ -28,9 +28,10 @@ class RoomBase extends Component {
   }
 
   componentWillUnmount() {
-    const { socket } = this;
-    const { clearMessageList } = this.props;
+    // const { socket } = this
+    const { clearMessageList, setSocketState } = this.props;
     clearTimeout(this.timer);
+    setSocketState(false);
     if (socket) {
       socket.onclose = () => null;
       socket.close();
@@ -64,8 +65,6 @@ class RoomBase extends Component {
   };
 
   initWebSocketEvents = () => {
-    const { socket } = this;
-
     socket.onopen = () => this.handleOpen();
     socket.onmessage = data => this.handleMessage(data);
     socket.onerror = () => this.handleError();
@@ -73,8 +72,6 @@ class RoomBase extends Component {
   };
 
   resetWebSocketEvents = (callback?) => {
-    const { socket } = this;
-
     socket.onopen = () => null;
     socket.onmessage = () => null;
     socket.onerror = () => null;
@@ -83,14 +80,16 @@ class RoomBase extends Component {
   };
 
   webSocketConnect = () => {
-    if (SOCKET_ENDPOINT) this.socket = new WebSocket(SOCKET_ENDPOINT);
+    if (socket && socket.readyState !== 3) return;
+    if (socket) socket = null;
+    if (SOCKET_ENDPOINT) socket = new WebSocket(SOCKET_ENDPOINT);
     else console.error('Wrong WebSocket address was provided');
     this.initWebSocketEvents();
   };
 
   webSocketReconnect = () => {
-    this.pending = true;
     clearTimeout(this.timer);
+
     this.timer = setTimeout(() => {
       this.webSocketConnect();
       if (!this.pending) this.webSocketReconnect();
@@ -105,7 +104,6 @@ class RoomBase extends Component {
   handleError = () => {
     const { setSocketState } = this.props;
 
-    this.pending = false;
     this.resetWebSocketEvents(() => this.webSocketReconnect());
 
     setSocketState(false);
@@ -116,7 +114,6 @@ class RoomBase extends Component {
 
     console.log('WebSocket conection closed');
     this.resetWebSocketEvents();
-    this.pending = false;
     setSocketState(false);
     this.webSocketReconnect();
   };
@@ -138,9 +135,8 @@ class RoomBase extends Component {
 
   handleHandShake() {
     const { roomID, setSocketState } = this.props;
-    console.log(api.WS_HANDSHAKE(roomID));
-    this.socket.send(api.WS_HANDSHAKE(roomID));
-    this.pending = false;
+
+    socket.send(api.WS_HANDSHAKE(roomID));
     setSocketState(true);
   }
 
@@ -173,13 +169,13 @@ class RoomBase extends Component {
   // };
 
   render() {
-    const { cinemaMode } = this.props;
+    const { cinemaMode, connected } = this.props;
     const { exists } = this.state;
     return (
       exists && (
         <RenderRoom
+          connected={connected}
           cinemaMode={cinemaMode}
-          socket={this.socket}
           divider={this.divider}
           video={this.video}
           chat={this.chat}
@@ -189,9 +185,15 @@ class RoomBase extends Component {
   }
 }
 
-const RenderRoom = ({ cinemaMode, socket, divider, video, chat }) => (
+const RenderRoom = ({ connected, cinemaMode, divider, video, chat }) => (
   <div className="room-container">
-    <ChatContainer socket={socket} divider={divider} video={video} chat={chat} />
+    <ChatContainer
+      socket={socket}
+      connected={connected}
+      divider={divider}
+      video={video}
+      chat={chat}
+    />
     {!cinemaMode && <div className="custom-divider" ref={divider} />}
     <VideoContainer videoRef={video} />
   </div>
@@ -199,6 +201,7 @@ const RenderRoom = ({ cinemaMode, socket, divider, video, chat }) => (
 
 const mapStateToProps = state => ({
   MainStates: state.MainStates,
+  connected: state.Chat.connected,
   cinemaMode: state.MainStates.cinemaMode,
   roomID: state.MainStates.roomID,
   emojiList: state.emojis.list,

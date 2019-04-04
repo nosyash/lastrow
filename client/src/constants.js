@@ -36,6 +36,12 @@ export const SPOILER = new RegExp(/(%%)(.{1,}?)(%%)/gi);
 export const PREFORMATTED = new RegExp(/(^```)((.|\n){1,})(```$)/, 'gim');
 export const EMOTE = new RegExp(/(:)(\S{1,31})(:)/, 'gim');
 
+// WebSocket ReadyStates
+export const CONNECTING = 0;
+export const OPEN = 1;
+export const CLOSING = 2;
+export const CLOSED = 3;
+
 export const toastOpts = {
   autoClose: 4000,
   hideProgressBar: true,
