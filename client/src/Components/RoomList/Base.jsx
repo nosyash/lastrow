@@ -31,14 +31,14 @@ class RoomListBase extends Component {
   render() {
     const { rooms } = this.props;
     const { connected } = this.state;
-    return <RenderList rooms={rooms} connected={connected} />;
+    return <RenderList getRoomList={this.getRoomList} rooms={rooms} connected={connected} />;
   }
 }
 
-const RenderList = ({ rooms, connected }) => (
+const RenderList = ({ rooms, connected, getRoomList }) => (
   <div className="main-page">
     <div className="main-page_item sign">
-      <LogForm />
+      <LogForm onRoomsUpdate={getRoomList} />
     </div>
     <div className="main-page_item room-list">
       <div className="room-list_contaier">

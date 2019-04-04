@@ -6,6 +6,7 @@ import VideoContainer from './video/VideoContainer';
 import getEmojiList from '../../utils/InitEmojis';
 import * as types from '../../constants/ActionTypes';
 import http from '../../utils/httpServices';
+import { roomExist } from '../../utils/apiRequests';
 
 class RoomBase extends Component {
   constructor() {
@@ -20,6 +21,7 @@ class RoomBase extends Component {
   state = {
     open: false,
     connected: false,
+    exists: false,
   };
 
   componentDidMount() {
@@ -30,6 +32,8 @@ class RoomBase extends Component {
     const { socket } = this;
     const { clearMessageList } = this.props;
 
+    if (!socket) return;
+
     socket.onclose = () => null;
     socket.close();
     clearMessageList();
@@ -37,8 +41,13 @@ class RoomBase extends Component {
 
   init = async () => {
     let { cinemaMode, volume } = localStorage;
-    const { updateMainStates, updatePlayer, match } = this.props;
+    const { updateMainStates, updatePlayer, match, history } = this.props;
     const { id } = match.params;
+
+    // Check for room
+    const exists = await roomExist(id);
+    if (!exists) return history.push('/');
+    this.setState({ exists: true });
 
     // Store
     cinemaMode = cinemaMode === 'true';
@@ -47,7 +56,7 @@ class RoomBase extends Component {
     updatePlayer({ volume });
     this.initEmojis();
     this.initWebSocket();
-    this.initInfo();
+    // this.initInfo();
   };
 
   initWebSocket = () => {
@@ -187,14 +196,17 @@ class RoomBase extends Component {
 
   render() {
     const { cinemaMode } = this.props;
+    const { exists } = this.state;
     return (
-      <RenderRoom
-        cinemaMode={cinemaMode}
-        socket={this.socket}
-        divider={this.divider}
-        video={this.video}
-        chat={this.chat}
-      />
+      exists && (
+        <RenderRoom
+          cinemaMode={cinemaMode}
+          socket={this.socket}
+          divider={this.divider}
+          video={this.video}
+          chat={this.chat}
+        />
+      )
     );
   }
 }
