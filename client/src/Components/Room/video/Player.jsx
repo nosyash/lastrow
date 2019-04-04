@@ -277,8 +277,8 @@ class ProgressBar_ extends Player {
   constructor() {
     super();
     window.requestAnimationFrame =
-      window.webkitRequestAnimationFrame ||
       window.requestAnimationFrame ||
+      window.webkitRequestAnimationFrame ||
       window.mozRequestAnimationFrame ||
       window.msRequestAnimationFrame ||
       function(f) {

@@ -35,6 +35,7 @@ class RoomBase extends Component {
     if (socket) {
       socket.onclose = () => null;
       socket.close();
+      console.log('WebSocket conection closed');
     }
 
     clearMessageList();
