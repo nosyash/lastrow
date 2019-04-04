@@ -131,10 +131,9 @@ class RoomBase extends Component {
 
   handleMessage = d => {
     const { addMessage, roomID } = this.props;
-
     const { data } = d;
-    const { action } = JSON.parse(data);
-    console.log(data);
+    const { action, error } = JSON.parse(data);
+    if (error) return;
     const { message } = action.body;
     if (message.trim().length === 0) return;
     const messageObject = {
@@ -147,6 +146,7 @@ class RoomBase extends Component {
 
   handleHandShake() {
     const { roomID, setSocketState } = this.props;
+    console.log(api.WS_HANDSHAKE(roomID));
     this.socket.send(api.WS_HANDSHAKE(roomID));
     this.setState({ connected: true });
     this.pending = false;

@@ -1,34 +1,30 @@
 import { API_ENDPOINT } from '../constants';
 
-export const ROOM_CREATE = (title, path) => {
+export const ROOM_CREATE = (title, path) =>
   JSON.stringify({
     action: 'room_create',
     body: { title, path },
   });
-};
 
-export const LOG_OUT = () => {
+export const LOG_OUT = () =>
   JSON.stringify({
     action: 'logout',
     body: { uname: '', passwd: '', email: '' },
   });
-};
 
-export const LOG_IN = (uname, passwd, email) => {
+export const LOG_IN = (uname, passwd, email) =>
   JSON.stringify({
     action: 'login',
     body: { uname, passwd, email },
   });
-};
 
-export const REG = (uname, passwd, email) => {
+export const REG = (uname, passwd, email) =>
   JSON.stringify({
     action: 'register',
     body: { uname, passwd, email },
   });
-};
 
-export const SEND_MESSAGE = (message, roomID) => {
+export const SEND_MESSAGE = (message, roomID) =>
   JSON.stringify({
     action: {
       name: 'message',
@@ -37,9 +33,8 @@ export const SEND_MESSAGE = (message, roomID) => {
     },
     roomID,
   });
-};
 
-export const WS_HANDSHAKE = roomID => {
+export const WS_HANDSHAKE = roomID =>
   JSON.stringify({
     action: {
       name: 'connect',
@@ -48,7 +43,6 @@ export const WS_HANDSHAKE = roomID => {
     },
     roomID,
   });
-};
 
 export const API_AUTH = () => `${API_ENDPOINT}/auth`;
 export const API_ROOM = roomID => `${API_ENDPOINT}/r/${roomID}`;
