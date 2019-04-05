@@ -27,8 +27,9 @@ export const SOCKET_ENDPOINT = (https ? 'wss' : 'ws') + `:${API_ENDPOINT}/ws`;
 
 // RegExp
 export const PARAGRAPH = new RegExp(/^((.*)?)$/gim);
-export const ME = new RegExp(/\/me\s(.*)$/gim);
-export const DO = new RegExp(/\/do\s(.*)$/gim);
+export const ME = new RegExp(/<p>\/me\s(\S{1,})<\/p>$/gim);
+export const DO = new RegExp(/<p>\/do\s(\S{1,})<\/p>$/gim);
+export const QUOTE = new RegExp(/<p>(>.*)<\/p>/gim);
 export const TODO = new RegExp(/\/todo\s(.*)\s\*\s(.*)$/gim);
 export const ITALIC = new RegExp(/(\*)(.{1,}?)(\*)/gi);
 export const BOLD = new RegExp(/(\*\*)(.{1,}?)(\*\*)/gi);
