@@ -62,7 +62,7 @@ func (s *Server) getUser(w http.ResponseWriter, userUUID string) {
 
 func (s *Server) updateProfileImage(w http.ResponseWriter, userUUID string, b64Img *string, imgType string) {
 
-	oldpath, err := s.db.GetPrImage(userUUID)
+	oldpath, err := s.db.GetUserImage(userUUID)
 	rnd_name := getRandomUUID()
 
 	imgPath := filepath.Join(s.imageServer.ImgsPath, rnd_name[:16], fmt.Sprintf("%s%s", rnd_name[16:32], imgType))

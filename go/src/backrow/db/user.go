@@ -59,6 +59,14 @@ func (db *Database) UpdateUserValue(uuid, key, value string) error {
 	return db.uc.Update(bson.M{"uuid": uuid}, bson.M{"$set": bson.M{key: value}})
 }
 
+func (db *Database) GetUserImage(userUUID string) (string, error) {
+
+	var fuser user
+
+	err := db.uc.Find(bson.M{"uuid": userUUID}).One(&fuser)
+	return fuser.Image, err
+}
+
 func (db *Database) checkUniqueUser(uname, email string) (bool, error) {
 
 	fu, err := db.uc.Find(bson.M{"uname": uname}).Count()
