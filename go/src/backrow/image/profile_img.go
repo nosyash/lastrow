@@ -3,6 +3,7 @@ package image
 import (
 	"bytes"
 	"encoding/base64"
+	"errors"
 	"image/jpeg"
 	"image/png"
 	"os"
@@ -60,6 +61,8 @@ func (i *Image) CreateFromBase64(raw_img *string) error {
 			return err
 		}
 		png.Encode(f, img)
+	default:
+		return errors.New("Unknown image type")
 	}
 
 	return nil
