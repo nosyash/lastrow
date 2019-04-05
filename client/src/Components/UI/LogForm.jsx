@@ -125,22 +125,29 @@ class LogForm extends Form {
   };
 
   handleRoomCreation = () => {
-    const { renderFloat, removeFloat, onRoomsUpdate } = this.props;
+    const { renderFloat } = this.props;
     const id = 'NewRoom';
     renderFloat({
       id,
-      el: <NewRoom id={id} onSubmit={n => handleSubmit(n)} />,
+      el: <NewRoom id={id} />,
       width: 500,
       height: 500,
     });
-    const handleSubmit = n => {
-      removeFloat(n);
-      onRoomsUpdate();
-    };
   };
 
+  // handleProfileSettings = () => {
+  //   const { renderFloat } = this.props;
+  //   const id = 'profile-settings';
+  //   renderFloat({
+  //     id,
+  //     el: <NewRoom id={id} onSubmit={n => handleSubmit(n)} />,
+  //     width: 500,
+  //     height: 500,
+  //   });
+  // };
+
   render() {
-    const { profile } = this.props;
+    const { profile, renderFloat } = this.props;
     const { signIn } = this.state;
     return (
       <React.Fragment>
@@ -157,6 +164,8 @@ class LogForm extends Form {
         )}
         {profile.logged && (
           <RenderProfile
+            renderFloat={renderFloat}
+            onProfileSettings={this.handleProfileSettings}
             handleRoomCreation={this.handleRoomCreation}
             handleLogOut={this.handleLogOut}
             profile={profile}
@@ -199,7 +208,7 @@ const RenderLoginForm = props => {
   );
 };
 
-const RenderProfile = ({ profile, handleLogOut, handleRoomCreation }) => {
+const RenderProfile = ({ profile, handleLogOut, handleRoomCreation, onProfileSettings }) => {
   const { avatar, color, name } = profile;
   const backgroundImage = `url(${avatar || ''})`;
   return (
@@ -213,10 +222,10 @@ const RenderProfile = ({ profile, handleLogOut, handleRoomCreation }) => {
           <span onClick={handleRoomCreation} className="control sign-out">
             Create Room
           </span>
-          <span className="control sign-out">
+          <span onClick={onProfileSettings} className="control">
             <i className="fas fa-users-cog" />
           </span>
-          <span className="control sign-out">
+          <span className="control">
             <i className="fas fa-cog" />
           </span>
           <span onClick={handleLogOut} className="control sign-out">
