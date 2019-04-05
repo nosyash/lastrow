@@ -20,20 +20,20 @@ type roomID struct {
 }
 
 type userProfile struct {
-	Name      string `json:"name"`
-	NameColor string `json:"color"`
-	AvatarURL string `json:"avatar"`
-	UUID      string `json:"uuid"`
+	Name  string `json:"name"`
+	Color string `json:"color"`
+	Image string `json:"image"`
+	UUID  string `json:"uuid"`
 }
 
 type user struct {
-	Name      string `json:"name"`
-	NameColor string `json:"color"`
-	AvatarURL string `json:"avatar"`
-	Uname     string `json:"uname"`
-	Hash      string `json:"hash"`
-	Email     string `json:"email"`
-	UUID      string `json:"uuid"`
+	Name  string `json:"name"`
+	Color string `json:"color"`
+	Image string `json:"image"`
+	Uname string `json:"uname"`
+	Hash  string `json:"hash"`
+	Email string `json:"email"`
+	UUID  string `json:"uuid"`
 }
 
 type owner struct {

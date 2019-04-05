@@ -15,6 +15,24 @@ type RoomRequest struct {
 	RoomUUID string   `json:"room_uuid"`
 }
 
+type UserRequest struct {
+	Action string   `json:"action"`
+	Body   UserBody `json:"body"`
+}
+
+type UserBody struct {
+	Name      string    `json:"name"`
+	Color     string    `json:"color"`
+	CurPasswd string    `json:"cur_passwd"`
+	NewPasswd string    `json:"new_passwd"`
+	Image     ImageBody `json:"image"`
+}
+
+type ImageBody struct {
+	Type    string `json:"type"`
+	Content string `json:"raw_img"`
+}
+
 type RoomBody struct {
 	Title string `json:"title"`
 	Path  string `json:"path"`
@@ -28,14 +46,20 @@ type AuthBody struct {
 }
 
 const (
-	ACTION_ACCOUNT_REGISTRATION = "register"
-	ACTION_ACCOUNT_LOGIN        = "login"
-	ACTION_ACCOUNT_LOGOUT       = "logout"
-	ACTION_ACCOUNT_UPDATE       = "update"
+	ACCOUNT_REGISTRATION = "register"
+	ACCOUNT_LOGIN        = "login"
+	ACCOUNT_LOGOUT       = "logout"
+	ACCOUNT_UPDATE       = "update"
 )
 
 const (
-	ACTION_ROOM_CREATE = "room_create"
-	ACTION_ROOM_UPDATE = "room_update"
-	ACTION_ROOM_DELETE = "room_delete"
+	ROOM_CREATE = "room_create"
+	ROOM_UPDATE = "room_update"
+	ROOM_DELETE = "room_delete"
+)
+
+const (
+	USER_UPDATE_IMG  = "user_update_img"
+	USER_UPDATE_PER  = "user_update_per"
+	USER_UPDATE_PSWD = "user_update_pswd"
 )
