@@ -43,6 +43,8 @@ func (i *Image) CreateFromBase64(raw_img *string) error {
 	os.MkdirAll(i.Path, os.ModePerm)
 
 	f, err := os.OpenFile(filepath.Join(i.Path, i.Name), os.O_WRONLY|os.O_CREATE, 0777)
+	defer f.Close()
+
 	if err != nil {
 		return err
 	}
