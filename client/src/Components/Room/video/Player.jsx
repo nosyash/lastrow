@@ -30,7 +30,7 @@ class Player extends Component {
   }
 
   handleSubs = async () => {
-    const { media, UpdateSubs } = this.props;
+    const { media, updateSubs } = this.props;
     if (!media || !media.subs.url) return;
     const res = await http.get(media.subs.url).catch(error => {
       if (error.response) console.log(error.response.status);
@@ -41,7 +41,7 @@ class Player extends Component {
     if (!res) return;
 
     const { data } = res;
-    UpdateSubs({ srt: parse(data) });
+    updateSubs({ srt: parse(data) });
   };
 
   componentWillUnmount() {
@@ -52,7 +52,7 @@ class Player extends Component {
 
   handleGlobalDown = e => {
     const { moving } = this.state;
-    const { SetVolume } = this.props;
+    const { setVolume } = this.props;
     let { target } = e;
 
     if (moving) return;
@@ -66,7 +66,7 @@ class Player extends Component {
       let mult = offset / width;
       if (mult < 0) mult = 0;
       if (mult > 1) mult = 1;
-      if (target.closest(VOLUME_SEL)) SetVolume(mult);
+      if (target.closest(VOLUME_SEL)) setVolume(mult);
       if (target.closest(SEEK_SEL)) this.player.seekTo(mult);
     }
   };
@@ -87,20 +87,20 @@ class Player extends Component {
   handleReady = () => this.updateTime();
 
   updateTime = () => {
-    const { UpdatePlayer } = this.props;
+    const { updatePlayer } = this.props;
 
     this.videoEl = this.player.getInternalPlayer();
     const duration = this.player.getDuration();
     const currentTime = this.player.getCurrentTime();
 
-    UpdatePlayer({ duration, currentTime });
+    updatePlayer({ duration, currentTime });
   };
 
   handlePlaying = progress => {
-    const { UpdatePlayer } = this.props;
+    const { updatePlayer } = this.props;
     const { playedSeconds } = progress;
 
-    UpdatePlayer({ currentTime: playedSeconds });
+    updatePlayer({ currentTime: playedSeconds });
   };
 
   render() {
@@ -162,15 +162,15 @@ class Player extends Component {
   };
 
   renderVideoMid = () => {
-    const { media, SwitchPlay, cinemaMode } = this.props;
-    const { ToggleCinemaMode } = this.props;
+    const { media, switchPlay, cinemaMode } = this.props;
+    const { toggleCinemaMode } = this.props;
     return (
       <div className="video-player_mid">
         {this.renderVolumeControl()}
-        <div onClick={SwitchPlay} className="control play-button">
+        <div onClick={switchPlay} className="control play-button">
           <i className={`fa fa-${media.playing ? 'pause' : 'play'}`} />
         </div>
-        <div onClick={ToggleCinemaMode} className="control toggle-cinemamode">
+        <div onClick={toggleCinemaMode} className="control toggle-cinemamode">
           {!cinemaMode && <i className="fas fa-expand" />}
           {cinemaMode && <i className="fas fa-compress" />}
         </div>
@@ -180,13 +180,13 @@ class Player extends Component {
 
   renderVolumeControl = () => {
     const { videoEl } = this;
-    const { media, SwitchMute } = this.props;
+    const { media, switchMute } = this.props;
     const { muted } = media;
     let transform = `translateX(-${100 - videoEl.volume * 100}%)`;
     transform = muted ? 0 : transform;
     return (
       <div className="volume-control">
-        <div onClick={SwitchMute} className="control volume-button">
+        <div onClick={switchMute} className="control volume-button">
           <i className={`fa fa-volume-${muted ? 'mute' : 'up'}`} />
         </div>
         <div
@@ -213,12 +213,12 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = {
-  UpdatePlayer: payload => ({ type: types.UPDATE_MEDIA, payload }),
-  SwitchPlay: () => ({ type: types.SWITCH_PLAY }),
-  SwitchMute: () => ({ type: types.SWITCH_MUTE }),
-  SetVolume: payload => ({ type: types.SET_VOLUME, payload }),
-  ToggleCinemaMode: () => ({ type: types.TOGGLE_CINEMAMODE }),
-  UpdateSubs: payload => ({ type: types.UPDATE_SUBS, payload }),
+  updatePlayer: payload => ({ type: types.UPDATE_MEDIA, payload }),
+  switchPlay: () => ({ type: types.SWITCH_PLAY }),
+  switchMute: () => ({ type: types.SWITCH_MUTE }),
+  setVolume: payload => ({ type: types.SET_VOLUME, payload }),
+  toggleCinemaMode: () => ({ type: types.TOGGLE_CINEMAMODE }),
+  updateSubs: payload => ({ type: types.UPDATE_SUBS, payload }),
 };
 
 export default connect(

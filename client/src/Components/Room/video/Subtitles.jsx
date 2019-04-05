@@ -25,7 +25,7 @@ class SubtitlesContainer extends Component {
 
   formatSubs = () => {
     const { subs, videoEl } = this.props;
-    const { UpdateSubs } = this.props;
+    const { updateSubs } = this.props;
 
     if (!subs.srt) return (this.timer = setTimeout(this.formatSubs, 80));
 
@@ -36,7 +36,7 @@ class SubtitlesContainer extends Component {
     const text = subs.srt.filter(s => s.start <= ms && ms <= s.end).reverse();
 
     if (this.toStr(text) === '') {
-      if (currentText !== []) UpdateSubs({ text: [] });
+      if (currentText !== []) updateSubs({ text: [] });
       return (this.timer = setTimeout(this.formatSubs, 80));
     }
 
@@ -44,7 +44,7 @@ class SubtitlesContainer extends Component {
       el.text = el.text.replace(/\n/gm, ' ').replace(/^<.*>(.*)<\/.*>$/, '$1');
     });
 
-    if (currentText !== this.toStr(text)) UpdateSubs({ text });
+    if (currentText !== this.toStr(text)) updateSubs({ text });
 
     this.timer = setTimeout(this.formatSubs, 80);
   };
@@ -73,7 +73,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = {
-  UpdateSubs: payload => ({ type: types.UPDATE_SUBS, payload }),
+  updateSubs: payload => ({ type: types.UPDATE_SUBS, payload }),
 };
 
 export default connect(
