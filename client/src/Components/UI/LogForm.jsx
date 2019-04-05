@@ -127,7 +127,12 @@ class LogForm extends Form {
   handleRoomCreation = () => {
     const { renderFloat, removeFloat, onRoomsUpdate } = this.props;
     const id = 'NewRoom';
-    renderFloat({ id, el: <NewRoom id={id} onSubmit={n => handleSubmit(n)} /> });
+    renderFloat({
+      id,
+      el: <NewRoom id={id} onSubmit={n => handleSubmit(n)} />,
+      width: 500,
+      height: 500,
+    });
     const handleSubmit = n => {
       removeFloat(n);
       onRoomsUpdate();

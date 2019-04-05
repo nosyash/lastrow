@@ -52,3 +52,19 @@ export const formatTime = num => {
 
   return `${hours}${minutes}:${seconds}`;
 };
+
+export const getCenteredRect = (w, h) => {
+  // const { width: w, height: h } = el.getBoundingClientRect();
+  const aspect = w / h;
+  const pW = document.body.clientWidth;
+  const pH = window.innerHeight;
+  let width = Math.min(w, pW);
+  let height = Math.ceil(width / aspect);
+  if (height > pH) {
+    height = pH;
+    width = Math.ceil(height * aspect);
+  }
+  const left = (pW - width) / 2;
+  const top = (pH - height) / 2;
+  return { width, height, left, top };
+};
