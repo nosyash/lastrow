@@ -7,7 +7,6 @@ import http from '../../utils/httpServices';
 import { toastOpts } from '../../constants';
 import * as types from '../../constants/ActionTypes';
 import NewRoom from './NewRoom';
-import { getProfile } from '../../utils/apiRequests';
 import * as api from '../../constants/apiActions';
 
 class LogForm extends Form {
@@ -46,7 +45,7 @@ class LogForm extends Form {
   handleSubmit = async e => {
     const { signIn, data } = this.state;
     const { password: passwd, username: uname, email } = data;
-    const { updateProfile } = this.props;
+    // const { updateProfile } = this.props;
 
     e.preventDefault();
 
@@ -57,18 +56,21 @@ class LogForm extends Form {
     const res = await http.post(api.API_AUTH(), reqData);
 
     if (!res.status) return;
-    const profile = await getProfile();
-    const { avatar, color, name, uuid } = profile.data;
-    updateProfile({ logged: true, avatar: avatar || '', color: color || '', name, uuid });
-    this.setState({ data: { ...data, password: '' } });
+    window.location.reload();
+    // const profile = await getProfile();
+    // const { avatar, color, name, uuid } = profile.data;
+    // updateProfile({ logged: true, avatar: avatar || '', color: color || '', name, uuid });
+    // this.setState({ data: { ...data, password: '' } });
   };
 
   handleLogOut = async () => {
-    const { updateProfile } = this.props;
+    // const { updateProfile } = this.props;
 
     const res = await http.post(api.API_AUTH(), api.LOG_OUT());
-    if (res.error) toast.error(res.error, toastOpts);
-    else updateProfile({ logged: false });
+    if (res.error) return toast.error(res.error, toastOpts);
+    // else updateProfile({ logged: false });
+    document.cookie = 'session_id=; Max-Age=0;';
+    window.location.reload();
   };
 
   switchLogin = () => {
