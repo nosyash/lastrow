@@ -209,8 +209,8 @@ const RenderLoginForm = props => {
 };
 
 const RenderProfile = ({ profile, handleLogOut, handleRoomCreation, onProfileSettings }) => {
-  const { avatar, color, name } = profile;
-  const backgroundImage = `url(${avatar || ''})`;
+  const { image, color, name } = profile;
+  const backgroundImage = `url(${image || ''})`;
   return (
     <div className="main-profile">
       <div className="profile">

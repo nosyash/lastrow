@@ -7,7 +7,7 @@ const profile = {
   online: true,
   uuid: '',
   id: 0,
-  avatar: '',
+  iamge: '',
 };
 
 const Profile = (state = profile, action) => {

@@ -21,10 +21,10 @@ class ChatMessage extends Component {
   };
 
   render() {
-    const { online, color = '#666768', avatar, highlight, body } = this.props;
+    const { online, color = '#666768', image, highlight, body } = this.props;
     const { name, emojiList } = this.props;
 
-    const backgroundImage = avatar ? `url(${avatar})` : '';
+    const backgroundImage = image ? `url(${image})` : '';
     const backgroundColor = color;
 
     const pageVissible = document.visibilityState === 'visible';
