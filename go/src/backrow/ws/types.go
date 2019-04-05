@@ -29,6 +29,7 @@ type ErrorResponse struct {
 type Package struct {
 	Action Action `json:"action"`
 	RoomID string `json:"roomID"`
+	UUID   string `json:"uuid"`
 }
 
 type Action struct {
