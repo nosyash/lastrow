@@ -1,13 +1,13 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Joi from 'joi-browser';
 import { toast } from 'react-toastify';
 import { connect } from 'react-redux';
 import Form from './Form';
 import http from '../../utils/httpServices';
-import { API_ENDPOINT, toastOpts } from '../../constants';
+import { toastOpts } from '../../constants';
 import * as types from '../../constants/ActionTypes';
 import NewRoom from './NewRoom';
-import { getProfile } from '../../utils/apiRequests';
+import * as api from '../../constants/apiActions';
 
 class LogForm extends Form {
   state = {
@@ -44,40 +44,33 @@ class LogForm extends Form {
 
   handleSubmit = async e => {
     const { signIn, data } = this.state;
-    const { updateProfile } = this.props;
+    const { password: passwd, username: uname, email } = data;
+    // const { updateProfile } = this.props;
+
     e.preventDefault();
 
-    const reqData = {
-      action: signIn ? 'login' : 'register',
-      body: {
-        uname: data.username.trim(),
-        passwd: data.password,
-        email: !signIn ? data.email.trim() : '',
-      },
-    };
+    const reqData = signIn
+      ? api.LOG_IN(uname.trim(), passwd)
+      : api.REG(uname.trim(), passwd, email.trim());
 
-    const res = await http.post(`${API_ENDPOINT}/auth`, JSON.stringify(reqData));
+    const res = await http.post(api.API_AUTH(), reqData);
+
     if (!res.status) return;
-    const profile = await getProfile();
-    const { avatar, color, name, uuid } = profile.data;
-    updateProfile({ logged: true, avatar: avatar || '', color: color || '', name, uuid });
-    this.setState({ data: { ...data, password: '' } });
+    window.location.reload();
+    // const profile = await getProfile();
+    // const { avatar, color, name, uuid } = profile.data;
+    // updateProfile({ logged: true, avatar: avatar || '', color: color || '', name, uuid });
+    // this.setState({ data: { ...data, password: '' } });
   };
 
   handleLogOut = async () => {
-    const { updateProfile, profile } = this.props;
-    const obj = {
-      action: 'logout',
-      body: {
-        uname: '',
-        passwd: '',
-        email: '',
-      },
-    };
+    // const { updateProfile } = this.props;
 
-    const res = await http.post(`${API_ENDPOINT}/auth`, JSON.stringify(obj));
-    if (res.error) toast.error(res.error, toastOpts);
-    else updateProfile({ logged: false });
+    const res = await http.post(api.API_AUTH(), api.LOG_OUT());
+    if (res.error) return toast.error(res.error, toastOpts);
+    // else updateProfile({ logged: false });
+    document.cookie = 'session_id=; Max-Age=0;';
+    window.location.reload();
   };
 
   switchLogin = () => {

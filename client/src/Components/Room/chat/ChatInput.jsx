@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import * as types from '../../../constants/ActionTypes';
 import * as keys from '../../../constants/keys';
 import { MAX_MESSAGE_LENGTH } from '../../../constants';
+import * as api from '../../../constants/apiActions';
 
 class ChatInput extends Component {
   constructor() {
@@ -45,20 +46,8 @@ class ChatInput extends Component {
       e.preventDefault();
       if (!socketState) return;
       if (value === '') return;
-      const object = {
-        action: {
-          name: 'message',
-          type: 'send',
-          body: {
-            status: 200,
-            message: value,
-          },
-        },
-        roomID,
-      };
 
-      const stringify = JSON.stringify(object);
-      socket.send(stringify);
+      socket.send(api.SEND_MESSAGE(value, roomID));
       this.setState({ value: '' });
       // resetHistoryN();
     }

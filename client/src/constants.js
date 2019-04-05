@@ -27,8 +27,9 @@ export const SOCKET_ENDPOINT = (https ? 'wss' : 'ws') + `:${API_ENDPOINT}/ws`;
 
 // RegExp
 export const PARAGRAPH = new RegExp(/^((.*)?)$/gim);
-export const ME = new RegExp(/\/me\s(.*)$/gim);
-export const DO = new RegExp(/\/do\s(.*)$/gim);
+export const ME = new RegExp(/<p>\/me\s(\S{1,})<\/p>$/gim);
+export const DO = new RegExp(/<p>\/do\s(\S{1,})<\/p>$/gim);
+export const QUOTE = new RegExp(/<p>(>.*)<\/p>/gim);
 export const TODO = new RegExp(/\/todo\s(.*)\s\*\s(.*)$/gim);
 export const ITALIC = new RegExp(/(\*)(.{1,}?)(\*)/gi);
 export const BOLD = new RegExp(/(\*\*)(.{1,}?)(\*\*)/gi);
@@ -36,9 +37,23 @@ export const SPOILER = new RegExp(/(%%)(.{1,}?)(%%)/gi);
 export const PREFORMATTED = new RegExp(/(^```)((.|\n){1,})(```$)/, 'gim');
 export const EMOTE = new RegExp(/(:)(\S{1,31})(:)/, 'gim');
 
+// WebSocket ReadyStates
+export const CONNECTING = 0;
+export const OPEN = 1;
+export const CLOSING = 2;
+export const CLOSED = 3;
+
 export const toastOpts = {
   autoClose: 4000,
   hideProgressBar: true,
   pauseOnFocusLoss: false,
   newestOnTop: true,
+};
+
+export const playerConf = {
+  youtube: {
+    playerVars: { autoplay: 0, controls: 1 },
+    // TODO: Set to true
+    preload: false,
+  },
 };
