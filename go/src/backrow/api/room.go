@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -28,7 +27,9 @@ func (s *Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = decoder.Decode(&roomReq)
 	if err != nil {
-		ErrorResponse(w, http.StatusBadRequest, err)
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: err.Error(),
+		})
 		return
 	}
 
@@ -36,28 +37,38 @@ func (s *Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 	case ROOM_CREATE:
 		s.create(w, roomReq.Body.Title, roomReq.Body.Path, userUUID)
 	default:
-		ErrorResponse(w, http.StatusBadRequest, errors.New("Unknown /api/room action"))
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: "Unknown /api/room action",
+		})
 	}
 }
 
 func (s *Server) create(w http.ResponseWriter, title, path, userUUID string) {
 
 	if title == "" || path == "" {
-		ErrorResponse(w, http.StatusBadRequest, errors.New("One or more required arguments are empty"))
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: "One or more required arguments are empty",
+		})
 		return
 	}
 
 	if len(title) > 20 || len(title) < 4 {
-		ErrorResponse(w, http.StatusBadRequest, errors.New("Maximum length of room title is 20. Minimum is 4"))
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: "Maximum length of room title is 20. Minimum is 4",
+		})
 		return
 	} else if len(path) > 15 || len(path) < 4 {
-		ErrorResponse(w, http.StatusBadRequest, errors.New("Maximum length of room path is 15. Minimum is 4"))
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: "Maximum length of room path is 15. Minimum is 4",
+		})
 		return
 	}
 
 	err := s.db.CreateNewRoom(title, path, userUUID, getRandomUUID())
 	if err != nil {
-		ErrorResponse(w, http.StatusOK, err)
+		ResponseMessage(w, http.StatusOK, Message{
+			Error: err.Error(),
+		})
 		return
 	}
 }

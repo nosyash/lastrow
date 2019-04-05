@@ -6,12 +6,8 @@ import (
 	"net/http"
 )
 
-func ErrorResponse(w http.ResponseWriter, code int, err error) {
-	errResp := Error{
-		err.Error(),
-	}
-
-	resp, _ := json.Marshal(errResp)
+func ResponseMessage(w http.ResponseWriter, code int, msg Message) {
+	resp, _ := json.Marshal(msg)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)

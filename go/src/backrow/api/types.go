@@ -1,7 +1,8 @@
 package api
 
-type Error struct {
-	Error string `json:"error"`
+type Message struct {
+	Error   string `json:"error,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 type AuthRequest struct {

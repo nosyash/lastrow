@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"path/filepath"
@@ -16,7 +15,9 @@ func (s *Server) userHandler(w http.ResponseWriter, r *http.Request) {
 
 	userUUID, err := s.getUserUUIDBySessionID(w, r)
 	if err != nil {
-		ErrorResponse(w, http.StatusBadRequest, err)
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: err.Error(),
+		})
 		return
 	}
 
@@ -30,7 +31,9 @@ func (s *Server) userHandler(w http.ResponseWriter, r *http.Request) {
 	err = decoder.Decode(&userReq)
 
 	if err != nil {
-		ErrorResponse(w, http.StatusBadRequest, err)
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: err.Error(),
+		})
 		return
 	}
 
@@ -42,7 +45,9 @@ func (s *Server) userHandler(w http.ResponseWriter, r *http.Request) {
 	case USER_UPDATE_PSWD:
 		s.updatePassword(w, userUUID, userReq.Body.CurPasswd, userReq.Body.NewPasswd)
 	default:
-		ErrorResponse(w, http.StatusBadRequest, errors.New("Unknown /api/user action"))
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: "Unknown /api/user action",
+		})
 	}
 }
 
@@ -66,7 +71,9 @@ func (s *Server) updateProfileImage(w http.ResponseWriter, userUUID string, b64I
 	img := image.New(filepath.Join(s.imageServer.UplPath, oldpath), fullPath, imgType)
 	err = img.CreateFromBase64(b64Img)
 	if err != nil {
-		ErrorResponse(w, http.StatusBadRequest, err)
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: err.Error(),
+		})
 		return
 	}
 
@@ -89,15 +96,22 @@ func (s *Server) updatePersonalInfo(w http.ResponseWriter, userUUID, name, color
 func (s *Server) updatePassword(w http.ResponseWriter, userUUID, curPasswd, newPasswd string) {
 
 	if curPasswd == "" || newPasswd == "" {
-		ErrorResponse(w, http.StatusBadRequest, errors.New("One or more required arguments are empty"))
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: "One or more required arguments are empty",
+		})
 		return
 	}
 
 	_, err := s.db.FindUser("uuid", userUUID, getHashOfString(curPasswd))
 	if err == mgo.ErrNotFound {
-		ErrorResponse(w, http.StatusBadRequest, errors.New("Current password is invalid"))
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: "Current password is invalid",
+		})
 		return
 	}
 
 	s.db.UpdateUserValue(userUUID, "hash", getHashOfString(newPasswd))
+	ResponseMessage(w, http.StatusOK, Message{
+		Message: "Your password has been successfully changed",
+	})
 }

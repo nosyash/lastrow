@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
 	"log"
 	"net/http"
 	"time"
@@ -17,7 +16,9 @@ func (s *Server) authHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := decoder.Decode(&authReq)
 	if err != nil {
-		ErrorResponse(w, http.StatusBadRequest, err)
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: err.Error(),
+		})
 		return
 	}
 
@@ -32,27 +33,37 @@ func (s *Server) authHandler(w http.ResponseWriter, r *http.Request) {
 			s.logout(w, sessionID.Value)
 		}
 	default:
-		ErrorResponse(w, http.StatusBadRequest, errors.New("Unknown /api/auth action"))
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: "Unknown /api/auth action",
+		})
 	}
 }
 
 func (s *Server) register(w http.ResponseWriter, uname, passwd, email, name string) {
 
 	if uname == "" || passwd == "" || email == "" {
-		ErrorResponse(w, http.StatusBadRequest, errors.New("One or more required arguments are empty"))
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: "One or more required arguments are empty",
+		})
 		return
 	} else if name == "" {
 		name = uname
 	}
 
 	if len(uname) < 4 || len(uname) > 15 {
-		ErrorResponse(w, http.StatusBadRequest, errors.New("Maximum length of username is 15. Minimum is 4"))
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: "Maximum length of username is 15. Minimum is 4",
+		})
 		return
 	} else if len(passwd) < 8 || len(passwd) > 32 {
-		ErrorResponse(w, http.StatusBadRequest, errors.New("Maximum length of password is 32. Minimum is 8"))
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: "Maximum length of password is 32. Minimum is 8",
+		})
 		return
 	} else if len(name) < 4 || len(name) > 15 {
-		ErrorResponse(w, http.StatusBadRequest, errors.New("Maximum length of name is 15. Minimum is 4"))
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: "Maximum length of name is 15. Minimum is 4",
+		})
 		return
 	}
 
@@ -60,11 +71,15 @@ func (s *Server) register(w http.ResponseWriter, uname, passwd, email, name stri
 	result, err := s.db.CreateNewUser(name, uname, getHashOfString(passwd), email, userUUID)
 
 	if err != nil {
-		ErrorResponse(w, http.StatusInternalServerError, err)
+		ResponseMessage(w, http.StatusInternalServerError, Message{
+			Error: err.Error(),
+		})
 		return
 	}
 	if !result {
-		ErrorResponse(w, http.StatusBadRequest, errors.New("This user already exists"))
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: "This user already exists",
+		})
 		return
 	}
 	s.setUpAuthSession(w, userUUID)
@@ -73,17 +88,23 @@ func (s *Server) register(w http.ResponseWriter, uname, passwd, email, name stri
 func (s *Server) login(w http.ResponseWriter, uname, passwd string) {
 
 	if uname == "" || passwd == "" {
-		ErrorResponse(w, http.StatusBadRequest, errors.New("Username or password is empty"))
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: "Username or password is empty",
+		})
 		return
 	}
 
 	user, err := s.db.FindUser("uname", uname, getHashOfString(passwd))
 	if err == mgo.ErrNotFound {
-		ErrorResponse(w, http.StatusBadRequest, errors.New("Username or password is invalid"))
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: "Username or password is invalid",
+		})
 		return
 	}
 	if err != nil {
-		ErrorResponse(w, http.StatusInternalServerError, err)
+		ResponseMessage(w, http.StatusInternalServerError, Message{
+			Error: err.Error(),
+		})
 		return
 	}
 	s.setUpAuthSession(w, user.UUID)
@@ -93,7 +114,9 @@ func (s *Server) logout(w http.ResponseWriter, session_id string) {
 
 	err := s.db.DeleteSession(session_id)
 	if err != nil {
-		ErrorResponse(w, http.StatusBadRequest, errors.New("Your session_id is invalid"))
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: "Your session_id is invalid",
+		})
 		return
 	}
 }
