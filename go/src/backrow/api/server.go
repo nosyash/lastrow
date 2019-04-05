@@ -3,6 +3,7 @@ package api
 import (
 	"log"
 	"net/http"
+	"path/filepath"
 	"time"
 
 	"backrow/db"
@@ -12,13 +13,19 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type Server struct {
-	httpSrv *http.Server
-	db      *db.Database
-	upg     websocket.Upgrader
+type ImageServer struct {
+	UplPath  string
+	ImgsPath string
 }
 
-func NewServer(wsAddr string, db *db.Database) *Server {
+type Server struct {
+	httpSrv     *http.Server
+	db          *db.Database
+	upg         websocket.Upgrader
+	imageServer ImageServer
+}
+
+func NewServer(wsAddr, uplPath, imgsPath string, db *db.Database) *Server {
 	return &Server{
 		&http.Server{
 			Addr:         wsAddr,
@@ -37,6 +44,10 @@ func NewServer(wsAddr string, db *db.Database) *Server {
 				return true
 			},
 		},
+		ImageServer{
+			uplPath,
+			imgsPath,
+		},
 	}
 }
 
@@ -50,7 +61,7 @@ func (s *Server) Run() {
 	r.HandleFunc("/api/auth", s.authHandler).Methods("POST")
 	r.HandleFunc("/api/ws", s.acceptWebsocket).Methods("GET")
 
-	r.PathPrefix("/static/").Handler(http.FileServer(http.Dir("./public/")))
+	r.PathPrefix(s.imageServer.ImgsPath).Handler(s.imageServer).Methods("GET")
 	r.PathPrefix("/").Handler(s).Methods("GET")
 
 	s.httpSrv.Handler = r
@@ -61,7 +72,11 @@ func (s *Server) Run() {
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "./public/index.html")
+	http.ServeFile(w, r, filepath.Join("public", r.URL.Path))
+}
+
+func (is ImageServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, filepath.Join(is.UplPath, r.URL.Path))
 }
 
 func (s *Server) acceptWebsocket(w http.ResponseWriter, r *http.Request) {

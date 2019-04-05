@@ -33,7 +33,7 @@ func (s *Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch roomReq.Action {
-	case ACTION_ROOM_CREATE:
+	case ROOM_CREATE:
 		s.create(w, roomReq.Body.Title, roomReq.Body.Path, userUUID)
 	default:
 		ErrorResponse(w, http.StatusBadRequest, errors.New("Unknown /api/room action"))

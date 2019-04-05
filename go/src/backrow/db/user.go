@@ -7,6 +7,7 @@ import (
 )
 
 func (db *Database) CreateNewUser(name, uname, hash, email, uuid string) (bool, error) {
+
 	uniq, err := db.checkUniqueUser(uname, email)
 	if err != nil {
 		return false, err
@@ -30,14 +31,16 @@ func (db *Database) CreateNewUser(name, uname, hash, email, uuid string) (bool, 
 	return true, nil
 }
 
-func (db *Database) FindUser(uname, hash string) (*user, error) {
+func (db *Database) FindUser(key, value, hash string) (*user, error) {
+
 	var foundUser user
 
-	err := db.uc.Find(bson.M{"uname": uname, "hash": hash}).One(&foundUser)
+	err := db.uc.Find(bson.M{key: value, "hash": hash}).One(&foundUser)
 	return &foundUser, err
 }
 
 func (db *Database) GetUser(uuid string) (*user, error) {
+
 	var foundUser user
 
 	err := db.uc.Find(bson.M{"uuid": uuid}).One(&foundUser)
@@ -45,10 +48,15 @@ func (db *Database) GetUser(uuid string) (*user, error) {
 }
 
 func (db *Database) GetUserProfile(uuid string) (*userProfile, error) {
+
 	var foundUser userProfile
 
 	err := db.uc.Find(bson.M{"uuid": uuid}).One(&foundUser)
 	return &foundUser, err
+}
+
+func (db *Database) UpdateUserValue(uuid, key, value string) error {
+	return db.uc.Update(bson.M{"uuid": uuid}, bson.M{"$set": bson.M{key: value}})
 }
 
 func (db *Database) checkUniqueUser(uname, email string) (bool, error) {

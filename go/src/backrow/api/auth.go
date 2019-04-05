@@ -22,11 +22,11 @@ func (s *Server) authHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch authReq.Action {
-	case ACTION_ACCOUNT_REGISTRATION:
+	case ACCOUNT_REGISTRATION:
 		s.register(w, authReq.Body.Uname, authReq.Body.Passwd, authReq.Body.Email, authReq.Body.Name)
-	case ACTION_ACCOUNT_LOGIN:
+	case ACCOUNT_LOGIN:
 		s.login(w, authReq.Body.Uname, authReq.Body.Passwd)
-	case ACTION_ACCOUNT_LOGOUT:
+	case ACCOUNT_LOGOUT:
 		sessionID, err := r.Cookie("session_id")
 		if err == nil && sessionID.Value != "" {
 			s.logout(w, sessionID.Value)
@@ -77,7 +77,7 @@ func (s *Server) login(w http.ResponseWriter, uname, passwd string) {
 		return
 	}
 
-	user, err := s.db.FindUser(uname, getHashOfString(passwd))
+	user, err := s.db.FindUser("uname", uname, getHashOfString(passwd))
 	if err == mgo.ErrNotFound {
 		ErrorResponse(w, http.StatusBadRequest, errors.New("Username or password is invalid"))
 		return

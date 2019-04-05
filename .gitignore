@@ -3,6 +3,7 @@
 /build
 /client/build
 /public
+/media
 
 /go/pkg
 /go/src/github.com
