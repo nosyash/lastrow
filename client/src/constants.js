@@ -49,3 +49,11 @@ export const toastOpts = {
   pauseOnFocusLoss: false,
   newestOnTop: true,
 };
+
+export const playerConf = {
+  youtube: {
+    playerVars: { autoplay: 0, controls: 1 },
+    // TODO: Set to true
+    preload: false,
+  },
+};

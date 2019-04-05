@@ -4,8 +4,10 @@ import ReactPlayer from 'react-player';
 import { parse } from 'subtitle';
 import * as types from '../../../constants/ActionTypes';
 import { formatTime } from '../../../utils/base';
-import { SEEK_SEL, VOLUME_SEL } from '../../../constants';
+import { SEEK_SEL, VOLUME_SEL, playerConf } from '../../../constants';
 import http from '../../../utils/httpServices';
+import ProgressBar from './ProgressBar';
+import Subtitles from './Subtitles';
 
 class Player extends Component {
   constructor() {
@@ -119,7 +121,7 @@ class Player extends Component {
         width="100%"
         height=""
         autoPlay={false}
-        progressInterval={850}
+        progressInterval={800}
         onProgress={this.handlePlaying}
         controls={false}
         muted={media.muted}
@@ -130,13 +132,7 @@ class Player extends Component {
         playing={media.playing}
         volume={media.volume}
         url={media.url}
-        config={{
-          youtube: {
-            playerVars: { autoplay: 0, controls: 1 },
-            // TODO: Set to true
-            preload: false,
-          },
-        }}
+        config={playerConf}
       />
     );
   };
@@ -145,7 +141,7 @@ class Player extends Component {
     <div className="video-player">
       {this.renderVideoTop()}
       {this.renderVideoMid()}
-      <SubtitlesContainer videoEl={this.videoEl} />
+      <Subtitles videoEl={this.videoEl} />
       <div className="video-player_overflow" />
     </div>
   );
@@ -209,143 +205,15 @@ class Player extends Component {
   };
 }
 
-class SubtitlesContainer_ extends Player {
-  componentDidMount() {
-    this.formatSubs();
-  }
-
-  componentWillUnmount() {
-    clearTimeout(this.timer);
-  }
-
-  toStr = s => JSON.stringify(s);
-
-  timer = null;
-
-  shouldComponentUpdate(nextProps, nextState) {
-    const { subs } = this.props;
-    const a = this.toStr(nextProps.subs.text);
-    const b = this.toStr(subs.text);
-    if (a !== b) return true;
-    return false;
-  }
-
-  formatSubs = () => {
-    const { subs, videoEl } = this.props;
-    const { UpdateSubs } = this.props;
-
-    if (!subs.srt) return (this.timer = setTimeout(this.formatSubs, 80));
-
-    const { currentTime } = videoEl;
-    const ms = currentTime * 1000 + 100;
-    const currentText = this.toStr(subs.text);
-
-    const text = subs.srt.filter(s => s.start <= ms && ms <= s.end).reverse();
-
-    if (this.toStr(text) === '') {
-      if (currentText !== []) UpdateSubs({ text: [] });
-      return (this.timer = setTimeout(this.formatSubs, 80));
-    }
-
-    text.forEach(el => {
-      el.text = el.text.replace(/\n/gm, ' ').replace(/^<.*>(.*)<\/.*>$/, '$1');
-    });
-
-    if (currentText !== this.toStr(text)) UpdateSubs({ text });
-
-    this.timer = setTimeout(this.formatSubs, 80);
-  };
-
-  render() {
-    const { text } = this.props.subs;
-    if (!text) return null;
-    return <RenderSubs text={text} />;
-  }
-}
-
-const RenderSubs = ({ text }) => (
-  <div className={`subs-container${text.length > 3 ? ' subs-container_minified' : ''}`}>
-    {text.map((el, i) => (
-      <div key={i} className="sub-line">
-        {el.text}
-      </div>
-    ))}
-  </div>
-);
-
-class ProgressBar_ extends Player {
-  constructor() {
-    super();
-    window.requestAnimationFrame =
-      window.requestAnimationFrame ||
-      window.webkitRequestAnimationFrame ||
-      window.mozRequestAnimationFrame ||
-      window.msRequestAnimationFrame ||
-      function(f) {
-        return setTimeout(f, 1000 / 60);
-      };
-    window.cancelAnimationFrame =
-      window.cancelAnimationFrame ||
-      window.mozCancelAnimationFrame ||
-      function(requestID) {
-        clearTimeout(requestID);
-      };
-  }
-
-  state = {
-    transform: 'translateX(-100%)',
-  };
-
-  componentDidMount = () => {
-    this.updatePosition();
-  };
-
-  componentWillUnmount() {
-    window.cancelAnimationFrame(this.animRef);
-  }
-
-  updatePosition = () => {
-    const { media, player } = this.props;
-    const { duration } = media;
-
-    const currentTime = player.getCurrentTime();
-    const transform = `translateX(-${100 - (currentTime / duration) * 100}%)`;
-    this.setState({ transform });
-    this.animRef = window.requestAnimationFrame(this.updatePosition);
-  };
-
-  render() {
-    const { transform } = this.state;
-    return (
-      <React.Fragment>
-        <div ref={ref => this.props.seek(ref)} className="progress-bar_container seek_trigger">
-          <div style={{ transform }} className="scrubber_container">
-            <div className="scrubber" />
-          </div>
-          <div className="progress-bar">
-            <div
-              style={{ transform }}
-              ref={ref => (this.progress = ref)}
-              className="progress-bar_passed"
-            />
-          </div>
-        </div>
-      </React.Fragment>
-    );
-  }
-}
-
 const mapStateToProps = state => ({
   media: state.Media,
   subs: state.Media.subs,
   playing: state.Media.playing,
-  MainStates: state.MainStates,
   cinemaMode: state.MainStates.cinemaMode,
 });
 
 const mapDispatchToProps = {
   UpdatePlayer: payload => ({ type: types.UPDATE_MEDIA, payload }),
-  UpdateMediaURL: payload => ({ type: types.UPDATE_MEDIA_URL, payload }),
   SwitchPlay: () => ({ type: types.SWITCH_PLAY }),
   SwitchMute: () => ({ type: types.SWITCH_MUTE }),
   SetVolume: payload => ({ type: types.SET_VOLUME, payload }),
@@ -357,10 +225,3 @@ export default connect(
   mapStateToProps,
   mapDispatchToProps
 )(Player);
-
-const ProgressBar = connect(mapStateToProps)(ProgressBar_);
-
-const SubtitlesContainer = connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(SubtitlesContainer_);
