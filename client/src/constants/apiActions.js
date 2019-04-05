@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import { API_ENDPOINT } from '../constants';
 
 export const ROOM_CREATE = (title, path) =>
@@ -42,6 +43,35 @@ export const WS_HANDSHAKE = roomID =>
       body: { status: 200, message: '' },
     },
     roomID,
+  });
+
+export const UPDATE_IMAGE = (raw_img, type) =>
+  JSON.stringify({
+    action: 'user_update_img',
+    body: {
+      image: {
+        type,
+        raw_img,
+      },
+    },
+  });
+
+export const UPDATE_USER = (name, color) =>
+  JSON.stringify({
+    action: 'user_update_per',
+    body: {
+      name,
+      color,
+    },
+  });
+
+export const UPDATE_PASSWORD = (cur_passwd, new_passwd) =>
+  JSON.stringify({
+    action: 'user_update_pswd',
+    body: {
+      cur_passwd,
+      new_passwd,
+    },
   });
 
 export const API_AUTH = () => `${API_ENDPOINT}/auth`;
