@@ -5,7 +5,7 @@ import emojis from './Emojis';
 import profile from './Profile';
 import Media from './Media';
 import Rooms from './Rooms';
-import Components from './Components';
+import Components from './FloatElements';
 
 export default combineReducers({
   MainStates,
