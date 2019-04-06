@@ -1,6 +1,8 @@
 package ws
 
 import (
+	"backrow/cache"
+
 	"github.com/gorilla/websocket"
 )
 
@@ -89,10 +91,17 @@ func (h *Hub) handleLeaveUser(uuid string) {
 
 func (h *Hub) sendRoomCache(user *user) {
 
+	var roomCache currentCache
 	users := h.cache.GetAllUsers()
 
-	roomCache := currentCache{
-		Users: users,
+	if users == nil {
+		roomCache = currentCache{
+			Users: []*cache.User{},
+		}
+	} else {
+		roomCache = currentCache{
+			Users: users,
+		}
 	}
 
 	h.cache.Add <- user.UUID
