@@ -4,7 +4,7 @@ import { ToastContainer } from 'react-toastify';
 import { connect } from 'react-redux';
 import RoomBase from './Room/Base';
 import RoomListBase from './RoomList/Base';
-import FloatElements from './UI/FloatElements';
+import Popups from './UI/Popups';
 import * as types from '../constants/ActionTypes';
 import { getProfile } from '../utils/apiRequests';
 
@@ -21,7 +21,7 @@ class App extends Component {
       <BrowserRouter>
         <React.Fragment>
           <ToastContainer />
-          <FloatElements />
+          <Popups />
           <div className="top-nav">
             {/* <BreadCrumbs /> */}
             {/* <h1 className="room_movie-name">190303 우주소녀 보나 콘서트 해피 HAPPY WJSN BONA</h1> */}

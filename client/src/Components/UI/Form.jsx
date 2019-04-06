@@ -6,6 +6,7 @@ class Form extends Component {
   state = {
     data: {},
     errors: {},
+    visiblePass: false,
   };
 
   validate = () => {
@@ -34,7 +35,7 @@ class Form extends Component {
 
   handleSubmit = e => {
     e.preventDefault();
-
+    console.log('ked');
     const errors = this.validate();
     this.setState({ errors: errors || {} });
     if (errors) return;
@@ -54,6 +55,22 @@ class Form extends Component {
     this.setState({ data, errors });
   };
 
+  renderEye = () => {
+    const { visiblePass } = this.state;
+    const handleClick = e => {
+      e.preventDefault();
+      const active = document.activeElement;
+      this.setState({ visiblePass: !visiblePass });
+      active.focus();
+    };
+
+    return (
+      <span onMouseDown={handleClick} className="control show-pass">
+        <i className="fas fa-eye" />
+      </span>
+    );
+  };
+
   renderButton = label => (
     <button type="submit" disabled={this.validate()} className="button button-submit">
       {label}
@@ -61,13 +78,22 @@ class Form extends Component {
   );
 
   renderInput = opts => {
-    const { data, errors } = this.state;
-    const { name } = opts;
-    const type = opts && opts.type ? opts.type : 'text';
+    const { data, errors, visiblePass } = this.state;
+    const { name, renderEye, autoFocus = false } = opts;
+    let { type = 'text' } = opts;
+    if (type === 'password' && visiblePass) {
+      type = 'text';
+    }
+    if (type === 'password' && !visiblePass) {
+      type = 'password';
+    }
+
+    const element = renderEye ? this.renderEye() : '';
     const placeholder = opts && opts.placeholder ? opts.placeholder : '';
     const icon = opts && opts.icon ? opts.icon : '';
     return (
       <Input
+        autoFocus={autoFocus}
         type={type}
         name={name}
         placeholder={placeholder}
@@ -75,7 +101,7 @@ class Form extends Component {
         onChange={this.handleChange}
         error={errors[name]}
         icon={icon}
-        element={opts.element}
+        element={element}
       />
     );
   };

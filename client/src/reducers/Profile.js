@@ -2,12 +2,13 @@ import * as types from '../constants/ActionTypes';
 
 const profile = {
   logged: undefined,
-  name: 'test',
-  color: 'rgb(218, 63, 110)',
+  name: '',
+  username: '',
+  color: '#dddddd',
   online: true,
   uuid: '',
   id: 0,
-  iamge: '',
+  image: '',
 };
 
 const Profile = (state = profile, action) => {

@@ -8,13 +8,13 @@ import { toastOpts } from '../../constants';
 import * as types from '../../constants/ActionTypes';
 import NewRoom from './NewRoom';
 import * as api from '../../constants/apiActions';
+import ProfileSettings from './ProfileSettings';
 
 class LogForm extends Form {
   state = {
     signIn: true,
     data: { username: '', password: '' },
     errors: {},
-    visiblePass: false,
   };
 
   dataSignin = { username: '', password: '' };
@@ -24,6 +24,8 @@ class LogForm extends Form {
   signin = {
     username: Joi.string()
       .required()
+      .min(5)
+      .max(15)
       .label('Username'),
     password: Joi.string()
       .required()
@@ -85,13 +87,7 @@ class LogForm extends Form {
     }
   };
 
-  switchType = () => {
-    const { visiblePass } = this.state;
-    this.setState({ visiblePass: !visiblePass });
-  };
-
   getOptions = name => {
-    const { visiblePass } = this.state;
     switch (name) {
       case 'email':
         return { name, icon: 'at', placeholder: 'Email' };
@@ -102,22 +98,14 @@ class LogForm extends Form {
           name,
           icon: 'lock',
           placeholder: 'Password',
-          type: visiblePass ? 'text' : 'password',
-          element: (
-            <span
-              onClick={() => this.setState({ visiblePass: !visiblePass })}
-              className="control show-pass"
-            >
-              <i className="fas fa-eye" />
-            </span>
-          ),
+          type: 'password',
+          renderEye: true,
         };
       case 'passwordConfirm':
         return {
           name,
           icon: 'lock',
           placeholder: 'Confirm password',
-          type: visiblePass ? 'text' : 'password',
         };
       default:
         return {};
@@ -125,9 +113,9 @@ class LogForm extends Form {
   };
 
   handleRoomCreation = () => {
-    const { renderFloat } = this.props;
+    const { addPopup } = this.props;
     const id = 'NewRoom';
-    renderFloat({
+    addPopup({
       id,
       el: <NewRoom id={id} />,
       width: 500,
@@ -135,19 +123,19 @@ class LogForm extends Form {
     });
   };
 
-  // handleProfileSettings = () => {
-  //   const { renderFloat } = this.props;
-  //   const id = 'profile-settings';
-  //   renderFloat({
-  //     id,
-  //     el: <NewRoom id={id} onSubmit={n => handleSubmit(n)} />,
-  //     width: 500,
-  //     height: 500,
-  //   });
-  // };
+  handleProfileSettings = () => {
+    const { addPopup } = this.props;
+    const id = 'profile-settings';
+    addPopup({
+      id,
+      el: <ProfileSettings id={id} />,
+      width: 500,
+      height: 500,
+    });
+  };
 
   render() {
-    const { profile, renderFloat } = this.props;
+    const { profile, addPopup } = this.props;
     const { signIn } = this.state;
     return (
       <React.Fragment>
@@ -164,7 +152,7 @@ class LogForm extends Form {
         )}
         {profile.logged && (
           <RenderProfile
-            renderFloat={renderFloat}
+            addPopup={addPopup}
             onProfileSettings={this.handleProfileSettings}
             handleRoomCreation={this.handleRoomCreation}
             handleLogOut={this.handleLogOut}
@@ -239,8 +227,7 @@ const RenderProfile = ({ profile, handleLogOut, handleRoomCreation, onProfileSet
 
 const mapDispatchToProps = {
   updateProfile: payload => ({ type: types.UPDATE_PROFILE, payload }),
-  renderFloat: payload => ({ type: types.ADD_COMPONENT, payload }),
-  removeFloat: payload => ({ type: types.REMOVE_COMPONENT, payload }),
+  addPopup: payload => ({ type: types.ADD_POPUP, payload }),
 };
 
 const mapStateToProps = state => ({

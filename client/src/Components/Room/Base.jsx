@@ -135,9 +135,9 @@ class RoomBase extends Component {
   };
 
   handleHandShake() {
-    const { roomID, setSocketState } = this.props;
+    const { roomID, setSocketState, uuid } = this.props;
 
-    socket.send(api.WS_HANDSHAKE(roomID));
+    socket.send(api.WS_HANDSHAKE(roomID, uuid));
     setSocketState(true);
   }
 
@@ -207,6 +207,7 @@ const mapStateToProps = state => ({
   roomID: state.MainStates.roomID,
   emojiList: state.emojis.list,
   userList: state.Chat.users,
+  uuid: state.profile.uuid,
 });
 
 const mapDispatchToProps = {

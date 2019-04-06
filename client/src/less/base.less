@@ -209,8 +209,10 @@ body {
   background-image: url('https://up.bona.cafe/src/e2/bc820d04437e672d68a3f729e1dd99ad5b1c03.png'); // background: rgb(218, 63, 110);
   background: @darkThird;
   background-size: cover;
-  mask-image: @squareMask;
-  mask-size: 100%;
+  // mask-image: @squareMask;
+  .border-squircle(50%;
+  50%);
+  // mask-size: 100%;
   background-position: center;
   display: inline-block;
   cursor: pointer;
@@ -456,12 +458,13 @@ body {
     margin: auto;
   }
 
-  .show-pass {
-    position: absolute;
-    right: 10px;
-    left: unset;
-    top: 8px;
-  }
+}
+
+.show-pass {
+  position: absolute;
+  right: 10px;
+  left: unset;
+  top: 8px;
 }
 
 .form-group .icon {
@@ -521,7 +524,7 @@ body {
   height: 38px;
   border: none;
   outline: none;
-  transition: 0.1s ease-in;
+  transition: 0.2s;
 
   &:disabled {
     color: rgb(172, 172, 172);
@@ -529,8 +532,7 @@ body {
   }
 
   &:not(:disabled):hover {
-    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.2);
-    transform: translateY(-3px);
+    background: hsla(205, 44%, 31%, 1);
   }
 
   &:active,
@@ -573,8 +575,16 @@ body {
   background-position: 50%;
   border-radius: 10px;
   background-color: #aa9da3;
-  mask-image: @squareMask;
-  mask-size: 100%;
+  // mask-image: @squareMask;
+  .border-squircle(45%;
+  45%);
+  // mask-size: 100%;
+}
+
+.profile-avatar_mini {
+  width: 50px;
+  height: 50px;
+  margin: auto;
 }
 
 .main-profile-controls .control {
@@ -892,6 +902,7 @@ body {
   color: #ACAFB3;
   cursor: pointer;
   user-select: none;
+  font-weight: 500;
 
   &:hover {
     color: #ACAFB3;
@@ -958,9 +969,11 @@ body {
   user-select: none;
 }
 
-.float-elements {}
+.popups_container {
+  z-index: 1;
+}
 
-.float-element_contaiter {
+.popup{
   position: fixed;
   left: 0;
   right: 0;
@@ -969,18 +982,83 @@ body {
   display: flex;
   align-items: center;
   z-index: 10;
+  cursor: default;
 
   &>div {
     margin: auto;
   }
 }
 
+.float-element {
+  padding: 20px;
+  background: @darkMain;
+  border-radius: 4px;
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
+}
+
 // New Room
 .room-creation_container {
-  padding: 20px;
-
   width: 500px;
   height: 500px;
-  background: @darkMain;
-  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+// Profile Settings 
+
+.profile-settings_container {
+  width: 500px;
+  min-height: 500px;
+}
+
+.profile-controls {
+  text-align: center;
+  margin: 10px 0 20px;
+}
+
+.close-area {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.border-squircle(@radius-x;
+
+@radius-y) {
+  .loop(@radius-x;
+  @radius-y;
+  359;
+  100% 0);
+}
+
+.loop(@radius-x;
+@radius-y;
+@counter;
+
+@list) when (@counter >=0) {
+  @cos-x: cos(unit(@counter, deg));
+  @x: pow(abs(@cos-x), unit(@radius-x) / 100) * 50 * abs(@cos-x + 0.0000000001) / (@cos-x + 0.0000000001)+50;
+
+  @sin-y: sin(unit(@counter, deg));
+  @y: pow(abs(@sin-y), unit(@radius-y) / 100) * 50 * abs(@sin-y + 0.0000000001) / (@sin-y + 0.0000000001)+50;
+
+  @percent-x: percentage(round(@x, 1) / 100);
+  @percent-y: percentage(round(@y, 1) / 100);
+
+  @new-list: @percent-x @percent-y,
+  @list;
+  .loop(@radius-x;
+  @radius-y;
+  (@counter - 1);
+  @new-list);
+}
+
+.loop(@radius-x;
+@radius-y;
+@counter;
+
+@list) when (@counter < 0) {
+  clip-path: polygon(@list);
 }

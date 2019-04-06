@@ -5,13 +5,13 @@ import emojis from './Emojis';
 import profile from './Profile';
 import Media from './Media';
 import Rooms from './Rooms';
-import Components from './FloatElements';
+import Popups from './Popups';
 
 export default combineReducers({
   MainStates,
   Chat,
   emojis,
-  Components,
+  Popups,
   profile,
   Media,
   Rooms,

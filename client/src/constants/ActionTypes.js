@@ -18,8 +18,8 @@ export const SET_VOLUME = 'SET_VOLUME';
 export const UPDATE_SUBS = 'UPDATE_SUBS';
 
 // Components
-export const ADD_COMPONENT = 'ADD_COMPONENT';
-export const REMOVE_COMPONENT = 'REMOVE_COMPONENT';
-export const CLEAR_COMPONENTS = 'CLEAR_COMPONENTS';
+export const ADD_POPUP = 'ADD_POPUP';
+export const REMOVE_POPUP = 'REMOVE_POPUP';
+export const CLEAR_POPUP = 'CLEAR_POPUP';
 
 export const UPDATE_ROOMLIST = 'UPDATE_ROOMLIST';

@@ -47,7 +47,7 @@ class ListMessages extends Component {
         online
         key={i}
         renderHeader={renderHeader}
-        avatar="https://up.bona.cafe/src/e2/bc820d04437e672d68a3f729e1dd99ad5b1c03.png"
+        image="https://up.bona.cafe/src/e2/bc820d04437e672d68a3f729e1dd99ad5b1c03.png"
         body={obj.message}
       />
     );
