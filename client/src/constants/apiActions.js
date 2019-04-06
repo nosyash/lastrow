@@ -25,7 +25,7 @@ export const REG = (uname, passwd, email) =>
     body: { uname, passwd, email },
   });
 
-export const SEND_MESSAGE = (message, roomID) =>
+export const SEND_MESSAGE = (message, roomID, uuid) =>
   JSON.stringify({
     action: {
       name: 'message',
@@ -33,9 +33,10 @@ export const SEND_MESSAGE = (message, roomID) =>
       body: { status: 200, message },
     },
     roomID,
+    uuid,
   });
 
-export const WS_HANDSHAKE = roomID =>
+export const WS_HANDSHAKE = (roomID, uuid) =>
   JSON.stringify({
     action: {
       name: 'connect',
@@ -43,6 +44,7 @@ export const WS_HANDSHAKE = roomID =>
       body: { status: 200, message: '' },
     },
     roomID,
+    uuid,
   });
 
 export const UPDATE_IMAGE = (raw_img, type) =>

@@ -37,7 +37,7 @@ class ChatInput extends Component {
   };
 
   handleFormSubmit = e => {
-    const { socket, socketState, roomID } = this.props;
+    const { socket, socketState, roomID, profile } = this.props;
     const { value } = e.target;
     // const { selectionEnd, selectionStart } = this.input.current;
     // const resetHistoryN = () => (this.historyN = history.length - 1);
@@ -47,7 +47,7 @@ class ChatInput extends Component {
       if (!socketState) return;
       if (value === '') return;
 
-      socket.send(api.SEND_MESSAGE(value, roomID));
+      socket.send(api.SEND_MESSAGE(value, roomID, profile.uuid));
       this.setState({ value: '' });
       // resetHistoryN();
     }
