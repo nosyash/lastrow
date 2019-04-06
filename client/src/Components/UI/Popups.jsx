@@ -11,7 +11,7 @@ const Popups = ({ popups, removePopup }) => (
         onMouseDown={e => handleClose(e, el.id, removePopup)}
         className="close-area"
       >
-        <div className="popup_contaiter" style={{ ...getCenteredRect(el.width, el.height) }}>
+        <div className="popup" style={{ ...getCenteredRect(el.width, el.height) }}>
           {el.el}
         </div>
       </div>
