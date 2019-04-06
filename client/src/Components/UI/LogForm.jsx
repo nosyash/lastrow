@@ -24,7 +24,7 @@ class LogForm extends Form {
   signin = {
     username: Joi.string()
       .required()
-      .min(5)
+      .min(3)
       .max(15)
       .label('Username'),
     password: Joi.string()

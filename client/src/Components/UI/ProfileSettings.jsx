@@ -23,7 +23,7 @@ class ProfileSettings extends Form {
 
     name: {
       name: Joi.string()
-        .min(5)
+        .min(1)
         .max(15)
         .label('Name'),
     },
