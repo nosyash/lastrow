@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"backrow/cache"
 	"backrow/db"
 
 	"github.com/gorilla/websocket"
@@ -11,33 +12,67 @@ var Close chan string
 
 type RoomsHub struct {
 	rhub map[string]*Hub
+	db   *db.Database
 }
 
 type Hub struct {
 	hub        map[string]*websocket.Conn
-	Broadcast  chan *Package
-	Register   chan *websocket.Conn
-	Unregister chan *websocket.Conn
-	Path       string
-	db         *db.Database
+	broadcast  chan *request
+	brexcept   chan except
+	Register   chan *user
+	unregister chan *websocket.Conn
+	cache      *cache.Cache
+	id         string
 }
 
-type ErrorResponse struct {
+type errorResponse struct {
 	Error string `json:"error"`
 }
 
-type Package struct {
-	Action Action `json:"action"`
-	RoomID string `json:"roomID"`
-	UUID   string `json:"uuid"`
+type except struct {
+	Req  *request
+	UUID string
 }
 
-type Action struct {
-	Name string     `json:"name"`
-	Type string     `json:"type"`
-	Body ActionBody `json:"body"`
+type user struct {
+	Conn *websocket.Conn
+	UUID string
 }
 
-type ActionBody struct {
-	Message string `json:"message"`
+type request struct {
+	Action string      `json:"action"`
+	Body   requestBody `json:"body,omitempty"`
+	RoomID string      `json:"room_id,omitempty"`
+	UUID   string      `json:"user_uuid,omitempty"`
 }
+
+type currentCache struct {
+	Users []*cache.User `json:"users"`
+}
+
+type requestBody struct {
+	Event eventBody `json:"event"`
+}
+
+type eventBody struct {
+	Type string    `json:"type"`
+	Data eventData `json:"data"`
+}
+
+type eventData struct {
+	Message string `json:"message,omitempty"`
+	Color   string `json:"color"`
+	Image   string `json:"image"`
+	Name    string `json:"name"`
+	Title   string `json:"title,omitempty"`
+	Url     string `json:"url,omitempty"`
+}
+
+const (
+	USER_REGISTER = "user_register"
+	USER_EVENT    = "user_event"
+)
+
+const (
+	MSG_EVENT = "message"
+)

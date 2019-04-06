@@ -53,7 +53,7 @@ func NewServer(wsAddr, uplPath, imgsPath string, db *db.Database) *Server {
 
 func (s *Server) Run() {
 	r := mux.NewRouter()
-	go ws.WaitingRegistrations()
+	go ws.WaitingRegistrations(s.db)
 
 	r.HandleFunc("/api/rooms", s.roomsHandler).Methods("GET", "POST")
 	r.HandleFunc("/api/r/{roomPath}", s.roomInnerHandler).Methods("GET")

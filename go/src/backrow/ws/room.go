@@ -2,60 +2,58 @@ package ws
 
 import (
 	"fmt"
-	"os"
 	"time"
 
-	"backrow/db"
+	"backrow/cache"
 
 	"github.com/gorilla/websocket"
 )
 
-func NewRoomHub(path string) *Hub {
-	// TODO
-	// Create new session for room
+func NewRoomHub(id string) *Hub {
 	return &Hub{
 		make(map[string]*websocket.Conn),
-		make(chan *Package),
+		make(chan *request),
+		make(chan except),
+		make(chan *user),
 		make(chan *websocket.Conn),
-		make(chan *websocket.Conn),
-		path,
-		db.Connect(os.Getenv("DB_ADDR")),
+		cache.New(id),
+		id,
 	}
 }
 
 func (h *Hub) WaitingActions() {
 
+	go h.cache.Init()
+
 	for {
 		select {
-		case conn := <-h.Register:
-			h.add(conn)
-			go func() {
-				h.read(conn)
-				h.ping(conn)
-				h.pong(conn)
-			}()
-		case conn := <-h.Unregister:
-			h.remove(conn)
-		case msg := <-h.Broadcast:
-			h.send(msg)
+		case user := <-h.Register:
+			go h.add(user)
+			go h.read(user.Conn)
+			go h.ping(user.Conn)
+			go h.pong(user.Conn)
+		case conn := <-h.unregister:
+			go h.remove(conn)
+		case msg := <-h.broadcast:
+			go h.send(msg)
+		case excMsg := <-h.brexcept:
+			go h.sendExcept(excMsg.Req, excMsg.UUID)
+		case uuid := <-h.cache.Update:
+			go h.handleIncomingUser(uuid)
 		}
 	}
 }
 
-func (h *Hub) add(conn *websocket.Conn) {
+func (h *Hub) add(user *user) {
 
-	for _, c := range h.hub {
-		if c == conn {
-			c.Close()
-			h.Unregister <- c
+	for uuid := range h.hub {
+		if uuid == user.UUID {
+			user.Conn.Close()
 			return
 		}
 	}
-
-	uuid := getRandomUUID()
-
-	h.hub[uuid] = conn
-	fmt.Printf("Add [%s]\t%s\n", uuid, conn.RemoteAddr().String())
+	h.sendRoomCache(user)
+	fmt.Printf("Add [%s]\t%s\n", user.UUID, user.Conn.RemoteAddr().String())
 }
 
 func (h *Hub) remove(conn *websocket.Conn) {
@@ -68,15 +66,9 @@ func (h *Hub) remove(conn *websocket.Conn) {
 			break
 		}
 	}
-
 	if uuid != "" {
-		delete(h.hub, uuid)
-		fmt.Printf("Delete [%s]\t%s\n", uuid, conn.RemoteAddr().String())
-
-		if len(h.hub) == 0 {
-			Close <- h.Path
-			return
-		}
+		h.handleLeaveUser(uuid)
+		fmt.Printf("Remove [%s]\t%s\n", uuid, conn.RemoteAddr().String())
 	}
 }
 
@@ -84,10 +76,9 @@ func (h *Hub) read(conn *websocket.Conn) {
 
 	defer func() {
 		conn.Close()
-		h.Unregister <- conn
+		h.unregister <- conn
 	}()
 
-	// conn.SetReadLimit(512)
 	for {
 		req, err := readRequest(conn)
 		if err != nil {
@@ -95,19 +86,37 @@ func (h *Hub) read(conn *websocket.Conn) {
 			break
 		}
 
-		fmt.Printf("%s - %s\n", conn.RemoteAddr().String(), req.Action.Body.Message)
-
-		// TODO handle incoming request
-		// update playlist if request has add/or remove actions
-		// add new user with unique userid to userlist
-		h.Broadcast <- req
+		switch req.Action {
+		case USER_EVENT:
+			go h.handleUserEvent(req, conn)
+		default:
+			sendError(conn, "Unknown action")
+		}
 	}
 }
 
-func (h *Hub) send(msg *Package) {
+func (h *Hub) send(msg *request) {
 
 	for _, conn := range h.hub {
-		writeResponse(conn, msg)
+		err := sendRequest(conn, msg)
+		if err != nil {
+			fmt.Println(err)
+			conn.Close()
+		}
+	}
+}
+
+func (h *Hub) sendExcept(msg *request, uuid string) {
+
+	for id, conn := range h.hub {
+		if id == uuid {
+			continue
+		}
+		err := sendRequest(conn, msg)
+		if err != nil {
+			fmt.Println(err)
+			conn.Close()
+		}
 	}
 }
 
@@ -117,7 +126,7 @@ func (h *Hub) ping(conn *websocket.Conn) {
 	defer func() {
 		ticker.Stop()
 		conn.Close()
-		h.Unregister <- conn
+		h.unregister <- conn
 	}()
 
 	for {
@@ -128,6 +137,7 @@ func (h *Hub) ping(conn *websocket.Conn) {
 			fmt.Println("ping to:", conn.RemoteAddr().String())
 
 			if err := conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				conn.Close()
 				return
 			}
 		}

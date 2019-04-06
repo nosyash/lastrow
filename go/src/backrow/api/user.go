@@ -85,6 +85,11 @@ func (s *Server) updatePersonalInfo(w http.ResponseWriter, userUUID, name, color
 
 	if name != "" && len(name) > 4 && len(name) < 15 {
 		s.db.UpdateUserValue(userUUID, "name", name)
+	} else {
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: "Name length must be no more than 15 and no less 4",
+		})
+		return
 	}
 	if color != "" {
 		s.db.UpdateUserValue(userUUID, "color", color)
@@ -98,6 +103,11 @@ func (s *Server) updatePassword(w http.ResponseWriter, userUUID, curPasswd, newP
 	if curPasswd == "" || newPasswd == "" {
 		ResponseMessage(w, http.StatusBadRequest, Message{
 			Error: "One or more required arguments are empty",
+		})
+		return
+	} else if len(newPasswd) < 8 || len(newPasswd) > 32 {
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: "Password length must be no more than 32 and no less 8",
 		})
 		return
 	}

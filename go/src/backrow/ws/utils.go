@@ -1,45 +1,47 @@
 package ws
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"errors"
 
 	"github.com/gorilla/websocket"
 )
 
-func acceptRegRequest(conn *websocket.Conn) (string, error) {
+func handleRegRequest(conn *websocket.Conn) (*user, string, error) {
+
 	req, err := readRequest(conn)
-
-	// TODO
-	// recive alse user uuid
-
 	if err != nil {
-		return "", err
-	}
-	if req.Action.Name == "connect" && req.Action.Type == "register" && req.RoomID != "" {
-		return req.RoomID, nil
+		return nil, "", err
 	}
 
-	return "", errors.New("Registration request is invalid")
+	if req.Action != USER_REGISTER {
+		return nil, "", errors.New("Invalid registration request")
+	}
+
+	room, uuid := req.RoomID, req.UUID
+	if room == "" || uuid == "" {
+		return nil, "", errors.New("One or more required arguments are empty")
+	}
+
+	return &user{
+			conn,
+			uuid,
+		},
+		room,
+		nil
 }
 
-func readRequest(conn *websocket.Conn) (*Package, error) {
-	request := &Package{}
+func readRequest(conn *websocket.Conn) (*request, error) {
+	request := &request{}
 	err := websocket.ReadJSON(conn, &request)
 	return request, err
 }
 
-func writeResponse(conn *websocket.Conn, pkg *Package) {
-	websocket.WriteJSON(conn, pkg)
+func sendRequest(conn *websocket.Conn, pkg *request) error {
+	return websocket.WriteJSON(conn, pkg)
 }
 
-func getRandomUUID() string {
-	u := make([]byte, 16)
-	_, _ = rand.Read(u)
-
-	u[8] = (u[8] | 0x80) & 0xBF
-	u[6] = (u[6] | 0x40) & 0x4F
-
-	return hex.EncodeToString(u)
+func sendError(conn *websocket.Conn, msg string) error {
+	err := websocket.WriteJSON(conn, errorResponse{msg})
+	conn.Close()
+	return err
 }

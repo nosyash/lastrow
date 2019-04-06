@@ -3,29 +3,25 @@ package ws
 import (
 	"fmt"
 
+	"backrow/db"
+
 	"github.com/gorilla/websocket"
+	"gopkg.in/mgo.v2"
 )
 
-func WaitingRegistrations() {
+func WaitingRegistrations(db *db.Database) {
 
 	Register = make(chan *websocket.Conn)
 	Close = make(chan string)
 	rh := &RoomsHub{
 		make(map[string]*Hub),
+		db,
 	}
 
 	for {
 		select {
 		case conn := <-Register:
-			go func() {
-				err := rh.registerNewConn(conn)
-				if err != nil {
-					websocket.WriteJSON(conn, &ErrorResponse{
-						err.Error(),
-					})
-					conn.Close()
-				}
-			}()
+			go rh.registerNewConn(conn)
 		case roomID := <-Close:
 			fmt.Println("close", roomID)
 			delete(rh.rhub, roomID)
@@ -33,27 +29,34 @@ func WaitingRegistrations() {
 	}
 }
 
-func (rh *RoomsHub) registerNewConn(conn *websocket.Conn) error {
+func (rh *RoomsHub) registerNewConn(conn *websocket.Conn) {
 
-	roomPath, err := acceptRegRequest(conn)
+	user, roomID, err := handleRegRequest(conn)
 	if err != nil {
-		return err
+		sendError(conn, err.Error())
+		return
 	}
 
-	// TODO
-	// Check room path
+	if !rh.db.RoomIsExists(roomID) {
+		sendError(conn, "Requested room is not exists")
+		return
+	}
+	_, err = rh.db.GetUser(user.UUID)
+	if err == mgo.ErrNotFound {
+		sendError(conn, "Cannot find user with given user_uuid")
+		return
+	}
 
 	for room := range rh.rhub {
-		if room == roomPath {
-			rh.rhub[roomPath].Register <- conn
-			return nil
+		if room == roomID {
+			rh.rhub[roomID].Register <- user
+			return
 		}
 	}
 
-	hub := NewRoomHub(roomPath)
-	rh.rhub[roomPath] = hub
+	hub := NewRoomHub(roomID)
+	rh.rhub[roomID] = hub
 
-	go rh.rhub[roomPath].WaitingActions()
-	rh.rhub[roomPath].Register <- conn
-	return nil
+	go rh.rhub[roomID].WaitingActions()
+	rh.rhub[roomID].Register <- user
 }
