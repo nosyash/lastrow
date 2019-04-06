@@ -113,9 +113,9 @@ class LogForm extends Form {
   };
 
   handleRoomCreation = () => {
-    const { renderFloat } = this.props;
+    const { addPopup } = this.props;
     const id = 'NewRoom';
-    renderFloat({
+    addPopup({
       id,
       el: <NewRoom id={id} />,
       width: 500,
@@ -124,9 +124,9 @@ class LogForm extends Form {
   };
 
   handleProfileSettings = () => {
-    const { renderFloat } = this.props;
+    const { addPopup } = this.props;
     const id = 'profile-settings';
-    renderFloat({
+    addPopup({
       id,
       el: <ProfileSettings id={id} />,
       width: 500,
@@ -135,7 +135,7 @@ class LogForm extends Form {
   };
 
   render() {
-    const { profile, renderFloat } = this.props;
+    const { profile, addPopup } = this.props;
     const { signIn } = this.state;
     return (
       <React.Fragment>
@@ -152,7 +152,7 @@ class LogForm extends Form {
         )}
         {profile.logged && (
           <RenderProfile
-            renderFloat={renderFloat}
+            addPopup={addPopup}
             onProfileSettings={this.handleProfileSettings}
             handleRoomCreation={this.handleRoomCreation}
             handleLogOut={this.handleLogOut}
@@ -227,8 +227,7 @@ const RenderProfile = ({ profile, handleLogOut, handleRoomCreation, onProfileSet
 
 const mapDispatchToProps = {
   updateProfile: payload => ({ type: types.UPDATE_PROFILE, payload }),
-  renderFloat: payload => ({ type: types.ADD_COMPONENT, payload }),
-  removeFloat: payload => ({ type: types.REMOVE_COMPONENT, payload }),
+  addPopup: payload => ({ type: types.ADD_POPUP, payload }),
 };
 
 const mapStateToProps = state => ({

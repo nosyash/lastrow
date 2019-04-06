@@ -30,18 +30,18 @@ class NewRoom extends Form {
 
   handleSubmit = async e => {
     const { title, path } = this.state.data;
-    const { id, history, removeFloat, onRoomsUpdate } = this.props;
+    const { id, history, removePopup, onRoomsUpdate } = this.props;
     e.preventDefault();
     const res = await http.post(api.API_ROOMS(), api.ROOM_CREATE(title, path));
     if (!res.status) return;
-    removeFloat(id);
+    removePopup(id);
     // onRoomsUpdate();
     history.push(`/r/${path}`);
   };
 
   handleClose = () => {
-    const { id, removeFloat } = this.props;
-    removeFloat(id);
+    const { id, removePopup } = this.props;
+    removePopup(id);
   };
 
   render() {
@@ -75,8 +75,7 @@ const RenderForm = ({ handleSubmit, renderInput, renderButton, onClose }) => (
 
 const mapDispatchToProps = {
   updateProfile: payload => ({ type: types.UPDATE_PROFILE, payload }),
-  renderFloat: payload => ({ type: types.ADD_COMPONENT, payload }),
-  removeFloat: payload => ({ type: types.REMOVE_COMPONENT, payload }),
+  removePopup: payload => ({ type: types.REMOVE_POPUP, payload }),
 };
 
 export default connect(

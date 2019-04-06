@@ -56,7 +56,7 @@ class ProfileSettings extends Form {
     this.setState({ data });
 
     // if (!res.status) return;
-    // removeFloat(id);
+    // removePopup(id);
     // onRoomsUpdate();
     // history.push(`/r/${path}`);
 
@@ -105,7 +105,7 @@ class ProfileSettings extends Form {
   };
 
   render() {
-    const { id, removeFloat, profile } = this.props;
+    const { id, removePopup, profile } = this.props;
     const { changesMade, data } = this.state;
     return (
       <RenderForm
@@ -115,7 +115,7 @@ class ProfileSettings extends Form {
         renderInput={this.renderInput}
         renderButton={this.renderButton}
         onControlClick={this.handleControlClick}
-        onClose={() => removeFloat(id)}
+        onClose={() => removePopup(id)}
         profile={profile}
       />
     );
@@ -203,7 +203,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = {
   updateProfile: payload => ({ type: types.UPDATE_PROFILE, payload }),
-  removeFloat: payload => ({ type: types.REMOVE_COMPONENT, payload }),
+  removePopup: payload => ({ type: types.REMOVE_POPUP, payload }),
 };
 
 export default connect(

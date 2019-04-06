@@ -4,16 +4,16 @@ const initialState = {
   list: [],
 };
 
-const Components = (state = initialState, action) => {
+const Popups = (state = initialState, action) => {
   switch (action.type) {
-    case types.ADD_COMPONENT: {
+    case types.ADD_POPUP: {
       const tempList = [...state.list, action.payload];
       const list = tempList.filter(
         (obj, pos, arr) => arr.map(mapObj => mapObj.id).indexOf(obj.id) === pos
       );
       return { list };
     }
-    case types.REMOVE_COMPONENT: {
+    case types.REMOVE_POPUP: {
       const filtered = state.list.filter(el => el.id !== action.payload);
       return { list: [...filtered] };
     }
@@ -22,4 +22,4 @@ const Components = (state = initialState, action) => {
   }
 };
 
-export default Components;
+export default Popups;
