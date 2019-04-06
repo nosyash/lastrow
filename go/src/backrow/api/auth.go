@@ -50,9 +50,9 @@ func (s *Server) register(w http.ResponseWriter, uname, passwd, email, name stri
 		name = uname
 	}
 
-	if len(uname) < 4 || len(uname) > 15 {
+	if len(uname) < 3 || len(uname) > 15 {
 		ResponseMessage(w, http.StatusBadRequest, Message{
-			Error: "Username length must be no more than 15 and no less 4",
+			Error: "Username length must be no more than 15 and no less 3",
 		})
 		return
 	} else if len(passwd) < 8 || len(passwd) > 32 {

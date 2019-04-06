@@ -5,6 +5,7 @@ import (
 )
 
 func (h *Hub) handleUserEvent(req *request, conn *websocket.Conn) {
+
 	switch req.Body.Event.Type {
 	case MSG_EVENT:
 		if req.UUID != "" && req.Body.Event.Data.Message != "" {
@@ -87,6 +88,7 @@ func (h *Hub) handleLeaveUser(uuid string) {
 }
 
 func (h *Hub) sendRoomCache(user *user) {
+
 	users := h.cache.GetAllUsers()
 
 	roomCache := currentCache{
