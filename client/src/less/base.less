@@ -903,6 +903,7 @@ body {
   color: #ACAFB3;
   cursor: pointer;
   user-select: none;
+  font-weight: 500;
 
   &:hover {
     color: #ACAFB3;
@@ -969,7 +970,9 @@ body {
   user-select: none;
 }
 
-.float-elements {}
+.float-elements {
+  z-index: 1;
+}
 
 .float-element_contaiter {
   position: fixed;
@@ -980,6 +983,7 @@ body {
   display: flex;
   align-items: center;
   z-index: 10;
+  cursor: default;
 
   &>div {
     margin: auto;
@@ -990,7 +994,7 @@ body {
   padding: 20px;
   background: @darkMain;
   border-radius: 4px;
-  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15), 0 0 0 20020px rgba(0, 0, 0, 0.15);
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 // New Room
@@ -1003,7 +1007,7 @@ body {
 
 .profile-settings_container {
   width: 500px;
-  min-height: 500px;
+  // min-height: 500px;
 }
 
 .profile-controls {
@@ -1011,6 +1015,15 @@ body {
   margin: 10px 0 20px;
 }
 
+.close-area {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.55);
+}
 
 .border-squircle(@radius-x;
 
