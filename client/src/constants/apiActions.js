@@ -47,7 +47,7 @@ export const WS_HANDSHAKE = (roomID, uuid) =>
     uuid,
   });
 
-export const UPDATE_IMAGE = (raw_img, type) =>
+export const UPDATE_IMAGE = (type, raw_img) =>
   JSON.stringify({
     action: 'user_update_img',
     body: {

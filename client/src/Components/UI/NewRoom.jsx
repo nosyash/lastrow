@@ -30,7 +30,7 @@ class NewRoom extends Form {
 
   handleSubmit = async e => {
     const { title, path } = this.state.data;
-    const { onSubmit, id, history, removeFloat, onRoomsUpdate } = this.props;
+    const { id, history, removeFloat, onRoomsUpdate } = this.props;
     e.preventDefault();
     const res = await http.post(api.API_ROOMS(), api.ROOM_CREATE(title, path));
     if (!res.status) return;
@@ -60,7 +60,7 @@ class NewRoom extends Form {
 }
 
 const RenderForm = ({ handleSubmit, renderInput, renderButton, onClose }) => (
-  <div className="room-creation_container">
+  <div className="float-element room-creation_container">
     <h1 className="title">New Room</h1>
     <form onSubmit={handleSubmit}>
       {renderInput({ name: 'title', icon: 'info', placeholder: 'Title' })}

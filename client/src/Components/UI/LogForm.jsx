@@ -8,13 +8,13 @@ import { toastOpts } from '../../constants';
 import * as types from '../../constants/ActionTypes';
 import NewRoom from './NewRoom';
 import * as api from '../../constants/apiActions';
+import ProfileSettings from './ProfileSettings';
 
 class LogForm extends Form {
   state = {
     signIn: true,
     data: { username: '', password: '' },
     errors: {},
-    visiblePass: false,
   };
 
   dataSignin = { username: '', password: '' };
@@ -24,6 +24,8 @@ class LogForm extends Form {
   signin = {
     username: Joi.string()
       .required()
+      .min(5)
+      .max(15)
       .label('Username'),
     password: Joi.string()
       .required()
@@ -85,13 +87,7 @@ class LogForm extends Form {
     }
   };
 
-  switchType = () => {
-    const { visiblePass } = this.state;
-    this.setState({ visiblePass: !visiblePass });
-  };
-
   getOptions = name => {
-    const { visiblePass } = this.state;
     switch (name) {
       case 'email':
         return { name, icon: 'at', placeholder: 'Email' };
@@ -102,22 +98,14 @@ class LogForm extends Form {
           name,
           icon: 'lock',
           placeholder: 'Password',
-          type: visiblePass ? 'text' : 'password',
-          element: (
-            <span
-              onClick={() => this.setState({ visiblePass: !visiblePass })}
-              className="control show-pass"
-            >
-              <i className="fas fa-eye" />
-            </span>
-          ),
+          type: 'password',
+          renderEye: true,
         };
       case 'passwordConfirm':
         return {
           name,
           icon: 'lock',
           placeholder: 'Confirm password',
-          type: visiblePass ? 'text' : 'password',
         };
       default:
         return {};
@@ -135,16 +123,16 @@ class LogForm extends Form {
     });
   };
 
-  // handleProfileSettings = () => {
-  //   const { renderFloat } = this.props;
-  //   const id = 'profile-settings';
-  //   renderFloat({
-  //     id,
-  //     el: <NewRoom id={id} onSubmit={n => handleSubmit(n)} />,
-  //     width: 500,
-  //     height: 500,
-  //   });
-  // };
+  handleProfileSettings = () => {
+    const { renderFloat } = this.props;
+    const id = 'profile-settings';
+    renderFloat({
+      id,
+      el: <ProfileSettings id={id} />,
+      width: 500,
+      height: 500,
+    });
+  };
 
   render() {
     const { profile, renderFloat } = this.props;
