@@ -105,7 +105,7 @@ class ProfileSettings extends Form {
   };
 
   render() {
-    const { id, removeFloat } = this.props;
+    const { id, removeFloat, profile } = this.props;
     const { changesMade, data } = this.state;
     return (
       <RenderForm
@@ -116,13 +116,22 @@ class ProfileSettings extends Form {
         renderButton={this.renderButton}
         onControlClick={this.handleControlClick}
         onClose={() => removeFloat(id)}
+        profile={profile}
       />
     );
   }
 }
 
 const RenderForm = props => {
-  const { handleSubmit, renderInput, renderButton, onClose, data, onControlClick } = props;
+  const {
+    handleSubmit,
+    renderInput,
+    renderButton,
+    onClose,
+    data,
+    onControlClick,
+    profile,
+  } = props;
   const {
     color = null,
     image = null,
@@ -130,9 +139,11 @@ const RenderForm = props => {
     password = null,
     passwordNew = null,
   } = data;
+  const backgroundImage = `url(${profile.image})`;
   return (
     <div className="float-element profile-settings_container">
       <h1 className="title">Profile Settings</h1>
+      <div style={{ backgroundImage }} className="profile-avatar profile-avatar_mini" />
       <RenderControls onClick={onControlClick} />
       <form onSubmit={handleSubmit}>
         {name !== null &&
@@ -159,7 +170,7 @@ const RenderForm = props => {
           })}
         {Object.entries(data).length !== 0 && renderButton('Save changes')}
         <button onClick={onClose} type="button" className="button button-cancel">
-          Cancel
+          Close
         </button>
       </form>
     </div>
