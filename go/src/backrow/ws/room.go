@@ -40,6 +40,7 @@ func (h *Hub) WaitingActions() {
 			go h.sendExcept(excMsg.Req, excMsg.UUID)
 		case uuid := <-h.cache.Update:
 			go h.handleIncomingUser(uuid)
+			go h.sendRoomCache(uuid)
 		}
 	}
 }
@@ -52,7 +53,9 @@ func (h *Hub) add(user *user) {
 			return
 		}
 	}
-	h.sendRoomCache(user)
+
+	h.cache.Add <- user.UUID
+	h.hub[user.UUID] = user.Conn
 	fmt.Printf("Add [%s]\t%s\n", user.UUID, user.Conn.RemoteAddr().String())
 }
 

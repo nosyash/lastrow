@@ -89,7 +89,7 @@ func (h *Hub) handleLeaveUser(uuid string) {
 	}
 }
 
-func (h *Hub) sendRoomCache(user *user) {
+func (h *Hub) sendRoomCache(uuid string) {
 
 	var roomCache currentCache
 	users := h.cache.GetAllUsers()
@@ -104,7 +104,5 @@ func (h *Hub) sendRoomCache(user *user) {
 		}
 	}
 
-	h.cache.Add <- user.UUID
-	h.hub[user.UUID] = user.Conn
-	websocket.WriteJSON(user.Conn, roomCache)
+	websocket.WriteJSON(h.hub[uuid], roomCache)
 }

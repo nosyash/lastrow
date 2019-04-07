@@ -83,16 +83,19 @@ func (s *Server) updateProfileImage(w http.ResponseWriter, userUUID string, b64I
 
 func (s *Server) updatePersonalInfo(w http.ResponseWriter, userUUID, name, color string) {
 
-	if name != "" && len(name) > 1 && len(name) < 15 {
-		s.db.UpdateUserValue(userUUID, "name", name)
-	} else {
-		ResponseMessage(w, http.StatusBadRequest, Message{
-			Error: "Name length must be no more than 15 and no less 1",
-		})
-		return
-	}
 	if color != "" {
 		s.db.UpdateUserValue(userUUID, "color", color)
+	}
+
+	if name != "" {
+		if len(name) > 1 && len(name) < 15 {
+			s.db.UpdateUserValue(userUUID, "name", name)
+		} else {
+			ResponseMessage(w, http.StatusBadRequest, Message{
+				Error: "Name length must be no more than 15 and no less 1",
+			})
+			return
+		}
 	}
 
 	s.getUser(w, userUUID)
