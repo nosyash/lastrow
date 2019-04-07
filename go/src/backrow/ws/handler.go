@@ -40,24 +40,22 @@ func (h *Hub) handleMessage(msg, uuid string) {
 	h.broadcast <- res
 }
 
-func (h *Hub) handleIncomingUser(uuid string) {
+func (h *Hub) updateUserList() {
 
-	user := h.cache.GetUser(uuid)
+	users := h.cache.GetAllUsers()
+	var usersUpdate *userList
 
-	res := &request{
-		Action: "user_event",
-		Body: requestBody{
-			Event: eventBody{
-				Type: "add",
-				Data: eventData{
-					Name:  user.Name,
-					Color: user.Color,
-					Image: user.Image,
-				},
-			},
-		},
+	if users == nil {
+		usersUpdate = &userList{
+			Users: []*cache.User{},
+		}
+	} else {
+		usersUpdate = &userList{
+			Users: users,
+		}
 	}
-	h.brexcept <- except{res, uuid}
+
+	h.update <- usersUpdate
 }
 
 func (h *Hub) handleLeaveUser(uuid string) {
@@ -86,22 +84,4 @@ func (h *Hub) handleLeaveUser(uuid string) {
 		h.cache.Close <- struct{}{}
 		Close <- h.id
 	}
-}
-
-func (h *Hub) sendRoomCache(uuid string) {
-
-	var roomCache currentCache
-	users := h.cache.GetAllUsers()
-
-	if users == nil {
-		roomCache = currentCache{
-			Users: []*cache.User{},
-		}
-	} else {
-		roomCache = currentCache{
-			Users: users,
-		}
-	}
-
-	websocket.WriteJSON(h.hub[uuid], roomCache)
 }

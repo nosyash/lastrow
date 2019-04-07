@@ -22,6 +22,7 @@ type Hub struct {
 	Register   chan *user
 	unregister chan *websocket.Conn
 	cache      *cache.Cache
+	update     chan *userList
 	id         string
 }
 
@@ -46,7 +47,7 @@ type request struct {
 	UUID   string      `json:"user_uuid,omitempty"`
 }
 
-type currentCache struct {
+type userList struct {
 	Users []*cache.User `json:"users"`
 }
 

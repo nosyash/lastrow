@@ -17,6 +17,7 @@ func NewRoomHub(id string) *Hub {
 		make(chan *user),
 		make(chan *websocket.Conn),
 		cache.New(id),
+		make(chan *userList),
 		id,
 	}
 }
@@ -38,9 +39,10 @@ func (h *Hub) WaitingActions() {
 			go h.send(msg)
 		case excMsg := <-h.brexcept:
 			go h.sendExcept(excMsg.Req, excMsg.UUID)
-		case uuid := <-h.cache.Update:
-			go h.handleIncomingUser(uuid)
-			go h.sendRoomCache(uuid)
+		case upd := <-h.update:
+			go h.sendUpdates(upd)
+		case <-h.cache.Update:
+			go h.updateUserList()
 		}
 	}
 }
@@ -56,6 +58,7 @@ func (h *Hub) add(user *user) {
 
 	h.cache.Add <- user.UUID
 	h.hub[user.UUID] = user.Conn
+
 	fmt.Printf("Add [%s]\t%s\n", user.UUID, user.Conn.RemoteAddr().String())
 }
 
@@ -70,7 +73,16 @@ func (h *Hub) remove(conn *websocket.Conn) {
 		}
 	}
 	if uuid != "" {
-		h.handleLeaveUser(uuid)
+
+		delete(h.hub, uuid)
+		h.cache.Remove <- uuid
+
+		if len(h.hub) == 0 {
+			Close <- h.id
+			h.cache.Close <- struct{}{}
+			return
+		}
+
 		fmt.Printf("Remove [%s]\t%s\n", uuid, conn.RemoteAddr().String())
 	}
 }
@@ -116,6 +128,17 @@ func (h *Hub) sendExcept(msg *request, uuid string) {
 			continue
 		}
 		err := sendRequest(conn, msg)
+		if err != nil {
+			fmt.Println(err)
+			conn.Close()
+		}
+	}
+}
+
+func (h *Hub) sendUpdates(upd *userList) {
+
+	for _, conn := range h.hub {
+		err := websocket.WriteJSON(conn, upd)
 		if err != nil {
 			fmt.Println(err)
 			conn.Close()
