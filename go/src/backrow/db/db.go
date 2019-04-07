@@ -20,7 +20,6 @@ func Connect(dbAddr string) *Database {
 	if err != nil {
 		log.Fatalf("Couldn't connect to the db server: %v", err)
 	}
-
 	rc := session.DB("backrow").C("rooms")
 	uc := session.DB("backrow").C("users")
 	sc := session.DB("backrow").C("sessions")
