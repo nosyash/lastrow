@@ -80,8 +80,7 @@ func (h *Hub) handleLeaveUser(uuid string) {
 
 	delete(h.hub, uuid)
 	h.cache.Remove <- uuid
-
-	h.brexcept <- except{res, uuid}
+	h.broadcast <- res
 
 	if len(h.hub) == 0 {
 		h.cache.Close <- struct{}{}
