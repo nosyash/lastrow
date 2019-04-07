@@ -68,3 +68,12 @@ export const getCenteredRect = (w, h) => {
   const top = (pH - height) / 2;
   return { width, height, left, top };
 };
+
+export const getRandom = m => {
+  let s = '';
+  const r = 'abcdefABCDEF0123456789';
+  for (let i = 0; i < m; i++) {
+    s += r.charAt(Math.floor(Math.random() * r.length));
+  }
+  return s;
+};

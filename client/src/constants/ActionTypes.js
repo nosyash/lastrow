@@ -21,5 +21,6 @@ export const UPDATE_SUBS = 'UPDATE_SUBS';
 export const ADD_POPUP = 'ADD_POPUP';
 export const REMOVE_POPUP = 'REMOVE_POPUP';
 export const CLEAR_POPUP = 'CLEAR_POPUP';
+export const TOGGLE_POPUP = 'TOGGLE_POPUP';
 
 export const UPDATE_ROOMLIST = 'UPDATE_ROOMLIST';

@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import * as types from '../../constants/ActionTypes';
 import ProfileSettings from './ProfileSettings';
+import Playlist from './Playlist';
 
 class ControlPanel extends Component {
   state = {};
@@ -17,33 +18,80 @@ class ControlPanel extends Component {
     });
   };
 
+  handlePlaylist = id => {
+    const { addPopup, togglePopup } = this.props;
+    togglePopup({
+      id,
+      el: <Playlist id={id} />,
+      width: 400,
+      height: 200,
+      noBG: true,
+    });
+  };
+
+  handleClick = id => {
+    console.log(id);
+    switch (id) {
+      case 'showPlaylist':
+        return this.handlePlaylist(id);
+
+      default:
+        break;
+    }
+  };
+
   render() {
-    const { profile } = this.props;
+    const { profile, playlist } = this.props;
+    const upNext = playlist[0] || { title: '', url: '' };
+    const { logged } = profile;
     return (
       <div className="control-panel_container">
-        <RenderPlaylister />
+        <RenderPlaylister upNext={upNext} logged={logged} onClick={this.handleClick} />
         <div className="divider" />
-        <RenderProfile onProfileSettings={this.handleProfileSettings} profile={profile} />
+        {logged && (
+          <RenderProfile
+            logged={logged}
+            onProfileSettings={this.handleProfileSettings}
+            profile={profile}
+          />
+        )}
       </div>
     );
   }
 }
 
-const RenderPlaylister = () => (
+const RenderPlaylister = ({ onClick, logged, upNext }) => (
   <div className="playlister">
-    <div className="control item">
-      <span className="control-svg show-playlist-icon" />
-      Show Playlist
-    </div>
-    <div className="control item">
-      <span className="control-svg add-to-playlist-icon" />
-      Add to playlist
-    </div>
+    <RenderItem
+      dataId="showPlaylist"
+      onClick={onClick}
+      classes="control-svg show-playlist-icon"
+      text="Show Playlist"
+    />
+    {logged && (
+      <RenderItem
+        dataId="addToPlaylist"
+        onClick={onClick}
+        classes="control-svg add-to-playlist-icon"
+        text="Add To Playlist"
+      />
+    )}
     <div className="item">
       <div>Up next:</div>
-      <span className="control">WJSN - Baby Face</span>
+      <a className="control" target="_blank" rel="noopener noreferrer" href={upNext.url}>
+        {upNext.title}
+      </a>
       {/* <i className="fa fa-arrow-right" /> */}
     </div>
+  </div>
+);
+
+const RenderItem = ({ classes, onClick, dataId, text }) => (
+  <div>
+    <span onClick={() => onClick(dataId)} className="control item">
+      <span className={classes} />
+      {text}
+    </span>
   </div>
 );
 
@@ -71,10 +119,11 @@ const RenderProfile = ({ profile, onProfileSettings }) => {
   );
 };
 
-const mapStateToProps = state => ({ profile: state.profile });
+const mapStateToProps = state => ({ profile: state.profile, playlist: state.Media.playlist });
 
 const mapDispatchToProps = {
   addPopup: payload => ({ type: types.ADD_POPUP, payload }),
+  togglePopup: payload => ({ type: types.TOGGLE_POPUP, payload }),
 };
 
 export default connect(
