@@ -19,30 +19,52 @@ class ControlPanel extends Component {
 
   render() {
     const { profile } = this.props;
-    return <RenderProfile onProfileSettings={this.handleProfileSettings} profile={profile} />;
+    return (
+      <div className="control-panel_container">
+        <RenderPlaylister />
+        <div className="divider" />
+        <RenderProfile onProfileSettings={this.handleProfileSettings} profile={profile} />
+      </div>
+    );
   }
 }
+
+const RenderPlaylister = () => (
+  <div className="playlister">
+    <div className="control item">
+      <span className="control-svg show-playlist-icon" />
+      Show Playlist
+    </div>
+    <div className="control item">
+      <span className="control-svg add-to-playlist-icon" />
+      Add to playlist
+    </div>
+    <div className="item">
+      <div>Up next:</div>
+      <span className="control">WJSN - Baby Face</span>
+      {/* <i className="fa fa-arrow-right" /> */}
+    </div>
+  </div>
+);
 
 const RenderProfile = ({ profile, onProfileSettings }) => {
   const { name, image, color } = profile;
   const backgroundColor = color;
   const backgroundImage = `url(${image})`;
   return (
-    <div className="control-panel_container">
-      <div className="mini-profile">
-        <div style={{ backgroundColor, backgroundImage }} className="chat-avatar" />
-        <div className="mini-profile_second-section">
-          <span style={{ color }} className="chat-name">
-            {name}
+    <div className="mini-profile">
+      <div style={{ backgroundColor, backgroundImage }} className="chat-avatar" />
+      <div className="mini-profile_second-section">
+        <span style={{ color }} className="chat-name">
+          {name}
+        </span>
+        <div className="controls-container">
+          <span onClick={onProfileSettings} className="control">
+            <i className="fas fa-users-cog" />
           </span>
-          <div className="controls-container">
-            <span onClick={onProfileSettings} className="control">
-              <i className="fas fa-users-cog" />
-            </span>
-            <span className="control">
-              <i className="fas fa-cog" />
-            </span>
-          </div>
+          <span className="control">
+            <i className="fas fa-cog" />
+          </span>
         </div>
       </div>
     </div>
