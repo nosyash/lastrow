@@ -7,12 +7,16 @@ import RoomListBase from './RoomList/Base';
 import Popups from './UI/Popups';
 import * as types from '../constants/ActionTypes';
 import { getProfile } from '../utils/apiRequests';
+import { getRandom } from '../utils/base';
 
 class App extends Component {
   async componentDidMount() {
     const { updateProfile } = this.props;
     const profile = await getProfile();
-    if (!profile) return updateProfile({ logged: false });
+    if (!profile) {
+      const uuid = getRandom(32);
+      return updateProfile({ logged: false, uuid });
+    }
     updateProfile({ ...profile.data, logged: true });
   }
 
