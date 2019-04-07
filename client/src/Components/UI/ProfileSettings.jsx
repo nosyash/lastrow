@@ -5,6 +5,7 @@ import Form from './Form';
 import * as api from '../../constants/apiActions';
 import * as types from '../../constants/ActionTypes';
 import http from '../../utils/httpServices';
+import ImagePicker from './ImagePicker';
 
 class ProfileSettings extends Form {
   state = {
@@ -28,10 +29,6 @@ class ProfileSettings extends Form {
         .label('Name'),
     },
 
-    image: {
-      image: Joi.string().label('Image'),
-    },
-
     password: {
       password: Joi.string()
         .required()
@@ -52,6 +49,9 @@ class ProfileSettings extends Form {
     if (name === 'password') data.passwordNew = '';
     if (name === 'name') data[name] = profile[name];
     if (name === 'color') data[name] = profile[name];
+    if (name === 'image') {
+      return this.handleImageChange();
+    }
     this.schema = { ...this.schemas[name] };
     this.setState({ data });
 
@@ -73,6 +73,24 @@ class ProfileSettings extends Form {
     //   default:
     //     break;
     // }
+  };
+
+  handleImageChange = () => {
+    const { addPopup } = this.props;
+    const id = 'ImagePicker';
+    addPopup({
+      id,
+      el: <ImagePicker id={id} onImageUpdate={this.handleUpdateImage} />,
+      width: 600,
+      height: 500,
+    });
+  };
+
+  handleUpdateImage = async data => {
+    const { updateProfile } = this.props;
+    const res = await http.post(api.API_USER(), api.UPDATE_IMAGE(data));
+    if (!res.data) return;
+    updateProfile({ ...res.data });
   };
 
   handleSubmit = async e => {
@@ -209,6 +227,7 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = {
   updateProfile: payload => ({ type: types.UPDATE_PROFILE, payload }),
   removePopup: payload => ({ type: types.REMOVE_POPUP, payload }),
+  addPopup: payload => ({ type: types.ADD_POPUP, payload }),
 };
 
 export default connect(

@@ -5,17 +5,20 @@ import * as types from '../../constants/ActionTypes';
 
 const Popups = ({ popups, removePopup }) => (
   <div className="popups_container">
-    {popups.map((el, i) => (
-      <div
-        key={i}
-        onMouseDown={e => handleClose(e, el.id, removePopup)}
-        className="close-area"
-      >
-        <div className="popup" style={{ ...getCenteredRect(el.width, el.height) }}>
-          {el.el}
+    {popups.map((element, i) => {
+      const Element = element.el;
+      return (
+        <div
+          key={i}
+          onMouseDown={e => handleClose(e, element.id, removePopup)}
+          className="close-area"
+        >
+          <div className="popup" style={{ ...getCenteredRect(element.width, element.height) }}>
+            {Element}
+          </div>
         </div>
-      </div>
-    ))}
+      );
+    })}
   </div>
 );
 

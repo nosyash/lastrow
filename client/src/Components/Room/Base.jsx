@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { WEBSOCKET_TIMEOUT, SOCKET_ENDPOINT } from '../../constants';
+import { toast } from 'react-toastify';
+import { WEBSOCKET_TIMEOUT, SOCKET_ENDPOINT, toastOpts } from '../../constants';
 import ChatContainer from './chat/ChatContainer';
 import VideoContainer from './video/VideoContainer';
 import getEmojiList from '../../utils/InitEmojis';
@@ -122,18 +123,27 @@ class RoomBase extends Component {
   handleMessage = ({ data: data_ }) => {
     const { addMessage, updateUserList } = this.props;
     const { roomID } = this.props;
-
+    const error = api.GET_ERROR(data_);
+    if (error) {
+      toast.error(error, { toastId: error, ...toastOpts });
+      return this.handleDropConnection();
+    }
     const data = api.GET_WS_DATA(data_);
     switch (data.type) {
-      case 'message': {
+      case 'message':
         return addMessage({ ...data, roomID });
-      }
+
       case 'user_list':
         return updateUserList(data.users);
 
       default:
         break;
     }
+  };
+
+  handleDropConnection = () => {
+    this.resetWebSocketEvents();
+    clearTimeout(this.timer);
   };
 
   handleHandShake() {

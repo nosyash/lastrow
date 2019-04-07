@@ -51,7 +51,6 @@ function mapStateToProps(state) {
 export default connect(mapStateToProps)(ChatMessage);
 
 const RenderMessage = props => {
-  console.log('rendered');
   const { _ref, id, handleProfile, renderHeader, hideHeader, name, tempBody } = props;
   const { color, className, backgroundColor, backgroundImage } = props;
   return (

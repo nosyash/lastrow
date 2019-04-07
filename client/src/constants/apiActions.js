@@ -30,12 +30,12 @@ export const REG = (uname, passwd, email) =>
     body: { uname, passwd, email },
   });
 
-export const UPDATE_IMAGE = (type, raw_img) =>
+export const UPDATE_IMAGE = raw_img =>
   JSON.stringify({
     action: 'user_update_img',
     body: {
       image: {
-        type,
+        type: '.jpg',
         raw_img,
       },
     },
@@ -90,6 +90,14 @@ export const USER_REGISTER = (room_id, user_uuid) =>
     user_uuid,
   });
 
+export const GUEST_REGISTER = (room_id, user_uuid) =>
+  JSON.stringify({
+    action: 'guest_register',
+    room_id: 'wjsn',
+    guest_uuid: 'тута какой-нибудь 32х значиный uuid',
+    name: 'gupok_pupok',
+  });
+
 export const SEND_MESSAGE = (message, user_uuid) =>
   JSON.stringify({
     action: 'user_event',
@@ -112,4 +120,9 @@ export const GET_WS_DATA = json => {
   const { event } = obj.body;
   const { type } = event;
   return { type, ...event.data };
+};
+
+export const GET_ERROR = json => {
+  const obj = JSON.parse(json);
+  if (obj.error) return obj.error;
 };
