@@ -8,16 +8,19 @@ const initialState = {
   connected: false,
 };
 
+let id = 0;
+
 const Messages = (state = initialState, action) => {
   const historyTemp = Object.assign([], [...state.history, action.payload]);
 
   switch (action.type) {
     case types.ADD_MESSAGE: {
       const list = state.list.slice(0);
-
-      const n = list.length - MAX_MESSAGES + 1;
-      list.splice(0, n);
-      return { ...state, list: [...list, action.payload] };
+      if (list.length > MAX_MESSAGES) list.shift();
+      id++;
+      const message = action.payload;
+      delete message.type;
+      return { ...state, list: [...list, { ...message, id }] };
     }
 
     case types.CLEAR_MESSAGE_LIST: {

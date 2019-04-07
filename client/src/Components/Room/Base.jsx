@@ -119,25 +119,45 @@ class RoomBase extends Component {
     this.webSocketReconnect();
   };
 
-  handleMessage = d => {
-    const { addMessage, roomID } = this.props;
-    const { data } = d;
-    const { action, error } = JSON.parse(data);
-    if (error) return;
-    const { message } = action.body;
-    if (message.trim().length === 0) return;
-    const messageObject = {
-      message: action.body.message,
-      name: 'test',
-      roomID,
-    };
-    addMessage(messageObject);
+  handleMessage = ({ data: data_ }) => {
+    const { addMessage, updateUserList } = this.props;
+    const { roomID } = this.props;
+
+    const data = api.GET_WS_DATA(data_);
+
+    switch (data.type) {
+      case 'message': {
+        return addMessage({ ...data, roomID });
+      }
+      case 'leave':
+        break;
+      case 'add':
+        break;
+      case 'user_list':
+        return updateUserList(data.users);
+
+      default:
+        break;
+    }
+
+    // const { addMessage, roomID } = this.props;
+    // const { data } = d;
+    // const { action, error } = JSON.parse(data);
+    // if (error) return;
+    // const { message } = action.body;
+    // if (message.trim().length === 0) return;
+    // const messageObject = {
+    //   message: action.body.message,
+    //   name: 'test',
+    //   roomID,
+    // };
+    // addMessage(messageObject);
   };
 
   handleHandShake() {
     const { roomID, setSocketState, uuid } = this.props;
 
-    socket.send(api.WS_HANDSHAKE(roomID, uuid));
+    socket.send(api.USER_REGISTER(roomID, uuid));
     setSocketState(true);
   }
 

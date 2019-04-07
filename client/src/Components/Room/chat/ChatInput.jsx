@@ -47,7 +47,7 @@ class ChatInput extends Component {
       if (!socketState) return;
       if (value === '') return;
 
-      socket.send(api.SEND_MESSAGE(value, roomID, profile.uuid));
+      socket.send(api.SEND_MESSAGE(value, profile.uuid));
       this.setState({ value: '' });
       // resetHistoryN();
     }
