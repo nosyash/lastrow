@@ -10,6 +10,7 @@ import {
 } from '../../../utils/base';
 import ChatInner from './ChatInner';
 import { UPDATE_MAIN_STATES } from '../../../constants/ActionTypes';
+import ControlPanel from '../../UI/ControlPanel';
 
 class ChatContainer extends Component {
   constructor() {
@@ -162,7 +163,7 @@ class ChatContainer extends Component {
           {' Back to rooms'}
         </Link>
         <ChatInner socket={socket} />
-        <div className="control-panel" />
+        <ControlPanel />
       </div>
     );
   }

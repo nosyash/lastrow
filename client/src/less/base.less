@@ -146,13 +146,35 @@ body {
   box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
 }
 
-.control-panel {
+.control-panel_container {
   border-radius: 5px;
   margin-top: 10px;
-  height: 100px;
+  // height: 100px;
   background: @darkMain;
   box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
+
+  .chat-name {
+    margin: 0;
+  }
+
+  .mini-profile {
+    position: unset;
+    box-shadow: none;
+    margin: 0;
+  }
+
+  .mini-profile_second-section {
+    margin-left: 10px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .control {
+    margin-right: 5px;
+  }
 }
+
+
 
 .resizer {
   position: absolute;
@@ -984,7 +1006,7 @@ body {
 }
 
 .popups_container {
-  z-index: 1;
+  z-index: 20;
 }
 
 .popup {
