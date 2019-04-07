@@ -541,6 +541,14 @@ body {
   }
 }
 
+.controls-container {
+  display: flex;
+
+  .button {
+    margin: 10px;
+  }
+}
+
 .room-list_contaier:after {
   content: '';
   width: 100%;
@@ -584,7 +592,13 @@ body {
 .profile-avatar_mini {
   width: 50px;
   height: 50px;
-  margin: auto;
+  margin: 0 auto;
+  transition: 0.1s;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.7;
+  }
 }
 
 .main-profile-controls .control {
@@ -593,7 +607,7 @@ body {
 
 .mini-profile {
   background: @darkSecond;
-  height: 50px;
+  height: 70px;
   padding: 5px;
   position: absolute;
   left: 0;
@@ -609,8 +623,8 @@ body {
 }
 
 .mini-profile .chat-avatar {
-  width: 40px;
-  height: 40px;
+  width: 60px;
+  height: 60px;
 }
 
 // NavBar
@@ -991,11 +1005,17 @@ body {
 
 .float-element {
   width: 100%;
-  height: 100%;
+  // height: 100%;
   padding: 20px;
   background: @darkMain;
   border-radius: 4px;
   box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+
+  form {
+    margin-top: auto;
+  }
 }
 
 // New Room
@@ -1029,6 +1049,7 @@ body {
 // Image Picker
 .image-picker_container {
   display: flex;
+  height: 100%;
   flex-direction: column;
 }
 
@@ -1036,10 +1057,22 @@ body {
   width: 100%;
   height: 100%;
   background: #222;
+  background-image: @drop;
+  background-size: 100px;
+  background-repeat: no-repeat;
+  background-position: 50%;
+  cursor: pointer;
+  text-align: center;
 }
 
 .drop-area_highlight {
-  background: red;
+  border: 15px dashed #908f8f;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background-color: rgba(34, 34, 34, 0.164);
 }
 
 .crop-tool {
@@ -1054,7 +1087,7 @@ body {
 }
 
 .crop-controls {
-  height: 70px;
+  height: 80px;
   padding-top: 20px;
 }
 

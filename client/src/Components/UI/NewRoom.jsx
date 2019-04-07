@@ -65,10 +65,12 @@ const RenderForm = ({ handleSubmit, renderInput, renderButton, onClose }) => (
     <form onSubmit={handleSubmit}>
       {renderInput({ name: 'title', icon: 'info', placeholder: 'Title' })}
       {renderInput({ name: 'path', icon: 'link', placeholder: 'Path' })}
-      {renderButton('Create')}
-      <button onClick={onClose} type="button" className="button button-cancel">
-        Cancel
-      </button>
+      <div className="controls-container">
+        {renderButton('Create')}
+        <button onClick={onClose} type="button" className="button button-cancel">
+          Cancel
+        </button>
+      </div>
     </form>
   </div>
 );

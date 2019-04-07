@@ -82,7 +82,7 @@ class ProfileSettings extends Form {
       id,
       el: <ImagePicker id={id} onImageUpdate={this.handleUpdateImage} />,
       width: 600,
-      height: 500,
+      height: 600,
     });
   };
 
@@ -132,6 +132,7 @@ class ProfileSettings extends Form {
     const { changesMade, data } = this.state;
     return (
       <RenderForm
+        handleImageChange={this.handleImageChange}
         data={data}
         changesMade={changesMade}
         handleSubmit={this.handleSubmit}
@@ -154,6 +155,7 @@ const RenderForm = props => {
     data,
     onControlClick,
     profile,
+    handleImageChange,
   } = props;
   const {
     color = null,
@@ -166,7 +168,11 @@ const RenderForm = props => {
   return (
     <div className="float-element profile-settings_container">
       <h1 className="title">Profile Settings</h1>
-      <div style={{ backgroundImage }} className="profile-avatar profile-avatar_mini" />
+      <div
+        onClick={handleImageChange}
+        style={{ backgroundImage }}
+        className="profile-avatar profile-avatar_mini"
+      />
       <RenderControls onClick={onControlClick} />
       <form onSubmit={handleSubmit}>
         {name !== null &&
@@ -191,10 +197,12 @@ const RenderForm = props => {
             icon: 'lock',
             placeholder: 'New Password',
           })}
-        {Object.entries(data).length !== 0 && renderButton('Save changes')}
-        <button onClick={onClose} type="button" className="button button-cancel">
-          Close
-        </button>
+        <div className="controls-container">
+          {Object.entries(data).length !== 0 && renderButton('Save changes')}
+          <button onClick={onClose} type="button" className="button button-cancel">
+            Close
+          </button>
+        </div>
       </form>
     </div>
   );
