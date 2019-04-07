@@ -47,7 +47,6 @@ type request struct {
 	Body   requestBody `json:"body,omitempty"`
 	RoomID string      `json:"room_id,omitempty"`
 	UUID   string      `json:"user_uuid,omitempty"`
-	GUUID  string      `json:"guest_uuid,omitempty"`
 	Name   string      `json:"name,omitempty"`
 }
 

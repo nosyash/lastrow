@@ -39,10 +39,10 @@ func handleRegRequest(conn *websocket.Conn) (*user, string, error) {
 
 func handleGuestRegister(conn *websocket.Conn, req *request) (*user, string, error) {
 
-	guestUUID, room, name := req.GUUID, req.RoomID, req.Name
+	room, name := req.RoomID, req.Name
 	return &user{
 			conn,
-			guestUUID,
+			getRandomUUID(),
 			name,
 			true,
 		},
