@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import Cropper from 'react-easy-crop';
 import { toast } from 'react-toastify';
 import { connect } from 'react-redux';
+import Slider from '@material-ui/lab/Slider';
 import { toastOpts } from '../../constants';
 import getCroppedImg from '../../utils/cropImage';
 import * as types from '../../constants/ActionTypes';
@@ -173,8 +174,8 @@ class CropTool extends Component {
             image={base64}
             crop={crop}
             zoom={zoom}
-            zoomSpeed={1}
-            maxZoom={7}
+            zoomSpeed={2}
+            maxZoom={10}
             aspect={1}
             showGrid={false}
             classes={{ cropAreaClassName: 'cropper' }}
@@ -184,6 +185,15 @@ class CropTool extends Component {
           />
         </div>
         <div className="crop-controls">
+          <Slider
+            classes={{ track: 'slider-track', thumb: 'slider-thumb' }}
+            value={zoom}
+            min={1}
+            max={10}
+            step={0.01}
+            aria-labelledby="Zoom"
+            onChange={(e, z) => this.onZoomChange(z)}
+          />
           <div className="controls-container">
             <button onClick={this.saveCrop} type="button" className="button button-cancel">
               Save
