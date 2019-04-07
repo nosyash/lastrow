@@ -46,7 +46,7 @@ type request struct {
 	Action string      `json:"action"`
 	Body   requestBody `json:"body,omitempty"`
 	RoomID string      `json:"room_id,omitempty"`
-	UUID   string      `json:"user_uuid,omitempty"`
+	UUID   string      `json:"user_uuid"`
 	Name   string      `json:"name,omitempty"`
 }
 

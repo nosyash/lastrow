@@ -83,7 +83,6 @@ func (s *Server) updateProfileImage(w http.ResponseWriter, userUUID string, b64I
 
 func (s *Server) updatePersonalInfo(w http.ResponseWriter, userUUID, name, color string) {
 
-	println("call")
 	if color != "" {
 		s.db.UpdateUserValue(userUUID, "color", color)
 	}
