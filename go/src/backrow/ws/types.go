@@ -36,8 +36,10 @@ type except struct {
 }
 
 type user struct {
-	Conn *websocket.Conn
-	UUID string
+	Conn  *websocket.Conn
+	UUID  string
+	Name  string
+	Guest bool
 }
 
 type request struct {
@@ -45,6 +47,8 @@ type request struct {
 	Body   requestBody `json:"body,omitempty"`
 	RoomID string      `json:"room_id,omitempty"`
 	UUID   string      `json:"user_uuid,omitempty"`
+	GUUID  string      `json:"guest_uuid,omitempty"`
+	Name   string      `json:"name,omitempty"`
 }
 
 type userList struct {
@@ -70,8 +74,9 @@ type eventData struct {
 }
 
 const (
-	USER_REGISTER = "user_register"
-	USER_EVENT    = "user_event"
+	USER_REGISTER  = "user_register"
+	GUEST_REGISTER = "guest_register"
+	USER_EVENT     = "user_event"
 )
 
 const (

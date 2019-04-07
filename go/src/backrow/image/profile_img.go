@@ -3,9 +3,7 @@ package image
 import (
 	"bytes"
 	"encoding/base64"
-	"errors"
 	"image/jpeg"
-	"image/png"
 	"os"
 	"path/filepath"
 )
@@ -13,10 +11,9 @@ import (
 type Image struct {
 	Path string
 	Name string
-	Type string
 }
 
-func New(oldpath, newpath, ftype string) *Image {
+func New(oldpath, newpath string) *Image {
 
 	if oldpath != "" {
 		opath, _ := filepath.Split(oldpath)
@@ -28,7 +25,6 @@ func New(oldpath, newpath, ftype string) *Image {
 	return &Image{
 		npath,
 		nname,
-		ftype,
 	}
 }
 
@@ -48,24 +44,14 @@ func (i *Image) CreateFromBase64(raw_img *string) error {
 	if err != nil {
 		return err
 	}
-	switch i.Type {
-	case JPEG:
-		img, err := jpeg.Decode(reader)
-		if err != nil {
-			return err
-		}
-		jpeg.Encode(f, img, &jpeg.Options{
-			100,
-		})
-	case PNG:
-		img, err := png.Decode(reader)
-		if err != nil {
-			return err
-		}
-		png.Encode(f, img)
-	default:
-		return errors.New("Unknown image type")
+
+	img, err := jpeg.Decode(reader)
+	if err != nil {
+		return err
 	}
+	jpeg.Encode(f, img, &jpeg.Options{
+		100,
+	})
 
 	return nil
 }

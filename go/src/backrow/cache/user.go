@@ -9,6 +9,10 @@ func (cache *Cache) addNewUser(uuid string) {
 	}
 }
 
+func (cache *Cache) addNewGuest(user *User) {
+	cache.users[user.GUUID] = user
+}
+
 func (cache *Cache) removeUser(uuid string) {
 	delete(cache.users, uuid)
 }

@@ -39,7 +39,7 @@ func (s *Server) userHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch userReq.Action {
 	case USER_UPDATE_IMG:
-		s.updateProfileImage(w, userUUID, &userReq.Body.Image.Content, userReq.Body.Image.Type)
+		s.updateProfileImage(w, userUUID, &userReq.Body.Image.Content)
 	case USER_UPDATE_PER:
 		s.updatePersonalInfo(w, userUUID, userReq.Body.Name, userReq.Body.Color)
 	case USER_UPDATE_PSWD:
@@ -60,15 +60,15 @@ func (s *Server) getUser(w http.ResponseWriter, userUUID string) {
 	w.Write(userAsByte)
 }
 
-func (s *Server) updateProfileImage(w http.ResponseWriter, userUUID string, b64Img *string, imgType string) {
+func (s *Server) updateProfileImage(w http.ResponseWriter, userUUID string, b64Img *string) {
 
 	oldpath, err := s.db.GetUserImage(userUUID)
 	rnd_name := getRandomUUID()
 
-	imgPath := filepath.Join(s.imageServer.ImgsPath, rnd_name[:16], fmt.Sprintf("%s%s", rnd_name[16:32], imgType))
+	imgPath := filepath.Join(s.imageServer.ImgsPath, rnd_name[:16], fmt.Sprintf("%s.jpg", rnd_name[16:32]))
 	fullPath := filepath.Join(s.imageServer.UplPath, imgPath)
 
-	img := image.New(filepath.Join(s.imageServer.UplPath, oldpath), fullPath, imgType)
+	img := image.New(filepath.Join(s.imageServer.UplPath, oldpath), fullPath)
 	err = img.CreateFromBase64(b64Img)
 	if err != nil {
 		ResponseMessage(w, http.StatusBadRequest, Message{
