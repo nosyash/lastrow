@@ -124,36 +124,16 @@ class RoomBase extends Component {
     const { roomID } = this.props;
 
     const data = api.GET_WS_DATA(data_);
-
     switch (data.type) {
       case 'message': {
         return addMessage({ ...data, roomID });
       }
-      case 'leave':
-        console.log(data);
-        break;
-      case 'add':
-        console.log(data);
-        break;
       case 'user_list':
         return updateUserList(data.users);
 
       default:
         break;
     }
-
-    // const { addMessage, roomID } = this.props;
-    // const { data } = d;
-    // const { action, error } = JSON.parse(data);
-    // if (error) return;
-    // const { message } = action.body;
-    // if (message.trim().length === 0) return;
-    // const messageObject = {
-    //   message: action.body.message,
-    //   name: 'test',
-    //   roomID,
-    // };
-    // addMessage(messageObject);
   };
 
   handleHandShake() {
