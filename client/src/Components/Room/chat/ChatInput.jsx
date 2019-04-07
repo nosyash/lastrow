@@ -10,19 +10,16 @@ class ChatInput extends Component {
     super();
     this.historyN = 0;
     this.input = React.createRef();
-
     this.state = {
       value: '',
     };
   }
 
   componentDidMount() {
-    document.addEventListener('keydown', this.handleFormSubmit);
     document.addEventListener('click', this.handleClick);
   }
 
   componentWillUnmount() {
-    document.removeEventListener('keydown', this.handleFormSubmit);
     document.removeEventListener('click', this.handleClick);
   }
 
@@ -37,16 +34,15 @@ class ChatInput extends Component {
   };
 
   handleFormSubmit = e => {
-    const { socket, socketState, roomID, profile } = this.props;
-    const { value } = e.target;
+    const { socket, socketState, profile } = this.props;
+    let { value } = this.state;
     // const { selectionEnd, selectionStart } = this.input.current;
     // const resetHistoryN = () => (this.historyN = history.length - 1);
 
     if (e.keyCode === keys.ENTER && !e.shiftKey) {
       e.preventDefault();
-      if (!socketState) return;
-      if (value === '') return;
-
+      value = value.trim();
+      if (!socketState || !value) return;
       socket.send(api.SEND_MESSAGE(value, profile.uuid));
       this.setState({ value: '' });
       // resetHistoryN();
@@ -87,6 +83,7 @@ class ChatInput extends Component {
     return (
       <div className="chat-input">
         <textarea
+          onKeyDown={this.handleFormSubmit}
           ref={this.input}
           value={value}
           autoFocus
