@@ -5,15 +5,15 @@ import MiniProfile from './MiniProfile';
 class ChatHeader extends Component {
   state = {
     showProfile: false,
-    currentProfileId: 0,
+    currentProfile: 0,
   };
 
   componentDidMount() {
-    document.addEventListener('click', this.handleClick);
+    document.addEventListener('mousedown', this.handleClick);
   }
 
   componentWillUnmount() {
-    document.removeEventListener('click', this.handleClick);
+    document.removeEventListener('mousedown', this.handleClick);
   }
 
   handleClick = e => {
@@ -22,21 +22,21 @@ class ChatHeader extends Component {
       this.setState({ showProfile: false });
   };
 
-  handleUserClick = id => {
-    this.setState({ showProfile: true, currentProfileId: id });
+  handleUserClick = u => {
+    this.setState({ showProfile: true, currentProfile: u });
   };
 
   render() {
-    const { showProfile, currentProfileId } = this.state;
+    const { showProfile, currentProfile } = this.state;
     const { userList } = this.props;
     return (
       <React.Fragment>
         <div className="chat-header">
-          {showProfile && <MiniProfile id={currentProfileId} />}
+          {showProfile && <MiniProfile currentProfile={currentProfile} />}
           <div className="chat-header_userlist">
             {userList.map((u, i) => (
               <UserIcon
-                onClick={() => this.handleUserClick(u.id)}
+                onClick={() => this.handleUserClick(u)}
                 key={i}
                 name={u.name}
                 // id={u.id}

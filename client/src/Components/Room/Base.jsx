@@ -130,8 +130,10 @@ class RoomBase extends Component {
         return addMessage({ ...data, roomID });
       }
       case 'leave':
+        console.log(data);
         break;
       case 'add':
+        console.log(data);
         break;
       case 'user_list':
         return updateUserList(data.users);
