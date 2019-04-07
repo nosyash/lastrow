@@ -30,7 +30,6 @@ type UserBody struct {
 }
 
 type ImageBody struct {
-	Type    string `json:"type"`
 	Content string `json:"raw_img"`
 }
 

@@ -2,9 +2,53 @@ package ws
 
 import (
 	"backrow/cache"
+	"errors"
 
 	"github.com/gorilla/websocket"
 )
+
+func handleRegRequest(conn *websocket.Conn) (*user, string, error) {
+
+	req, err := readRequest(conn)
+	if err != nil {
+		return nil, "", err
+	}
+
+	if req.Action == GUEST_REGISTER {
+		return handleGuestRegister(conn, req)
+	}
+
+	if req.Action != USER_REGISTER {
+		return nil, "", errors.New("Invalid registration request")
+	}
+
+	room, uuid := req.RoomID, req.UUID
+	if room == "" || uuid == "" {
+		return nil, "", errors.New("One or more required arguments are empty")
+	}
+
+	return &user{
+			conn,
+			uuid,
+			"",
+			false,
+		},
+		room,
+		nil
+}
+
+func handleGuestRegister(conn *websocket.Conn, req *request) (*user, string, error) {
+
+	guestUUID, room, name := req.GUUID, req.RoomID, req.Name
+	return &user{
+			conn,
+			guestUUID,
+			name,
+			true,
+		},
+		room,
+		nil
+}
 
 func (h *Hub) handleUserEvent(req *request, conn *websocket.Conn) {
 

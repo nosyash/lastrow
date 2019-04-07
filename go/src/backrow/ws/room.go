@@ -55,8 +55,16 @@ func (h *Hub) add(user *user) {
 			return
 		}
 	}
+	if user.Guest {
+		h.cache.AddGuest <- &cache.User{
+			Name:  user.Name,
+			Guest: true,
+			GUUID: user.UUID,
+		}
+	} else {
+		h.cache.AddUser <- user.UUID
+	}
 
-	h.cache.Add <- user.UUID
 	h.hub[user.UUID] = user.Conn
 
 	fmt.Printf("Add [%s]\t%s\n", user.UUID, user.Conn.RemoteAddr().String())

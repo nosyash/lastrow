@@ -41,10 +41,13 @@ func (rh *RoomsHub) registerNewConn(conn *websocket.Conn) {
 		sendError(conn, "Requested room is not exists")
 		return
 	}
-	_, err = rh.db.GetUser(user.UUID)
-	if err == mgo.ErrNotFound {
-		sendError(conn, "Cannot find user with given user_uuid")
-		return
+
+	if !user.Guest {
+		_, err = rh.db.GetUser(user.UUID)
+		if err == mgo.ErrNotFound {
+			sendError(conn, "Cannot find user with given user_uuid")
+			return
+		}
 	}
 
 	for room := range rh.rhub {
