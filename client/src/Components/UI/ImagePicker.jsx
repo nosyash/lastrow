@@ -186,7 +186,7 @@ class CropTool extends Component {
         </div>
         <div className="crop-controls">
           <Slider
-            classes={{ track: 'slider-track', thumb: 'slider-thumb' }}
+            classes={{ root: 'slider-root', track: 'slider-track', thumb: 'slider-thumb' }}
             value={zoom}
             min={1}
             max={10}
