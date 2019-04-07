@@ -30,7 +30,6 @@ export default function parseMarkup({ body, emojiList, name }) {
         '<img className="emote" src="https://files.catbox.moe/iq25ih.png" srcSet="https://files.catbox.moe/iq25ih.png 1x, https://files.catbox.moe/igwn7x.png 2x" title="$1$2$3"></img>'
       );
   }
-  console.log(tempBody);
   if (!preformated) {
     if (EMOTE.test(tempBody)) {
       console.log(emojiList);

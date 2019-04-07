@@ -40,7 +40,7 @@ class ChatHeader extends Component {
                 key={i}
                 name={u.name}
                 // id={u.id}
-                color={u.name_color}
+                color={u.color}
               />
             ))}
           </div>

@@ -5,12 +5,11 @@ import parseMarkup from '../../../utils/markup';
 import playSound from '../../../utils/HandleSounds';
 
 class ChatMessage extends Component {
-  // state = {
-  //   hideHeader: false,
-  // };
-  shouldComponentUpdate(nextProps, nextState) {
-    return false;
-  }
+  // shouldComponentUpdate(nextProps, nextState) {
+  //   const { tempBody } = this.state;
+  // if (nextState.tempBody !== tempBody) return true;
+  // return false;
+  // }
 
   getClassName = classes => {
     const { online } = classes;
@@ -32,7 +31,7 @@ class ChatMessage extends Component {
 
     const className = this.getClassName({ online, highlight });
     const { tempBody, hideHeader } = parseMarkup({ body, emojiList, name });
-
+    // this.setState({ tempBody });
     const args = {
       backgroundImage,
       backgroundColor,
@@ -46,12 +45,13 @@ class ChatMessage extends Component {
 }
 
 function mapStateToProps(state) {
-  return { emojiList: state.emojis.list, name: state.profile.name };
+  return { emojiList: state.emojis.list };
 }
 
 export default connect(mapStateToProps)(ChatMessage);
 
 const RenderMessage = props => {
+  console.log('rendered');
   const { _ref, id, handleProfile, renderHeader, hideHeader, name, tempBody } = props;
   const { color, className, backgroundColor, backgroundImage } = props;
   return (

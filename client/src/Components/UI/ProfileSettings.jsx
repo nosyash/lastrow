@@ -81,7 +81,9 @@ class ProfileSettings extends Form {
     const { profile, updateProfile } = this.props;
     if (data.name || data.color) {
       console.log('submit name');
-      const res = await http.post(api.API_USER(), api.UPDATE_USER(data.name, data.color));
+      const name = data.name || profile.name;
+      const color = data.color || profile.color;
+      const res = await http.post(api.API_USER(), api.UPDATE_USER(name, color));
       updateProfile({ ...profile, ...res.data });
     }
 
@@ -93,13 +95,16 @@ class ProfileSettings extends Form {
       );
       console.log(res);
     }
+
     if (data.image) {
       console.log('submit pass');
       const res = await http.post(api.API_USER(), api.UPDATE_IMAGE('.jpg', data.image));
       updateProfile({ ...profile, ...res.data });
       console.log(res);
     }
+
     if (data.password) console.log('submit passes');
+
     this.setState({ data: {} });
     this.schema = {};
   };

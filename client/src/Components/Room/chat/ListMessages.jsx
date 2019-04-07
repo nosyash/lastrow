@@ -40,14 +40,13 @@ class ListMessages extends Component {
     if (obj.roomID !== roomID) return;
     return (
       <Message
-        // color={o.color}
-        // name={o.name}
-        // id={o.id}
+        key={obj.id}
+        color={obj.color}
+        name={obj.name}
         highlight={highlight}
         online
-        key={i}
         renderHeader={renderHeader}
-        image="https://up.bona.cafe/src/e2/bc820d04437e672d68a3f729e1dd99ad5b1c03.png"
+        image={obj.image}
         body={obj.message}
       />
     );
