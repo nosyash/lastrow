@@ -61,6 +61,7 @@ func (s *Server) Run() {
 	r.HandleFunc("/api/auth", s.authHandler).Methods("POST")
 	r.HandleFunc("/api/ws", s.acceptWebsocket).Methods("GET")
 
+	r.HandleFunc("/r/{room}", s.redirectToClient).Methods("GET")
 	r.PathPrefix(s.imageServer.ImgsPath).Handler(s.imageServer).Methods("GET")
 	r.PathPrefix("/").Handler(s).Methods("GET")
 
@@ -77,6 +78,10 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (is ImageServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, filepath.Join(is.UplPath, r.URL.Path))
+}
+
+func (s *Server) redirectToClient(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, filepath.Join("public", "index.html"))
 }
 
 func (s *Server) acceptWebsocket(w http.ResponseWriter, r *http.Request) {
