@@ -20,7 +20,7 @@ class Message extends Component {
   };
 
   render() {
-    const { online, color, image, highlight, body, id } = this.props;
+    const { online, color, image, highlight, body } = this.props;
     const { name, emojiList } = this.props;
 
     const backgroundImage = image ? `url(${image})` : '';
