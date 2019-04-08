@@ -136,7 +136,7 @@
       {
         "trailingComma": "es5",
         "singleQuote": true,
-        "printWidth": 95
+        "printWidth": 80
       }
     ],
     "no-case-declarations":"warn",

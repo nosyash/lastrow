@@ -57,15 +57,19 @@ class SubtitlesContainer extends Component {
   }
 }
 
-const RenderSubs = ({ text }) => (
-  <div className={`subs-container${text.length > 3 ? ' subs-container_minified' : ''}`}>
-    {text.map((el, i) => (
-      <div key={i} className="sub-line">
-        {el.text}
-      </div>
-    ))}
-  </div>
-);
+const RenderSubs = ({ text }) => {
+  const minify = text.length > 3;
+  const classes = `subs-container${minify ? ' subs-container_minified' : ''}`;
+  return (
+    <div className={classes}>
+      {text.map((currentSub, index) => (
+        <div key={index} className="sub-line">
+          {currentSub.text}
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const mapStateToProps = state => ({
   media: state.Media,

@@ -20,14 +20,22 @@ class ImagePicker extends Component {
 
   componentDidMount() {
     const { startEvents, endEvents } = this;
-    startEvents.map(ev => document.addEventListener(ev, this.handleDropStart, false));
-    endEvents.map(ev => document.addEventListener(ev, this.handleDropEnd, false));
+    startEvents.map(ev =>
+      document.addEventListener(ev, this.handleDropStart, false)
+    );
+    endEvents.map(ev =>
+      document.addEventListener(ev, this.handleDropEnd, false)
+    );
   }
 
   componentWillUnmount() {
     const { startEvents, endEvents } = this;
-    startEvents.map(ev => document.removeEventListener(ev, this.handleDropStart, false));
-    endEvents.map(ev => document.removeEventListener(ev, this.handleDropEnd, false));
+    startEvents.map(ev =>
+      document.removeEventListener(ev, this.handleDropStart, false)
+    );
+    endEvents.map(ev =>
+      document.removeEventListener(ev, this.handleDropEnd, false)
+    );
   }
 
   handleDropStart = e => {
@@ -96,7 +104,14 @@ class ImagePicker extends Component {
 }
 
 const RenderPicker = props => {
-  const { onClick, onClose, onInput, onRef, onSelectAnother, onImageGet } = props;
+  const {
+    onClick,
+    onClose,
+    onInput,
+    onRef,
+    onSelectAnother,
+    onImageGet,
+  } = props;
   const { className, base64 } = props;
   return (
     <div className="float-element image-picker_container">
@@ -107,7 +122,11 @@ const RenderPicker = props => {
           <div onClick={onClick} className={className}>
             Click to select file or drop it to the field
           </div>
-          <button onClick={onClose} type="button" className="button button-cancel">
+          <button
+            onClick={onClose}
+            type="button"
+            className="button button-cancel"
+          >
             Close
           </button>
         </React.Fragment>
@@ -155,7 +174,11 @@ class CropTool extends Component {
     const { onImageGet } = this.props;
 
     const options = { width: 500, height: 500 };
-    const croppedImage = await getCroppedImg(base64, croppedAreaPixels, options);
+    const croppedImage = await getCroppedImg(
+      base64,
+      croppedAreaPixels,
+      options
+    );
     onImageGet(croppedImage);
   };
 
@@ -186,7 +209,11 @@ class CropTool extends Component {
         </div>
         <div className="crop-controls">
           <Slider
-            classes={{ root: 'slider-root', track: 'slider-track', thumb: 'slider-thumb' }}
+            classes={{
+              root: 'slider-root',
+              track: 'slider-track',
+              thumb: 'slider-thumb',
+            }}
             value={zoom}
             min={1}
             max={10}
@@ -195,7 +222,11 @@ class CropTool extends Component {
             onChange={(e, z) => this.onZoomChange(z)}
           />
           <div className="controls-container">
-            <button onClick={this.saveCrop} type="button" className="button button-cancel">
+            <button
+              onClick={this.saveCrop}
+              type="button"
+              className="button button-cancel"
+            >
               Save
             </button>
             {base64 && (

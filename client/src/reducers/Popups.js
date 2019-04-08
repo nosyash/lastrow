@@ -9,7 +9,7 @@ const Popups = (state = initialState, action) => {
     case types.ADD_POPUP: {
       const tempList = [...state.list, action.payload];
       const list = tempList.filter(
-        (obj, pos, arr) => arr.map(mapObj => mapObj.id).indexOf(obj.id) === pos
+        (obj, pos, arr) => arr.map(popup => popup.id).indexOf(obj.id) === pos
       );
       return { list };
     }

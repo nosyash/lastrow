@@ -5,26 +5,34 @@ import * as types from '../../constants/ActionTypes';
 
 class Popups extends Component {
   GetPopup = ({ element }) => (
-    <div className="popup" style={{ ...getCenteredRect(element.width, element.height) }}>
+    <div
+      className="popup"
+      style={{ ...getCenteredRect(element.width, element.height) }}
+    >
       {element.el}
     </div>
   );
+
+  handleClose = (e, id, removePopup) =>
+    e.target.matches('.close-area') ? removePopup(id) : null;
 
   render() {
     const { popups, removePopup } = this.props;
     const { GetPopup } = this;
     return (
       <div className="popups_container">
-        {popups.map((element, i) => {
-          const { noBG } = element;
-          if (noBG) return <GetPopup key={i} element={element} />;
+        {popups.map((popup, index) => {
+          const { noBG } = popup;
+          if (noBG) {
+            return <GetPopup key={index} element={popup} />;
+          }
           return (
             <div
-              key={i}
-              onMouseDown={e => handleClose(e, element.id, removePopup)}
+              key={index}
+              onMouseDown={e => this.handleClose(e, popup.id, removePopup)}
               className="close-area"
             >
-              <GetPopup element={element} />
+              <GetPopup element={popup} />
             </div>
           );
         })}
@@ -32,9 +40,6 @@ class Popups extends Component {
     );
   }
 }
-
-const handleClose = (e, id, removePopup) =>
-  e.target.matches('.close-area') ? removePopup(id) : null;
 
 const mapStateToProps = state => ({
   popups: state.Popups.list,

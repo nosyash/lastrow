@@ -19,7 +19,7 @@ class ControlPanel extends Component {
   };
 
   handlePlaylist = id => {
-    const { addPopup, togglePopup } = this.props;
+    const { togglePopup } = this.props;
     togglePopup({
       id,
       el: <Playlist id={id} />,
@@ -46,7 +46,11 @@ class ControlPanel extends Component {
     const { logged } = profile;
     return (
       <div className="control-panel_container">
-        <RenderPlaylister upNext={upNext} logged={logged} onClick={this.handleClick} />
+        <RenderPlaylister
+          upNext={upNext}
+          logged={logged}
+          onClick={this.handleClick}
+        />
         <div className="divider" />
         {logged && (
           <RenderProfile
@@ -78,7 +82,12 @@ const RenderPlaylister = ({ onClick, logged, upNext }) => (
     )}
     <div className="item">
       <div>Up next:</div>
-      <a className="control" target="_blank" rel="noopener noreferrer" href={upNext.url}>
+      <a
+        className="control"
+        target="_blank"
+        rel="noopener noreferrer"
+        href={upNext.url}
+      >
         {upNext.title}
       </a>
       {/* <i className="fa fa-arrow-right" /> */}
@@ -101,7 +110,10 @@ const RenderProfile = ({ profile, onProfileSettings }) => {
   const backgroundImage = `url(${image})`;
   return (
     <div className="mini-profile">
-      <div style={{ backgroundColor, backgroundImage }} className="chat-avatar" />
+      <div
+        style={{ backgroundColor, backgroundImage }}
+        className="chat-avatar"
+      />
       <div className="mini-profile_second-section">
         <span style={{ color }} className="chat-name">
           {name}
@@ -119,7 +131,10 @@ const RenderProfile = ({ profile, onProfileSettings }) => {
   );
 };
 
-const mapStateToProps = state => ({ profile: state.profile, playlist: state.Media.playlist });
+const mapStateToProps = state => ({
+  profile: state.profile,
+  playlist: state.Media.playlist,
+});
 
 const mapDispatchToProps = {
   addPopup: payload => ({ type: types.ADD_POPUP, payload }),

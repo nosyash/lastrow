@@ -116,7 +116,10 @@ class ProfileSettings extends Form {
 
     if (data.image) {
       console.log('submit pass');
-      const res = await http.post(api.API_USER(), api.UPDATE_IMAGE('.jpg', data.image));
+      const res = await http.post(
+        api.API_USER(),
+        api.UPDATE_IMAGE('.jpg', data.image)
+      );
       updateProfile({ ...profile, ...res.data });
       console.log(res);
     }
@@ -176,11 +179,26 @@ const RenderForm = props => {
       <RenderControls onClick={onControlClick} />
       <form onSubmit={handleSubmit}>
         {name !== null &&
-          renderInput({ name: 'name', icon: 'user', autoFocus: true, placeholder: 'Name' })}
+          renderInput({
+            name: 'name',
+            icon: 'user',
+            autoFocus: true,
+            placeholder: 'Name',
+          })}
         {color !== null &&
-          renderInput({ name: 'color', icon: 'user', autoFocus: true, placeholder: 'Color' })}
+          renderInput({
+            name: 'color',
+            icon: 'user',
+            autoFocus: true,
+            placeholder: 'Color',
+          })}
         {image !== null &&
-          renderInput({ name: 'image', icon: 'user', autoFocus: true, placeholder: 'Image' })}
+          renderInput({
+            name: 'image',
+            icon: 'user',
+            autoFocus: true,
+            placeholder: 'Image',
+          })}
         {password !== null &&
           renderInput({
             name: 'password',
@@ -199,7 +217,11 @@ const RenderForm = props => {
           })}
         <div className="controls-container">
           {Object.entries(data).length !== 0 && renderButton('Save changes')}
-          <button onClick={onClose} type="button" className="button button-cancel">
+          <button
+            onClick={onClose}
+            type="button"
+            className="button button-cancel"
+          >
             Close
           </button>
         </div>
@@ -217,10 +239,10 @@ const RenderControls = ({ onClick }) => {
   ];
   return (
     <div className="profile-controls">
-      {constrols.map((el, i) => (
-        <div key={i}>
-          <span onClick={onClick} data-name={el.name} className="control">
-            {`Change ${el.name}`}
+      {constrols.map((control, index) => (
+        <div key={index}>
+          <span onClick={onClick} data-name={control.name} className="control">
+            {`Change ${control.name}`}
           </span>
         </div>
       ))}

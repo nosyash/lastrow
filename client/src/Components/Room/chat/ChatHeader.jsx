@@ -18,12 +18,13 @@ class ChatHeader extends Component {
 
   handleClick = e => {
     const { target } = e;
-    if (!target.closest('.user-icon') && !target.closest('.mini-profile'))
+    if (!target.closest('.user-icon') && !target.closest('.mini-profile')) {
       this.setState({ showProfile: false });
+    }
   };
 
-  handleUserClick = u => {
-    this.setState({ showProfile: true, currentProfile: u });
+  handleUserClick = userProfile => {
+    this.setState({ showProfile: true, currentProfile: userProfile });
   };
 
   render() {
@@ -34,13 +35,12 @@ class ChatHeader extends Component {
         <div className="chat-header">
           {showProfile && <MiniProfile currentProfile={currentProfile} />}
           <div className="chat-header_userlist">
-            {userList.map((u, i) => (
+            {userList.map((userProfile, index) => (
               <UserIcon
-                onClick={() => this.handleUserClick(u)}
-                key={i}
-                name={u.name}
-                // id={u.id}
-                color={u.color}
+                onClick={() => this.handleUserClick(userProfile)}
+                key={index}
+                name={userProfile.name}
+                color={userProfile.color}
               />
             ))}
           </div>
@@ -57,7 +57,12 @@ class UserIcon extends Component {
   render() {
     const { id, onClick, name, color } = this.props;
     return (
-      <span onClick={() => onClick(id)} title={name} _id={id} className="user-icon">
+      <span
+        onClick={() => onClick(id)}
+        title={name}
+        _id={id}
+        className="user-icon"
+      >
         <i style={{ color }} className="fa fa-user" />
       </span>
     );

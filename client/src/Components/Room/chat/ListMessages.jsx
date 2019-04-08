@@ -3,51 +3,37 @@ import { connect } from 'react-redux';
 import Message from './Message';
 
 class ListMessages extends Component {
-  constructor() {
-    super();
-    this.chatMessages = React.createRef();
-  }
-
-  componentDidMount() {
-    const { socket } = this.props;
-
-    socket.addEventListener('message', () => this.handleMessage());
-  }
-
-  componentWillUnmount() {
-    const { socket } = this.props;
-
-    socket.removeEventListener('message', () => this.handleMessage());
-  }
-
-  handleMessage = () => {
-    // const { current } = this.chatMessages;
-    // current.scrollTo(0, 100000);
-  };
-
   componentDidUpdate() {
-    const { current } = this.chatMessages;
-    current.scrollTo(0, 100000);
+    this.messages.scrollTo(0, 100000);
   }
 
-  renderSingleMessage = (obj, i) => {
+  renderSingleMessage = (currentMessage, i) => {
     const { list, roomID, selfName } = this.props;
     let renderHeader = true;
-    if (list[i - 1] && list[i - 1].name === obj.name) renderHeader = false;
-    const regex = new RegExp(`@${selfName}`);
+    const previousMessage = list[i - 1];
+    if (previousMessage && previousMessage.name === currentMessage.name) {
+      renderHeader = false;
+    }
+
+    const nameRegExp = new RegExp(`@${selfName}`);
     let highlight = false;
-    if (regex.test(obj.message)) highlight = true;
-    if (obj.roomID !== roomID) return;
+    if (nameRegExp.test(currentMessage.message)) {
+      highlight = true;
+    }
+
+    if (currentMessage.roomID !== roomID) {
+      return;
+    }
     return (
       <Message
-        key={obj.id}
-        color={obj.color}
-        name={obj.name}
+        key={currentMessage.id}
+        color={currentMessage.color}
+        name={currentMessage.name}
         highlight={highlight}
         online
         renderHeader={renderHeader}
-        image={obj.image}
-        body={obj.message}
+        image={currentMessage.image}
+        body={currentMessage.message}
       />
     );
   };
@@ -55,19 +41,17 @@ class ListMessages extends Component {
   render() {
     const { list } = this.props;
     return (
-      <div ref={this.chatMessages} className="chat-messages">
-        {list.map((o, i) => this.renderSingleMessage(o, i))}
+      <div ref={ref => (this.messages = ref)} className="chat-messages">
+        {list.map((message, index) => this.renderSingleMessage(message, index))}
       </div>
     );
   }
 }
 
-function mapStateToProps(state) {
-  return {
-    list: state.Chat.list,
-    selfName: state.profile.name,
-    roomID: state.MainStates.roomID,
-  };
-}
+const mapStateToProps = state => ({
+  list: state.Chat.list,
+  selfName: state.profile.name,
+  roomID: state.MainStates.roomID,
+});
 
 export default connect(mapStateToProps)(ListMessages);
