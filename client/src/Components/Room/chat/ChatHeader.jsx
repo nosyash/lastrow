@@ -41,6 +41,7 @@ class ChatHeader extends Component {
                 key={index}
                 name={userProfile.name}
                 color={userProfile.color}
+                guest={userProfile.guest}
               />
             ))}
           </div>
@@ -55,7 +56,8 @@ class ChatHeader extends Component {
 
 class UserIcon extends Component {
   render() {
-    const { id, onClick, name, color } = this.props;
+    const { id, onClick, name, color, guest } = this.props;
+    const classes = guest ? 'fa fa-user-secret' : 'fa fa-user';
     return (
       <span
         onClick={() => onClick(id)}
@@ -63,7 +65,7 @@ class UserIcon extends Component {
         _id={id}
         className="user-icon"
       >
-        <i style={{ color }} className="fa fa-user" />
+        <i style={{ color }} className={classes} />
       </span>
     );
   }

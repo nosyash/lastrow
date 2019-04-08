@@ -4,7 +4,7 @@ import safelySetInnerHTML from '../../../utils/safelySetInnerHTML ';
 import parseMarkup from '../../../utils/markup';
 import playSound from '../../../utils/HandleSounds';
 
-class ChatMessage extends Component {
+class Message extends Component {
   // shouldComponentUpdate(nextProps, nextState) {
   //   const { tempBody } = this.state;
   // if (nextState.tempBody !== tempBody) return true;
@@ -15,12 +15,12 @@ class ChatMessage extends Component {
     const { online } = classes;
     let { highlight } = classes;
     const onlineClass = online ? 'online' : 'offline';
-    if (highlight) highlight = highlight ? 'highlight' : '';
+    highlight = highlight ? 'highlight' : '';
     return `chat-message ${onlineClass} ${highlight}`;
   };
 
   render() {
-    const { online, color = '#666768', image, highlight, body } = this.props;
+    const { online, color, image, highlight, body, id } = this.props;
     const { name, emojiList } = this.props;
 
     const backgroundImage = image ? `url(${image})` : '';
@@ -48,7 +48,7 @@ function mapStateToProps(state) {
   return { emojiList: state.emojis.list };
 }
 
-export default connect(mapStateToProps)(ChatMessage);
+export default connect(mapStateToProps)(Message);
 
 const RenderMessage = props => {
   const { color, className, backgroundColor, backgroundImage } = props;
@@ -57,7 +57,7 @@ const RenderMessage = props => {
   const { handleProfile } = props;
   return (
     <React.Fragment>
-      <div _id={id} className={className}>
+      <div data-id={id} className={className}>
         {renderHeader && !hideHeader && (
           <div className="chat-message_header">
             <div

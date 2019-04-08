@@ -8,10 +8,11 @@ class ListMessages extends Component {
   }
 
   renderSingleMessage = (currentMessage, i) => {
+    console.log(currentMessage);
     const { list, roomID, selfName } = this.props;
     let renderHeader = true;
     const previousMessage = list[i - 1];
-    if (previousMessage && previousMessage.name === currentMessage.name) {
+    if (previousMessage && previousMessage.__id === currentMessage.__id) {
       renderHeader = false;
     }
 
@@ -31,6 +32,7 @@ class ListMessages extends Component {
         name={currentMessage.name}
         highlight={highlight}
         online
+        id={currentMessage.__id}
         renderHeader={renderHeader}
         image={currentMessage.image}
         body={currentMessage.message}
