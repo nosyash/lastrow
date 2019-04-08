@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Joi from 'joi-browser';
+import { toast } from 'react-toastify';
 import Form from './Form';
 import * as api from '../../constants/apiActions';
 import * as types from '../../constants/ActionTypes';
 import http from '../../utils/httpServices';
 import ImagePicker from './ImagePicker';
+import { toastOpts } from '../../constants';
 
 class ProfileSettings extends Form {
   state = {
@@ -80,16 +82,18 @@ class ProfileSettings extends Form {
     const id = 'ImagePicker';
     addPopup({
       id,
-      el: <ImagePicker id={id} onImageUpdate={this.handleUpdateImage} />,
+      el: <ImagePicker id={id} onImageUpdate={this.handleImageUpdate} />,
       width: 600,
       height: 600,
     });
   };
 
-  handleUpdateImage = async data => {
+  handleImageUpdate = async data => {
     const { updateProfile } = this.props;
     const res = await http.post(api.API_USER(), api.UPDATE_IMAGE(data));
-    if (!res.data) return;
+    if (!res.data) {
+      return;
+    }
     updateProfile({ ...res.data });
   };
 
@@ -98,7 +102,6 @@ class ProfileSettings extends Form {
     const { data } = this.state;
     const { profile, updateProfile } = this.props;
     if (data.name || data.color) {
-      console.log('submit name');
       const name = data.name || profile.name;
       const color = data.color || profile.color;
       const res = await http.post(api.API_USER(), api.UPDATE_USER(name, color));
@@ -106,25 +109,22 @@ class ProfileSettings extends Form {
     }
 
     if (data.password && data.passwordNew) {
-      console.log('submit pass');
       const res = await http.post(
         api.API_USER(),
         api.UPDATE_PASSWORD(data.password, data.passwordNew)
       );
-      console.log(res);
+      if (res.data) {
+        toast.success('Password successfully changed', toastOpts);
+      }
     }
 
     if (data.image) {
-      console.log('submit pass');
       const res = await http.post(
         api.API_USER(),
         api.UPDATE_IMAGE('.jpg', data.image)
       );
       updateProfile({ ...profile, ...res.data });
-      console.log(res);
     }
-
-    if (data.password) console.log('submit passes');
 
     this.setState({ data: {} });
     this.schema = {};
