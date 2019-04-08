@@ -1,11 +1,13 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import Joi from 'joi-browser';
+import { toast } from 'react-toastify';
 import Form from './Form';
 import * as api from '../../constants/apiActions';
 import * as types from '../../constants/ActionTypes';
 import http from '../../utils/httpServices';
 import ImagePicker from './ImagePicker';
+import { toastOpts } from '../../constants';
 
 class ProfileSettings extends Form {
   state = {
@@ -80,25 +82,28 @@ class ProfileSettings extends Form {
     const id = 'ImagePicker';
     addPopup({
       id,
-      el: <ImagePicker id={id} onImageUpdate={this.handleUpdateImage} />,
+      el: <ImagePicker id={id} onImageUpdate={this.handleImageUpdate} />,
       width: 600,
       height: 600,
     });
   };
 
-  handleUpdateImage = async data => {
+  handleImageUpdate = async data => {
     const { updateProfile } = this.props;
     const res = await http.post(api.API_USER(), api.UPDATE_IMAGE(data));
-    if (!res.data) return;
+    if (!res.data) {
+      return;
+    }
     updateProfile({ ...res.data });
   };
 
   handleSubmit = async e => {
     e.preventDefault();
+    const { updateProfile } = this.props;
+    const { profile } = this.props;
     const { data } = this.state;
-    const { profile, updateProfile } = this.props;
+
     if (data.name || data.color) {
-      console.log('submit name');
       const name = data.name || profile.name;
       const color = data.color || profile.color;
       const res = await http.post(api.API_USER(), api.UPDATE_USER(name, color));
@@ -106,22 +111,20 @@ class ProfileSettings extends Form {
     }
 
     if (data.password && data.passwordNew) {
-      console.log('submit pass');
+      const { password, passwordNew } = data;
       const res = await http.post(
         api.API_USER(),
-        api.UPDATE_PASSWORD(data.password, data.passwordNew)
+        api.UPDATE_PASSWORD(password, passwordNew)
       );
-      console.log(res);
+      if (res.data) {
+        toast.success('Password successfully changed', toastOpts);
+      }
     }
 
     if (data.image) {
-      console.log('submit pass');
-      const res = await http.post(api.API_USER(), api.UPDATE_IMAGE('.jpg', data.image));
+      const res = await http.post(api.API_USER(), api.UPDATE_IMAGE(data.image));
       updateProfile({ ...profile, ...res.data });
-      console.log(res);
     }
-
-    if (data.password) console.log('submit passes');
 
     this.setState({ data: {} });
     this.schema = {};
@@ -176,11 +179,26 @@ const RenderForm = props => {
       <RenderControls onClick={onControlClick} />
       <form onSubmit={handleSubmit}>
         {name !== null &&
-          renderInput({ name: 'name', icon: 'user', autoFocus: true, placeholder: 'Name' })}
+          renderInput({
+            name: 'name',
+            icon: 'user',
+            autoFocus: true,
+            placeholder: 'Name',
+          })}
         {color !== null &&
-          renderInput({ name: 'color', icon: 'user', autoFocus: true, placeholder: 'Color' })}
+          renderInput({
+            name: 'color',
+            icon: 'user',
+            autoFocus: true,
+            placeholder: 'Color',
+          })}
         {image !== null &&
-          renderInput({ name: 'image', icon: 'user', autoFocus: true, placeholder: 'Image' })}
+          renderInput({
+            name: 'image',
+            icon: 'user',
+            autoFocus: true,
+            placeholder: 'Image',
+          })}
         {password !== null &&
           renderInput({
             name: 'password',
@@ -199,7 +217,11 @@ const RenderForm = props => {
           })}
         <div className="controls-container">
           {Object.entries(data).length !== 0 && renderButton('Save changes')}
-          <button onClick={onClose} type="button" className="button button-cancel">
+          <button
+            onClick={onClose}
+            type="button"
+            className="button button-cancel"
+          >
             Close
           </button>
         </div>
@@ -217,10 +239,10 @@ const RenderControls = ({ onClick }) => {
   ];
   return (
     <div className="profile-controls">
-      {constrols.map((el, i) => (
-        <div key={i}>
-          <span onClick={onClick} data-name={el.name} className="control">
-            {`Change ${el.name}`}
+      {constrols.map((control, index) => (
+        <div key={index}>
+          <span onClick={onClick} data-name={control.name} className="control">
+            {`Change ${control.name}`}
           </span>
         </div>
       ))}

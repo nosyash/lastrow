@@ -9,14 +9,25 @@ const Popups = (state = initialState, action) => {
     case types.ADD_POPUP: {
       const tempList = [...state.list, action.payload];
       const list = tempList.filter(
-        (obj, pos, arr) => arr.map(mapObj => mapObj.id).indexOf(obj.id) === pos
+        (obj, pos, arr) => arr.map(popup => popup.id).indexOf(obj.id) === pos
       );
       return { list };
     }
+
     case types.REMOVE_POPUP: {
       const filtered = state.list.filter(el => el.id !== action.payload);
       return { list: [...filtered] };
     }
+
+    case types.TOGGLE_POPUP: {
+      const currentElement = action.payload;
+      let { list } = state;
+      const shouldRemove = list.find(el => currentElement.id === el.id);
+      if (shouldRemove) list = list.filter(el => el.id !== currentElement.id);
+      else list = [...list, currentElement];
+      return { list };
+    }
+
     default:
       return state;
   }

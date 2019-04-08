@@ -60,29 +60,6 @@ export const UPDATE_PASSWORD = (cur_passwd, new_passwd) =>
   });
 
 // WebSocket
-
-// export const SEND_MESSAGE = (message, roomID, uuid) =>
-//   JSON.stringify({
-//     action: {
-//       name: 'message',
-//       type: 'send',
-//       body: { status: 200, message },
-//     },
-//     roomID,
-//     uuid,
-//   });
-
-// export const WS_HANDSHAKE = (roomID, uuid) =>
-//   JSON.stringify({
-//     action: {
-//       name: 'connect',
-//       type: 'register',
-//       body: { status: 200, message: '' },
-//     },
-//     roomID,
-//     uuid,
-//   });
-
 export const USER_REGISTER = (room_id, user_uuid) =>
   JSON.stringify({
     action: 'user_register',
@@ -90,12 +67,12 @@ export const USER_REGISTER = (room_id, user_uuid) =>
     user_uuid,
   });
 
-export const GUEST_REGISTER = (room_id, user_uuid) =>
+export const GUEST_REGISTER = (room_id, user_uuid, name) =>
   JSON.stringify({
     action: 'guest_register',
-    room_id: 'wjsn',
-    guest_uuid: 'тута какой-нибудь 32х значиный uuid',
-    name: 'gupok_pupok',
+    room_id,
+    name,
+    user_uuid,
   });
 
 export const SEND_MESSAGE = (message, user_uuid) =>

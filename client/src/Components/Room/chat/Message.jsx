@@ -51,17 +51,27 @@ function mapStateToProps(state) {
 export default connect(mapStateToProps)(ChatMessage);
 
 const RenderMessage = props => {
-  const { _ref, id, handleProfile, renderHeader, hideHeader, name, tempBody } = props;
   const { color, className, backgroundColor, backgroundImage } = props;
+  const { _ref, id, name, tempBody } = props;
+  const { renderHeader, hideHeader } = props;
+  const { handleProfile } = props;
   return (
     <React.Fragment>
       <div _id={id} className={className}>
         {renderHeader && !hideHeader && (
           <div className="chat-message_header">
-            <div style={{ backgroundImage, backgroundColor }} className="chat-avatar" />
-            <span ref={_ref} onClick={handleProfile} style={{ color }} className="chat-name">
+            <div
+              style={{ backgroundImage, backgroundColor }}
+              className="chat-avatar"
+            />
+            <span
+              ref={_ref}
+              onClick={handleProfile}
+              style={{ color }}
+              className="chat-name"
+            >
               {name}
-              <i name={name} className="chat-message_reply fa fa-reply" />
+              <i data-name={name} className="chat-message_reply fa fa-reply" />
             </span>
           </div>
         )}

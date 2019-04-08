@@ -6,7 +6,10 @@ const MiniProfile = ({ currentProfile }) => {
   const backgroundColor = !image ? color : '';
   return (
     <div className="mini-profile">
-      <div style={{ backgroundColor, backgroundImage }} className="chat-avatar" />
+      <div
+        style={{ backgroundColor, backgroundImage }}
+        className="chat-avatar"
+      />
       {name && (
         <span style={{ color }} className="chat-name">
           {name}

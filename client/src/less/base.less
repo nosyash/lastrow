@@ -161,6 +161,9 @@ body {
     position: unset;
     box-shadow: none;
     margin: 0;
+    background: transparent;
+    height: unset;
+    padding: 5px 10px 10px 10px;
   }
 
   .mini-profile_second-section {
@@ -172,6 +175,53 @@ body {
   .control {
     margin-right: 5px;
   }
+}
+
+.playlister {
+  padding: 5px 5px 0 5px;
+
+  .control-svg {
+    background-repeat: no-repeat;
+    background-size: 100%;
+    background-position: 50%;
+    height: 16px;
+    width: 16px;
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0 7px 0 0;
+  }
+
+  .show-playlist-icon {
+    background-image: @playlistShow;
+  }
+
+  .add-to-playlist-icon {
+    background-image: @playlistAdd;
+    height: 18px;
+    width: 18px;
+    margin: 0 4px 0 0;
+  }
+
+  .item {
+    margin-left: 7px;
+    word-break: keep-all;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+
+    .fa {
+      height: 16px;
+      width: 16px;
+      margin: 0 5px 0 5px;
+    }
+  }
+}
+
+
+
+.divider {
+  border-bottom: 1px solid rgb(59, 59, 59);
+  margin: 8px 10px;
 }
 
 
@@ -232,8 +282,8 @@ body {
   background: @darkThird;
   background-size: cover;
   // mask-image: @squareMask;
-  // .border-squircle(50%;
-  // 50%);
+  .border-squircle(50%;
+  50%);
   // mask-size: 100%;
   background-position: center;
   display: inline-block;
@@ -259,6 +309,7 @@ body {
   flex-direction: row;
   align-items: center;
   margin-bottom: 12px;
+  margin-top: 20px;
 }
 
 .chat-message_body {
@@ -606,8 +657,8 @@ body {
   border-radius: 10px;
   background-color: #aa9da3;
   // mask-image: @squareMask;
-  // .border-squircle(45%;
-  // 45%);
+  .border-squircle(45%;
+  45%);
   // mask-size: 100%;
 }
 
@@ -1132,41 +1183,16 @@ body {
   border-radius: 10px;
 }
 
-.border-squircle(@radius-x;
-
-@radius-y) {
-  .loop(@radius-x;
-  @radius-y;
-  359;
-  100% 0);
+// Playlist
+.playlist_container {
+  background: rgba(37, 39, 40, 0.9);
+  border-radius: 4px;
+  height: 100%;
+  box-shadow: none;
 }
 
-.loop(@radius-x;
-@radius-y;
-@counter;
-
-@list) when (@counter >=0) {
-  @cos-x: cos(unit(@counter, deg));
-  @x: pow(abs(@cos-x), unit(@radius-x) / 100) * 50 * abs(@cos-x + 0.0000000001) / (@cos-x + 0.0000000001)+50;
-
-  @sin-y: sin(unit(@counter, deg));
-  @y: pow(abs(@sin-y), unit(@radius-y) / 100) * 50 * abs(@sin-y + 0.0000000001) / (@sin-y + 0.0000000001)+50;
-
-  @percent-x: percentage(round(@x, 1) / 100);
-  @percent-y: percentage(round(@y, 1) / 100);
-
-  @new-list: @percent-x @percent-y,
-  @list;
-  .loop(@radius-x;
-  @radius-y;
-  (@counter - 1);
-  @new-list);
-}
-
-.loop(@radius-x;
-@radius-y;
-@counter;
-
-@list) when (@counter < 0) {
-  clip-path: polygon(@list);
+.paylist-item {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }

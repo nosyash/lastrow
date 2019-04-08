@@ -9,7 +9,21 @@ const InitialState = {
     start: 0,
     end: 0,
   },
-  playlist: [],
+  playlist: [
+    {
+      title: 'WJSN - Babyface',
+      url: 'https://www.youtube.com/watch?v=M2wCxfJrMqU',
+    },
+    {
+      title: '[MV] WJSN(우주소녀) _ La La Love',
+      url: 'https://www.youtube.com/watch?v=7BSCgMMJoHA',
+    },
+    {
+      title:
+        "(vlog) 🤓Taeyeon's Daily Life: Drive, Carpool Karaoke, Nutella Pancake",
+      url: 'https://www.youtube.com/watch?v=VkaBsETSR18',
+    },
+  ],
   duration: 0,
   currentTime: 0,
   playing: false,

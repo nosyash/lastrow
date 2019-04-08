@@ -32,7 +32,13 @@ class RoomListBase extends Component {
   render() {
     const { rooms } = this.props;
     const { connected } = this.state;
-    return <RenderList getRoomList={this.getRoomList} rooms={rooms} connected={connected} />;
+    return (
+      <RenderList
+        getRoomList={this.getRoomList}
+        rooms={rooms}
+        connected={connected}
+      />
+    );
   }
 }
 
@@ -45,13 +51,13 @@ const RenderList = ({ rooms, connected, getRoomList }) => (
       <div className="room-list_contaier">
         <div className="room-list_inner">
           {rooms &&
-            rooms.map((r, i) => (
+            rooms.map((room, index) => (
               <RoomItem
-                key={i}
-                title={r.title}
-                movie={r.play}
-                users={r.users}
-                link={`/r/${r.path}`}
+                key={index}
+                title={room.title}
+                movie={room.play}
+                users={room.users}
+                link={`/r/${room.path}`}
               />
             ))}
           {!connected && (

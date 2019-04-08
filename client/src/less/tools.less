@@ -1,0 +1,38 @@
+.border-squircle(@radius-x;
+
+@radius-y) {
+  .loop(@radius-x;
+  @radius-y;
+  359;
+  100% 0);
+}
+
+.loop(@radius-x;
+@radius-y;
+@counter;
+
+@list) when (@counter >=0) {
+  @cos-x: cos(unit(@counter, deg));
+  @x: pow(abs(@cos-x), unit(@radius-x) / 100) * 50 * abs(@cos-x + 0.0000000001) / (@cos-x + 0.0000000001)+50;
+
+  @sin-y: sin(unit(@counter, deg));
+  @y: pow(abs(@sin-y), unit(@radius-y) / 100) * 50 * abs(@sin-y + 0.0000000001) / (@sin-y + 0.0000000001)+50;
+
+  @percent-x: percentage(round(@x, 1) / 100);
+  @percent-y: percentage(round(@y, 1) / 100);
+
+  @new-list: @percent-x @percent-y,
+  @list;
+  .loop(@radius-x;
+  @radius-y;
+  (@counter - 1);
+  @new-list);
+}
+
+.loop(@radius-x;
+@radius-y;
+@counter;
+
+@list) when (@counter < 0) {
+  clip-path: polygon(@list);
+}

@@ -8,6 +8,7 @@ import getEmojiList from '../../utils/InitEmojis';
 import * as types from '../../constants/ActionTypes';
 import { roomExist } from '../../utils/apiRequests';
 import * as api from '../../constants/apiActions';
+import GuestAuth from '../UI/Popups/GuestAuth';
 
 let socket = null;
 
@@ -44,7 +45,8 @@ class RoomBase extends Component {
 
   init = async () => {
     let { cinemaMode, volume } = localStorage;
-    const { updateMainStates, updatePlayer, match, history } = this.props;
+    const { updateMainStates, updatePlayer } = this.props;
+    const { match, history, profile } = this.props;
     const { id: roomID } = match.params;
 
     // Check for room
@@ -58,12 +60,34 @@ class RoomBase extends Component {
     updateMainStates({ cinemaMode, roomID });
     updatePlayer({ volume });
     this.initEmojis();
+    if (!profile.logged) {
+      return this.handleNicknamePopup();
+    }
     this.initWebSocket();
     // this.initInfo();
   };
 
   initWebSocket = () => {
     this.webSocketConnect();
+  };
+
+  handleNicknamePopup = () => {
+    const { addPopup } = this.props;
+    const id = 'profile-settings';
+    addPopup({
+      id,
+      el: <GuestAuth onSubmit={this.handleGuestAuth} id={id} />,
+      width: 500,
+      height: 200,
+      noBG: true,
+    });
+  };
+
+  handleGuestAuth = name => {
+    const { removePopup, updateProfile } = this.props;
+    removePopup('profile-settings');
+    updateProfile({ name });
+    this.initWebSocket();
   };
 
   initWebSocketEvents = () => {
@@ -147,9 +171,10 @@ class RoomBase extends Component {
   };
 
   handleHandShake() {
-    const { roomID, setSocketState, uuid } = this.props;
-
-    socket.send(api.USER_REGISTER(roomID, uuid));
+    const { setSocketState } = this.props;
+    const { roomID, profile } = this.props;
+    if (profile.logged) socket.send(api.USER_REGISTER(roomID, profile.uuid));
+    else socket.send(api.GUEST_REGISTER(roomID, profile.uuid, profile.name));
     setSocketState(true);
   }
 
@@ -219,7 +244,7 @@ const mapStateToProps = state => ({
   roomID: state.MainStates.roomID,
   emojiList: state.emojis.list,
   userList: state.Chat.users,
-  uuid: state.profile.uuid,
+  profile: state.profile,
 });
 
 const mapDispatchToProps = {
@@ -230,6 +255,9 @@ const mapDispatchToProps = {
   updateUserList: payload => ({ type: types.UPDATE_USERLIST, payload }),
   setSocketState: payload => ({ type: types.UPDATE_SOCKET_STATE, payload }),
   updatePlayer: payload => ({ type: types.UPDATE_MEDIA, payload }),
+  addPopup: payload => ({ type: types.ADD_POPUP, payload }),
+  removePopup: payload => ({ type: types.REMOVE_POPUP, payload }),
+  updateProfile: payload => ({ type: types.UPDATE_PROFILE, payload }),
 };
 
 export default connect(

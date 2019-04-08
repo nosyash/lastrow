@@ -20,20 +20,30 @@ class ImagePicker extends Component {
 
   componentDidMount() {
     const { startEvents, endEvents } = this;
-    startEvents.map(ev => document.addEventListener(ev, this.handleDropStart, false));
-    endEvents.map(ev => document.addEventListener(ev, this.handleDropEnd, false));
+    startEvents.map(ev =>
+      document.addEventListener(ev, this.handleDropStart, false)
+    );
+    endEvents.map(ev =>
+      document.addEventListener(ev, this.handleDropEnd, false)
+    );
   }
 
   componentWillUnmount() {
     const { startEvents, endEvents } = this;
-    startEvents.map(ev => document.removeEventListener(ev, this.handleDropStart, false));
-    endEvents.map(ev => document.removeEventListener(ev, this.handleDropEnd, false));
+    startEvents.map(ev =>
+      document.removeEventListener(ev, this.handleDropStart, false)
+    );
+    endEvents.map(ev =>
+      document.removeEventListener(ev, this.handleDropEnd, false)
+    );
   }
 
   handleDropStart = e => {
     e.preventDefault();
     const { highlight } = this.state;
-    if (!highlight) this.setState({ highlight: true });
+    if (!highlight) {
+      this.setState({ highlight: true });
+    }
   };
 
   handleDropEnd = e => {
@@ -41,20 +51,31 @@ class ImagePicker extends Component {
     this.setState({ highlight: false });
 
     const { files } = e.dataTransfer;
-    if (files.length) this.handleFiles(files);
+    if (files.length) {
+      this.handleFiles(files);
+    }
   };
 
   handleFiles = files => {
     const file = files[0];
     let { type } = file;
 
-    if (!/image\//.test(type)) return;
-    type = type.replace(/image\//, '');
-    if (type === 'jpeg') type = 'jpg';
+    // Accept only "image" prefix
+    const prefix = /image\//;
+    if (!prefix.test(type)) {
+      return;
+    }
+
+    type = type.replace(prefix, '');
+    if (type === 'jpeg') {
+      type = 'jpg';
+    }
+
+    // Server accepts only type prefixed with dot...
     type = `.${type}`;
 
     const reader = new FileReader();
-    reader.readAsDataURL(files[0]);
+    reader.readAsDataURL(file);
     reader.onload = () => {
       const base64 = reader.result;
       this.setState({ base64 });
@@ -66,7 +87,10 @@ class ImagePicker extends Component {
 
   handleImage = data => {
     const { onImageUpdate } = this.props;
-    const base64 = data.replace(/^.*base64,/, '');
+
+    // Server accepts only values without base64 prefix...
+    const prefix = /^.*base64,/;
+    const base64 = data.replace(prefix, '');
     onImageUpdate(base64);
     this.handleClose();
   };
@@ -78,11 +102,11 @@ class ImagePicker extends Component {
 
   render() {
     const { highlight, base64 } = this.state;
-    const className = `drop-area${highlight ? ' drop-area_highlight' : ''}`;
+    const classes = `drop-area${highlight ? ' drop-area_highlight' : ''}`;
     return (
       <RenderPicker
         base64={base64}
-        className={className}
+        className={classes}
         onClose={this.handleClose}
         onImageGet={this.handleImage}
         inputEl={this.inputEl}
@@ -96,7 +120,8 @@ class ImagePicker extends Component {
 }
 
 const RenderPicker = props => {
-  const { onClick, onClose, onInput, onRef, onSelectAnother, onImageGet } = props;
+  const { onClick, onClose, onInput } = props;
+  const { onRef, onSelectAnother, onImageGet } = props;
   const { className, base64 } = props;
   return (
     <div className="float-element image-picker_container">
@@ -107,7 +132,11 @@ const RenderPicker = props => {
           <div onClick={onClick} className={className}>
             Click to select file or drop it to the field
           </div>
-          <button onClick={onClose} type="button" className="button button-cancel">
+          <button
+            onClick={onClose}
+            type="button"
+            className="button button-cancel"
+          >
             Close
           </button>
         </React.Fragment>
@@ -155,7 +184,11 @@ class CropTool extends Component {
     const { onImageGet } = this.props;
 
     const options = { width: 500, height: 500 };
-    const croppedImage = await getCroppedImg(base64, croppedAreaPixels, options);
+    const croppedImage = await getCroppedImg(
+      base64,
+      croppedAreaPixels,
+      options
+    );
     onImageGet(croppedImage);
   };
 
@@ -186,7 +219,11 @@ class CropTool extends Component {
         </div>
         <div className="crop-controls">
           <Slider
-            classes={{ root: 'slider-root', track: 'slider-track', thumb: 'slider-thumb' }}
+            classes={{
+              root: 'slider-root',
+              track: 'slider-track',
+              thumb: 'slider-thumb',
+            }}
             value={zoom}
             min={1}
             max={10}
@@ -195,7 +232,11 @@ class CropTool extends Component {
             onChange={(e, z) => this.onZoomChange(z)}
           />
           <div className="controls-container">
-            <button onClick={this.saveCrop} type="button" className="button button-cancel">
+            <button
+              onClick={this.saveCrop}
+              type="button"
+              className="button button-cancel"
+            >
               Save
             </button>
             {base64 && (

@@ -30,12 +30,13 @@ class NewRoom extends Form {
 
   handleSubmit = async e => {
     const { title, path } = this.state.data;
-    const { id, history, removePopup, onRoomsUpdate } = this.props;
+    const { id, history, removePopup } = this.props;
     e.preventDefault();
     const res = await http.post(api.API_ROOMS(), api.ROOM_CREATE(title, path));
-    if (!res.status) return;
+    if (!res.status) {
+      return;
+    }
     removePopup(id);
-    // onRoomsUpdate();
     history.push(`/r/${path}`);
   };
 
@@ -67,7 +68,11 @@ const RenderForm = ({ handleSubmit, renderInput, renderButton, onClose }) => (
       {renderInput({ name: 'path', icon: 'link', placeholder: 'Path' })}
       <div className="controls-container">
         {renderButton('Create')}
-        <button onClick={onClose} type="button" className="button button-cancel">
+        <button
+          onClick={onClose}
+          type="button"
+          className="button button-cancel"
+        >
           Cancel
         </button>
       </div>

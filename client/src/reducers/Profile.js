@@ -12,7 +12,9 @@ const profile = {
 };
 
 const Profile = (state = profile, action) => {
-  if (action.type === types.UPDATE_PROFILE) return { ...state, ...action.payload };
+  if (action.type === types.UPDATE_PROFILE) {
+    return { ...state, ...action.payload };
+  }
 
   return state;
 };

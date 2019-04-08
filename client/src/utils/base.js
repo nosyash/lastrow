@@ -24,7 +24,11 @@ export function setCursorStyle(cur) {
     unsetCursorStyle();
     return;
   }
-  document.documentElement.style.setProperty('cursor', `${cur}-resize`, 'important');
+  document.documentElement.style.setProperty(
+    'cursor',
+    `${cur}-resize`,
+    'important'
+  );
 }
 
 export function togglePointerEvent(element) {
@@ -67,4 +71,13 @@ export const getCenteredRect = (w, h) => {
   const left = (pW - width) / 2;
   const top = (pH - height) / 2;
   return { width, height, left, top };
+};
+
+export const getRandom = m => {
+  let s = '';
+  const r = 'abcdefABCDEF0123456789';
+  for (let i = 0; i < m; i++) {
+    s += r.charAt(Math.floor(Math.random() * r.length));
+  }
+  return s;
 };

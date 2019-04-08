@@ -55,9 +55,15 @@ class ChatContainer extends Component {
 
   handleGlobalMouseDown = e => {
     const { target } = e;
-    if (target.closest(RESIZER_SEL)) this.handleResizerDown(e, { resizer: true });
-    if (target.closest(DIVIDER_SEL)) this.handleResizerDown(e, { divider: true });
-    if (target.closest(CHAT_HEADER_SEL)) this.handleHeaderDown(e);
+    if (target.closest(RESIZER_SEL)) {
+      this.handleResizerDown(e, { resizer: true });
+    }
+    if (target.closest(DIVIDER_SEL)) {
+      this.handleResizerDown(e, { divider: true });
+    }
+    if (target.closest(CHAT_HEADER_SEL)) {
+      this.handleHeaderDown(e);
+    }
   };
 
   handleGlobalMouseMove = e => {

@@ -150,7 +150,9 @@ class Player extends Component {
     const { media } = this.props;
     return (
       <div className="video-player_top">
-        <div className="video-time current-time">{formatTime(media.currentTime)}</div>
+        <div className="video-time current-time">
+          {formatTime(media.currentTime)}
+        </div>
         <ProgressBar
           animReef={this.animRef}
           player={this.player}

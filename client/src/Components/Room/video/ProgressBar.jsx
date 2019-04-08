@@ -37,7 +37,8 @@ class ProgressBar extends Component {
     const { duration } = media;
 
     const currentTime = player.getCurrentTime();
-    const transform = `translateX(-${100 - (currentTime / duration) * 100}%)`;
+    const percentage = -(100 - (currentTime / duration) * 100);
+    const transform = `translateX(${percentage}%)`;
     this.setState({ transform });
     this.animRef = window.requestAnimationFrame(this.updatePosition);
   };
@@ -47,7 +48,10 @@ class ProgressBar extends Component {
     const { transform } = this.state;
     return (
       <React.Fragment>
-        <div ref={ref => seek(ref)} className="progress-bar_container seek_trigger">
+        <div
+          ref={ref => seek(ref)}
+          className="progress-bar_container seek_trigger"
+        >
           <div style={{ transform }} className="scrubber_container">
             <div className="scrubber" />
           </div>

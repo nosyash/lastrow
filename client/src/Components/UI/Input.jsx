@@ -6,7 +6,12 @@ const Input = ({ name, error, icon, element, ...rest }) => (
     <span className="icon">
       <i className={`fas fa-${icon}`} />
     </span>
-    <input {...rest} name={name} id={name} className="form-control form-input" />
+    <input
+      {...rest}
+      name={name}
+      id={name}
+      className="form-control form-input"
+    />
     {error && <div className="alert alert-danger mt-1">{error}</div>}
     {element}
   </div>
