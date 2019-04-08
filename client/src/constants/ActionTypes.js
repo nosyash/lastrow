@@ -1,5 +1,6 @@
 export const ADD_MESSAGE = 'ADD_MESSAGE';
 export const CLEAR_MESSAGE_LIST = 'CLEAR_MESSAGE_LIST';
+export const CLEAR_USERS = 'CLEAR_USERS';
 export const APPEND_TO_HISTORY = 'APPEND_TO_HISTORY';
 export const UPDATE_USERLIST = 'UPDATE_USERLIST';
 export const UPDATE_SOCKET_STATE = 'UPDATE_SOCKET_STATE';
@@ -20,7 +21,7 @@ export const UPDATE_SUBS = 'UPDATE_SUBS';
 // Components
 export const ADD_POPUP = 'ADD_POPUP';
 export const REMOVE_POPUP = 'REMOVE_POPUP';
-export const CLEAR_POPUP = 'CLEAR_POPUP';
+export const CLEAR_POPUPS = 'CLEAR_POPUP';
 export const TOGGLE_POPUP = 'TOGGLE_POPUP';
 
 export const UPDATE_ROOMLIST = 'UPDATE_ROOMLIST';

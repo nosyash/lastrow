@@ -33,7 +33,9 @@ class ChatHeader extends Component {
     return (
       <React.Fragment>
         <div className="chat-header">
-          {showProfile && <MiniProfile currentProfile={currentProfile} />}
+          {showProfile && !currentProfile.guest && (
+            <MiniProfile currentProfile={currentProfile} />
+          )}
           <div className="chat-header_userlist">
             {userList.map((userProfile, index) => (
               <UserIcon
@@ -57,7 +59,7 @@ class ChatHeader extends Component {
 class UserIcon extends Component {
   render() {
     const { id, onClick, name, color, guest } = this.props;
-    const classes = guest ? 'fa fa-user-secret' : 'fa fa-user';
+    const classes = `fa fa-user${guest ? '-secret' : ''}`;
     return (
       <span
         onClick={() => onClick(id)}

@@ -8,7 +8,6 @@ class ListMessages extends Component {
   }
 
   renderSingleMessage = (currentMessage, i) => {
-    console.log(currentMessage);
     const { list, roomID, selfName } = this.props;
     let renderHeader = true;
     const previousMessage = list[i - 1];

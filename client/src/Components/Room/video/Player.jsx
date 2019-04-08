@@ -26,22 +26,18 @@ class Player extends Component {
     document.addEventListener('mousemove', this.handleGlobalMove);
     document.addEventListener('mouseup', this.handleGlobalUp);
 
-    this.handleSubs();
+    this.init(() => {
+      this.handleSubs();
+    });
   }
 
-  handleSubs = async () => {
-    const { media, updateSubs } = this.props;
-    if (!media || !media.subs.url) return;
-    const res = await http.get(media.subs.url).catch(error => {
-      if (error.response) console.log(error.response.status);
-      else if (error.request) console.log(error.request);
-      else console.log('Error', error.message);
-    });
+  init = callback => {
+    const { updatePlayer } = this.props;
+    let { volume } = localStorage;
+    volume = JSON.parse(volume || 1);
+    updatePlayer({ volume });
 
-    if (!res) return;
-
-    const { data } = res;
-    updateSubs({ srt: parse(data) });
+    if (callback) callback();
   };
 
   componentWillUnmount() {
@@ -49,6 +45,27 @@ class Player extends Component {
     document.removeEventListener('mousemove', this.handleGlobalMove);
     document.removeEventListener('mouseup', this.handleGlobalUp);
   }
+
+  handleSubs = async () => {
+    const { media, updateSubs } = this.props;
+    if (!media || !media.subs.url) return;
+    const res = await http.get(media.subs.url).catch(error => {
+      if (error.response) {
+        console.log(error.response.status);
+      } else if (error.request) {
+        console.log(error.request);
+      } else {
+        console.log('Error', error.message);
+      }
+    });
+
+    if (!res) {
+      return;
+    }
+
+    const { data } = res;
+    updateSubs({ srt: parse(data) });
+  };
 
   handleGlobalDown = e => {
     const { moving } = this.state;

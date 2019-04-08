@@ -30,7 +30,6 @@ class ControlPanel extends Component {
   };
 
   handleClick = id => {
-    console.log(id);
     switch (id) {
       case 'showPlaylist':
         return this.handlePlaylist(id);

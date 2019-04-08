@@ -26,6 +26,9 @@ class RoomBase extends Component {
   };
 
   componentDidMount() {
+    const { clearPopups, clearUsers } = this.props;
+    clearPopups();
+    clearUsers();
     this.init();
   }
 
@@ -44,31 +47,37 @@ class RoomBase extends Component {
   }
 
   init = async () => {
-    let { cinemaMode, volume } = localStorage;
-    const { updateMainStates, updatePlayer } = this.props;
-    const { match, history, profile } = this.props;
+    const { match, history } = this.props;
     const { id: roomID } = match.params;
 
     // Check for room
     const exists = await roomExist(roomID);
-    if (!exists) return history.push('/');
-    this.setState({ exists: true });
+    if (!exists) {
+      return history.push('/');
+    }
+    this.setState({ exists: true }, () => {
+      this.initStore(() => {
+        this.webSocketConnect();
+      });
+    });
+  };
 
-    // Store
-    cinemaMode = cinemaMode === 'true';
-    volume = volume || 1;
+  initStore = callback => {
+    const { updateMainStates } = this.props;
+    const { match, profile } = this.props;
+    const { id: roomID } = match.params;
+
+    let { cinemaMode } = localStorage;
+    if (cinemaMode) cinemaMode = JSON.parse(cinemaMode);
     updateMainStates({ cinemaMode, roomID });
-    updatePlayer({ volume });
+
     this.initEmojis();
+
     if (!profile.logged) {
       return this.handleNicknamePopup();
     }
-    this.initWebSocket();
-    // this.initInfo();
-  };
 
-  initWebSocket = () => {
-    this.webSocketConnect();
+    if (callback) callback();
   };
 
   handleNicknamePopup = () => {
@@ -87,7 +96,7 @@ class RoomBase extends Component {
     const { removePopup, updateProfile } = this.props;
     removePopup('profile-settings');
     updateProfile({ name });
-    this.initWebSocket();
+    this.webSocketConnect();
   };
 
   initWebSocketEvents = () => {
@@ -251,12 +260,14 @@ const mapDispatchToProps = {
   updateMainStates: payload => ({ type: types.UPDATE_MAIN_STATES, payload }),
   addEmojis: payload => ({ type: types.ADD_EMOJIS, payload }),
   clearMessageList: () => ({ type: types.CLEAR_MESSAGE_LIST }),
+  clearUsers: () => ({ type: types.CLEAR_USERS }),
   addMessage: payload => ({ type: types.ADD_MESSAGE, payload }),
   updateUserList: payload => ({ type: types.UPDATE_USERLIST, payload }),
   setSocketState: payload => ({ type: types.UPDATE_SOCKET_STATE, payload }),
   updatePlayer: payload => ({ type: types.UPDATE_MEDIA, payload }),
   addPopup: payload => ({ type: types.ADD_POPUP, payload }),
   removePopup: payload => ({ type: types.REMOVE_POPUP, payload }),
+  clearPopups: () => ({ type: types.CLEAR_POPUPS }),
   updateProfile: payload => ({ type: types.UPDATE_PROFILE, payload }),
 };
 
