@@ -24,7 +24,11 @@ export function setCursorStyle(cur) {
     unsetCursorStyle();
     return;
   }
-  document.documentElement.style.setProperty('cursor', `${cur}-resize`, 'important');
+  document.documentElement.style.setProperty(
+    'cursor',
+    `${cur}-resize`,
+    'important'
+  );
 }
 
 export function togglePointerEvent(element) {

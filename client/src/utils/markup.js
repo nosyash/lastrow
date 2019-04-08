@@ -14,7 +14,8 @@ import {
 export default function parseMarkup({ body, emojiList, name }) {
   let tempBody = body;
   const preformated = PREFORMATTED.test(tempBody);
-  const hideHeader = ME.test(tempBody) || DO.test(tempBody) || TODO.test(tempBody);
+  const hideHeader =
+    ME.test(tempBody) || DO.test(tempBody) || TODO.test(tempBody);
   if (preformated) tempBody = tempBody.replace(PREFORMATTED, '<pre>$2</pre>');
   if (!preformated) {
     tempBody = tempBody

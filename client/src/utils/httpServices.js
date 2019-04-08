@@ -4,7 +4,10 @@ import { toastOpts } from '../constants';
 
 axios.defaults.withCredentials = false;
 
-axios.interceptors.response.use(res => handleResponse(res), error => handleError(error));
+axios.interceptors.response.use(
+  res => handleResponse(res),
+  error => handleError(error)
+);
 
 const handleResponse = res => {
   const { data } = res;
