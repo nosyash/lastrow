@@ -14,17 +14,17 @@ func handleRegRequest(conn *websocket.Conn) (*user, string, error) {
 		return nil, "", err
 	}
 
+	room, uuid := req.RoomID, req.UUID
+	if room == "" || uuid == "" || len(req.UUID) != 64 {
+		return nil, "", errors.New("One or more required arguments are empty")
+	}
+
 	if req.Action == GUEST_REGISTER {
-		return handleGuestRegister(conn, req)
+		return handleGuestRegister(conn, room, uuid, req.Name)
 	}
 
 	if req.Action != USER_REGISTER {
 		return nil, "", errors.New("Invalid registration request")
-	}
-
-	room, uuid := req.RoomID, req.UUID
-	if room == "" || uuid == "" {
-		return nil, "", errors.New("One or more required arguments are empty")
 	}
 
 	return &user{
@@ -37,10 +37,9 @@ func handleRegRequest(conn *websocket.Conn) (*user, string, error) {
 		nil
 }
 
-func handleGuestRegister(conn *websocket.Conn, req *request) (*user, string, error) {
+func handleGuestRegister(conn *websocket.Conn, room, uuid, name string) (*user, string, error) {
 
-	room, name, uuid := req.RoomID, req.Name, req.UUID
-	if room != "" && name != "" && uuid != "" {
+	if name != "" && len(name) > 4 && len(name) < 15 {
 		return &user{
 				conn,
 				uuid,
@@ -74,7 +73,7 @@ func (h *Hub) handleMessage(msg, uuid string) {
 		Body: requestBody{
 			Event: eventBody{
 				Type: "message",
-				Data: eventData{
+				Data: chatEvent{
 					Message: msg,
 					Name:    user.Name,
 					Color:   user.Color,
@@ -105,34 +104,4 @@ func (h *Hub) updateUserList() {
 	}
 
 	h.update <- usersUpdate
-}
-
-func (h *Hub) handleLeaveUser(uuid string) {
-
-	user := h.cache.GetUser(uuid)
-
-	res := &request{
-		Action: "user_event",
-		Body: requestBody{
-			Event: eventBody{
-				Type: "leave",
-				Data: eventData{
-					Name:  user.Name,
-					Color: user.Color,
-					Image: user.Image,
-					ID:    user.ID,
-					Guest: user.Guest,
-				},
-			},
-		},
-	}
-
-	delete(h.hub, uuid)
-	h.cache.Remove <- uuid
-	h.broadcast <- res
-
-	if len(h.hub) == 0 {
-		h.cache.Close <- struct{}{}
-		Close <- h.id
-	}
 }
