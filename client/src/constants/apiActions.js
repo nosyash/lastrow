@@ -67,11 +67,11 @@ export const USER_REGISTER = (room_id, user_uuid) =>
     user_uuid,
   });
 
-export const GUEST_REGISTER = (room_id, user_uuid) =>
+export const GUEST_REGISTER = (room_id, user_uuid, name) =>
   JSON.stringify({
     action: 'guest_register',
     room_id,
-    name: 'gupok_pupok3',
+    name,
     user_uuid,
   });
 
