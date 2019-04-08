@@ -1,7 +1,7 @@
 import React from 'react';
 
 const MiniProfile = ({ currentProfile }) => {
-  const { name, image, color = '#666768' } = currentProfile;
+  const { name, image, color } = currentProfile;
   const backgroundImage = image ? `url(${image})` : '';
   const backgroundColor = !image ? color : '';
   return (

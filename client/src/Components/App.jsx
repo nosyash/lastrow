@@ -18,11 +18,11 @@ class App extends Component {
   async componentDidMount() {
     const { updateProfile } = this.props;
     const profile = await getProfile();
-    if (!profile) {
+    if (profile) {
+      updateProfile({ ...profile.data, logged: true });
+    } else {
       const uuid = getRandom(32);
       updateProfile({ logged: false, uuid });
-    } else {
-      updateProfile({ ...profile.data, logged: true });
     }
     this.setState({ render: true });
   }

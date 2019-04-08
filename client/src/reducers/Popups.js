@@ -28,6 +28,10 @@ const Popups = (state = initialState, action) => {
       return { list };
     }
 
+    case types.CLEAR_POPUPS: {
+      return { list: [] };
+    }
+
     default:
       return state;
   }

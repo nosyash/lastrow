@@ -27,6 +27,10 @@ const Messages = (state = initialState, action) => {
       return { ...state, list: [] };
     }
 
+    case types.CLEAR_USERS: {
+      return { ...state, users: [] };
+    }
+
     case types.APPEND_TO_HISTORY: {
       const n = historyTemp.length - MAX_HISTORY;
       historyTemp.splice(0, n);
