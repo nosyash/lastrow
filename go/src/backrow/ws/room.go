@@ -61,7 +61,7 @@ func (h *Hub) add(user *user) {
 			Name:  user.Name,
 			Guest: true,
 			UUID:  user.UUID,
-			ID:    getRandomID(),
+			ID:    getHashOfString(user.UUID[:8]),
 		}
 	} else {
 		h.cache.AddUser <- user.UUID

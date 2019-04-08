@@ -9,7 +9,7 @@ func (cache *Cache) addNewUser(uuid string) {
 		Color: userProfile.Color,
 		Image: userProfile.Image,
 		Guest: false,
-		ID:    getRandomID(),
+		ID:    getHashOfString(uuid[:8]),
 	}
 }
 

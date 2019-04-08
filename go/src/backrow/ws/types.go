@@ -60,15 +60,14 @@ type requestBody struct {
 
 type eventBody struct {
 	Type string    `json:"type"`
-	Data eventData `json:"data"`
+	Data chatEvent `json:"data,omiempty"`
 }
 
-type eventData struct {
-	Message string `json:"message,omitempty"`
+type chatEvent struct {
+	Message string `json:"message"`
 	Color   string `json:"color"`
 	Image   string `json:"image"`
 	Name    string `json:"name"`
-	Url     string `json:"url,omitempty"`
 	ID      string `json:"__id"`
 	Guest   bool   `json:"guest"`
 }
