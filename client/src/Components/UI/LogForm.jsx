@@ -137,9 +137,10 @@ class LogForm extends Form {
   render() {
     const { profile, addPopup } = this.props;
     const { signIn } = this.state;
+    const { logged } = profile;
     return (
       <React.Fragment>
-        {!profile.logged && (
+        {!logged && (
           <RenderLoginForm
             switchLogin={this.switchLogin}
             renderButton={this.renderButton}
@@ -150,7 +151,7 @@ class LogForm extends Form {
             logged={profile.logged}
           />
         )}
-        {profile.logged && (
+        {logged && (
           <RenderProfile
             addPopup={addPopup}
             onProfileSettings={this.handleProfileSettings}
@@ -196,7 +197,9 @@ const RenderLoginForm = props => {
   );
 };
 
-const RenderProfile = ({ profile, handleLogOut, handleRoomCreation, onProfileSettings }) => {
+const RenderProfile = props => {
+  const { profile } = props;
+  const { handleLogOut, handleRoomCreation, onProfileSettings } = props;
   const { image, color, name } = profile;
   const backgroundImage = `url(${image || ''})`;
   return (

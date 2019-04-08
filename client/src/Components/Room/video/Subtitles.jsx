@@ -52,7 +52,9 @@ class SubtitlesContainer extends Component {
   render() {
     const { subs } = this.props;
     const { text } = subs;
-    if (!text) return null;
+    if (!text) {
+      return null;
+    }
     return <RenderSubs text={text} />;
   }
 }

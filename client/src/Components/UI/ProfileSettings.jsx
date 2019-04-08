@@ -99,8 +99,10 @@ class ProfileSettings extends Form {
 
   handleSubmit = async e => {
     e.preventDefault();
+    const { updateProfile } = this.props;
+    const { profile } = this.props;
     const { data } = this.state;
-    const { profile, updateProfile } = this.props;
+
     if (data.name || data.color) {
       const name = data.name || profile.name;
       const color = data.color || profile.color;
@@ -109,9 +111,10 @@ class ProfileSettings extends Form {
     }
 
     if (data.password && data.passwordNew) {
+      const { password, passwordNew } = data;
       const res = await http.post(
         api.API_USER(),
-        api.UPDATE_PASSWORD(data.password, data.passwordNew)
+        api.UPDATE_PASSWORD(password, passwordNew)
       );
       if (res.data) {
         toast.success('Password successfully changed', toastOpts);
@@ -119,10 +122,7 @@ class ProfileSettings extends Form {
     }
 
     if (data.image) {
-      const res = await http.post(
-        api.API_USER(),
-        api.UPDATE_IMAGE('.jpg', data.image)
-      );
+      const res = await http.post(api.API_USER(), api.UPDATE_IMAGE(data.image));
       updateProfile({ ...profile, ...res.data });
     }
 
