@@ -8,6 +8,7 @@ func (cache *Cache) addNewUser(uuid string) {
 		Name:  userProfile.Name,
 		Color: userProfile.Color,
 		Image: userProfile.Image,
+		Guest: false,
 		ID:    getRandomID(),
 	}
 }
@@ -41,6 +42,7 @@ func (cache *Cache) GetAllUsers() []*User {
 			Color: user.Color,
 			Image: user.Image,
 			ID:    user.ID,
+			Guest: user.Guest,
 		})
 	}
 

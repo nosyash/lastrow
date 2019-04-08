@@ -22,7 +22,7 @@ type User struct {
 	Name  string `json:"name"`
 	Color string `json:"color"`
 	Image string `json:"image"`
-	Guest bool   `json:"guest,omitempty"`
+	Guest bool   `json:"guest"`
 	UUID  string `json:"uuid,omitempty"`
 	ID    string `json:"__id,omitempty"`
 }

@@ -70,6 +70,7 @@ type eventData struct {
 	Name    string `json:"name"`
 	Url     string `json:"url,omitempty"`
 	ID      string `json:"__id"`
+	Guest   bool   `json:"guest"`
 }
 
 const (
