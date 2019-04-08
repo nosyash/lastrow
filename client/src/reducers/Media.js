@@ -65,6 +65,10 @@ const Player = (state = InitialState, action) => {
       return { ...state, subs: { ...state.subs, ...action.payload } };
     }
 
+    case types.RESET_MEDIA: {
+      return { ...InitialState };
+    }
+
     default:
       return state;
   }

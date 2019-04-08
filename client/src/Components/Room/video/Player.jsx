@@ -19,7 +19,10 @@ class Player extends Component {
     this.seek = null;
   }
 
-  state = { moving: false };
+  state = {
+    moving: false,
+    voluming: false,
+  };
 
   componentDidMount() {
     document.addEventListener('mousedown', this.handleGlobalDown);
@@ -31,6 +34,14 @@ class Player extends Component {
     });
   }
 
+  componentWillUnmount() {
+    const { resetMedia } = this.props;
+    resetMedia();
+    document.removeEventListener('mousedown', this.handleGlobalDown);
+    document.removeEventListener('mousemove', this.handleGlobalMove);
+    document.removeEventListener('mouseup', this.handleGlobalUp);
+  }
+
   init = callback => {
     const { updatePlayer } = this.props;
     let { volume } = localStorage;
@@ -39,12 +50,6 @@ class Player extends Component {
 
     if (callback) callback();
   };
-
-  componentWillUnmount() {
-    document.removeEventListener('mousedown', this.handleGlobalDown);
-    document.removeEventListener('mousemove', this.handleGlobalMove);
-    document.removeEventListener('mouseup', this.handleGlobalUp);
-  }
 
   handleSubs = async () => {
     const { media, updateSubs } = this.props;
@@ -69,36 +74,54 @@ class Player extends Component {
 
   handleGlobalDown = e => {
     const { moving } = this.state;
-    const { setVolume } = this.props;
+    const { setVolume, updatePlayer } = this.props;
+    const { media } = this.props;
     let { target } = e;
 
     if (moving) return;
     if (!this.player) return;
 
     if (target.closest(SEEK_SEL) || target.closest(VOLUME_SEL)) {
-      this.setState({ moving: true });
+      const voluming = target.closest(VOLUME_SEL);
+      if (media.playing && !voluming) updatePlayer({ playing: false });
+      if (voluming) this.setState({ voluming: true });
+      else this.setState({ moving: true });
       target = target.closest(SEEK_SEL) || target.closest(VOLUME_SEL);
       const { left, width } = target.getBoundingClientRect();
       const offset = e.clientX - left;
       let mult = offset / width;
-      if (mult < 0) mult = 0;
-      if (mult > 1) mult = 1;
-      if (target.closest(VOLUME_SEL)) setVolume(mult);
-      if (target.closest(SEEK_SEL)) this.player.seekTo(mult);
+      mult = Math.max(0, Math.min(1, mult));
+      if (voluming) setVolume(mult);
+      else this.player.seekTo(mult);
     }
   };
 
   handleGlobalMove = e => {
-    const { moving } = this.state;
-    if (!moving) return;
-    const { left, width } = this.seek.getBoundingClientRect();
+    const { setVolume } = this.props;
+    const { moving, voluming } = this.state;
+    if (!moving && !voluming) return;
+    const target = voluming ? this.volume : this.seek;
+    const { left, width } = target.getBoundingClientRect();
     const offset = e.clientX - left;
-    const mult = offset / width;
-    this.player.seekTo(mult);
+    let mult = offset / width;
+    mult = Math.min(1, mult);
+    mult = Math.max(0, mult);
+    if (voluming) setVolume(mult);
+    else this.player.seekTo(mult);
   };
 
   handleGlobalUp = () => {
-    this.setState({ moving: false });
+    const { updatePlayer, media } = this.props;
+    const { moving, voluming } = this.state;
+
+    if (!moving && !voluming) return;
+    if (voluming) {
+      localStorage.volume = media.volume;
+      this.setState({ voluming: false });
+    } else {
+      this.setState({ moving: false });
+      updatePlayer({ playing: true });
+    }
   };
 
   handleReady = () => this.updateTime();
@@ -137,19 +160,19 @@ class Player extends Component {
         className="player-inner"
         width="100%"
         height=""
+        config={playerConf}
         autoPlay={false}
-        progressInterval={800}
-        onProgress={this.handlePlaying}
         controls={false}
-        muted={media.muted}
         loop={false}
-        onPlay={this.handlePlay}
-        onPause={this.handlePause}
-        onReady={this.handleReady}
+        progressInterval={800}
+        muted={media.muted}
         playing={media.playing}
         volume={media.volume}
         url={media.url}
-        config={playerConf}
+        onProgress={this.handlePlaying}
+        onPlay={this.handlePlay}
+        onPause={this.handlePause}
+        onReady={this.handleReady}
       />
     );
   };
@@ -233,6 +256,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = {
   updatePlayer: payload => ({ type: types.UPDATE_MEDIA, payload }),
+  resetMedia: () => ({ type: types.RESET_MEDIA }),
   switchPlay: () => ({ type: types.SWITCH_PLAY }),
   switchMute: () => ({ type: types.SWITCH_MUTE }),
   setVolume: payload => ({ type: types.SET_VOLUME, payload }),
