@@ -21,7 +21,7 @@ class App extends Component {
     if (profile) {
       updateProfile({ ...profile.data, logged: true });
     } else {
-      const uuid = getRandom(32);
+      const uuid = getRandom(64);
       updateProfile({ logged: false, uuid });
     }
     this.setState({ render: true });
