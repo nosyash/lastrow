@@ -3,15 +3,17 @@ package cache
 func (cache *Cache) addNewUser(uuid string) {
 
 	userProfile, _ := cache.db.GetUserProfile(uuid)
+
 	cache.users[uuid] = &User{
 		Name:  userProfile.Name,
 		Color: userProfile.Color,
 		Image: userProfile.Image,
+		ID:    getRandomID(),
 	}
 }
 
 func (cache *Cache) addNewGuest(user *User) {
-	cache.users[user.GUUID] = user
+	cache.users[user.UUID] = user
 }
 
 func (cache *Cache) removeUser(uuid string) {
@@ -34,6 +36,7 @@ func (cache *Cache) GetAllUsers() []*User {
 	var users []*User
 
 	for _, user := range cache.users {
+		user.UUID = ""
 		users = append(users, user)
 	}
 

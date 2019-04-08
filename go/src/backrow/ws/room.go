@@ -56,10 +56,12 @@ func (h *Hub) add(user *user) {
 		}
 	}
 	if user.Guest {
+
 		h.cache.AddGuest <- &cache.User{
 			Name:  user.Name,
 			Guest: true,
-			GUUID: user.UUID,
+			UUID:  user.UUID,
+			ID:    getRandomID(),
 		}
 	} else {
 		h.cache.AddUser <- user.UUID

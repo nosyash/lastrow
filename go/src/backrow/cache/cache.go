@@ -23,7 +23,8 @@ type User struct {
 	Color string `json:"color"`
 	Image string `json:"image"`
 	Guest bool   `json:"guest,omitempty"`
-	GUUID string `json:"guest_uuid,omitempty"`
+	UUID  string `json:"uuid,omitempty"`
+	ID    string `json:"__id,omitempty"`
 }
 
 func New(id string) *Cache {

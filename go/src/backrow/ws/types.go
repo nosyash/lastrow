@@ -46,7 +46,7 @@ type request struct {
 	Action string      `json:"action"`
 	Body   requestBody `json:"body,omitempty"`
 	RoomID string      `json:"room_id,omitempty"`
-	UUID   string      `json:"user_uuid"`
+	UUID   string      `json:"user_uuid,omitempty"`
 	Name   string      `json:"name,omitempty"`
 }
 
@@ -70,6 +70,7 @@ type eventData struct {
 	Name    string `json:"name"`
 	Title   string `json:"title,omitempty"`
 	Url     string `json:"url,omitempty"`
+	ID      string `json:"__id"`
 }
 
 const (
