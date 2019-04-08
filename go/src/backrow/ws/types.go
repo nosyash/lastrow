@@ -68,7 +68,6 @@ type eventData struct {
 	Color   string `json:"color"`
 	Image   string `json:"image"`
 	Name    string `json:"name"`
-	Title   string `json:"title,omitempty"`
 	Url     string `json:"url,omitempty"`
 	ID      string `json:"__id"`
 }

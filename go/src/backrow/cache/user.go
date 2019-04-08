@@ -36,8 +36,12 @@ func (cache *Cache) GetAllUsers() []*User {
 	var users []*User
 
 	for _, user := range cache.users {
-		user.UUID = ""
-		users = append(users, user)
+		users = append(users, &User{
+			Name:  user.Name,
+			Color: user.Color,
+			Image: user.Image,
+			ID:    user.ID,
+		})
 	}
 
 	return users
