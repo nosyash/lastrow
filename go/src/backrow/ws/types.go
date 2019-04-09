@@ -22,7 +22,6 @@ type Hub struct {
 	Register   chan *user
 	unregister chan *websocket.Conn
 	cache      *cache.Cache
-	update     chan *userList
 	id         string
 }
 
@@ -50,8 +49,8 @@ type request struct {
 	Name   string      `json:"name,omitempty"`
 }
 
-type userList struct {
-	Users []*cache.User `json:"users"`
+type updates struct {
+	Users []*cache.User `json:"users,omitempty"`
 }
 
 type requestBody struct {

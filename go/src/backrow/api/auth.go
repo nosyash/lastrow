@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"regexp"
 	"time"
 
 	"gopkg.in/mgo.v2"
@@ -41,34 +42,36 @@ func (s *Server) authHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) register(w http.ResponseWriter, uname, passwd, email, name string) {
 
+	var validUname = regexp.MustCompile(`[^a-zA-Z0-9-_]`)
+
 	if uname == "" || passwd == "" || email == "" {
 		ResponseMessage(w, http.StatusBadRequest, Message{
 			Error: "One or more required arguments are empty",
 		})
 		return
-	} else if name == "" {
-		name = uname
+	} else if validUname.MatchString(uname) {
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: "Username must contain only string characters and numbers",
+		})
+		return
 	}
 
-	if len(uname) < 3 || len(uname) > 15 {
+	if len(uname) < 3 || len(uname) > 20 {
 		ResponseMessage(w, http.StatusBadRequest, Message{
-			Error: "Username length must be no more than 15 and no less 3",
+			Error: "Username length must be no more than 20 characters and at least 3",
 		})
 		return
-	} else if len(passwd) < 8 || len(passwd) > 32 {
+	}
+
+	if len(passwd) < 8 || len(passwd) > 32 {
 		ResponseMessage(w, http.StatusBadRequest, Message{
-			Error: "Password length must be no more than 32 and no less 8",
-		})
-		return
-	} else if len(name) < 4 || len(name) > 15 {
-		ResponseMessage(w, http.StatusBadRequest, Message{
-			Error: "Name length must be no more than 15 and no less 4",
+			Error: "Password length must be no more than 32 characters and at least 8",
 		})
 		return
 	}
 
 	userUUID := getRandomUUID()
-	result, err := s.db.CreateNewUser(name, uname, getHashOfString(passwd), email, userUUID)
+	result, err := s.db.CreateNewUser(uname, uname, getHashOfString(passwd), email, userUUID)
 
 	if err != nil {
 		ResponseMessage(w, http.StatusInternalServerError, Message{

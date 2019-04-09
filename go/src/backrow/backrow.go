@@ -12,13 +12,19 @@ func main() {
 	apiAddr := os.Getenv("API_ADDR")
 	dbAddr := os.Getenv("DB_ADDR")
 	uplPath := os.Getenv("UP_PATH")
-	imgsPath := os.Getenv("IMGS_FLD")
+	imgsPath := os.Getenv("IMGS_PATH")
 
-	if apiAddr == "" || dbAddr == "" || imgsPath == "" || imgsPath == "" {
-		log.Println("Api server address(API_ADDR) and/or MongoDB address(DB_ADDR) and/or Upload path(UP_PATH) and/or Images path(IMGS_PATH) was not specified. Will use default address :8080 for API_ADDR, 0.0.0.0:27017 for DB_ADDR, (pwd) for UP_PATH and /media/ for IMGS_FLD")
+	if apiAddr == "" {
+		log.Println("API_ADDR are empty and will set to default value: :8080")
 		apiAddr = ":8080"
+	} else if dbAddr == "" {
+		log.Println("DB_ADDR are empry and will set to default value: 0.0.0.0:27017")
 		dbAddr = "0.0.0.0:27017"
+	} else if uplPath == "" {
+		log.Println("UP_PATH are empty and will set to default value: (pwd)")
 		uplPath = "./"
+	} else if imgsPath == "" {
+		log.Println("IMGS_PATH are empty and will set to default value: /media/")
 		imgsPath = "/media/"
 	}
 

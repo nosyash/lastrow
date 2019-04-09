@@ -23,13 +23,6 @@ func (cache *Cache) removeUser(uuid string) {
 
 func (cache *Cache) GetUser(uuid string) *User {
 	return cache.users[uuid]
-
-	//userProfile, _ := cache.db.GetUserProfile(uuid)
-	//return &User{
-	//Name:  userProfile.Name,
-	//Color: userProfile.Color,
-	//Image: userProfile.Image,
-	//}
 }
 
 func (cache *Cache) GetAllUsers() []*User {

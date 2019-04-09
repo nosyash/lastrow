@@ -3,6 +3,8 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"regexp"
+	"unicode/utf8"
 
 	"github.com/gorilla/mux"
 )
@@ -45,6 +47,8 @@ func (s *Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) create(w http.ResponseWriter, title, path, userUUID string) {
 
+	var validPath = regexp.MustCompile(`[^a-zA-Z0-9-_]`)
+
 	if title == "" || path == "" {
 		ResponseMessage(w, http.StatusBadRequest, Message{
 			Error: "One or more required arguments are empty",
@@ -52,14 +56,21 @@ func (s *Server) create(w http.ResponseWriter, title, path, userUUID string) {
 		return
 	}
 
-	if len(title) > 20 || len(title) < 4 {
+	if validPath.MatchString(path) {
 		ResponseMessage(w, http.StatusBadRequest, Message{
-			Error: "Maximum length of room title is 20. Minimum is 4",
+			Error: "Room path must contain only string characters and numbers",
+		})
+		return
+	}
+
+	if utf8.RuneCountInString(title) > 20 || utf8.RuneCountInString(title) < 4 {
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: "Title length must be no more than 20 characters and at least 4",
 		})
 		return
 	} else if len(path) > 15 || len(path) < 4 {
 		ResponseMessage(w, http.StatusBadRequest, Message{
-			Error: "Maximum length of room path is 15. Minimum is 4",
+			Error: "Path length must be no more than 15 characters and at least 4",
 		})
 		return
 	}

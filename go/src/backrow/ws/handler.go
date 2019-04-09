@@ -39,7 +39,7 @@ func handleRegRequest(conn *websocket.Conn) (*user, string, error) {
 
 func handleGuestRegister(conn *websocket.Conn, room, uuid, name string) (*user, string, error) {
 
-	if name != "" && len(name) > 4 && len(name) < 15 {
+	if name != "" && len(name) > 4 && len(name) < 20 {
 		return &user{
 				conn,
 				uuid,
@@ -91,17 +91,17 @@ func (h *Hub) handleMessage(msg, uuid string) {
 func (h *Hub) updateUserList() {
 
 	users := h.cache.GetAllUsers()
-	var usersUpdate *userList
+	var usersUpdate *updates
 
 	if users == nil {
-		usersUpdate = &userList{
+		usersUpdate = &updates{
 			Users: []*cache.User{},
 		}
 	} else {
-		usersUpdate = &userList{
+		usersUpdate = &updates{
 			Users: users,
 		}
 	}
 
-	h.update <- usersUpdate
+	h.sendUpdates(usersUpdate)
 }

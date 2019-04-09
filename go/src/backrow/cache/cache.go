@@ -8,14 +8,14 @@ import (
 )
 
 type Cache struct {
-	users    map[string]*User
-	AddUser  chan string
-	Remove   chan string
-	AddGuest chan *User
-	Update   chan struct{}
-	Close    chan struct{}
-	id       string
-	db       *db.Database
+	users        map[string]*User
+	AddUser      chan string
+	Remove       chan string
+	AddGuest     chan *User
+	UpdatesUsers chan struct{}
+	Close        chan struct{}
+	id           string
+	db           *db.Database
 }
 
 type User struct {
@@ -28,6 +28,12 @@ type User struct {
 }
 
 func New(id string) *Cache {
+
+	dbAddr := os.Getenv("DB_ADDR")
+	if dbAddr == "" {
+		dbAddr = "0.0.0.0:27017"
+	}
+
 	return &Cache{
 		make(map[string]*User),
 		make(chan string),
@@ -36,7 +42,7 @@ func New(id string) *Cache {
 		make(chan struct{}),
 		make(chan struct{}),
 		id,
-		db.Connect(os.Getenv("DB_ADDR")),
+		db.Connect(dbAddr),
 	}
 }
 
@@ -46,14 +52,14 @@ func (cache *Cache) Init() {
 		case uuid := <-cache.AddUser:
 			fmt.Printf("Add %s to cache for %s\n", uuid, cache.id)
 			cache.addNewUser(uuid)
-			cache.Update <- struct{}{}
+			cache.UpdatesUsers <- struct{}{}
 		case guest := <-cache.AddGuest:
 			cache.addNewGuest(guest)
-			cache.Update <- struct{}{}
+			cache.UpdatesUsers <- struct{}{}
 		case uuid := <-cache.Remove:
 			fmt.Printf("Remove %s from cache for %s\n", uuid, cache.id)
 			cache.removeUser(uuid)
-			cache.Update <- struct{}{}
+			cache.UpdatesUsers <- struct{}{}
 		case <-cache.Close:
 			fmt.Printf("Cache for %s was closed\n", cache.id)
 			return

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"unicode/utf8"
 
 	"backrow/image"
 
@@ -88,11 +89,11 @@ func (s *Server) updatePersonalInfo(w http.ResponseWriter, userUUID, name, color
 	}
 
 	if name != "" {
-		if len(name) > 1 && len(name) < 15 {
+		if utf8.RuneCountInString(name) > 1 && utf8.RuneCountInString(name) < 20 {
 			s.db.UpdateUserValue(userUUID, "name", name)
 		} else {
 			ResponseMessage(w, http.StatusBadRequest, Message{
-				Error: "Name length must be no more than 15 and no less 1",
+				Error: "Name length must be no more than 20 and no less 1",
 			})
 			return
 		}

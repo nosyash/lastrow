@@ -17,7 +17,6 @@ func NewRoomHub(id string) *Hub {
 		make(chan *user),
 		make(chan *websocket.Conn),
 		cache.New(id),
-		make(chan *userList),
 		id,
 	}
 }
@@ -39,9 +38,7 @@ func (h *Hub) WaitingActions() {
 			go h.send(msg)
 		case excMsg := <-h.brexcept:
 			go h.sendExcept(excMsg.Req, excMsg.UUID)
-		case upd := <-h.update:
-			go h.sendUpdates(upd)
-		case <-h.cache.Update:
+		case <-h.cache.UpdatesUsers:
 			go h.updateUserList()
 		}
 	}
@@ -145,7 +142,7 @@ func (h *Hub) sendExcept(msg *request, uuid string) {
 	}
 }
 
-func (h *Hub) sendUpdates(upd *userList) {
+func (h *Hub) sendUpdates(upd *updates) {
 
 	for _, conn := range h.hub {
 		err := websocket.WriteJSON(conn, upd)
