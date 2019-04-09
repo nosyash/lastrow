@@ -21,14 +21,14 @@ class Popups extends Component {
     const { GetPopup } = this;
     return (
       <div className="popups_container">
-        {popups.map((popup, index) => {
+        {popups.map(popup => {
           const { noBG } = popup;
           if (noBG) {
-            return <GetPopup key={index} element={popup} />;
+            return <GetPopup key={popup.id} element={popup} />;
           }
           return (
             <div
-              key={index}
+              key={popup.id}
               onMouseDown={e => this.handleClose(e, popup.id, removePopup)}
               className="close-area"
             >

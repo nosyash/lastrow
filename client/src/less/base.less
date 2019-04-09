@@ -258,7 +258,8 @@ body {
 }
 
 .chat-message.offline {
-  opacity: 0.7;
+  opacity: 0.5;
+  filter: grayscale(1);
 }
 
 .chat-message.highlight {
@@ -309,13 +310,17 @@ body {
   flex-direction: row;
   align-items: center;
   margin-bottom: 12px;
-  margin-top: 20px;
+}
+
+.chat-message:not(:first-of-type) .chat-message_header {
+  margin-top: 25px;
 }
 
 .chat-message_body {
   font-size: 15px;
   font-weight: 400;
   font-family: Open Sans;
+  padding: 0 1px;
 
   p {
     margin-bottom: 0;
@@ -776,7 +781,7 @@ body {
     font-size: 1em;
     padding: 5px;
     white-space: normal;
-    border-left: 5px solid #1a1c1d;
+    // border-left: 5px solid #1a1c1d;
     font-family: monospace;
   }
 

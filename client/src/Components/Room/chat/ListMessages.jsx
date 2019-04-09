@@ -8,7 +8,7 @@ class ListMessages extends Component {
   }
 
   renderSingleMessage = (currentMessage, i) => {
-    const { list, roomID, selfName } = this.props;
+    const { list, roomID, selfName, users } = this.props;
     let renderHeader = true;
     const previousMessage = list[i - 1];
     if (previousMessage && previousMessage.__id === currentMessage.__id) {
@@ -24,15 +24,17 @@ class ListMessages extends Component {
     if (currentMessage.roomID !== roomID) {
       return;
     }
+
+    const online = !!users.find(user => user.__id === currentMessage.__id);
     return (
       <Message
+        highlight={highlight}
+        online={online}
+        renderHeader={renderHeader}
         key={currentMessage.id}
         color={currentMessage.color}
         name={currentMessage.name}
-        highlight={highlight}
-        online
         id={currentMessage.__id}
-        renderHeader={renderHeader}
         image={currentMessage.image}
         body={currentMessage.message}
       />
@@ -51,6 +53,7 @@ class ListMessages extends Component {
 
 const mapStateToProps = state => ({
   list: state.Chat.list,
+  users: state.Chat.users,
   selfName: state.profile.name,
   roomID: state.MainStates.roomID,
 });
