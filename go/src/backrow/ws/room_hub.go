@@ -13,6 +13,7 @@ func WaitingRegistrations(db *db.Database) {
 
 	Register = make(chan *websocket.Conn)
 	Close = make(chan string)
+
 	rh := &RoomsHub{
 		make(map[string]*Hub),
 		db,

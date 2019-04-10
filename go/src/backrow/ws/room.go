@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"backrow/cache"
+	"backrow/storage"
 
 	"github.com/gorilla/websocket"
 )
@@ -24,6 +25,7 @@ func NewRoomHub(id string) *Hub {
 func (h *Hub) WaitingActions() {
 
 	go h.cache.Init()
+	storage.Add(h.cache, h.id)
 
 	for {
 		select {

@@ -2,7 +2,7 @@ export GOPATH 	= $(PWD)/go
 export API_ADDR = :8080
 export DB_ADDR  = 0.0.0.0:27017
 export UP_PATH = ./
-export IMGS_PATH = /media/
+export IMG_PATH = /media/
 
 run:
 	go run go/src/backrow/backrow.go

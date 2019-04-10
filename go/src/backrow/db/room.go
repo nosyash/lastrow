@@ -1,7 +1,6 @@
 package db
 
 import (
-	"encoding/json"
 	"errors"
 	"log"
 
@@ -9,37 +8,11 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-// NOTE
-// rewrite this shieeet
-func (db *Database) GetAllRooms() ([]byte, error) {
-	var roomIDS []roomID
+func (db *Database) GetAllRooms() ([]RoomID, error) {
+	var rooms []RoomID
 
-	db.rc.Find(nil).All(&roomIDS)
-
-	if len(roomIDS) == 0 {
-		resp := rooms{
-			0,
-			[]aboutRoom{},
-		}
-		return json.Marshal(&resp)
-	}
-
-	allRooms := make([]aboutRoom, len(roomIDS), len(roomIDS))
-
-	// TODO
-	// Get playing from session
-	for i, r := range roomIDS {
-		allRooms[i].Title = r.Title
-		allRooms[i].Path = r.Path
-		allRooms[i].Play = "WJSN - Babyface"
-		allRooms[i].Users = "100"
-	}
-
-	resp := rooms{
-		len(allRooms),
-		allRooms,
-	}
-	return json.Marshal(&resp)
+	err := db.rc.Find(nil).All(&rooms)
+	return rooms, err
 }
 
 func (db *Database) CreateNewRoom(title, path, userUUID, roomUUID string) error {
@@ -48,7 +21,7 @@ func (db *Database) CreateNewRoom(title, path, userUUID, roomUUID string) error 
 		return errors.New("Room with this path is already in use")
 	}
 
-	newRoom := roomID{
+	newRoom := RoomID{
 		Title: title,
 		Path:  path,
 		UUID:  roomUUID,

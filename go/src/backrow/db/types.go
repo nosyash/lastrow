@@ -1,18 +1,18 @@
 package db
 
-type rooms struct {
+type Rooms struct {
 	Number int         `json:"number"`
-	Body   []aboutRoom `json:"rooms"`
+	Body   []AboutRoom `json:"rooms"`
 }
 
-type aboutRoom struct {
+type AboutRoom struct {
 	Title string `json:"title"`
 	Path  string `json:"path"`
 	Play  string `json:"play"`
 	Users string `json:"users"`
 }
 
-type roomID struct {
+type RoomID struct {
 	Title  string  `json:"title"`
 	Path   string  `json:"path"`
 	UUID   string  `json:"uuid"`

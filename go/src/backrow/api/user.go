@@ -8,6 +8,7 @@ import (
 	"unicode/utf8"
 
 	"backrow/image"
+	"backrow/storage"
 
 	"gopkg.in/mgo.v2"
 )
@@ -41,8 +42,14 @@ func (s *Server) userHandler(w http.ResponseWriter, r *http.Request) {
 	switch userReq.Action {
 	case USER_UPDATE_IMG:
 		s.updateProfileImage(w, userUUID, &userReq.Body.Image.Content)
+		if storage.Size() > 0 {
+			storage.UpdateUser(userUUID)
+		}
 	case USER_UPDATE_PER:
 		s.updatePersonalInfo(w, userUUID, userReq.Body.Name, userReq.Body.Color)
+		if storage.Size() > 0 {
+			storage.UpdateUser(userUUID)
+		}
 	case USER_UPDATE_PSWD:
 		s.updatePassword(w, userUUID, userReq.Body.CurPasswd, userReq.Body.NewPasswd)
 	default:
@@ -66,7 +73,7 @@ func (s *Server) updateProfileImage(w http.ResponseWriter, userUUID string, b64I
 	oldpath, err := s.db.GetUserImage(userUUID)
 	rnd_name := getRandomUUID()
 
-	imgPath := filepath.Join(s.imageServer.ImgsPath, rnd_name[:16], fmt.Sprintf("%s.jpg", rnd_name[16:32]))
+	imgPath := filepath.Join(s.imageServer.ImgPath, rnd_name[:16], fmt.Sprintf("%s.jpg", rnd_name[16:32]))
 	fullPath := filepath.Join(s.imageServer.UplPath, imgPath)
 
 	img := image.New(filepath.Join(s.imageServer.UplPath, oldpath), fullPath)

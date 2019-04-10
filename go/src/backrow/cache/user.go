@@ -25,6 +25,19 @@ func (cache *Cache) GetUser(uuid string) *User {
 	return cache.users[uuid]
 }
 
+func (cache *Cache) UpdateUser(uuid string) {
+	userProfile, _ := cache.db.GetUserProfile(uuid)
+	user := cache.GetUser(uuid)
+
+	user.Name = userProfile.Name
+	user.Color = userProfile.Color
+	user.Image = userProfile.Image
+}
+
+func (cache *Cache) UsersCount() int {
+	return len(cache.users)
+}
+
 func (cache *Cache) GetAllUsers() []*User {
 
 	var users []*User

@@ -14,8 +14,8 @@ import (
 )
 
 type ImageServer struct {
-	UplPath  string
-	ImgsPath string
+	UplPath string
+	ImgPath string
 }
 
 type Server struct {
@@ -25,7 +25,7 @@ type Server struct {
 	imageServer ImageServer
 }
 
-func NewServer(wsAddr, uplPath, imgsPath string, db *db.Database) *Server {
+func NewServer(wsAddr, uplPath, imgPath string, db *db.Database) *Server {
 	return &Server{
 		&http.Server{
 			Addr:         wsAddr,
@@ -46,7 +46,7 @@ func NewServer(wsAddr, uplPath, imgsPath string, db *db.Database) *Server {
 		},
 		ImageServer{
 			uplPath,
-			imgsPath,
+			imgPath,
 		},
 	}
 }
@@ -62,7 +62,7 @@ func (s *Server) Run() {
 	r.HandleFunc("/api/ws", s.acceptWebsocket).Methods("GET")
 
 	r.HandleFunc("/r/{room}", s.redirectToClient).Methods("GET")
-	r.PathPrefix(s.imageServer.ImgsPath).Handler(s.imageServer).Methods("GET")
+	r.PathPrefix(s.imageServer.ImgPath).Handler(s.imageServer).Methods("GET")
 	r.PathPrefix("/").Handler(s).Methods("GET")
 
 	s.httpSrv.Handler = r

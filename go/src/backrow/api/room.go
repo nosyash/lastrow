@@ -4,7 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 	"regexp"
+	"strconv"
 	"unicode/utf8"
+
+	"backrow/db"
+	"backrow/storage"
 
 	"github.com/gorilla/mux"
 )
@@ -12,10 +16,7 @@ import (
 func (s *Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == http.MethodGet {
-		roomList, _ := s.db.GetAllRooms()
-
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(roomList)
+		s.GetAllRooms(w)
 		return
 	}
 
@@ -92,7 +93,29 @@ func (s *Server) roomInnerHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	return
+}
 
-	// if room exists create websocket connection
-	// if registeration is correct server send to user playlist and userlist via websocket
+func (s *Server) GetAllRooms(w http.ResponseWriter) {
+
+	var about []db.AboutRoom
+	rooms, _ := s.db.GetAllRooms()
+
+	about = make([]db.AboutRoom, len(rooms), len(rooms))
+
+	for i, r := range rooms {
+		about[i].Title = r.Title
+		about[i].Path = r.Path
+		about[i].Play = storage.WhatsPlayNow(r.Path)
+		about[i].Users = strconv.Itoa(storage.UsersInRoom(r.Path))
+	}
+
+	resp := db.Rooms{
+		len(rooms),
+		about,
+	}
+
+	r, _ := json.Marshal(&resp)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(r)
 }
