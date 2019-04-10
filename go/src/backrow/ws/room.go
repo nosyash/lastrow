@@ -25,7 +25,7 @@ func NewRoomHub(id string) *Hub {
 func (h *Hub) WaitingActions() {
 
 	go h.cache.Init()
-	storage.Add(h.cache, h.id)
+	storage.Add(h.cache)
 
 	for {
 		select {

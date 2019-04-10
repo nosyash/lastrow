@@ -16,14 +16,15 @@ func Init() {
 	}
 }
 
-func Add(cache *cache.Cache, key string) {
-	storage.cs[key] = cache
+func Add(cache *cache.Cache) {
+	storage.cs[cache.ID] = cache
 	go func() {
 		for {
 			select {
 			case <-cache.Close:
-				delete(storage.cs, key)
-				println("delete", key, "from cache storage")
+				println("delete", cache.ID)
+				delete(storage.cs, cache.ID)
+				return
 			}
 		}
 	}()

@@ -14,7 +14,7 @@ type Cache struct {
 	AddGuest     chan *User
 	UpdatesUsers chan struct{}
 	Close        chan struct{}
-	id           string
+	ID           string
 	db           *db.Database
 }
 
@@ -50,18 +50,18 @@ func (cache *Cache) Init() {
 	for {
 		select {
 		case uuid := <-cache.AddUser:
-			fmt.Printf("Add %s to cache for %s\n", uuid, cache.id)
+			fmt.Printf("Add %s to cache for %s\n", uuid, cache.ID)
 			cache.addNewUser(uuid)
 			cache.UpdatesUsers <- struct{}{}
 		case guest := <-cache.AddGuest:
 			cache.addNewGuest(guest)
 			cache.UpdatesUsers <- struct{}{}
 		case uuid := <-cache.Remove:
-			fmt.Printf("Remove %s from cache for %s\n", uuid, cache.id)
+			fmt.Printf("Remove %s from cache for %s\n", uuid, cache.ID)
 			cache.removeUser(uuid)
 			cache.UpdatesUsers <- struct{}{}
 		case <-cache.Close:
-			fmt.Printf("Cache for %s was closed\n", cache.id)
+			fmt.Printf("Cache for %s was closed\n", cache.ID)
 			return
 		}
 	}
