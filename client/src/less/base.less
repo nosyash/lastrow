@@ -265,6 +265,8 @@ body {
   padding-right: 30px;
   width: calc(100% + 20px);
   padding-bottom: 25px;
+  // TODO: Probably not needed
+  scroll-behavior: smooth;
 }
 
 .chat-item {
@@ -1083,11 +1085,20 @@ body {
   border: 5px solid transparent;
 }
 
+.cinema-mode {
+
+  .control-panel_container,
+  .go-back {
+    display: none;
+  }
+}
 
 .Toastify__toast {
   border-radius: 4px;
   user-select: none;
 }
+
+// Popups
 
 .popups_container {
   z-index: 20;
