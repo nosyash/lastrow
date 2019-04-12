@@ -34,7 +34,7 @@ class RoomBase extends Component {
 
   componentWillUnmount() {
     // const { socket } = this
-    const { clearMessageList, setSocketState } = this.props;
+    const { setSocketState } = this.props;
     clearTimeout(this.timer);
     setSocketState(false);
     if (socket) {

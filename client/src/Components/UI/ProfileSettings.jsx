@@ -15,7 +15,6 @@ class ProfileSettings extends Form {
   state = {
     data: {},
     editing: '',
-    profileTemp: {},
     errors: {},
   };
 
@@ -208,7 +207,7 @@ const RenderForm = props => {
   const { renderInput, renderButton } = props;
   const { data, profile } = props;
 
-  const { color = null, image = null, name = null } = data;
+  const { color = null, name = null } = data;
   const { password = null, passwordNew = null } = data;
 
   const backgroundImage = `url(${profile.image})`;
