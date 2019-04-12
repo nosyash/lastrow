@@ -10,22 +10,18 @@ import ImagePicker from './ImagePicker';
 import { toastOpts } from '../../constants';
 import ColorPicker from './Popups/ColorPicker';
 
-// TODO: Redesign the whole thing. Popup looks ugly and inconsistent.
+// TODO: Extremely poorly made. Refactor!
 class ProfileSettings extends Form {
   state = {
     data: {},
+    editing: '',
+    profileTemp: {},
     errors: {},
   };
 
   schema = {};
 
   schemas = {
-    color: {
-      color: Joi.string()
-        .required()
-        .label('Color'),
-    },
-
     name: {
       name: Joi.string()
         .min(1)
@@ -45,21 +41,39 @@ class ProfileSettings extends Form {
     },
   };
 
-  handleControlClick = e => {
+  handleControlClick = name => {
     const { profile } = this.props;
-    const { name } = e.target.dataset;
+    const { editing } = this.state;
     const data = {};
     data[name] = '';
-    if (name === 'password') data.passwordNew = '';
-    if (name === 'name') data[name] = profile[name];
-    // if (name === 'color') data[name] = profile[name];
+
+    if (editing === name) {
+      return this.setState({ data: {}, editing: '' });
+    }
+
+    if (name === 'password' || name === 'name') {
+      this.setState({ editing: name });
+    }
+
+    if (name === 'password') {
+      data.passwordNew = '';
+    }
+
+    if (name === 'name') {
+      data[name] = profile[name];
+    }
+
     if (name === 'color') {
       data[name] = profile[name];
+      this.handleFormReset();
       return this.handleColorPicker();
     }
+
     if (name === 'image') {
+      this.handleFormReset();
       return this.handleImagePicker();
     }
+
     this.schema = { ...this.schemas[name] };
     this.setState({ data });
   };
@@ -103,6 +117,7 @@ class ProfileSettings extends Form {
   handleImageUpdate = async data => {
     const { updateProfile } = this.props;
     const res = await http.post(api.API_USER(), api.UPDATE_IMAGE(data));
+
     if (!res.data) {
       return;
     }
@@ -110,13 +125,15 @@ class ProfileSettings extends Form {
   };
 
   handleColorUpdate = async color => {
-    const { updateProfile, profile } = this.props;
-    const { name } = profile;
-    const res = await http.post(api.API_USER(), api.UPDATE_USER(name, color));
+    const { updateProfile } = this.props;
+    const res = await http.post(api.API_USER(), api.UPDATE_USER('', color));
+
     if (!res.data) {
       return;
     }
+    toast.success('Color successfully changed', toastOpts);
     updateProfile({ ...res.data });
+    this.handleFormReset();
   };
 
   handleSubmit = async e => {
@@ -125,11 +142,14 @@ class ProfileSettings extends Form {
     const { profile } = this.props;
     const { data } = this.state;
 
-    if (data.name || data.color) {
+    if (data.name) {
       const name = data.name || profile.name;
-      const color = data.color || profile.color;
-      const res = await http.post(api.API_USER(), api.UPDATE_USER(name, color));
+      const res = await http.post(api.API_USER(), api.UPDATE_USER(name));
       updateProfile({ ...profile, ...res.data });
+
+      if (res.data) {
+        toast.success('Name successfully changed', toastOpts);
+      }
     }
 
     if (data.password && data.passwordNew) {
@@ -138,6 +158,7 @@ class ProfileSettings extends Form {
         api.API_USER(),
         api.UPDATE_PASSWORD(password, passwordNew)
       );
+
       if (res.data) {
         toast.success('Password successfully changed', toastOpts);
       }
@@ -146,9 +167,18 @@ class ProfileSettings extends Form {
     if (data.image) {
       const res = await http.post(api.API_USER(), api.UPDATE_IMAGE(data.image));
       updateProfile({ ...profile, ...res.data });
+
+      if (res.data) {
+        toast.success('Profile image successfully changed', toastOpts);
+      }
     }
 
-    this.setState({ data: {} });
+    this.setState({ data: {}, editing: '' });
+    this.schema = {};
+  };
+
+  handleFormReset = () => {
+    this.setState({ data: {}, editing: '' });
     this.schema = {};
   };
 
@@ -165,6 +195,7 @@ class ProfileSettings extends Form {
         renderButton={this.renderButton}
         onControlClick={this.handleControlClick}
         onClose={() => removePopup(id)}
+        onFormReset={this.handleFormReset}
         profile={profile}
       />
     );
@@ -172,7 +203,7 @@ class ProfileSettings extends Form {
 }
 
 const RenderForm = props => {
-  const { onClose, onControlClick } = props;
+  const { onClose, onControlClick, onFormReset } = props;
   const { handleSubmit, handleImageChange } = props;
   const { renderInput, renderButton } = props;
   const { data, profile } = props;
@@ -181,14 +212,35 @@ const RenderForm = props => {
   const { password = null, passwordNew = null } = data;
 
   const backgroundImage = `url(${profile.image})`;
+  const hasChanges = Object.entries(data).length !== 0;
   return (
     <div className="float-element profile-settings_container">
-      <h1 className="title">Profile Settings</h1>
+      <h1 className="title">Profile</h1>
       <div
         onClick={handleImageChange}
         style={{ backgroundImage }}
+        title="Change profile image"
         className="profile-avatar profile-avatar_mini"
       />
+      <div className="name-contaner">
+        <span style={{ color: color || profile.color }} className="title">
+          {profile.name}
+        </span>
+        <span
+          title="Change name"
+          onClick={() => onControlClick('name')}
+          className="control"
+        >
+          <i className="fa fa-edit" />
+        </span>
+        <span
+          title="Change color"
+          onClick={() => onControlClick('color')}
+          className="control"
+        >
+          <i className="fa fa-palette" />
+        </span>
+      </div>
       <RenderControls onClick={onControlClick} />
       <form onSubmit={handleSubmit}>
         {name !== null &&
@@ -197,20 +249,6 @@ const RenderForm = props => {
             icon: 'user',
             autoFocus: true,
             placeholder: 'Name',
-          })}
-        {color !== null &&
-          renderInput({
-            name: 'color',
-            icon: 'user',
-            autoFocus: true,
-            placeholder: 'Color',
-          })}
-        {image !== null &&
-          renderInput({
-            name: 'image',
-            icon: 'user',
-            autoFocus: true,
-            placeholder: 'Image',
           })}
         {password !== null &&
           renderInput({
@@ -229,13 +267,13 @@ const RenderForm = props => {
             placeholder: 'New Password',
           })}
         <div className="controls-container">
-          {Object.entries(data).length !== 0 && renderButton('Save changes')}
+          {hasChanges && renderButton('Save changes')}
           <button
-            onClick={onClose}
+            onClick={() => (hasChanges ? onFormReset() : onClose())}
             type="button"
             className="button button-cancel"
           >
-            Close
+            {hasChanges ? 'Cancel' : 'Close'}
           </button>
         </div>
       </form>
@@ -243,25 +281,15 @@ const RenderForm = props => {
   );
 };
 
-const RenderControls = ({ onClick }) => {
-  const constrols = [
-    { name: 'name' },
-    { name: 'color' },
-    { name: 'image' },
-    { name: 'password' },
-  ];
-  return (
-    <div className="profile-controls">
-      {constrols.map((control, index) => (
-        <div key={index}>
-          <span onClick={onClick} data-name={control.name} className="control">
-            {`Change ${control.name}`}
-          </span>
-        </div>
-      ))}
+const RenderControls = ({ onClick }) => (
+  <div className="profile-controls">
+    <div>
+      <span onClick={() => onClick('password')} className="control">
+        Change password
+      </span>
     </div>
-  );
-};
+  </div>
+);
 
 const mapStateToProps = state => ({
   profile: state.profile,

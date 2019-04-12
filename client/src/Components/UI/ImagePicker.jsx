@@ -235,7 +235,7 @@ class CropTool extends Component {
             <button
               onClick={this.saveCrop}
               type="button"
-              className="button button-cancel"
+              className="button button-save"
             >
               Save
             </button>

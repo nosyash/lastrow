@@ -611,12 +611,19 @@ body {
   }
 
   &:not(:disabled):hover {
-    background: hsla(205, 44%, 31%, 1);
+    opacity: 0.7;
   }
 
   &:active,
   &:focus {
     outline: none;
+  }
+}
+
+.button-submit,
+.button-save {
+  &:not(:disabled) {
+    background: #24a75b;
   }
 }
 
@@ -645,7 +652,6 @@ body {
 }
 
 // Profile
-
 .main-profile {
   .profile {
     display: flex;
@@ -1108,6 +1114,15 @@ body {
 .profile-settings_container {
   // width: 500px;
   min-height: 500px;
+
+  .name-contaner {
+    text-align: center;
+  }
+
+  .name-contaner .control {
+    vertical-align: super;
+    margin-left: 5px;
+  }
 }
 
 .profile-controls {
