@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { debounce } from 'lodash';
+import { throttle } from 'lodash';
 import { getCenteredRect } from '../../utils/base';
 import * as types from '../../constants/ActionTypes';
 
 class Popups extends Component {
   constructor() {
     super();
-    this.handleResizeTh = debounce(this.handleResize, 50);
+    this.handleResizeTh = throttle(this.handleResize, 16);
   }
 
   componentDidMount() {
