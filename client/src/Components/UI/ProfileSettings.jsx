@@ -8,7 +8,9 @@ import * as types from '../../constants/ActionTypes';
 import http from '../../utils/httpServices';
 import ImagePicker from './ImagePicker';
 import { toastOpts } from '../../constants';
+import ColorPicker from './Popups/ColorPicker';
 
+// TODO: Redesign the whole thing. Popup looks ugly and inconsistent.
 class ProfileSettings extends Form {
   state = {
     data: {},
@@ -50,36 +52,46 @@ class ProfileSettings extends Form {
     data[name] = '';
     if (name === 'password') data.passwordNew = '';
     if (name === 'name') data[name] = profile[name];
-    if (name === 'color') data[name] = profile[name];
+    // if (name === 'color') data[name] = profile[name];
+    if (name === 'color') {
+      data[name] = profile[name];
+      return this.handleColorPicker();
+    }
     if (name === 'image') {
-      return this.handleImageChange();
+      return this.handleImagePicker();
     }
     this.schema = { ...this.schemas[name] };
     this.setState({ data });
-
-    // if (!res.status) return;
-    // removePopup(id);
-    // onRoomsUpdate();
-    // history.push(`/r/${path}`);
-
-    // switch (name) {
-    //   case 'changeName':
-    //     break;
-    //   case 'changeColor':
-    //     break;
-    //   case 'changeImage':
-    //     break;
-    //   case 'changePass':
-    //     break;
-
-    //   default:
-    //     break;
-    // }
   };
 
-  handleImageChange = () => {
+  handleColorPicker = () => {
+    const { color, name } = this.props.profile;
+    const { togglePopup } = this.props;
+    const id = 'ColorPicker';
+    togglePopup({
+      id,
+      el: (
+        <ColorPicker
+          onClose={this.handleColorPicker}
+          onSave={data => {
+            this.handleColorPicker();
+            this.handleColorUpdate(data);
+          }}
+          name={name}
+          color={color}
+          id={id}
+        />
+      ),
+      width: 225,
+      height: 225,
+    });
+  };
+
+  handleImagePicker = () => {
     const { addPopup } = this.props;
     const id = 'ImagePicker';
+
+    // TODO: Handle popup close outside of the component (here).
     addPopup({
       id,
       el: <ImagePicker id={id} onImageUpdate={this.handleImageUpdate} />,
@@ -91,6 +103,16 @@ class ProfileSettings extends Form {
   handleImageUpdate = async data => {
     const { updateProfile } = this.props;
     const res = await http.post(api.API_USER(), api.UPDATE_IMAGE(data));
+    if (!res.data) {
+      return;
+    }
+    updateProfile({ ...res.data });
+  };
+
+  handleColorUpdate = async color => {
+    const { updateProfile, profile } = this.props;
+    const { name } = profile;
+    const res = await http.post(api.API_USER(), api.UPDATE_USER(name, color));
     if (!res.data) {
       return;
     }
@@ -135,7 +157,7 @@ class ProfileSettings extends Form {
     const { changesMade, data } = this.state;
     return (
       <RenderForm
-        handleImageChange={this.handleImageChange}
+        handleImageChange={this.handleImagePicker}
         data={data}
         changesMade={changesMade}
         handleSubmit={this.handleSubmit}
@@ -150,23 +172,14 @@ class ProfileSettings extends Form {
 }
 
 const RenderForm = props => {
-  const {
-    handleSubmit,
-    renderInput,
-    renderButton,
-    onClose,
-    data,
-    onControlClick,
-    profile,
-    handleImageChange,
-  } = props;
-  const {
-    color = null,
-    image = null,
-    name = null,
-    password = null,
-    passwordNew = null,
-  } = data;
+  const { onClose, onControlClick } = props;
+  const { handleSubmit, handleImageChange } = props;
+  const { renderInput, renderButton } = props;
+  const { data, profile } = props;
+
+  const { color = null, image = null, name = null } = data;
+  const { password = null, passwordNew = null } = data;
+
   const backgroundImage = `url(${profile.image})`;
   return (
     <div className="float-element profile-settings_container">
@@ -258,6 +271,7 @@ const mapDispatchToProps = {
   updateProfile: payload => ({ type: types.UPDATE_PROFILE, payload }),
   removePopup: payload => ({ type: types.REMOVE_POPUP, payload }),
   addPopup: payload => ({ type: types.ADD_POPUP, payload }),
+  togglePopup: payload => ({ type: types.TOGGLE_POPUP, payload }),
 };
 
 export default connect(

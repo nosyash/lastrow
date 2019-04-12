@@ -283,8 +283,8 @@ body {
   background: @darkThird;
   background-size: cover;
   // mask-image: @squareMask;
-  .border-squircle(50%;
-  50%);
+  // .border-squircle(50%;
+  // 50%);
   // mask-size: 100%;
   background-position: center;
   display: inline-block;
@@ -603,6 +603,7 @@ body {
   border: none;
   outline: none;
   transition: 0.2s;
+  user-select: none;
 
   &:disabled {
     color: rgb(172, 172, 172);
@@ -662,8 +663,8 @@ body {
   border-radius: 10px;
   background-color: #aa9da3;
   // mask-image: @squareMask;
-  .border-squircle(45%;
-  45%);
+  // .border-squircle(45%;
+  // 45%);
   // mask-size: 100%;
 }
 
@@ -1186,6 +1187,40 @@ body {
   border: none !important;
   color: rgba(0, 0, 0, 0.7) !important;
   border-radius: 10px;
+}
+
+// Color picker
+
+.color-picker_container {
+  padding: 0;
+
+  .chat-name {
+    cursor: default;
+    text-align: center;
+    padding: 5px;
+  }
+
+}
+
+.chrome-picker {
+  box-shadow: none !important;
+
+  svg {
+    background: #3b3b3b !important;
+    fill: @body  !important;
+  }
+
+  input {
+    box-shadow: none !important;
+
+    background: @darkSecond  !important;
+    outline: 0 !important;
+    color: @body  !important;
+  }
+
+  >div:last-child {
+    background: #303030 !important;
+  }
 }
 
 // Playlist
