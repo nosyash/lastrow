@@ -7,14 +7,13 @@ class ListMessages extends Component {
     this.messages.scrollTo(0, 100000);
   }
 
-  renderSingleMessage = (currentMessage, i) => {
+  getSingleMessage = (currentMessage, i) => {
     const { list, roomID, selfName, users } = this.props;
     let renderHeader = true;
-    const previousMessage = list[i - 1];
+    const previousMessage = list[roomID][i - 1];
     if (previousMessage && previousMessage.__id === currentMessage.__id) {
       renderHeader = false;
     }
-
     const nameRegExp = new RegExp(`@${selfName}`);
     let highlight = false;
     if (nameRegExp.test(currentMessage.message)) {
@@ -42,10 +41,13 @@ class ListMessages extends Component {
   };
 
   render() {
-    const { list } = this.props;
+    const { list, roomID } = this.props;
+    const currentList = list[roomID] || [];
     return (
       <div ref={ref => (this.messages = ref)} className="chat-messages">
-        {list.map((message, index) => this.renderSingleMessage(message, index))}
+        {currentList.map((message, index) =>
+          this.getSingleMessage(message, index)
+        )}
       </div>
     );
   }

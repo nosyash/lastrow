@@ -43,7 +43,7 @@ class RoomBase extends Component {
       console.log('WebSocket conection closed');
     }
 
-    clearMessageList();
+    // clearMessageList();
   }
 
   init = async () => {
