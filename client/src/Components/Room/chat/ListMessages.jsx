@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Message from './Message';
+import { isEdge } from '../../../constants';
 
 class ListMessages extends Component {
   componentDidUpdate() {
-    this.messages.scrollTo(0, 100000);
+    if (isEdge) this.messages.scrollTop = 100000;
+    else this.messages.scrollTo(0, 100000);
   }
 
   getSingleMessage = (currentMessage, i) => {

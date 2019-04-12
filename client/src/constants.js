@@ -50,6 +50,8 @@ export const toastOpts = {
   newestOnTop: true,
 };
 
+export const isEdge = window.navigator.userAgent.indexOf('Edge') > -1
+
 export const playerConf = {
   youtube: {
     playerVars: { autoplay: 0, controls: 1 },

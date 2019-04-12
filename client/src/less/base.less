@@ -81,6 +81,8 @@ body {
   // overflow: hidden;
 }
 
+
+
 .video-container {
   overflow: hidden;
   box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
@@ -125,6 +127,15 @@ body {
   z-index: 10;
 }
 
+.chat-container.collapsed {
+  min-width: 0;
+  overflow: hidden;
+  margin-left: -10px;
+  width: 0 !important;
+  transition: width 0.2s;
+  visibility: hidden;
+}
+
 .custom-divider {
   user-select: none;
   padding: 0 5px;
@@ -164,6 +175,11 @@ body {
     background: transparent;
     height: unset;
     padding: 5px 10px 10px 10px;
+
+    .chat-avatar {
+      width: 42px;
+      height: 42px;
+    }
   }
 
   .mini-profile_second-section {
@@ -214,6 +230,13 @@ body {
       width: 16px;
       margin: 0 5px 0 5px;
     }
+  }
+
+  >div {
+    word-break: keep-all;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
   }
 }
 
@@ -275,8 +298,8 @@ body {
 .chat-avatar {
   border-radius: 7px;
   overflow: hidden;
-  width: 35px;
-  height: 35px;
+  width: 42px;
+  height: 42px;
   min-width: 35px;
   min-height: 35px;
   background-image: url('https://up.bona.cafe/src/e2/bc820d04437e672d68a3f729e1dd99ad5b1c03.png'); // background: rgb(218, 63, 110);
@@ -337,7 +360,6 @@ body {
   font-size: 0.7em;
   margin-left: 5px;
   padding: 2px;
-  .hover()
 }
 
 .chat-input {
@@ -675,8 +697,8 @@ body {
 }
 
 .profile-avatar_mini {
-  width: 50px;
-  height: 50px;
+  width: 100px;
+  height: 100px;
   margin: 0 auto;
   transition: 0.1s;
   cursor: pointer;
@@ -692,7 +714,6 @@ body {
 
 .mini-profile {
   background: @darkSecond;
-  height: 70px;
   padding: 5px;
   position: absolute;
   left: 0;

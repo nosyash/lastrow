@@ -23,8 +23,9 @@ class ChatInput extends Component {
   }
 
   handleClick = e => {
-    const { target } = e;
+    let { target } = e;
     if (target.closest('.chat-message_reply')) {
+      target = target.closest('.chat-message_reply');
       const { name } = target.dataset;
       const { inputValue } = this.state;
       if (name) {

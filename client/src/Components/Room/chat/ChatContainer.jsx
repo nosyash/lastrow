@@ -31,16 +31,20 @@ class ChatContainer extends Component {
   };
 
   componentDidMount() {
-    const { chatWidth, chatHeight, chatLeft, chatTop } = localStorage;
-    const width = parseInt(chatWidth);
-    const height = parseInt(chatHeight);
-    const left = parseInt(chatLeft);
-    const top = parseInt(chatTop);
+    if (localStorage.chat) {
+      const { chat } = localStorage;
+      const chatParams = JSON.parse(chat);
+      const { width, height, left, top } = chatParams;
 
-    if (width) this.setState({ width });
-    if (height) this.setState({ height });
-    if (left) this.setState({ left });
-    if (top) this.setState({ top });
+      const params = {
+        width: width || 300,
+        height: height || 500,
+        left: left || 50,
+        top: top || 50,
+      };
+
+      this.setState({ ...params });
+    }
 
     document.addEventListener('mousedown', this.handleGlobalMouseDown);
     document.addEventListener('mousemove', this.handleGlobalMouseMove);
@@ -54,23 +58,29 @@ class ChatContainer extends Component {
   }
 
   handleGlobalMouseDown = e => {
+    const { cinemaMode } = this.props;
     const { target } = e;
     if (target.closest(RESIZER_SEL)) {
       this.handleResizerDown(e, { resizer: true });
     }
     if (target.closest(DIVIDER_SEL)) {
-      this.handleResizerDown(e, { divider: true });
+      if (!cinemaMode) {
+        this.handleResizerDown(e, { divider: true });
+      }
     }
     if (target.closest(CHAT_HEADER_SEL)) {
-      this.handleHeaderDown(e);
+      if (cinemaMode) {
+        this.handleHeaderDown(e);
+      }
     }
   };
 
   handleGlobalMouseMove = e => {
-    const { chat } = this.props;
+    const { chat, cinemaMode } = this.props;
+
     if (!chat.current) return;
-    if (this.resizing) this.handleResize(e, { resizer: true });
-    if (this.resizing) this.handleResize(e, { divider: true });
+    if (this.resizing && cinemaMode) this.handleResize(e, { resizer: true });
+    if (this.resizing && !cinemaMode) this.handleResize(e, { divider: true });
     if (this.moving) this.handleMove(e);
   };
 
@@ -78,10 +88,10 @@ class ChatContainer extends Component {
     if (!this.resizing && !this.moving) return;
     const { video } = this.props;
     const { width, height, left, top } = this.state;
-    localStorage.chatWidth = width;
-    localStorage.chatHeight = height;
-    localStorage.chatLeft = left;
-    localStorage.chatTop = top;
+
+    const chatParams = JSON.stringify({ width, height, left, top });
+    localStorage.chat = chatParams;
+
     this.resizing = false;
     this.moving = false;
     toggleUserSelect();
@@ -128,10 +138,19 @@ class ChatContainer extends Component {
   };
 
   handleResize = (e, { resizer, divider }) => {
+    let { chat } = this.props;
+    chat = chat.current;
+
     let { height, width } = this.state;
     const offset = resizer ? 10 : -5;
     width = e.clientX - this.left + offset;
     height = e.clientY - this.top + offset;
+
+    if (width < 30) {
+      chat.classList.add('collapsed');
+    } else {
+      chat.classList.remove('collapsed');
+    }
 
     if (resizer) this.setState({ width, height });
     if (divider) this.setState({ width });
