@@ -48,7 +48,7 @@ class ColorPicker extends React.Component {
             type="button"
             className="button button-cancel"
           >
-            Close
+            Cancel
           </button>
         </div>
       </div>

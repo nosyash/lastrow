@@ -297,6 +297,7 @@ body {
   }
 }
 
+
 .chat-avatar {
   border-radius: 7px;
   overflow: hidden;
@@ -308,7 +309,7 @@ body {
   background: @darkThird;
   background-size: cover;
   // mask-image: @squareMask;
-  // .border-squircle(50%;
+  //   .border-squircle(50%;
   // 50%);
   // mask-size: 100%;
   background-position: center;
@@ -620,7 +621,7 @@ body {
 .button {
   margin-top: 10px;
   background: #3E6683;
-  border-radius: 5px;
+  border-radius: 4px;
   width: 100%;
   color: white;
   height: 38px;
@@ -628,6 +629,8 @@ body {
   outline: none;
   transition: 0.2s;
   user-select: none;
+  // .border-squircle(5%;
+  // 40%);
 
   &:disabled {
     color: rgb(172, 172, 172);
@@ -849,6 +852,7 @@ body {
   display: flex;
   flex-direction: column;
   padding: 5px 0;
+  transition: 0.1s;
 }
 
 .video-player_top {
@@ -982,9 +986,58 @@ body {
   // display: flex;
   video {
     outline: none;
-    // height: unset!important;
+    height: unset !important;
     margin: auto;
+    max-height: 100%;
+    min-height: 100%;
   }
+}
+
+
+
+.player-minimized {
+  .video-player {
+    background: transparent;
+    bottom: 0;
+  }
+
+  .subs-container {
+    bottom: 65px;
+  }
+
+  .video-player>div:not(.subs-container) {
+    opacity: 0;
+  }
+
+  // .video-player {
+  //   bottom: -52px;
+  //   left: 0;
+  //   max-width: 100%;
+  //   right: 0;
+  //   background: transparent;
+  // }
+
+  // .video-time {
+  //   display: none;
+  // }
+
+  // .video-player_top {
+  //   margin: 0;
+  // }
+
+  // .progress-bar {
+  //   margin: 0;
+  //   height: 6px;
+  //   border-radius: 0;
+  // }
+
+  // .scrubber_container {
+  //   display: none;
+  // }
+
+  // .progress-bar_passed {
+  //   border-radius: 0;
+  // }
 }
 
 .video-player_overflow {
@@ -1195,7 +1248,7 @@ body {
 
 .drop-area {
   width: 100%;
-  height: 100%;
+  height: calc(100% - 100px);
   background: #222;
   background-image: @drop;
   background-size: 100px;

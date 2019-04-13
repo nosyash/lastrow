@@ -137,7 +137,7 @@ const RenderPicker = props => {
             type="button"
             className="button button-cancel"
           >
-            Close
+            Cancel
           </button>
         </React.Fragment>
       )}
@@ -248,7 +248,7 @@ class CropTool extends Component {
                 type="button"
                 className="button button-cancel"
               >
-                Select another
+                Choose another
               </button>
             )}
           </div>
