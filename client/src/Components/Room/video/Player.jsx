@@ -135,8 +135,12 @@ class Player extends Component {
 
   handlePlayerMove = e => {
     const { minimized } = this.state;
-    const target = e.target.closest(VIDEO_ELEMENT_SEL);
-    if (target) {
+    let { target } = e;
+
+    // Firefox returns "document" object in some cases,
+    // which causes an eror on target.closest()
+    if (target && target !== document) {
+      target = target.closest(VIDEO_ELEMENT_SEL);
       clearTimeout(this.minimizeTimer);
       if (minimized) {
         this.setState({ minimized: false });
