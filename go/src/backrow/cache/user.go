@@ -21,13 +21,15 @@ func (cache *Cache) removeUser(uuid string) {
 	delete(cache.users, uuid)
 }
 
-func (cache *Cache) GetUser(uuid string) *User {
-	return cache.users[uuid]
+func (cache *Cache) GetUser(uuid string) (*User, bool) {
+	user, ok := cache.users[uuid]
+	return user, ok
 }
 
 func (cache *Cache) UpdateUser(uuid string) {
+
 	userProfile, _ := cache.db.GetUserProfile(uuid)
-	user := cache.GetUser(uuid)
+	user, _ := cache.GetUser(uuid)
 
 	user.Name = userProfile.Name
 	user.Color = userProfile.Color

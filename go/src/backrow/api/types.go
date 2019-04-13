@@ -60,6 +60,7 @@ const (
 
 const (
 	USER_UPDATE_IMG  = "user_update_img"
+	USER_DELETE_IMG  = "user_delete_img"
 	USER_UPDATE_PER  = "user_update_per"
 	USER_UPDATE_PSWD = "user_update_pswd"
 )

@@ -36,8 +36,8 @@ func Size() int {
 
 func UpdateUser(userUUID string) {
 	for _, cache := range storage.cs {
-		user := cache.GetUser(userUUID)
-		if user != nil {
+		_, ok := cache.GetUser(userUUID)
+		if ok {
 			cache.UpdateUser(userUUID)
 		}
 	}

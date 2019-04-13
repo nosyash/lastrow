@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"path/filepath"
 	"unicode/utf8"
 
@@ -45,6 +46,11 @@ func (s *Server) userHandler(w http.ResponseWriter, r *http.Request) {
 		if storage.Size() > 0 {
 			storage.UpdateUser(userUUID)
 		}
+	case USER_DELETE_IMG:
+		s.deleteProfileImage(w, userUUID)
+		if storage.Size() > 0 {
+			storage.UpdateUser(userUUID)
+		}
 	case USER_UPDATE_PER:
 		s.updatePersonalInfo(w, userUUID, userReq.Body.Name, userReq.Body.Color)
 		if storage.Size() > 0 {
@@ -71,6 +77,13 @@ func (s *Server) getUser(w http.ResponseWriter, userUUID string) {
 func (s *Server) updateProfileImage(w http.ResponseWriter, userUUID string, b64Img *string) {
 
 	oldpath, err := s.db.GetUserImage(userUUID)
+	if err != nil {
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: err.Error(),
+		})
+		return
+	}
+
 	rnd_name := getRandomUUID()
 
 	imgPath := filepath.Join(s.imageServer.ImgPath, rnd_name[:16], fmt.Sprintf("%s.jpg", rnd_name[16:32]))
@@ -86,6 +99,23 @@ func (s *Server) updateProfileImage(w http.ResponseWriter, userUUID string, b64I
 	}
 
 	s.db.UpdateUserValue(userUUID, "image", imgPath)
+	s.getUser(w, userUUID)
+}
+
+func (s *Server) deleteProfileImage(w http.ResponseWriter, userUUID string) {
+
+	imgPath, err := s.db.GetUserImage(userUUID)
+	if err != nil {
+		ResponseMessage(w, http.StatusBadRequest, Message{
+			Error: err.Error(),
+		})
+		return
+	}
+
+	imgFolder, _ := filepath.Split(imgPath)
+	os.RemoveAll(filepath.Join(s.imageServer.UplPath, imgFolder))
+
+	s.db.UpdateUserValue(userUUID, "image", "")
 	s.getUser(w, userUUID)
 }
 

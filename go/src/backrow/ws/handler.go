@@ -56,7 +56,7 @@ func (h *Hub) handleUserEvent(req *request, conn *websocket.Conn) {
 
 	switch req.Body.Event.Type {
 	case MSG_EVENT:
-		if req.UUID != "" && req.Body.Event.Data.Message != "" {
+		if req.UUID != "" && len(req.UUID) == 64 && req.Body.Event.Data.Message != "" {
 			h.handleMessage(req.Body.Event.Data.Message, req.UUID)
 		}
 	default:
@@ -66,7 +66,7 @@ func (h *Hub) handleUserEvent(req *request, conn *websocket.Conn) {
 
 func (h *Hub) handleMessage(msg, uuid string) {
 
-	user := h.cache.GetUser(uuid)
+	user, _ := h.cache.GetUser(uuid)
 
 	res := &request{
 		Action: "chat_event",
