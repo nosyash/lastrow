@@ -81,6 +81,8 @@ body {
   // overflow: hidden;
 }
 
+
+
 .video-container {
   overflow: hidden;
   box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
@@ -125,6 +127,15 @@ body {
   z-index: 10;
 }
 
+.chat-container.collapsed {
+  min-width: 0;
+  overflow: hidden;
+  margin-left: -10px;
+  width: 0 !important;
+  transition: width 0.2s;
+  visibility: hidden;
+}
+
 .custom-divider {
   user-select: none;
   padding: 0 5px;
@@ -164,6 +175,11 @@ body {
     background: transparent;
     height: unset;
     padding: 5px 10px 10px 10px;
+
+    .chat-avatar {
+      width: 42px;
+      height: 42px;
+    }
   }
 
   .mini-profile_second-section {
@@ -215,6 +231,13 @@ body {
       margin: 0 5px 0 5px;
     }
   }
+
+  >div {
+    word-break: keep-all;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
 }
 
 
@@ -242,6 +265,8 @@ body {
   padding-right: 30px;
   width: calc(100% + 20px);
   padding-bottom: 25px;
+  // TODO: Probably not needed
+  scroll-behavior: smooth;
 }
 
 .chat-item {
@@ -272,19 +297,20 @@ body {
   }
 }
 
+
 .chat-avatar {
   border-radius: 7px;
   overflow: hidden;
-  width: 35px;
-  height: 35px;
+  width: 42px;
+  height: 42px;
   min-width: 35px;
   min-height: 35px;
   background-image: url('https://up.bona.cafe/src/e2/bc820d04437e672d68a3f729e1dd99ad5b1c03.png'); // background: rgb(218, 63, 110);
   background: @darkThird;
   background-size: cover;
   // mask-image: @squareMask;
-  .border-squircle(50%;
-  50%);
+  //   .border-squircle(50%;
+  // 50%);
   // mask-size: 100%;
   background-position: center;
   display: inline-block;
@@ -337,7 +363,6 @@ body {
   font-size: 0.7em;
   margin-left: 5px;
   padding: 2px;
-  .hover()
 }
 
 .chat-input {
@@ -596,13 +621,16 @@ body {
 .button {
   margin-top: 10px;
   background: #3E6683;
-  border-radius: 5px;
+  border-radius: 4px;
   width: 100%;
   color: white;
   height: 38px;
   border: none;
   outline: none;
   transition: 0.2s;
+  user-select: none;
+  // .border-squircle(5%;
+  // 40%);
 
   &:disabled {
     color: rgb(172, 172, 172);
@@ -610,12 +638,19 @@ body {
   }
 
   &:not(:disabled):hover {
-    background: hsla(205, 44%, 31%, 1);
+    opacity: 0.7;
   }
 
   &:active,
   &:focus {
     outline: none;
+  }
+}
+
+.button-submit,
+.button-save {
+  &:not(:disabled) {
+    background: #24a75b;
   }
 }
 
@@ -644,7 +679,6 @@ body {
 }
 
 // Profile
-
 .main-profile {
   .profile {
     display: flex;
@@ -662,14 +696,14 @@ body {
   border-radius: 10px;
   background-color: #aa9da3;
   // mask-image: @squareMask;
-  .border-squircle(45%;
-  45%);
+  // .border-squircle(45%;
+  // 45%);
   // mask-size: 100%;
 }
 
 .profile-avatar_mini {
-  width: 50px;
-  height: 50px;
+  width: 100px;
+  height: 100px;
   margin: 0 auto;
   transition: 0.1s;
   cursor: pointer;
@@ -685,7 +719,6 @@ body {
 
 .mini-profile {
   background: @darkSecond;
-  height: 70px;
   padding: 5px;
   position: absolute;
   left: 0;
@@ -819,6 +852,7 @@ body {
   display: flex;
   flex-direction: column;
   padding: 5px 0;
+  transition: 0.1s;
 }
 
 .video-player_top {
@@ -952,9 +986,58 @@ body {
   // display: flex;
   video {
     outline: none;
-    // height: unset!important;
+    height: unset !important;
     margin: auto;
+    max-height: 100%;
+    min-height: 100%;
   }
+}
+
+
+
+.player-minimized {
+  .video-player {
+    background: transparent;
+    bottom: 0;
+  }
+
+  .subs-container {
+    bottom: 65px;
+  }
+
+  .video-player>div:not(.subs-container) {
+    opacity: 0;
+  }
+
+  // .video-player {
+  //   bottom: -52px;
+  //   left: 0;
+  //   max-width: 100%;
+  //   right: 0;
+  //   background: transparent;
+  // }
+
+  // .video-time {
+  //   display: none;
+  // }
+
+  // .video-player_top {
+  //   margin: 0;
+  // }
+
+  // .progress-bar {
+  //   margin: 0;
+  //   height: 6px;
+  //   border-radius: 0;
+  // }
+
+  // .scrubber_container {
+  //   display: none;
+  // }
+
+  // .progress-bar_passed {
+  //   border-radius: 0;
+  // }
 }
 
 .video-player_overflow {
@@ -1055,11 +1138,20 @@ body {
   border: 5px solid transparent;
 }
 
+.cinema-mode {
+
+  .control-panel_container,
+  .go-back {
+    display: none;
+  }
+}
 
 .Toastify__toast {
   border-radius: 4px;
   user-select: none;
 }
+
+// Popups
 
 .popups_container {
   z-index: 20;
@@ -1075,6 +1167,7 @@ body {
   align-items: center;
   z-index: 10;
   cursor: default;
+  transition: 0.1s ease-out;
 
   &>div {
     margin: auto;
@@ -1107,6 +1200,15 @@ body {
 .profile-settings_container {
   // width: 500px;
   min-height: 500px;
+
+  .name-contaner {
+    text-align: center;
+  }
+
+  .name-contaner .control {
+    vertical-align: super;
+    margin-left: 5px;
+  }
 }
 
 .profile-controls {
@@ -1146,7 +1248,7 @@ body {
 
 .drop-area {
   width: 100%;
-  height: 100%;
+  height: calc(100% - 100px);
   background: #222;
   background-image: @drop;
   background-size: 100px;
@@ -1186,6 +1288,40 @@ body {
   border: none !important;
   color: rgba(0, 0, 0, 0.7) !important;
   border-radius: 10px;
+}
+
+// Color picker
+
+.color-picker_container {
+  padding: 0;
+
+  .chat-name {
+    cursor: default;
+    text-align: center;
+    padding: 5px;
+  }
+
+}
+
+.chrome-picker {
+  box-shadow: none !important;
+
+  svg {
+    background: #3b3b3b !important;
+    fill: @body  !important;
+  }
+
+  input {
+    box-shadow: none !important;
+
+    background: @darkSecond  !important;
+    outline: 0 !important;
+    color: @body  !important;
+  }
+
+  >div:last-child {
+    background: #303030 !important;
+  }
 }
 
 // Playlist

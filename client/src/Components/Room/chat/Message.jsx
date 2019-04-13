@@ -71,7 +71,14 @@ const RenderMessage = props => {
               className="chat-name"
             >
               {name}
-              <i data-name={name} className="chat-message_reply fa fa-reply" />
+            </span>
+            <span
+              data-name={name}
+              style={{ color }}
+              title="Reply"
+              className="control chat-message_reply"
+            >
+              <i className="fa fa-reply" />
             </span>
           </div>
         )}

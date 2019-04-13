@@ -20,6 +20,14 @@ const MiniProfile = ({ currentProfile }) => {
           <span className="sr-only">Loading...</span>
         </div>
       )}
+      <span
+        data-name={name}
+        title="Reply"
+        style={{ color }}
+        className="control chat-message_reply"
+      >
+        <i className="fa fa-reply" />
+      </span>
     </div>
   );
 };

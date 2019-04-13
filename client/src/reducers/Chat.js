@@ -2,11 +2,14 @@ import { MAX_MESSAGES, MAX_HISTORY } from '../constants';
 import * as types from '../constants/ActionTypes';
 
 const initialState = {
-  list: [],
+  list: {},
   history: [],
   users: [],
   connected: false,
 };
+
+// list: [{ roomID: 'kek', messages: []}]
+// const list = { kek: []}
 
 let id = 0;
 
@@ -15,12 +18,21 @@ const Messages = (state = initialState, action) => {
 
   switch (action.type) {
     case types.ADD_MESSAGE: {
-      const list = state.list.slice(0);
-      if (list.length > MAX_MESSAGES) list.shift();
       id++;
       const message = action.payload;
+      const { roomID } = message;
+      // delete message.roomID;
       delete message.type;
-      return { ...state, list: [...list, { ...message, id }] };
+
+      const list = Object.assign({}, state.list);
+      const currentRoom = [...(list[roomID] || []), { ...message, id }] || [
+        message,
+      ];
+
+      if (currentRoom.length > MAX_MESSAGES) currentRoom.shift();
+      list[roomID] = currentRoom;
+
+      return { ...state, list: { ...list } };
     }
 
     case types.CLEAR_MESSAGE_LIST: {

@@ -4,7 +4,13 @@ import ReactPlayer from 'react-player';
 import { parse } from 'subtitle';
 import * as types from '../../../constants/ActionTypes';
 import { formatTime } from '../../../utils/base';
-import { SEEK_SEL, VOLUME_SEL, playerConf } from '../../../constants';
+import {
+  SEEK_SEL,
+  VOLUME_SEL,
+  playerConf,
+  VIDEO_ELEMENT_SEL,
+  PLAYER_MINIMIZE_TIMEOUT,
+} from '../../../constants';
 import http from '../../../utils/httpServices';
 import ProgressBar from './ProgressBar';
 import Subtitles from './Subtitles';
@@ -14,6 +20,7 @@ class Player extends Component {
     super();
     this.videoEl = null;
     this.player = null;
+    this.minimizeTimer = null;
     this.animRef = null;
     this.volume = null;
     this.seek = null;
@@ -22,6 +29,7 @@ class Player extends Component {
   state = {
     moving: false,
     voluming: false,
+    minimized: false,
   };
 
   componentDidMount() {
@@ -97,6 +105,7 @@ class Player extends Component {
   };
 
   handleGlobalMove = e => {
+    this.handlePlayerMove(e);
     const { setVolume } = this.props;
     const { moving, voluming } = this.state;
     if (!moving && !voluming) return;
@@ -124,7 +133,21 @@ class Player extends Component {
     }
   };
 
-  handleReady = () => this.updateTime();
+  handlePlayerMove = e => {
+    const { minimized } = this.state;
+    const target = e.target.closest(VIDEO_ELEMENT_SEL);
+    if (target) {
+      clearTimeout(this.minimizeTimer);
+      if (minimized) {
+        this.setState({ minimized: false });
+      }
+    }
+  };
+
+  handleReady = () => {
+    this.updateTime();
+    this.handleMinimizeTimer();
+  };
 
   updateTime = () => {
     const { updatePlayer } = this.props;
@@ -141,50 +164,78 @@ class Player extends Component {
     const { playedSeconds } = progress;
 
     updatePlayer({ currentTime: playedSeconds });
+    this.handleMinimizeTimer();
+  };
+
+  handleMinimizeTimer = () => {
+    const { minimized } = this.state;
+    if (minimized) {
+      clearTimeout(this.minimizeTimer);
+    } else {
+      this.minimizeTimer = setTimeout(() => {
+        this.setState({ minimized: true });
+      }, PLAYER_MINIMIZE_TIMEOUT);
+    }
   };
 
   render() {
+    const { minimized } = this.state;
+    const classes = `video-element ${
+      minimized ? 'player-minimized' : 'player-maximized'
+    }`;
     return (
       <React.Fragment>
-        {this.renderPlayer()}
-        {this.player && this.videoEl && this.renderPlayerGUI()}
+        <div
+          onMouseLeave={() => this.setState({ minimized: true })}
+          className={classes}
+        >
+          {this.renderPlayer()}
+          {this.player && this.videoEl && this.renderPlayerGUI()}
+        </div>
       </React.Fragment>
     );
   }
 
   renderPlayer = () => {
     const { media } = this.props;
+
     return (
-      <ReactPlayer
-        ref={player => (this.player = player)}
-        className="player-inner"
-        width="100%"
-        height=""
-        config={playerConf}
-        autoPlay={false}
-        controls={false}
-        loop={false}
-        progressInterval={800}
-        muted={media.muted}
-        playing={media.playing}
-        volume={media.volume}
-        url={media.url}
-        onProgress={this.handlePlaying}
-        onPlay={this.handlePlay}
-        onPause={this.handlePause}
-        onReady={this.handleReady}
-      />
+      <React.Fragment>
+        <ReactPlayer
+          ref={player => (this.player = player)}
+          className="player-inner"
+          width="100%"
+          height=""
+          config={playerConf}
+          autoPlay={false}
+          controls={false}
+          loop={false}
+          progressInterval={800}
+          muted={media.muted}
+          playing={media.playing}
+          volume={media.volume}
+          url={media.url}
+          onProgress={this.handlePlaying}
+          onPlay={this.handlePlay}
+          onPause={this.handlePause}
+          onReady={this.handleReady}
+        />
+        <div className="video-overlay" />
+      </React.Fragment>
     );
   };
 
-  renderPlayerGUI = () => (
-    <div className="video-player">
-      {this.renderVideoTop()}
-      {this.renderVideoMid()}
-      <Subtitles videoEl={this.videoEl} />
-      <div className="video-player_overflow" />
-    </div>
-  );
+  renderPlayerGUI = () => {
+    const { minimized } = this.state;
+    return (
+      <div className="video-player">
+        {this.renderVideoTop()}
+        {this.renderVideoMid()}
+        <Subtitles videoEl={this.videoEl} />
+        <div className="video-player_overflow" />
+      </div>
+    );
+  };
 
   renderVideoTop = () => {
     const { media } = this.props;

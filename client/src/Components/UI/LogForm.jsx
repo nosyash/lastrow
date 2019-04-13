@@ -129,7 +129,7 @@ class LogForm extends Form {
     addPopup({
       id,
       el: <ProfileSettings id={id} />,
-      width: 500,
+      width: 400,
       height: 500,
     });
   };

@@ -11,6 +11,7 @@ export const RESIZER_SEL = '.resizer';
 export const DIVIDER_SEL = '.custom-divider';
 export const SEEK_SEL = '.seek_trigger';
 export const VOLUME_SEL = '.volume_trigger';
+export const VIDEO_ELEMENT_SEL = '.video-element';
 
 // Misc
 export const RESIZE_OFFSET = 10;
@@ -19,6 +20,7 @@ export const MAX_HISTORY = 20;
 export const MAX_MESSAGE_LENGTH = 400;
 export const WEBSOCKET_TIMEOUT = 2000;
 export const API_FETCH_TIMEOUT = 2000;
+export const PLAYER_MINIMIZE_TIMEOUT = 2000;
 
 // API
 const https = window.location.protocol === 'https:';
@@ -49,6 +51,8 @@ export const toastOpts = {
   pauseOnFocusLoss: false,
   newestOnTop: true,
 };
+
+export const isEdge = window.navigator.userAgent.indexOf('Edge') > -1;
 
 export const playerConf = {
   youtube: {

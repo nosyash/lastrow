@@ -8,22 +8,19 @@ import * as types from '../../constants/ActionTypes';
 import http from '../../utils/httpServices';
 import ImagePicker from './ImagePicker';
 import { toastOpts } from '../../constants';
+import ColorPicker from './Popups/ColorPicker';
 
+// TODO: Extremely poorly made. Refactor!
 class ProfileSettings extends Form {
   state = {
     data: {},
+    editing: '',
     errors: {},
   };
 
   schema = {};
 
   schemas = {
-    color: {
-      color: Joi.string()
-        .required()
-        .label('Color'),
-    },
-
     name: {
       name: Joi.string()
         .min(1)
@@ -43,43 +40,71 @@ class ProfileSettings extends Form {
     },
   };
 
-  handleControlClick = e => {
+  handleControlClick = name => {
     const { profile } = this.props;
-    const { name } = e.target.dataset;
+    const { editing } = this.state;
     const data = {};
     data[name] = '';
-    if (name === 'password') data.passwordNew = '';
-    if (name === 'name') data[name] = profile[name];
-    if (name === 'color') data[name] = profile[name];
-    if (name === 'image') {
-      return this.handleImageChange();
+
+    if (editing === name) {
+      return this.setState({ data: {}, editing: '' });
     }
+
+    if (name === 'password' || name === 'name') {
+      this.setState({ editing: name });
+    }
+
+    if (name === 'password') {
+      data.passwordNew = '';
+    }
+
+    if (name === 'name') {
+      data[name] = profile[name];
+    }
+
+    if (name === 'color') {
+      data[name] = profile[name];
+      this.handleFormReset();
+      return this.handleColorPicker();
+    }
+
+    if (name === 'image') {
+      this.handleFormReset();
+      return this.handleImagePicker();
+    }
+
     this.schema = { ...this.schemas[name] };
     this.setState({ data });
-
-    // if (!res.status) return;
-    // removePopup(id);
-    // onRoomsUpdate();
-    // history.push(`/r/${path}`);
-
-    // switch (name) {
-    //   case 'changeName':
-    //     break;
-    //   case 'changeColor':
-    //     break;
-    //   case 'changeImage':
-    //     break;
-    //   case 'changePass':
-    //     break;
-
-    //   default:
-    //     break;
-    // }
   };
 
-  handleImageChange = () => {
+  handleColorPicker = () => {
+    const { color, name } = this.props.profile;
+    const { togglePopup } = this.props;
+    const id = 'ColorPicker';
+    togglePopup({
+      id,
+      el: (
+        <ColorPicker
+          onClose={this.handleColorPicker}
+          onSave={data => {
+            this.handleColorPicker();
+            this.handleColorUpdate(data);
+          }}
+          name={name}
+          color={color}
+          id={id}
+        />
+      ),
+      width: 225,
+      height: 225,
+    });
+  };
+
+  handleImagePicker = () => {
     const { addPopup } = this.props;
     const id = 'ImagePicker';
+
+    // TODO: Handle popup close outside of the component (here).
     addPopup({
       id,
       el: <ImagePicker id={id} onImageUpdate={this.handleImageUpdate} />,
@@ -91,10 +116,23 @@ class ProfileSettings extends Form {
   handleImageUpdate = async data => {
     const { updateProfile } = this.props;
     const res = await http.post(api.API_USER(), api.UPDATE_IMAGE(data));
+
     if (!res.data) {
       return;
     }
     updateProfile({ ...res.data });
+  };
+
+  handleColorUpdate = async color => {
+    const { updateProfile } = this.props;
+    const res = await http.post(api.API_USER(), api.UPDATE_USER('', color));
+
+    if (!res.data) {
+      return;
+    }
+    toast.success('Color successfully changed', toastOpts);
+    updateProfile({ ...res.data });
+    this.handleFormReset();
   };
 
   handleSubmit = async e => {
@@ -103,11 +141,14 @@ class ProfileSettings extends Form {
     const { profile } = this.props;
     const { data } = this.state;
 
-    if (data.name || data.color) {
+    if (data.name) {
       const name = data.name || profile.name;
-      const color = data.color || profile.color;
-      const res = await http.post(api.API_USER(), api.UPDATE_USER(name, color));
+      const res = await http.post(api.API_USER(), api.UPDATE_USER(name));
       updateProfile({ ...profile, ...res.data });
+
+      if (res.data) {
+        toast.success('Name successfully changed', toastOpts);
+      }
     }
 
     if (data.password && data.passwordNew) {
@@ -116,6 +157,7 @@ class ProfileSettings extends Form {
         api.API_USER(),
         api.UPDATE_PASSWORD(password, passwordNew)
       );
+
       if (res.data) {
         toast.success('Password successfully changed', toastOpts);
       }
@@ -124,9 +166,18 @@ class ProfileSettings extends Form {
     if (data.image) {
       const res = await http.post(api.API_USER(), api.UPDATE_IMAGE(data.image));
       updateProfile({ ...profile, ...res.data });
+
+      if (res.data) {
+        toast.success('Profile image successfully changed', toastOpts);
+      }
     }
 
-    this.setState({ data: {} });
+    this.setState({ data: {}, editing: '' });
+    this.schema = {};
+  };
+
+  handleFormReset = () => {
+    this.setState({ data: {}, editing: '' });
     this.schema = {};
   };
 
@@ -135,7 +186,7 @@ class ProfileSettings extends Form {
     const { changesMade, data } = this.state;
     return (
       <RenderForm
-        handleImageChange={this.handleImageChange}
+        handleImageChange={this.handleImagePicker}
         data={data}
         changesMade={changesMade}
         handleSubmit={this.handleSubmit}
@@ -143,6 +194,7 @@ class ProfileSettings extends Form {
         renderButton={this.renderButton}
         onControlClick={this.handleControlClick}
         onClose={() => removePopup(id)}
+        onFormReset={this.handleFormReset}
         profile={profile}
       />
     );
@@ -150,32 +202,44 @@ class ProfileSettings extends Form {
 }
 
 const RenderForm = props => {
-  const {
-    handleSubmit,
-    renderInput,
-    renderButton,
-    onClose,
-    data,
-    onControlClick,
-    profile,
-    handleImageChange,
-  } = props;
-  const {
-    color = null,
-    image = null,
-    name = null,
-    password = null,
-    passwordNew = null,
-  } = data;
+  const { onClose, onControlClick, onFormReset } = props;
+  const { handleSubmit, handleImageChange } = props;
+  const { renderInput, renderButton } = props;
+  const { data, profile } = props;
+
+  const { color = null, name = null } = data;
+  const { password = null, passwordNew = null } = data;
+
   const backgroundImage = `url(${profile.image})`;
+  const hasChanges = Object.entries(data).length !== 0;
   return (
     <div className="float-element profile-settings_container">
-      <h1 className="title">Profile Settings</h1>
+      <h1 className="title">Profile</h1>
       <div
         onClick={handleImageChange}
         style={{ backgroundImage }}
+        title="Change profile image"
         className="profile-avatar profile-avatar_mini"
       />
+      <div className="name-contaner">
+        <span style={{ color: color || profile.color }} className="title">
+          {profile.name}
+        </span>
+        <span
+          title="Change name"
+          onClick={() => onControlClick('name')}
+          className="control"
+        >
+          <i className="fa fa-edit" />
+        </span>
+        <span
+          title="Change color"
+          onClick={() => onControlClick('color')}
+          className="control"
+        >
+          <i className="fa fa-palette" />
+        </span>
+      </div>
       <RenderControls onClick={onControlClick} />
       <form onSubmit={handleSubmit}>
         {name !== null &&
@@ -184,20 +248,6 @@ const RenderForm = props => {
             icon: 'user',
             autoFocus: true,
             placeholder: 'Name',
-          })}
-        {color !== null &&
-          renderInput({
-            name: 'color',
-            icon: 'user',
-            autoFocus: true,
-            placeholder: 'Color',
-          })}
-        {image !== null &&
-          renderInput({
-            name: 'image',
-            icon: 'user',
-            autoFocus: true,
-            placeholder: 'Image',
           })}
         {password !== null &&
           renderInput({
@@ -216,13 +266,13 @@ const RenderForm = props => {
             placeholder: 'New Password',
           })}
         <div className="controls-container">
-          {Object.entries(data).length !== 0 && renderButton('Save changes')}
+          {hasChanges && renderButton('Save changes')}
           <button
-            onClick={onClose}
+            onClick={() => (hasChanges ? onFormReset() : onClose())}
             type="button"
             className="button button-cancel"
           >
-            Close
+            {hasChanges ? 'Cancel' : 'Close'}
           </button>
         </div>
       </form>
@@ -230,25 +280,15 @@ const RenderForm = props => {
   );
 };
 
-const RenderControls = ({ onClick }) => {
-  const constrols = [
-    { name: 'name' },
-    { name: 'color' },
-    { name: 'image' },
-    { name: 'password' },
-  ];
-  return (
-    <div className="profile-controls">
-      {constrols.map((control, index) => (
-        <div key={index}>
-          <span onClick={onClick} data-name={control.name} className="control">
-            {`Change ${control.name}`}
-          </span>
-        </div>
-      ))}
+const RenderControls = ({ onClick }) => (
+  <div className="profile-controls">
+    <div>
+      <span onClick={() => onClick('password')} className="control">
+        Change password
+      </span>
     </div>
-  );
-};
+  </div>
+);
 
 const mapStateToProps = state => ({
   profile: state.profile,
@@ -258,6 +298,7 @@ const mapDispatchToProps = {
   updateProfile: payload => ({ type: types.UPDATE_PROFILE, payload }),
   removePopup: payload => ({ type: types.REMOVE_POPUP, payload }),
   addPopup: payload => ({ type: types.ADD_POPUP, payload }),
+  togglePopup: payload => ({ type: types.TOGGLE_POPUP, payload }),
 };
 
 export default connect(

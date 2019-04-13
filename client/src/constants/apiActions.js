@@ -41,7 +41,7 @@ export const UPDATE_IMAGE = raw_img =>
     },
   });
 
-export const UPDATE_USER = (name, color) =>
+export const UPDATE_USER = (name = '', color = '') =>
   JSON.stringify({
     action: 'user_update_per',
     body: {
