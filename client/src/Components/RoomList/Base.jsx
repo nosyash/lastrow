@@ -32,19 +32,20 @@ class RoomListBase extends Component {
   };
 
   render() {
-    const { rooms } = this.props;
+    const { rooms, history } = this.props;
     const { connected } = this.state;
     return (
       <RenderList
         getRoomList={this.getRoomList}
         rooms={rooms}
+        history={history}
         connected={connected}
       />
     );
   }
 }
 
-const RenderList = ({ rooms, connected, getRoomList }) => (
+const RenderList = ({ rooms, connected, getRoomList, history }) => (
   <div className="main-page">
     <div className="main-page_item sign">
       <LogForm onRoomsUpdate={getRoomList} />
@@ -52,18 +53,30 @@ const RenderList = ({ rooms, connected, getRoomList }) => (
     <div className="main-page_item room-list">
       <div className="room-list_contaier">
         <div className="room-list_inner">
-          {rooms &&
-            rooms.map((room, index) => (
-              <RoomItem
-                key={index}
-                title={room.title}
-                movie={room.play}
-                users={room.users}
-                link={`/r/${room.path}`}
-              />
-            ))}
+          <div className="custom-table custom-table_head">
+            <div className="custom-table_head_item">Channel</div>
+            <div className="custom-table_head_item">Connected</div>
+            <div className="custom-table_head_item">Playing</div>
+          </div>
+          <div className="custom-table custom-table_items">
+            {rooms &&
+              rooms.map((room, index) => (
+                <RoomItem
+                  history={history}
+                  key={index}
+                  title={room.title}
+                  movie={room.play}
+                  users={room.users}
+                  link={`/r/${room.path}`}
+                />
+              ))}
+          </div>
           {!connected && (
-            <div className="ml-auto mr-auto spinner-grow" role="status">
+            <div
+              style={{ marginTop: 50, width: '3rem', height: '3rem' }}
+              className="ml-auto mr-auto spinner-grow"
+              role="status"
+            >
               <span className="sr-only">Loading...</span>
             </div>
           )}

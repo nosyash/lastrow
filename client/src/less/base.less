@@ -312,6 +312,7 @@ body {
   //   .border-squircle(50%;
   // 50%);
   // mask-size: 100%;
+  .squircle-hardcoded();
   background-position: center;
   display: inline-block;
   cursor: pointer;
@@ -472,8 +473,81 @@ body {
   margin-left: 3%;
 }
 
+.table thead th {
+  border-top: 0;
+  border-bottom-width: 1px;
+}
+
+.room-list-table {
+  color: #cfcfcf;
+  text-align: center;
+}
+
+.custom-table {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.custom-table_head {
+  color: #cfcfcf;
+  text-align: center;
+  display: flex;
+  flex-direction: row;
+  border-bottom: 1px solid grey;
+}
+
+.custom-table_head_item {
+  margin: auto;
+  padding: 1rem 0;
+}
+
+.custom-table_items {
+  display: flex;
+  flex-direction: column;
+  overflow-y: scroll;
+  width: calc(100% + 25px);
+}
+
+.custom-table_item {
+  display: grid;
+  grid-template-columns: 1fr 0.5fr 1fr;
+  grid-template-rows: 1fr;
+  grid-template-areas: ". . .";
+
+
+  &:last-of-type {
+    margin-bottom: 250px;
+  }
+
+  span {
+    margin: 0 auto;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 100%;
+    text-overflow: ellipsis;
+  }
+}
+
 .sign {
   margin-right: 3%;
+}
+
+.custom-table-link {
+  padding: 1.25rem;
+  color: #cfcfcf;
+  padding-right: 20px;
+
+  &:hover {
+    color: #cfcfcf;
+    text-decoration: none;
+    opacity: 1;
+
+    span {
+      opacity: 0.7;
+    }
+  }
+
+
 }
 
 .room-item {
@@ -503,6 +577,16 @@ body {
   }
 }
 
+.room-item-table {
+  cursor: pointer;
+  .hover();
+
+  th,
+  td {
+    padding: 0;
+  }
+}
+
 .room-item_title {
   color: #e7e7e7;
 }
@@ -519,7 +603,7 @@ body {
 .room-list_inner,
 .room-list_contaier,
 .main-profile {
-  width: 530px;
+  width: 500px;
   height: 700px;
   max-height: 100%;
   margin: auto;
@@ -533,6 +617,12 @@ body {
 .room-list_contaier {
   width: 500px;
   overflow: hidden;
+}
+
+.room-list_inner {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .title {
@@ -699,6 +789,7 @@ body {
   // .border-squircle(45%;
   // 45%);
   // mask-size: 100%;
+  .squircle-hardcoded();
 }
 
 .profile-avatar_mini {
@@ -1336,4 +1427,13 @@ body {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
+}
+
+// Add media
+.add-media_container {
+  background: rgba(37, 39, 40, 0.9);
+}
+
+.add-media_container form {
+  margin-top: 0;
 }
