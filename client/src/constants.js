@@ -21,6 +21,7 @@ export const MAX_MESSAGE_LENGTH = 400;
 export const WEBSOCKET_TIMEOUT = 2000;
 export const API_FETCH_TIMEOUT = 2000;
 export const PLAYER_MINIMIZE_TIMEOUT = 2000;
+export const VOLUME_WHEEL = 0.1;
 
 // API
 const https = window.location.protocol === 'https:';

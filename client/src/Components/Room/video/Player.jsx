@@ -10,6 +10,7 @@ import {
   playerConf,
   VIDEO_ELEMENT_SEL,
   PLAYER_MINIMIZE_TIMEOUT,
+  VOLUME_WHEEL,
 } from '../../../constants';
 import http from '../../../utils/httpServices';
 import ProgressBar from './ProgressBar';
@@ -82,13 +83,14 @@ class Player extends Component {
 
   handleGlobalDown = e => {
     const { moving } = this.state;
-    const { setVolume, updatePlayer } = this.props;
+    const { setVolume, updatePlayer, switchMute } = this.props;
     const { media } = this.props;
     let { target } = e;
 
     if (moving) return;
     if (!this.player) return;
 
+    // TODO: This have to be completely reworked
     if (target.closest(SEEK_SEL) || target.closest(VOLUME_SEL)) {
       const voluming = target.closest(VOLUME_SEL);
       if (media.playing && !voluming) updatePlayer({ playing: false });
@@ -99,8 +101,12 @@ class Player extends Component {
       const offset = e.clientX - left;
       let mult = offset / width;
       mult = Math.max(0, Math.min(1, mult));
-      if (voluming) setVolume(mult);
-      else this.player.seekTo(mult);
+      if (voluming) {
+        setVolume(mult);
+        if (media.muted) {
+          switchMute();
+        }
+      } else this.player.seekTo(mult);
     }
   };
 
@@ -276,13 +282,12 @@ class Player extends Component {
   };
 
   renderVolumeControl = () => {
-    const { videoEl } = this;
     const { media, switchMute } = this.props;
-    const { muted } = media;
-    let transform = `translateX(-${100 - videoEl.volume * 100}%)`;
-    transform = muted ? 0 : transform;
+    const { muted, volume } = media;
+    const transformValue = 100 - volume * 100;
+    const transform = `translateX(-${muted ? 100 : transformValue}%)`;
     return (
-      <div className="volume-control">
+      <div onWheel={this.handleWheel} className="volume-control">
         <div onClick={switchMute} className="control volume-button">
           <i className={`fa fa-volume-${muted ? 'mute' : 'up'}`} />
         </div>
@@ -299,6 +304,23 @@ class Player extends Component {
         </div>
       </div>
     );
+  };
+
+  handleWheel = e => {
+    const { setVolume, switchMute } = this.props;
+    const { volume: currentVolume, muted } = this.props.media;
+    const delta = e.deltaY < 0 ? 1 : -1;
+
+    let volume = currentVolume + VOLUME_WHEEL * delta;
+    volume = Math.max(0, Math.min(1, volume));
+
+    if (muted) {
+      return switchMute();
+    }
+
+    if (currentVolume !== volume) {
+      setVolume(volume);
+    }
   };
 }
 
