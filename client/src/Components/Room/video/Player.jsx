@@ -144,7 +144,7 @@ class Player extends Component {
     let { target } = e;
 
     // Firefox returns "document" object in some cases,
-    // which causes an eror on target.closest()
+    // which causes an error on target.closest()
     if (target && target !== document) {
       target = target.closest(VIDEO_ELEMENT_SEL);
       clearTimeout(this.minimizeTimer);
