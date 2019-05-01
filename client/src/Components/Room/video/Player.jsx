@@ -25,6 +25,7 @@ class Player extends Component {
     this.animRef = null;
     this.volume = null;
     this.seek = null;
+    this.wasPlaying = false;
   }
 
   state = {
@@ -93,7 +94,10 @@ class Player extends Component {
     // TODO: This have to be completely reworked
     if (target.closest(SEEK_SEL) || target.closest(VOLUME_SEL)) {
       const voluming = target.closest(VOLUME_SEL);
-      if (media.playing && !voluming) updatePlayer({ playing: false });
+      if (media.playing && !voluming) {
+        updatePlayer({ playing: false });
+        this.wasPlaying = true;
+      }
       if (voluming) this.setState({ voluming: true });
       else this.setState({ moving: true });
       target = target.closest(SEEK_SEL) || target.closest(VOLUME_SEL);
@@ -135,7 +139,8 @@ class Player extends Component {
       this.setState({ voluming: false });
     } else {
       this.setState({ moving: false });
-      updatePlayer({ playing: true });
+      if (this.wasPlaying) updatePlayer({ playing: true });
+      this.wasPlaying = false;
     }
   };
 
