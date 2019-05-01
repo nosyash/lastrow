@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import * as types from '../../constants/ActionTypes';
 import ProfileSettings from './ProfileSettings';
 import Playlist from './Playlist';
+import AddMedia from './Popups/AddMedia';
 
 class ControlPanel extends Component {
   state = {};
@@ -29,10 +30,23 @@ class ControlPanel extends Component {
     });
   };
 
+  handleAddMedia = id => {
+    const { togglePopup } = this.props;
+    togglePopup({
+      id,
+      el: <AddMedia id={id} />,
+      width: 400,
+      height: 200,
+      noBG: true,
+    });
+  };
+
   handleClick = id => {
     switch (id) {
       case 'showPlaylist':
         return this.handlePlaylist(id);
+      case 'addToPlaylist':
+        return this.handleAddMedia(id);
 
       default:
         break;

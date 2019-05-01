@@ -9,6 +9,7 @@ const InitialState = {
     start: 0,
     end: 0,
   },
+  showSubs: true,
   playlist: [
     {
       title: 'WJSN - Babyface',
