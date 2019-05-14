@@ -52,20 +52,13 @@ class Popups extends Component {
     );
   }
 
-  renderSinglePopup = popup => (
-    <Popup
-      key={popup.id}
-      removePopup={this.props.removePopup}
-      popupElement={popup}
-    />
-  );
+  renderSinglePopup = popup => <Popup key={popup.id} popupElement={popup} />;
 }
 
 class Popup extends Component {
   constructor() {
     super();
     this.state = {
-      height: 0,
       width: 0,
       top: 0,
       left: 0,
@@ -126,7 +119,7 @@ class Popup extends Component {
   render() {
     const { removePopup, popupElement } = this.props;
     const { id, el: element } = popupElement;
-    const { width, height, top, left } = this.state;
+    const { width, top, left } = this.state;
     return (
       <div
         ref={ref => (this.element = ref)}

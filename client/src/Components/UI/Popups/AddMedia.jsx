@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import Joi from 'joi-browser';
 import Form from '../Form';
@@ -35,7 +35,6 @@ class AddMedia extends Form {
   };
 
   render() {
-    const { playlist } = this.props;
     return (
       <div className="popup-element add-media_container">
         <form onSubmit={this.handleSubmit}>

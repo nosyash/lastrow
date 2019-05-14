@@ -60,7 +60,7 @@ class NewRoom extends Form {
   }
 }
 
-const RenderForm = ({ handleSubmit, renderInput, renderButton, onClose }) => (
+const RenderForm = ({ handleSubmit, renderInput, renderButton }) => (
   <div className="popup-element room-creation_container">
     <h1 className="title">New Room</h1>
     <form onSubmit={handleSubmit}>

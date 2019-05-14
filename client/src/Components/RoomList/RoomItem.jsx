@@ -6,7 +6,6 @@ class RoomItem extends Component {
 
   render() {
     const { title, movie, users, link } = this.props;
-    console.log(this.props);
     return (
       <Link to={link} className="custom-table_item custom-table-link">
         <span>{title}</span>

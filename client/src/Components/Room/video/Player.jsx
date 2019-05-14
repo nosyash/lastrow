@@ -240,17 +240,14 @@ class Player extends Component {
     );
   };
 
-  renderPlayerGUI = () => {
-    const { minimized } = this.state;
-    return (
-      <div className="video-player">
-        {this.renderVideoTop()}
-        {this.renderVideoMid()}
-        <Subtitles videoEl={this.videoEl} />
-        <div className="video-player_overflow" />
-      </div>
-    );
-  };
+  renderPlayerGUI = () => (
+    <div className="video-player">
+      {this.renderVideoTop()}
+      {this.renderVideoMid()}
+      <Subtitles videoEl={this.videoEl} />
+      <div className="video-player_overflow" />
+    </div>
+  );
 
   renderVideoTop = () => {
     const { media } = this.props;
@@ -312,8 +309,8 @@ class Player extends Component {
   };
 
   handleWheel = e => {
-    const { setVolume, switchMute } = this.props;
-    const { volume: currentVolume, muted } = this.props.media;
+    const { setVolume, switchMute, media } = this.props;
+    const { volume: currentVolume, muted } = media;
     const delta = e.deltaY < 0 ? 1 : -1;
 
     let volume = currentVolume + VOLUME_WHEEL * delta;

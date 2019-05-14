@@ -107,7 +107,6 @@ class ImagePicker extends Component {
       <RenderPicker
         base64={base64}
         className={classes}
-        onClose={this.handleClose}
         onImageGet={this.handleImage}
         inputEl={this.inputEl}
         onRef={ref => (this.inputEl = ref)}
@@ -120,7 +119,7 @@ class ImagePicker extends Component {
 }
 
 const RenderPicker = props => {
-  const { onClick, onClose, onInput } = props;
+  const { onClick, onInput } = props;
   const { onRef, onSelectAnother, onImageGet } = props;
   const { className, base64 } = props;
   return (
