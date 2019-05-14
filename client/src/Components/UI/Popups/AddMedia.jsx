@@ -31,6 +31,7 @@ class AddMedia extends Form {
   );
 
   handleSubmit = e => {
+    console.log('submited');
     e.preventDefault();
   };
 
@@ -44,6 +45,7 @@ class AddMedia extends Form {
             autoFocus: true,
             placeholder: 'Link',
           })}
+          {this.renderButton('Add')}
         </form>
       </div>
     );

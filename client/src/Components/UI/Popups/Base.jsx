@@ -52,7 +52,14 @@ class Popups extends Component {
     );
   }
 
-  renderSinglePopup = popup => <Popup key={popup.id} popupElement={popup} />;
+  renderSinglePopup = popup => (
+    <Popup
+      key={popup.id}
+      // eslint-disable-next-line react/destructuring-assignment
+      removePopup={this.props.removePopup}
+      popupElement={popup}
+    />
+  );
 }
 
 class Popup extends Component {
