@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import * as types from '../../constants/ActionTypes';
-import ProfileSettings from './ProfileSettings';
-import Playlist from './Playlist';
+import ProfileSettings from './Popups/ProfileSettings';
+import Playlist from './Popups/Playlist';
 import AddMedia from './Popups/AddMedia';
 
 class ControlPanel extends Component {
@@ -36,7 +36,7 @@ class ControlPanel extends Component {
       id,
       el: <AddMedia id={id} />,
       width: 400,
-      height: 200,
+      height: 123,
       noBG: true,
     });
   };

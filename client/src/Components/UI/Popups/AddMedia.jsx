@@ -37,7 +37,7 @@ class AddMedia extends Form {
   render() {
     const { playlist } = this.props;
     return (
-      <div className="float-element add-media_container">
+      <div className="popup-element add-media_container">
         <form onSubmit={this.handleSubmit}>
           {this.renderInput({
             name: 'link',

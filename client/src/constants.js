@@ -12,6 +12,7 @@ export const DIVIDER_SEL = '.custom-divider';
 export const SEEK_SEL = '.seek_trigger';
 export const VOLUME_SEL = '.volume_trigger';
 export const VIDEO_ELEMENT_SEL = '.video-element';
+export const POPUP_HEADER = '.popup-header';
 
 // Misc
 export const RESIZE_OFFSET = 10;

@@ -30,7 +30,7 @@ class ColorPicker extends React.Component {
     const { color } = this.state;
     const { name } = this.props;
     return (
-      <div className="float-element color-picker_container">
+      <div className="popup-element color-picker_container">
         <div style={{ color }} className="chat-name">
           {name}
         </div>
@@ -42,13 +42,6 @@ class ColorPicker extends React.Component {
             className="button button-save"
           >
             Save
-          </button>
-          <button
-            onClick={this.handleClose}
-            type="button"
-            className="button button-cancel"
-          >
-            Cancel
           </button>
         </div>
       </div>

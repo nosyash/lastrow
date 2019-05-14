@@ -91,7 +91,7 @@ class Player extends Component {
     if (moving) return;
     if (!this.player) return;
 
-    // TODO: This have to be completely reworked
+    // TODO: This has to be completely reworked
     if (target.closest(SEEK_SEL) || target.closest(VOLUME_SEL)) {
       const voluming = target.closest(VOLUME_SEL);
       if (media.playing && !voluming) {

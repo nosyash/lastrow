@@ -81,13 +81,13 @@ class RoomBase extends Component {
   };
 
   handleNicknamePopup = () => {
-    const { addPopup } = this.props;
+    const { togglePopup } = this.props;
     const id = 'profile-settings';
-    addPopup({
+    togglePopup({
       id,
       el: <GuestAuth onSubmit={this.handleGuestAuth} id={id} />,
       width: 500,
-      height: 200,
+      height: 300,
       noBG: true,
     });
   };
@@ -265,7 +265,7 @@ const mapDispatchToProps = {
   updateUserList: payload => ({ type: types.UPDATE_USERLIST, payload }),
   setSocketState: payload => ({ type: types.UPDATE_SOCKET_STATE, payload }),
   updatePlayer: payload => ({ type: types.UPDATE_MEDIA, payload }),
-  addPopup: payload => ({ type: types.ADD_POPUP, payload }),
+  togglePopup: payload => ({ type: types.TOGGLE_POPUP, payload }),
   removePopup: payload => ({ type: types.REMOVE_POPUP, payload }),
   clearPopups: () => ({ type: types.CLEAR_POPUPS }),
   updateProfile: payload => ({ type: types.UPDATE_PROFILE, payload }),

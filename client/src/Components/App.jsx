@@ -4,7 +4,7 @@ import { ToastContainer } from 'react-toastify';
 import { connect } from 'react-redux';
 import RoomBase from './Room/Base';
 import RoomListBase from './RoomList/Base';
-import Popups from './UI/Popups';
+import Popups from './UI/Popups/Base';
 import * as types from '../constants/ActionTypes';
 import { getProfile } from '../utils/apiRequests';
 import { getRandom } from '../utils/base';
