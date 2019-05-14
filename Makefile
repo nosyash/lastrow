@@ -15,5 +15,8 @@ dep:
 		  github.com/gorilla/mux \
 		  gopkg.in/mgo.v2
 
-build-client:
+watch-client:
 	npm run client
+
+build-client:
+	npm run build
