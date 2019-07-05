@@ -17,8 +17,7 @@ type RoomsHub struct {
 
 type Hub struct {
 	hub        map[string]*websocket.Conn
-	broadcast  chan *request
-	brexcept   chan except
+	broadcast  chan *response
 	Register   chan *user
 	unregister chan *websocket.Conn
 	cache      *cache.Cache
@@ -29,11 +28,6 @@ type errorResponse struct {
 	Error string `json:"error"`
 }
 
-type except struct {
-	Req  *request
-	UUID string
-}
-
 type user struct {
 	Conn  *websocket.Conn
 	UUID  string
@@ -42,41 +36,52 @@ type user struct {
 }
 
 type request struct {
-	Action string      `json:"action"`
-	Body   requestBody `json:"body,omitempty"`
-	RoomID string      `json:"room_id,omitempty"`
-	UUID   string      `json:"user_uuid,omitempty"`
-	Name   string      `json:"name,omitempty"`
+	Action   string `json:"action"`
+	Body     Body   `json:"body,omitempty"`
+	RoomID   string `json:"room_id,omitempty"`
+	UserUUID string `json:"user_uuid,omitempty"`
+	Name     string `json:"name,omitempty"`
+}
+
+type response struct {
+	Action string `json:"action"`
+	Body   Body   `json:"body"`
 }
 
 type updates struct {
 	Users []*cache.User `json:"users,omitempty"`
 }
 
-type requestBody struct {
+type Body struct {
 	Event eventBody `json:"event"`
 }
 
 type eventBody struct {
-	Type string    `json:"type"`
-	Data chatEvent `json:"data,omiempty"`
+	Type string `json:"type"`
+	Data Data   `json:"data,omiempty"`
 }
 
-type chatEvent struct {
-	Message string `json:"message"`
-	Color   string `json:"color"`
-	Image   string `json:"image"`
-	Name    string `json:"name"`
-	ID      string `json:"__id"`
-	Guest   bool   `json:"guest"`
+type Data struct {
+	Message  string `json:"message,omitempty"`
+	Color    string `json:"color,omitempty"`
+	Image    string `json:"image,omitempty"`
+	Name     string `json:"name,omitempty"`
+	Guest    bool   `json:"guest,omitempty"`
+	Title    string `json:"title,omitempty"`
+	Duration int    `json:"duration,omitempty"`
+	URL      string `json:"url,omitempty"`
+	ID       string `json:"__id,omitempty"`
 }
 
 const (
 	USER_REGISTER  = "user_register"
 	GUEST_REGISTER = "guest_register"
 	USER_EVENT     = "user_event"
+	PLAYER_EVENT   = "player_event"
 )
 
 const (
-	MSG_EVENT = "message"
+	ETYPE_MSG    = "message"
+	ETYPE_PL_ADD = "playlist_add"
+	ETYPE_PL_DEL = "playlist_delete"
 )

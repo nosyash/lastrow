@@ -36,16 +36,16 @@ func Size() int {
 
 func UpdateUser(userUUID string) {
 	for _, cache := range storage.cs {
-		_, ok := cache.GetUser(userUUID)
+		_, ok := cache.Users.GetUser(userUUID)
 		if ok {
-			cache.UpdateUser(userUUID)
+			cache.Users.UpdateUser(userUUID)
 		}
 	}
 }
 
 func UsersInRoom(roomPath string) int {
 	if _, ok := storage.cs[roomPath]; ok {
-		return storage.cs[roomPath].UsersCount()
+		return storage.cs[roomPath].Users.UsersCount()
 	} else {
 		return 0
 	}

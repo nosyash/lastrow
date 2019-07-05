@@ -16,16 +16,16 @@ func main() {
 	imgPath := os.Getenv("IMG_PATH")
 
 	if apiAddr == "" {
-		println("API_ADDR are empty and will set to default value: :8080")
+		println("API_ADDR are empty and will be set to default value: :8080")
 		apiAddr = ":8080"
 	} else if dbAddr == "" {
-		println("DB_ADDR are empry and will set to default value: 0.0.0.0:27017")
+		println("DB_ADDR are empry and will be set to default value: 0.0.0.0:27017")
 		dbAddr = "0.0.0.0:27017"
 	} else if uplPath == "" {
-		println("UP_PATH are empty and will set to default value: (pwd)")
+		println("UP_PATH are empty and will be set to default value: (pwd)")
 		uplPath = "./"
 	} else if imgPath == "" {
-		println("IMGS_PATH are empty and will set to default value: /media/")
+		println("IMGS_PATH are empty and will be set to default value: /media/")
 		imgPath = "/media/"
 	}
 

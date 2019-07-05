@@ -1,10 +1,10 @@
 package cache
 
-func (cache *Cache) addNewUser(uuid string) {
+func (u *Users) Add(uuid string) {
 
-	userProfile, _ := cache.db.GetUserProfile(uuid)
+	userProfile, _ := u.db.GetUserProfile(uuid)
 
-	cache.users[uuid] = &User{
+	u.users[uuid] = &User{
 		Name:  userProfile.Name,
 		Color: userProfile.Color,
 		Image: userProfile.Image,
@@ -13,38 +13,38 @@ func (cache *Cache) addNewUser(uuid string) {
 	}
 }
 
-func (cache *Cache) addNewGuest(user *User) {
-	cache.users[user.UUID] = user
+func (u *Users) _AddGuest(user *User) {
+	u.users[user.UUID] = user
 }
 
-func (cache *Cache) removeUser(uuid string) {
-	delete(cache.users, uuid)
+func (u *Users) delUser(uuid string) {
+	delete(u.users, uuid)
 }
 
-func (cache *Cache) GetUser(uuid string) (*User, bool) {
-	user, ok := cache.users[uuid]
+func (u *Users) GetUser(uuid string) (*User, bool) {
+	user, ok := u.users[uuid]
 	return user, ok
 }
 
-func (cache *Cache) UpdateUser(uuid string) {
+func (u *Users) UpdateUser(uuid string) {
 
-	userProfile, _ := cache.db.GetUserProfile(uuid)
-	user, _ := cache.GetUser(uuid)
+	userProfile, _ := u.db.GetUserProfile(uuid)
+	user, _ := u.GetUser(uuid)
 
 	user.Name = userProfile.Name
 	user.Color = userProfile.Color
 	user.Image = userProfile.Image
 }
 
-func (cache *Cache) UsersCount() int {
-	return len(cache.users)
+func (u *Users) UsersCount() int {
+	return len(u.users)
 }
 
-func (cache *Cache) GetAllUsers() []*User {
+func (u *Users) GetAllUsers() []*User {
 
 	var users []*User
 
-	for _, user := range cache.users {
+	for _, user := range u.users {
 		users = append(users, &User{
 			Name:  user.Name,
 			Color: user.Color,

@@ -14,8 +14,8 @@ func readRequest(conn *websocket.Conn) (*request, error) {
 	return request, err
 }
 
-func sendRequest(conn *websocket.Conn, pkg *request) error {
-	return websocket.WriteJSON(conn, pkg)
+func sendResponse(conn *websocket.Conn, r *response) error {
+	return websocket.WriteJSON(conn, r)
 }
 
 func sendError(conn *websocket.Conn, msg string) error {

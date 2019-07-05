@@ -7,62 +7,54 @@ import (
 	"backrow/db"
 )
 
-type Cache struct {
-	users        map[string]*User
-	AddUser      chan string
-	Remove       chan string
-	AddGuest     chan *User
-	UpdatesUsers chan struct{}
-	Close        chan struct{}
-	ID           string
-	db           *db.Database
-}
-
-type User struct {
-	Name  string `json:"name"`
-	Color string `json:"color"`
-	Image string `json:"image"`
-	Guest bool   `json:"guest"`
-	UUID  string `json:"uuid,omitempty"`
-	ID    string `json:"__id"`
-}
-
 func New(id string) *Cache {
 
+	// TODO
+	// fix that
 	dbAddr := os.Getenv("DB_ADDR")
 	if dbAddr == "" {
 		dbAddr = "0.0.0.0:27017"
 	}
 
 	return &Cache{
-		make(map[string]*User),
-		make(chan string),
-		make(chan string),
-		make(chan *User),
-		make(chan struct{}),
-		make(chan struct{}),
+		Users{
+			make(map[string]*User),
+			make(chan string),
+			make(chan string),
+			make(chan *User),
+			make(chan struct{}),
+			db.Connect(dbAddr),
+		},
+		Playlist{
+			make(map[string]*Video),
+			make(chan string),
+			make(chan string),
+		},
 		id,
-		db.Connect(dbAddr),
+		make(chan struct{}),
 	}
 }
 
 func (cache *Cache) Init() {
+
 	for {
 		select {
-		case uuid := <-cache.AddUser:
+		case uuid := <-cache.Users.AddUser:
 			fmt.Printf("Add %s to cache for %s\n", uuid, cache.ID)
-			cache.addNewUser(uuid)
-			cache.UpdatesUsers <- struct{}{}
-		case guest := <-cache.AddGuest:
-			cache.addNewGuest(guest)
-			cache.UpdatesUsers <- struct{}{}
-		case uuid := <-cache.Remove:
+			cache.Users.Add(uuid)
+			cache.Users.UpdateUsers <- struct{}{}
+		case guest := <-cache.Users.AddGuest:
+			cache.Users._AddGuest(guest)
+			cache.Users.UpdateUsers <- struct{}{}
+		case uuid := <-cache.Users.DelUser:
 			fmt.Printf("Remove %s from cache for %s\n", uuid, cache.ID)
-			cache.removeUser(uuid)
-			cache.UpdatesUsers <- struct{}{}
+			cache.Users.delUser(uuid)
+			cache.Users.UpdateUsers <- struct{}{}
 		case <-cache.Close:
 			fmt.Printf("Cache for %s was closed\n", cache.ID)
 			return
+		case URL := <-cache.Playlist.AddURL:
+			cache.Playlist.Add(URL)
 		}
 	}
 }

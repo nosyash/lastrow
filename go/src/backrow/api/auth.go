@@ -133,6 +133,9 @@ func (s *Server) setUpAuthSession(w http.ResponseWriter, userUUID string) {
 		return
 	}
 
+	// TODO
+	// Set secure flag when TLS be available
+
 	http.SetCookie(w, &http.Cookie{
 		Name:    "session_id",
 		Value:   sessionID,

@@ -13,8 +13,7 @@ import (
 func NewRoomHub(id string) *Hub {
 	return &Hub{
 		make(map[string]*websocket.Conn),
-		make(chan *request),
-		make(chan except),
+		make(chan *response),
 		make(chan *user),
 		make(chan *websocket.Conn),
 		cache.New(id),
@@ -38,9 +37,7 @@ func (h *Hub) WaitingActions() {
 			go h.remove(conn)
 		case msg := <-h.broadcast:
 			go h.send(msg)
-		case excMsg := <-h.brexcept:
-			go h.sendExcept(excMsg.Req, excMsg.UUID)
-		case <-h.cache.UpdatesUsers:
+		case <-h.cache.Users.UpdateUsers:
 			go h.updateUserList()
 		}
 	}
@@ -56,14 +53,14 @@ func (h *Hub) add(user *user) {
 	}
 	if user.Guest {
 
-		h.cache.AddGuest <- &cache.User{
+		h.cache.Users.AddGuest <- &cache.User{
 			Name:  user.Name,
 			Guest: true,
 			UUID:  user.UUID,
 			ID:    getHashOfString(user.UUID[:8]),
 		}
 	} else {
-		h.cache.AddUser <- user.UUID
+		h.cache.Users.AddUser <- user.UUID
 	}
 
 	h.hub[user.UUID] = user.Conn
@@ -84,7 +81,7 @@ func (h *Hub) remove(conn *websocket.Conn) {
 	if uuid != "" {
 
 		delete(h.hub, uuid)
-		h.cache.Remove <- uuid
+		h.cache.Users.DelUser <- uuid
 
 		if len(h.hub) == 0 {
 			Close <- h.id
@@ -110,33 +107,23 @@ func (h *Hub) read(conn *websocket.Conn) {
 			break
 		}
 
-		switch req.Action {
-		case USER_EVENT:
-			go h.handleUserEvent(req, conn)
-		default:
-			sendError(conn, "Unknown action")
+		if req.UserUUID != "" && len(req.UserUUID) == 64 {
+			switch req.Action {
+			case USER_EVENT:
+				go h.handleUserEvent(req, conn)
+			case PLAYER_EVENT:
+				go h.handlePlayerEvent(req, conn)
+			default:
+				sendError(conn, "Unknown action")
+			}
 		}
 	}
 }
 
-func (h *Hub) send(msg *request) {
+func (h *Hub) send(msg *response) {
 
 	for _, conn := range h.hub {
-		err := sendRequest(conn, msg)
-		if err != nil {
-			fmt.Println(err)
-			conn.Close()
-		}
-	}
-}
-
-func (h *Hub) sendExcept(msg *request, uuid string) {
-
-	for id, conn := range h.hub {
-		if id == uuid {
-			continue
-		}
-		err := sendRequest(conn, msg)
+		err := sendResponse(conn, msg)
 		if err != nil {
 			fmt.Println(err)
 			conn.Close()

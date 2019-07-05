@@ -25,10 +25,10 @@ type Server struct {
 	imageServer ImageServer
 }
 
-func NewServer(wsAddr, uplPath, imgPath string, db *db.Database) *Server {
+func NewServer(address, uplPath, imgPath string, db *db.Database) *Server {
 	return &Server{
 		&http.Server{
-			Addr:         wsAddr,
+			Addr:         address,
 			ReadTimeout:  10 * time.Second,
 			WriteTimeout: 10 * time.Second,
 			IdleTimeout:  60 * time.Second,

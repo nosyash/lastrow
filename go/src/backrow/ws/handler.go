@@ -14,8 +14,8 @@ func handleRegRequest(conn *websocket.Conn) (*user, string, error) {
 		return nil, "", err
 	}
 
-	room, uuid := req.RoomID, req.UUID
-	if room == "" || uuid == "" || len(req.UUID) != 64 {
+	room, uuid := req.RoomID, req.UserUUID
+	if room == "" || uuid == "" || len(req.UserUUID) != 64 {
 		return nil, "", errors.New("One or more required arguments are empty")
 	}
 
@@ -55,25 +55,35 @@ func handleGuestRegister(conn *websocket.Conn, room, uuid, name string) (*user, 
 func (h *Hub) handleUserEvent(req *request, conn *websocket.Conn) {
 
 	switch req.Body.Event.Type {
-	case MSG_EVENT:
-		if req.UUID != "" && len(req.UUID) == 64 && req.Body.Event.Data.Message != "" {
-			h.handleMessage(req.Body.Event.Data.Message, req.UUID)
+	case ETYPE_MSG:
+		if req.Body.Event.Data.Message != "" {
+			h.handleMessage(req.Body.Event.Data.Message, req.UserUUID)
 		}
 	default:
 		sendError(conn, "Unknown event type")
 	}
 }
 
+func (h *Hub) handlePlayerEvent(req *request, conn *websocket.Conn) {
+
+	switch req.Body.Event.Type {
+	case ETYPE_PL_ADD:
+		if req.Body.Event.Data.URL != "" {
+			h.cache.Playlist.AddURL <- req.Body.Event.Data.URL
+		}
+	}
+}
+
 func (h *Hub) handleMessage(msg, uuid string) {
 
-	user, _ := h.cache.GetUser(uuid)
+	user, _ := h.cache.Users.GetUser(uuid)
 
-	res := &request{
+	res := &response{
 		Action: "chat_event",
-		Body: requestBody{
+		Body: Body{
 			Event: eventBody{
 				Type: "message",
-				Data: chatEvent{
+				Data: Data{
 					Message: msg,
 					Name:    user.Name,
 					Color:   user.Color,
@@ -90,18 +100,18 @@ func (h *Hub) handleMessage(msg, uuid string) {
 
 func (h *Hub) updateUserList() {
 
-	users := h.cache.GetAllUsers()
-	var usersUpdate *updates
+	users := h.cache.Users.GetAllUsers()
+	var upd *updates
 
 	if users == nil {
-		usersUpdate = &updates{
+		upd = &updates{
 			Users: []*cache.User{},
 		}
 	} else {
-		usersUpdate = &updates{
+		upd = &updates{
 			Users: users,
 		}
 	}
 
-	h.sendUpdates(usersUpdate)
+	h.sendUpdates(upd)
 }
