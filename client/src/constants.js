@@ -12,6 +12,7 @@ export const DIVIDER_SEL = '.custom-divider';
 export const SEEK_SEL = '.seek_trigger';
 export const VOLUME_SEL = '.volume_trigger';
 export const VIDEO_ELEMENT_SEL = '.video-element';
+export const POPUP_HEADER = '.popup-header';
 
 // Misc
 export const RESIZE_OFFSET = 10;
@@ -21,6 +22,7 @@ export const MAX_MESSAGE_LENGTH = 400;
 export const WEBSOCKET_TIMEOUT = 2000;
 export const API_FETCH_TIMEOUT = 2000;
 export const PLAYER_MINIMIZE_TIMEOUT = 2000;
+export const VOLUME_WHEEL = 0.1;
 
 // API
 const https = window.location.protocol === 'https:';

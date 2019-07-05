@@ -51,7 +51,7 @@ const RenderForm = props => {
     placeholder: 'Name',
   };
   return (
-    <div className="float-element guest-auth_container">
+    <div className="popup-element guest-auth_container">
       <h1 className="title">Enter nickname</h1>
       <form onSubmit={handleSubmit}>
         {renderInput(inputOpts)}

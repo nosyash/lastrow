@@ -10,6 +10,7 @@ import {
   playerConf,
   VIDEO_ELEMENT_SEL,
   PLAYER_MINIMIZE_TIMEOUT,
+  VOLUME_WHEEL,
 } from '../../../constants';
 import http from '../../../utils/httpServices';
 import ProgressBar from './ProgressBar';
@@ -24,6 +25,7 @@ class Player extends Component {
     this.animRef = null;
     this.volume = null;
     this.seek = null;
+    this.wasPlaying = false;
   }
 
   state = {
@@ -82,16 +84,20 @@ class Player extends Component {
 
   handleGlobalDown = e => {
     const { moving } = this.state;
-    const { setVolume, updatePlayer } = this.props;
+    const { setVolume, updatePlayer, switchMute } = this.props;
     const { media } = this.props;
     let { target } = e;
 
     if (moving) return;
     if (!this.player) return;
 
+    // TODO: This has to be completely reworked
     if (target.closest(SEEK_SEL) || target.closest(VOLUME_SEL)) {
       const voluming = target.closest(VOLUME_SEL);
-      if (media.playing && !voluming) updatePlayer({ playing: false });
+      if (media.playing && !voluming) {
+        updatePlayer({ playing: false });
+        this.wasPlaying = true;
+      }
       if (voluming) this.setState({ voluming: true });
       else this.setState({ moving: true });
       target = target.closest(SEEK_SEL) || target.closest(VOLUME_SEL);
@@ -99,8 +105,12 @@ class Player extends Component {
       const offset = e.clientX - left;
       let mult = offset / width;
       mult = Math.max(0, Math.min(1, mult));
-      if (voluming) setVolume(mult);
-      else this.player.seekTo(mult);
+      if (voluming) {
+        setVolume(mult);
+        if (media.muted) {
+          switchMute();
+        }
+      } else this.player.seekTo(mult);
     }
   };
 
@@ -129,14 +139,19 @@ class Player extends Component {
       this.setState({ voluming: false });
     } else {
       this.setState({ moving: false });
-      updatePlayer({ playing: true });
+      if (this.wasPlaying) updatePlayer({ playing: true });
+      this.wasPlaying = false;
     }
   };
 
   handlePlayerMove = e => {
     const { minimized } = this.state;
-    const target = e.target.closest(VIDEO_ELEMENT_SEL);
-    if (target) {
+    let { target } = e;
+
+    // Firefox returns "document" object in some cases,
+    // which causes an error on target.closest()
+    if (target && target !== document) {
+      target = target.closest(VIDEO_ELEMENT_SEL);
       clearTimeout(this.minimizeTimer);
       if (minimized) {
         this.setState({ minimized: false });
@@ -225,17 +240,14 @@ class Player extends Component {
     );
   };
 
-  renderPlayerGUI = () => {
-    const { minimized } = this.state;
-    return (
-      <div className="video-player">
-        {this.renderVideoTop()}
-        {this.renderVideoMid()}
-        <Subtitles videoEl={this.videoEl} />
-        <div className="video-player_overflow" />
-      </div>
-    );
-  };
+  renderPlayerGUI = () => (
+    <div className="video-player">
+      {this.renderVideoTop()}
+      {this.renderVideoMid()}
+      <Subtitles videoEl={this.videoEl} />
+      <div className="video-player_overflow" />
+    </div>
+  );
 
   renderVideoTop = () => {
     const { media } = this.props;
@@ -272,13 +284,12 @@ class Player extends Component {
   };
 
   renderVolumeControl = () => {
-    const { videoEl } = this;
     const { media, switchMute } = this.props;
-    const { muted } = media;
-    let transform = `translateX(-${100 - videoEl.volume * 100}%)`;
-    transform = muted ? 0 : transform;
+    const { muted, volume } = media;
+    const transformValue = 100 - volume * 100;
+    const transform = `translateX(-${muted ? 100 : transformValue}%)`;
     return (
-      <div className="volume-control">
+      <div onWheel={this.handleWheel} className="volume-control">
         <div onClick={switchMute} className="control volume-button">
           <i className={`fa fa-volume-${muted ? 'mute' : 'up'}`} />
         </div>
@@ -295,6 +306,23 @@ class Player extends Component {
         </div>
       </div>
     );
+  };
+
+  handleWheel = e => {
+    const { setVolume, switchMute, media } = this.props;
+    const { volume: currentVolume, muted } = media;
+    const delta = e.deltaY < 0 ? 1 : -1;
+
+    let volume = currentVolume + VOLUME_WHEEL * delta;
+    volume = Math.max(0, Math.min(1, volume));
+
+    if (muted) {
+      return switchMute();
+    }
+
+    if (currentVolume !== volume) {
+      setVolume(volume);
+    }
   };
 }
 

@@ -9,6 +9,7 @@ const InitialState = {
     start: 0,
     end: 0,
   },
+  showSubs: true,
   playlist: [
     {
       title: 'WJSN - Babyface',
@@ -58,6 +59,7 @@ const Player = (state = InitialState, action) => {
     }
 
     case types.SET_VOLUME: {
+      localStorage.volume = action.payload;
       return { ...state, volume: action.payload };
     }
 

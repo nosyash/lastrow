@@ -2,10 +2,10 @@ import React from 'react';
 import Joi from 'joi-browser';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
-import Form from './Form';
-import http from '../../utils/httpServices';
-import * as api from '../../constants/apiActions';
-import * as types from '../../constants/ActionTypes';
+import Form from '../Form';
+import http from '../../../utils/httpServices';
+import * as api from '../../../constants/apiActions';
+import * as types from '../../../constants/ActionTypes';
 
 class NewRoom extends Form {
   state = {
@@ -60,22 +60,13 @@ class NewRoom extends Form {
   }
 }
 
-const RenderForm = ({ handleSubmit, renderInput, renderButton, onClose }) => (
-  <div className="float-element room-creation_container">
+const RenderForm = ({ handleSubmit, renderInput, renderButton }) => (
+  <div className="popup-element room-creation_container">
     <h1 className="title">New Room</h1>
     <form onSubmit={handleSubmit}>
       {renderInput({ name: 'title', icon: 'info', placeholder: 'Title' })}
       {renderInput({ name: 'path', icon: 'link', placeholder: 'Path' })}
-      <div className="controls-container">
-        {renderButton('Create')}
-        <button
-          onClick={onClose}
-          type="button"
-          className="button button-cancel"
-        >
-          Cancel
-        </button>
-      </div>
+      <div className="controls-container">{renderButton('Create')}</div>
     </form>
   </div>
 );

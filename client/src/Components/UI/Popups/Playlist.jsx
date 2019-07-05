@@ -21,7 +21,7 @@ class Playlist extends Component {
   render() {
     const { playlist } = this.props;
     return (
-      <div className="float-element playlist_container">
+      <div className="popup-element playlist_container">
         {playlist.map((element, i) => this.renderElement(element, i))}
       </div>
     );

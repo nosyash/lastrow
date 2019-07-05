@@ -3,9 +3,9 @@ import Cropper from 'react-easy-crop';
 import { toast } from 'react-toastify';
 import { connect } from 'react-redux';
 import Slider from '@material-ui/lab/Slider';
-import { toastOpts } from '../../constants';
-import getCroppedImg from '../../utils/cropImage';
-import * as types from '../../constants/ActionTypes';
+import { toastOpts } from '../../../constants';
+import getCroppedImg from '../../../utils/cropImage';
+import * as types from '../../../constants/ActionTypes';
 
 class ImagePicker extends Component {
   constructor() {
@@ -107,7 +107,6 @@ class ImagePicker extends Component {
       <RenderPicker
         base64={base64}
         className={classes}
-        onClose={this.handleClose}
         onImageGet={this.handleImage}
         inputEl={this.inputEl}
         onRef={ref => (this.inputEl = ref)}
@@ -120,11 +119,11 @@ class ImagePicker extends Component {
 }
 
 const RenderPicker = props => {
-  const { onClick, onClose, onInput } = props;
+  const { onClick, onInput } = props;
   const { onRef, onSelectAnother, onImageGet } = props;
   const { className, base64 } = props;
   return (
-    <div className="float-element image-picker_container">
+    <div className="popup-element image-picker_container">
       <h1 className="title">Select image</h1>
 
       {!base64 && (
@@ -132,13 +131,6 @@ const RenderPicker = props => {
           <div onClick={onClick} className={className}>
             Click to select file or drop it to the field
           </div>
-          <button
-            onClick={onClose}
-            type="button"
-            className="button button-cancel"
-          >
-            Cancel
-          </button>
         </React.Fragment>
       )}
       {base64 && (

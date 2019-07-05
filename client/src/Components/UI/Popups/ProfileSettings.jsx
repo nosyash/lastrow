@@ -2,13 +2,13 @@ import React from 'react';
 import { connect } from 'react-redux';
 import Joi from 'joi-browser';
 import { toast } from 'react-toastify';
-import Form from './Form';
-import * as api from '../../constants/apiActions';
-import * as types from '../../constants/ActionTypes';
-import http from '../../utils/httpServices';
+import Form from '../Form';
+import * as api from '../../../constants/apiActions';
+import * as types from '../../../constants/ActionTypes';
+import http from '../../../utils/httpServices';
 import ImagePicker from './ImagePicker';
-import { toastOpts } from '../../constants';
-import ColorPicker from './Popups/ColorPicker';
+import { toastOpts } from '../../../constants';
+import ColorPicker from './ColorPicker';
 
 // TODO: Extremely poorly made. Refactor!
 class ProfileSettings extends Form {
@@ -213,7 +213,7 @@ const RenderForm = props => {
   const backgroundImage = `url(${profile.image})`;
   const hasChanges = Object.entries(data).length !== 0;
   return (
-    <div className="float-element profile-settings_container">
+    <div className="popup-element profile-settings_container">
       <h1 className="title">Profile</h1>
       <div
         onClick={handleImageChange}
@@ -266,14 +266,19 @@ const RenderForm = props => {
             placeholder: 'New Password',
           })}
         <div className="controls-container">
-          {hasChanges && renderButton('Save changes')}
-          <button
-            onClick={() => (hasChanges ? onFormReset() : onClose())}
-            type="button"
-            className="button button-cancel"
-          >
-            {hasChanges ? 'Cancel' : 'Close'}
-          </button>
+          {hasChanges && (
+            <React.Fragment>
+              {renderButton('Save changes')}
+
+              <button
+                onClick={() => (hasChanges ? onFormReset() : onClose())}
+                type="button"
+                className="button button-cancel"
+              >
+                Cancel
+              </button>
+            </React.Fragment>
+          )}
         </div>
       </form>
     </div>
