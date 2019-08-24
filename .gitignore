@@ -5,11 +5,6 @@
 /public
 /media
 
-/go/pkg
-/go/src/github.com
-/go/src/gopkg.in
-/go/src/backrow/public
-
 .DS_Store
 .env*
 .vscode

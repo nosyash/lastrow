@@ -77,7 +77,7 @@
   },
   "scripts": {
     "start": "node client/npm-scripts/start.js",
-    "build": "npm-run-all compile-less build-client",
+    "build": "npm-run-all less build-client",
     "build-client": "node client/npm-scripts/build.js",
     "client": "npm-run-all --parallel start watch-less",
     "less": "node_modules/.bin/lessc client/src/less/main.less client/src/.css/main.css -x",
