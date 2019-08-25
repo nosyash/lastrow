@@ -44,7 +44,6 @@ export default class SubtitlesHandler {
     );
 
     this.tempSubtitles = this.removeBrackets(subsList);
-    console.log(this.tempSubtitles);
     if (callback) return callback();
   };
 
