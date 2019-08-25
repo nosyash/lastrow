@@ -61,6 +61,7 @@
     "react-toastify": "^5.0.0-rc.3",
     "react-websocket": "^2.0.1",
     "redux": "^4.0.1",
+    "redux-thunk": "^2.3.0",
     "resolve": "1.10.0",
     "safely-set-inner-html": "^0.1.0",
     "sass-loader": "7.1.0",

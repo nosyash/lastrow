@@ -24,7 +24,6 @@ function Player(props) {
   const [minimized, setMinimized] = useState(false);
   const playerRef = useRef(null);
 
-  const animRef = null;
   let seek = null;
   let wasPlaying = false;
   let volume = null;
@@ -88,19 +87,19 @@ function Player(props) {
 
     // TODO: This has to be completely reworked
     if (target.closest(SEEK_SEL) || target.closest(VOLUME_SEL)) {
-      const voluming = target.closest(VOLUME_SEL);
-      if (media.playing && !voluming) {
+      const isVoluming = target.closest(VOLUME_SEL);
+      if (media.playing && !isVoluming) {
         updatePlayer({ playing: false });
         wasPlaying = true;
       }
-      if (voluming) setVoluming(true);
+      if (isVoluming) setVoluming(true);
       else setMoving(true);
       target = target.closest(SEEK_SEL) || target.closest(VOLUME_SEL);
       const { left, width } = target.getBoundingClientRect();
       const offset = e.clientX - left;
       let mult = offset / width;
       mult = Math.max(0, Math.min(1, mult));
-      if (voluming) {
+      if (isVoluming) {
         setVolume(mult);
         if (media.muted) {
           switchMute();
@@ -229,11 +228,7 @@ function Player(props) {
     return (
       <div className="video-player_top">
         <div className="video-time current-time">{formatTime(media.currentTime)}</div>
-        <ProgressBar
-          animReef={animRef}
-          player={playerRef.current}
-          seek={ref => (seek = ref)}
-        />
+        <ProgressBar player={playerRef.current} seek={ref => (seek = ref)} />
         <div className="video-time duration">{formatTime(media.duration)}</div>
       </div>
     );
@@ -286,15 +281,15 @@ function Player(props) {
     const { volume: currentVolume, muted } = media;
     const delta = e.deltaY < 0 ? 1 : -1;
 
-    let volume = currentVolume + VOLUME_WHEEL * delta;
-    volume = Math.max(0, Math.min(1, volume));
+    let volumeNew = currentVolume + VOLUME_WHEEL * delta;
+    volumeNew = Math.max(0, Math.min(1, volumeNew));
 
     if (muted) {
       return switchMute();
     }
 
-    if (currentVolume !== volume) {
-      setVolume(volume);
+    if (currentVolume !== volumeNew) {
+      setVolume(volumeNew);
     }
   }
 
