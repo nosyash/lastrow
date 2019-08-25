@@ -57,7 +57,7 @@ func (rh *roomsHub) registerNewConn(conn *websocket.Conn) {
 
 	for room := range rh.rhub {
 		if room == roomID {
-			rh.rhub[roomID].register <- user
+			rh.rhub[roomID].Add(user)
 			return
 		}
 	}
@@ -66,5 +66,5 @@ func (rh *roomsHub) registerNewConn(conn *websocket.Conn) {
 	rh.rhub[roomID] = hub
 
 	go rh.rhub[roomID].HandleActions()
-	rh.rhub[roomID].register <- user
+	rh.rhub[roomID].Add(user)
 }

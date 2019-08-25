@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// Register new connection in a room cache
 var Register chan *websocket.Conn
 var close chan string
 
@@ -16,12 +17,9 @@ type roomsHub struct {
 }
 
 type hub struct {
-	hub        map[string]*websocket.Conn
-	broadcast  chan *response
-	register   chan *user
-	unregister chan *websocket.Conn
-	cache      *cache.Cache
-	id         string
+	hub   map[string]*websocket.Conn
+	cache *cache.Cache
+	id    string
 }
 
 type errorResponse struct {
@@ -70,6 +68,7 @@ type data struct {
 	Title    string `json:"title,omitempty"`
 	Duration int    `json:"duration,omitempty"`
 	URL      string `json:"url,omitempty"`
+	Proxy    bool   `json:proxy,omitempty`
 	ID       string `json:"__id,omitempty"`
 }
 

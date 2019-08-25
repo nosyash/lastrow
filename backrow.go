@@ -12,7 +12,6 @@ import (
 )
 
 func main() {
-
 	var apiAddr, uplPath, imgPath, dbAddr string
 
 	if err := godotenv.Load(); err != nil {

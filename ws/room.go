@@ -13,36 +13,23 @@ import (
 func NewRoomHub(id string) *hub {
 	return &hub{
 		make(map[string]*websocket.Conn),
-		make(chan *response),
-		make(chan *user),
-		make(chan *websocket.Conn),
 		cache.New(id),
 		id,
 	}
 }
 
 func (h hub) HandleActions() {
-	go h.cache.Init()
-	storage.Add(h.cache)
+	go storage.Add(h.cache)
 
 	for {
 		select {
-		case user := <-h.register:
-			go h.add(user)
-			go h.read(user.Conn)
-			go h.ping(user.Conn)
-			go h.pong(user.Conn)
-		case conn := <-h.unregister:
-			go h.remove(conn)
-		case msg := <-h.broadcast:
-			go h.send(msg)
 		case <-h.cache.Users.UpdateUsers:
 			go h.updateUserList()
 		}
 	}
 }
 
-func (h hub) add(user *user) {
+func (h hub) Add(user *user) {
 	for uuid := range h.hub {
 		if uuid == user.UUID {
 			user.Conn.Close()
@@ -50,18 +37,21 @@ func (h hub) add(user *user) {
 		}
 	}
 	if user.Guest {
-
-		h.cache.Users.AddGuest <- &cache.User{
+		h.cache.Users.AddGuest(&cache.User{
 			Name:  user.Name,
 			Guest: true,
 			UUID:  user.UUID,
 			ID:    getHashOfString(user.UUID[:8]),
-		}
+		})
 	} else {
-		h.cache.Users.AddUser <- user.UUID
+		h.cache.Users.AddUser(user.UUID)
 	}
 
 	h.hub[user.UUID] = user.Conn
+
+	go h.read(user.Conn)
+	go h.ping(user.Conn)
+	go h.pong(user.Conn)
 
 	fmt.Printf("Add [%s]\t%s\n", user.UUID, user.Conn.RemoteAddr().String())
 }
@@ -76,9 +66,8 @@ func (h hub) remove(conn *websocket.Conn) {
 		}
 	}
 	if uuid != "" {
-
 		delete(h.hub, uuid)
-		h.cache.Users.DelUser <- uuid
+		h.cache.Users.DelUser(uuid)
 
 		if len(h.hub) == 0 {
 			close <- h.id
@@ -93,7 +82,7 @@ func (h hub) remove(conn *websocket.Conn) {
 func (h hub) read(conn *websocket.Conn) {
 	defer func() {
 		conn.Close()
-		h.unregister <- conn
+		h.remove(conn)
 	}()
 
 	for {
@@ -110,7 +99,7 @@ func (h hub) read(conn *websocket.Conn) {
 			case PLAYER_EVENT:
 				go h.handlePlayerEvent(req, conn)
 			default:
-				sendError(conn, "Unknown action")
+				go sendError(conn, "Unknown action")
 			}
 		}
 	}
@@ -118,9 +107,8 @@ func (h hub) read(conn *websocket.Conn) {
 
 func (h hub) send(msg *response) {
 	for _, conn := range h.hub {
-		err := sendResponse(conn, msg)
-		if err != nil {
-			fmt.Println(err)
+		if err := sendResponse(conn, msg); err != nil {
+			h.remove(conn)
 			conn.Close()
 		}
 	}
@@ -128,31 +116,29 @@ func (h hub) send(msg *response) {
 
 func (h hub) sendUpdates(upd *updates) {
 	for _, conn := range h.hub {
-		err := websocket.WriteJSON(conn, upd)
-		if err != nil {
-			fmt.Println(err)
+		if err := websocket.WriteJSON(conn, upd); err != nil {
+			h.remove(conn)
 			conn.Close()
 		}
 	}
 }
 
 func (h hub) ping(conn *websocket.Conn) {
-	ticker := time.NewTicker(54 * time.Second)
+	ticker := time.NewTicker(10 * time.Second)
 	defer func() {
 		ticker.Stop()
+		h.remove(conn)
 		conn.Close()
-		h.unregister <- conn
 	}()
 
 	for {
 		select {
 		case <-ticker.C:
-			conn.SetWriteDeadline(time.Now().Add(60 * time.Second))
+			conn.SetWriteDeadline(time.Now().Add(15 * time.Second))
 
 			fmt.Println("ping to:", conn.RemoteAddr().String())
 
 			if err := conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				conn.Close()
 				return
 			}
 		}
@@ -160,12 +146,12 @@ func (h hub) ping(conn *websocket.Conn) {
 }
 
 func (h hub) pong(conn *websocket.Conn) {
-	conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+	conn.SetReadDeadline(time.Now().Add(15 * time.Second))
 	conn.SetPongHandler(func(string) error {
 
 		fmt.Println("pong from:", conn.RemoteAddr().String())
 
-		conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+		conn.SetReadDeadline(time.Now().Add(15 * time.Second))
 		return nil
 	})
 }
