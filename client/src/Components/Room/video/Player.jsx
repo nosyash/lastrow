@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useContext, useRef, useEffect } from 'react';
 import { connect } from 'react-redux';
 import ReactPlayer from 'react-player';
 import { parse } from 'subtitle';
@@ -16,53 +16,49 @@ import http from '../../../utils/httpServices';
 import ProgressBar from './ProgressBar';
 import Subtitles from './Subtitles';
 
-class Player extends Component {
-  constructor() {
-    super();
-    this.videoEl = null;
-    this.player = null;
-    this.minimizeTimer = null;
-    this.animRef = null;
-    this.volume = null;
-    this.seek = null;
-    this.wasPlaying = false;
-  }
+let minimizeTimer = null;
+let videoEl = null;
+function Player(props) {
+  const [moving, setMoving] = useState(false);
+  const [voluming, setVoluming] = useState(false);
+  const [minimized, setMinimized] = useState(false);
+  const playerRef = useRef(null);
 
-  state = {
-    moving: false,
-    voluming: false,
-    minimized: false,
-  };
+  const animRef = null;
+  let seek = null;
+  let wasPlaying = false;
+  let volume = null;
 
-  componentDidMount() {
-    document.addEventListener('mousedown', this.handleGlobalDown);
-    document.addEventListener('mousemove', this.handleGlobalMove);
-    document.addEventListener('mouseup', this.handleGlobalUp);
+  useEffect(() => {
+    document.addEventListener('mousedown', handleGlobalDown);
+    document.addEventListener('mousemove', handleGlobalMove);
+    document.addEventListener('mouseup', handleGlobalUp);
 
-    this.init(() => {
-      this.handleSubs();
+    init(() => {
+      handleSubs();
     });
-  }
 
-  componentWillUnmount() {
-    const { resetMedia } = this.props;
-    resetMedia();
-    document.removeEventListener('mousedown', this.handleGlobalDown);
-    document.removeEventListener('mousemove', this.handleGlobalMove);
-    document.removeEventListener('mouseup', this.handleGlobalUp);
-  }
+    return () => {
+      const { resetMedia } = props;
+      resetMedia();
+      document.removeEventListener('mousedown', handleGlobalDown);
+      document.removeEventListener('mousemove', handleGlobalMove);
+      document.removeEventListener('mouseup', handleGlobalUp);
+    };
+  }, []);
 
-  init = callback => {
-    const { updatePlayer } = this.props;
-    let { volume } = localStorage;
+  function init(callback) {
+    const { updatePlayer } = props;
+    // eslint-disable-next-line prefer-destructuring
+    volume = localStorage.volume;
     volume = JSON.parse(volume || 1);
     updatePlayer({ volume });
 
     if (callback) callback();
-  };
+  }
 
-  handleSubs = async () => {
-    const { media, updateSubs } = this.props;
+  async function handleSubs() {
+    const { media, updateSubs } = props;
     if (!media || !media.subs.url) return;
     const res = await http.get(media.subs.url).catch(error => {
       if (error.response) {
@@ -80,26 +76,25 @@ class Player extends Component {
 
     const { data } = res;
     updateSubs({ srt: parse(data) });
-  };
+  }
 
-  handleGlobalDown = e => {
-    const { moving } = this.state;
-    const { setVolume, updatePlayer, switchMute } = this.props;
-    const { media } = this.props;
+  function handleGlobalDown(e) {
+    const { setVolume, updatePlayer, switchMute } = props;
+    const { media } = props;
     let { target } = e;
 
     if (moving) return;
-    if (!this.player) return;
+    if (!playerRef) return;
 
     // TODO: This has to be completely reworked
     if (target.closest(SEEK_SEL) || target.closest(VOLUME_SEL)) {
       const voluming = target.closest(VOLUME_SEL);
       if (media.playing && !voluming) {
         updatePlayer({ playing: false });
-        this.wasPlaying = true;
+        wasPlaying = true;
       }
-      if (voluming) this.setState({ voluming: true });
-      else this.setState({ moving: true });
+      if (voluming) setVoluming(true);
+      else setMoving(true);
       target = target.closest(SEEK_SEL) || target.closest(VOLUME_SEL);
       const { left, width } = target.getBoundingClientRect();
       const offset = e.clientX - left;
@@ -110,114 +105,92 @@ class Player extends Component {
         if (media.muted) {
           switchMute();
         }
-      } else this.player.seekTo(mult);
+      } else playerRef.current.seekTo(mult);
     }
-  };
+  }
 
-  handleGlobalMove = e => {
-    this.handlePlayerMove(e);
-    const { setVolume } = this.props;
-    const { moving, voluming } = this.state;
+  function handleGlobalMove(e) {
+    handlePlayerMove(e);
+    const { setVolume } = props;
     if (!moving && !voluming) return;
-    const target = voluming ? this.volume : this.seek;
+    const target = voluming ? volume : seek;
     const { left, width } = target.getBoundingClientRect();
     const offset = e.clientX - left;
     let mult = offset / width;
     mult = Math.min(1, mult);
     mult = Math.max(0, mult);
     if (voluming) setVolume(mult);
-    else this.player.seekTo(mult);
-  };
+    else playerRef.current.seekTo(mult);
+  }
 
-  handleGlobalUp = () => {
-    const { updatePlayer, media } = this.props;
-    const { moving, voluming } = this.state;
+  function handleGlobalUp() {
+    const { updatePlayer, media } = props;
 
     if (!moving && !voluming) return;
     if (voluming) {
       localStorage.volume = media.volume;
-      this.setState({ voluming: false });
+      setVoluming(false);
     } else {
-      this.setState({ moving: false });
-      if (this.wasPlaying) updatePlayer({ playing: true });
-      this.wasPlaying = false;
+      setMoving(false);
+      if (wasPlaying) updatePlayer({ playing: true });
+      wasPlaying = false;
     }
-  };
+  }
 
-  handlePlayerMove = e => {
-    const { minimized } = this.state;
+  function handlePlayerMove(e) {
     let { target } = e;
 
     // Firefox returns "document" object in some cases,
     // which causes an error on target.closest()
     if (target && target !== document) {
       target = target.closest(VIDEO_ELEMENT_SEL);
-      clearTimeout(this.minimizeTimer);
+      clearTimeout(minimizeTimer);
       if (minimized) {
-        this.setState({ minimized: false });
+        setMinimized(false);
       }
     }
-  };
+  }
 
-  handleReady = () => {
-    this.updateTime();
-    this.handleMinimizeTimer();
-  };
+  function handleReady() {
+    updateTime();
+    // handleMinimizeTimer();
+  }
 
-  updateTime = () => {
-    const { updatePlayer } = this.props;
-
-    this.videoEl = this.player.getInternalPlayer();
-    const duration = this.player.getDuration();
-    const currentTime = this.player.getCurrentTime();
+  function updateTime() {
+    const { updatePlayer } = props;
+    if (!playerRef) return;
+    videoEl = playerRef.current.getInternalPlayer();
+    const duration = playerRef.current.getDuration();
+    const currentTime = playerRef.current.getCurrentTime();
 
     updatePlayer({ duration, currentTime });
-  };
+  }
 
-  handlePlaying = progress => {
-    const { updatePlayer } = this.props;
+  function handlePlaying(progress) {
+    const { updatePlayer } = props;
     const { playedSeconds } = progress;
 
     updatePlayer({ currentTime: playedSeconds });
-    this.handleMinimizeTimer();
-  };
-
-  handleMinimizeTimer = () => {
-    const { minimized } = this.state;
-    if (minimized) {
-      clearTimeout(this.minimizeTimer);
-    } else {
-      this.minimizeTimer = setTimeout(() => {
-        this.setState({ minimized: true });
-      }, PLAYER_MINIMIZE_TIMEOUT);
-    }
-  };
-
-  render() {
-    const { minimized } = this.state;
-    const classes = `video-element ${
-      minimized ? 'player-minimized' : 'player-maximized'
-    }`;
-    return (
-      <React.Fragment>
-        <div
-          onMouseLeave={() => this.setState({ minimized: true })}
-          className={classes}
-        >
-          {this.renderPlayer()}
-          {this.player && this.videoEl && this.renderPlayerGUI()}
-        </div>
-      </React.Fragment>
-    );
+    // handleMinimizeTimer();
   }
 
-  renderPlayer = () => {
-    const { media } = this.props;
+  function handleMinimizeTimer() {
+    if (minimized) {
+      clearTimeout(minimizeTimer);
+    } else {
+      minimizeTimer = setTimeout(() => {
+        console.log('minimized');
+        setMinimized(true);
+      }, PLAYER_MINIMIZE_TIMEOUT);
+    }
+  }
 
+  function renderPlayer() {
+    const { media } = props;
     return (
       <React.Fragment>
         <ReactPlayer
-          ref={player => (this.player = player)}
+          ref={playerRef}
           className="player-inner"
           width="100%"
           height=""
@@ -230,48 +203,48 @@ class Player extends Component {
           playing={media.playing}
           volume={media.volume}
           url={media.url}
-          onProgress={this.handlePlaying}
-          onPlay={this.handlePlay}
-          onPause={this.handlePause}
-          onReady={this.handleReady}
+          onProgress={handlePlaying}
+          // onPlay={handlePlay}
+          // onPause={handlePause}
+          onReady={handleReady}
         />
         <div className="video-overlay" />
       </React.Fragment>
     );
-  };
+  }
 
-  renderPlayerGUI = () => (
-    <div className="video-player">
-      {this.renderVideoTop()}
-      {this.renderVideoMid()}
-      <Subtitles videoEl={this.videoEl} />
-      <div className="video-player_overflow" />
-    </div>
-  );
+  function renderPlayerGUI() {
+    return (
+      <div className="video-player">
+        {renderVideoTop()}
+        {renderVideoMid()}
+        {videoEl && <Subtitles videoEl={videoEl} />}
+        <div className="video-player_overflow" />
+      </div>
+    );
+  }
 
-  renderVideoTop = () => {
-    const { media } = this.props;
+  function renderVideoTop() {
+    const { media } = props;
     return (
       <div className="video-player_top">
-        <div className="video-time current-time">
-          {formatTime(media.currentTime)}
-        </div>
+        <div className="video-time current-time">{formatTime(media.currentTime)}</div>
         <ProgressBar
-          animReef={this.animRef}
-          player={this.player}
-          seek={ref => (this.seek = ref)}
+          animReef={animRef}
+          player={playerRef.current}
+          seek={ref => (seek = ref)}
         />
         <div className="video-time duration">{formatTime(media.duration)}</div>
       </div>
     );
-  };
+  }
 
-  renderVideoMid = () => {
-    const { media, switchPlay, cinemaMode } = this.props;
-    const { toggleCinemaMode } = this.props;
+  function renderVideoMid() {
+    const { media, switchPlay, cinemaMode } = props;
+    const { toggleCinemaMode } = props;
     return (
       <div className="video-player_mid">
-        {this.renderVolumeControl()}
+        {renderVolumeControl()}
         <div onClick={switchPlay} className="control play-button">
           <i className={`fa fa-${media.playing ? 'pause' : 'play'}`} />
         </div>
@@ -281,20 +254,20 @@ class Player extends Component {
         </div>
       </div>
     );
-  };
+  }
 
-  renderVolumeControl = () => {
-    const { media, switchMute } = this.props;
+  function renderVolumeControl() {
+    const { media, switchMute } = props;
     const { muted, volume } = media;
     const transformValue = 100 - volume * 100;
     const transform = `translateX(-${muted ? 100 : transformValue}%)`;
     return (
-      <div onWheel={this.handleWheel} className="volume-control">
+      <div onWheel={handleWheel} className="volume-control">
         <div onClick={switchMute} className="control volume-button">
           <i className={`fa fa-volume-${muted ? 'mute' : 'up'}`} />
         </div>
         <div
-          ref={ref => (this.volume = ref)}
+          // ref={ref => (volume = ref)}
           className="progress-bar_container volume_trigger"
         >
           <div style={{ transform }} className="scrubber_container">
@@ -306,10 +279,10 @@ class Player extends Component {
         </div>
       </div>
     );
-  };
+  }
 
-  handleWheel = e => {
-    const { setVolume, switchMute, media } = this.props;
+  function handleWheel(e) {
+    const { setVolume, switchMute, media } = props;
     const { volume: currentVolume, muted } = media;
     const delta = e.deltaY < 0 ? 1 : -1;
 
@@ -323,7 +296,17 @@ class Player extends Component {
     if (currentVolume !== volume) {
       setVolume(volume);
     }
-  };
+  }
+
+  const classes = `video-element ${minimized ? 'player-minimized' : 'player-maximized'}`;
+  return (
+    <React.Fragment>
+      <div onMouseEnter={() => setMinimized(false)} className={classes}>
+        {renderPlayer()}
+        {playerRef.current && renderPlayerGUI()}
+      </div>
+    </React.Fragment>
+  );
 }
 
 const mapStateToProps = state => ({
@@ -347,3 +330,6 @@ export default connect(
   mapStateToProps,
   mapDispatchToProps
 )(Player);
+
+// export default Player;
+// export default createConsumer(Player);
