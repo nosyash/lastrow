@@ -15,6 +15,7 @@ import {
 import http from '../../../utils/httpServices';
 import ProgressBar from './ProgressBar';
 import Subtitles from './Subtitles';
+import { fetchSubs } from '../../../actions';
 
 let minimizeTimer = null;
 let videoEl = null;
@@ -59,22 +60,24 @@ function Player(props) {
   async function handleSubs() {
     const { media, updateSubs } = props;
     if (!media || !media.subs.url) return;
-    const res = await http.get(media.subs.url).catch(error => {
-      if (error.response) {
-        console.log(error.response.status);
-      } else if (error.request) {
-        console.log(error.request);
-      } else {
-        console.log('Error', error.message);
-      }
-    });
+    console.log(updateSubs);
+    props.getSubs(media.subs.url);
+    // const res = await http.get(media.subs.url).catch(error => {
+    //   if (error.response) {
+    //     console.log(error.response.status);
+    //   } else if (error.request) {
+    //     console.log(error.request);
+    //   } else {
+    //     console.log('Error', error.message);
+    //   }
+    // });
 
-    if (!res) {
-      return;
-    }
+    // if (!res) {
+    //   return;
+    // }
 
-    const { data } = res;
-    updateSubs({ srt: parse(data) });
+    // const { data } = res;
+    // updateSubs({ srt: parse(data) });
   }
 
   function handleGlobalDown(e) {
@@ -197,7 +200,7 @@ function Player(props) {
           autoPlay={false}
           controls={false}
           loop={false}
-          progressInterval={800}
+          progressInterval={400}
           muted={media.muted}
           playing={media.playing}
           volume={media.volume}
@@ -318,7 +321,8 @@ const mapDispatchToProps = {
   switchMute: () => ({ type: types.SWITCH_MUTE }),
   setVolume: payload => ({ type: types.SET_VOLUME, payload }),
   toggleCinemaMode: () => ({ type: types.TOGGLE_CINEMAMODE }),
-  updateSubs: payload => ({ type: types.UPDATE_SUBS, payload }),
+  updateSubs: payload => ({ type: types.SET_SUBS, payload }),
+  getSubs: payload => fetchSubs(payload),
 };
 
 export default connect(

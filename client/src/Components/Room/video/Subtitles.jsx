@@ -1,79 +1,74 @@
-import React, { Component, useMemo, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import * as types from '../../../constants/ActionTypes';
-import { getFirstOccurrences } from '../../../utils/base';
+import SubtitlesHandler from '../../../utils/subtitles';
 
-const newLineRegExp = new RegExp(/\n/, 'gm');
-const bracketsRegExp = new RegExp(/^<.*>(.*)<\/.*>$/);
 let timer = null;
+let pauseTimer = null;
+const subtitlesHandler = new SubtitlesHandler();
+
 function SubtitlesContainer(props) {
   useEffect(() => {
-    setTimeout(formatSubs, 0);
+    initSubs(() => {
+      setTimeout(formatSubs, 0);
+    });
+
     return () => {
       clearTimeout(timer);
     };
   }, []);
 
-  const toStr = s => JSON.stringify(s);
+  function initSubs(callback) {
+    const { subs } = props;
 
-  // shouldComponentUpdate(nextProps, nextState) {
-  //   const { subs } = props;
-  //   const a = toStr(nextProps.subs.text);
-  //   const b = toStr(subs.text);
-  //   if (a !== b) return true;
-  //   return false;
-  // }
+    if (!subs.srt) return;
+    subtitlesHandler.setSubtitles(subs.srt);
+    callback();
+  }
 
   function formatSubs() {
     const { subs } = props;
-    const { updateSubs } = props;
+    const { updateSubs, setCurrentSubs } = props;
 
-    if (!subs.srt) return (timer = setTimeout(formatSubs, 80));
+    const currentText = subs.text;
 
-    const currentText = toStr(subs.text);
-    const newText = filterSubsByTime();
+    const { videoEl } = props;
+    const timeMs = videoEl.currentTime * 1000;
 
-    if (!toStr(newText)) {
-      if (currentText.length) {
-        updateSubs({ text: [] });
-      }
-      timer = setTimeout(formatSubs, 80);
-      return;
+    if (videoEl.paused) {
+      pauseTimer = setTimeout(() => {
+        subtitlesHandler.setCurrentTime(timeMs);
+        subtitlesHandler.updateTempSubtitiles();
+      }, 20);
+      clearTimeout(pauseTimer);
     }
+    const newText = subtitlesHandler.getSubtitles(timeMs);
 
-    newText.forEach(el => {
-      el.text = el.text.replace(newLineRegExp, ' ').replace(bracketsRegExp, '$1');
-    });
-
-    if (currentText !== toStr(newText)) updateSubs({ text: newText });
-
-    timer = setTimeout(formatSubs, 80);
-  }
-
-  function filterSubsByTime() {
-    const { subs, videoEl } = props;
-    const ms = videoEl.currentTime * 1000;
-    console.time('test');
-    const newText = subs.srt.filter(s => s.start <= ms && ms <= s.end).reverse();
-    // const newText = getFirstOccurrences(
-    //   subs.srt,
-    //   el => el.start <= ms && ms <= el.end
-    // ).reverse();
-    console.timeEnd('test');
-    return newText;
+    if (JSON.stringify(currentText) !== JSON.stringify(newText)) {
+      setCurrentSubs(newText);
+    }
+    timer = setTimeout(formatSubs, 16);
   }
 
   const { text } = props.subs;
   return <RenderSubs text={text} />;
 }
 
-const RenderSubs = ({ text }) => {
+const RenderSubs = React.memo(({ text }) => {
+  return <RenderSub text={text} />;
+});
+
+const RenderSub = ({ text }) => {
   const minify = text.length > 3;
   const classes = `subs-container${minify ? ' subs-container_minified' : ''}`;
+  console.log('rerendered');
   return (
     <div className={classes}>
-      {text.map((currentSub, index) => (
-        <div key={index} className="sub-line">
+      {text.map(currentSub => (
+        <div
+          key={currentSub.text + currentSub.end + currentSub.start}
+          className="sub-line"
+        >
           {currentSub.text}
         </div>
       ))}
@@ -88,6 +83,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = {
   updateSubs: payload => ({ type: types.SET_SUBS, payload }),
+  setCurrentSubs: payload => ({ type: types.SET_CURRENT_SUBS, payload }),
 };
 
 export default connect(
