@@ -47,8 +47,8 @@
       }
     ],
     "arrow-body-style": [
-      2,
-      "as-needed"
+      "off",
+      "never"
     ],
     "no-unused-expressions": [
       2,
@@ -81,7 +81,7 @@
     "react/display-name": 1,
     "react/no-multi-comp": 0,
     "spaced-comment": "warn",
-    "react/destructuring-assignment": "warn",
+    "react/destructuring-assignment": "off",
     "react/no-unused-state": "warn",
     "react/no-array-index-key": 0,
     "react/react-in-jsx-scope": 0,
