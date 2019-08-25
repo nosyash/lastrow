@@ -17,9 +17,12 @@ type roomsHub struct {
 }
 
 type hub struct {
-	hub   map[string]*websocket.Conn
-	cache *cache.Cache
-	id    string
+	hub        map[string]*websocket.Conn
+	broadcast  chan *response
+	register   chan *user
+	unregister chan *websocket.Conn
+	cache      *cache.Cache
+	id         string
 }
 
 type errorResponse struct {

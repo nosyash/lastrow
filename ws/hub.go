@@ -1,8 +1,6 @@
 package ws
 
 import (
-	"fmt"
-
 	"github.com/nosyash/backrow/db"
 
 	"github.com/gorilla/websocket"
@@ -24,7 +22,6 @@ func HandleWsConnection(db *db.Database) {
 		case conn := <-Register:
 			go rh.registerNewConn(conn)
 		case roomID := <-close:
-			fmt.Println("close", roomID)
 			delete(rh.rhub, roomID)
 		}
 	}
@@ -57,7 +54,7 @@ func (rh *roomsHub) registerNewConn(conn *websocket.Conn) {
 
 	for room := range rh.rhub {
 		if room == roomID {
-			rh.rhub[roomID].Add(user)
+			rh.rhub[roomID].register <- user
 			return
 		}
 	}
@@ -66,5 +63,5 @@ func (rh *roomsHub) registerNewConn(conn *websocket.Conn) {
 	rh.rhub[roomID] = hub
 
 	go rh.rhub[roomID].HandleActions()
-	rh.rhub[roomID].Add(user)
+	rh.rhub[roomID].register <- user
 }

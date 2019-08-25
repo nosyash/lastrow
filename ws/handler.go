@@ -65,9 +65,13 @@ func (h hub) handlePlayerEvent(req *request, conn *websocket.Conn) {
 	switch req.Body.Event.Type {
 	case ETYPE_PL_ADD:
 		if req.Body.Event.Data.URL != "" {
-			if err := h.cache.Playlist.Add(req.Body.Event.Data.URL, req.Body.Event.Data.Proxy); err != nil {
-				sendError(conn, err.Error())
+			h.cache.Playlist.AddVideo <- cache.VideoRequest{
+				URL:   req.Body.Event.Data.URL,
+				Proxy: req.Body.Event.Data.Proxy,
 			}
+
+			// TODO
+			// How send error??
 		}
 	}
 }
@@ -92,7 +96,7 @@ func (h hub) handleMessage(msg, uuid string) {
 		},
 	}
 
-	h.send(res)
+	h.broadcast <- res
 }
 
 func (h hub) updateUserList() {

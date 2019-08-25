@@ -13,6 +13,9 @@ type Cache struct {
 // Users is users storage and channels for adding/removing users
 type Users struct {
 	users       map[string]*User
+	AddUser     chan string
+	AddGuest    chan *User
+	DelUser     chan string
 	UpdateUsers chan struct{}
 	db          *db.Database
 }
@@ -29,6 +32,13 @@ type User struct {
 
 type playlist struct {
 	playlist map[string]*video
+	AddVideo chan VideoRequest
+	DelVideo chan string
+}
+
+type VideoRequest struct {
+	URL   string
+	Proxy bool
 }
 
 type video struct {
