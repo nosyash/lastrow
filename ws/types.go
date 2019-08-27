@@ -50,7 +50,8 @@ type response struct {
 }
 
 type updates struct {
-	Users []*cache.User `json:"users,omitempty"`
+	Users    []*cache.User  `json:"users,omitempty"`
+	Playlist []*cache.Video `json:"videos,omitempty"`
 }
 
 type body struct {

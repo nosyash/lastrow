@@ -18,15 +18,18 @@ func New(id string) *Cache {
 			db.Connect(os.Getenv("DB_ENDPOINT")),
 		},
 		playlist{
-			make(map[string]*video),
-			make(chan VideoRequest),
+			make(map[string]*Video),
 			make(chan string),
+			make(chan string),
+			make(chan error),
+			make(chan struct{}),
 		},
 		id,
 		make(chan struct{}),
 	}
 }
 
+// HandleCacheEvents handle cache event one at time
 func (cache Cache) HandleCacheEvents() {
 	for {
 		select {
@@ -36,8 +39,8 @@ func (cache Cache) HandleCacheEvents() {
 			cache.Users.addGuest(guest)
 		case uuid := <-cache.Users.DelUser:
 			cache.Users.delUser(uuid)
-		case vr := <-cache.Playlist.AddVideo:
-			cache.Playlist.addVideo(vr)
+		case url := <-cache.Playlist.AddVideo:
+			cache.Playlist.addVideo(url)
 		}
 	}
 }

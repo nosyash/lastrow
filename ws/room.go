@@ -20,6 +20,7 @@ func NewRoomHub(id string) *hub {
 	}
 }
 
+// HandleActions handle internal room and client events one at time
 func (h hub) HandleActions() {
 	go h.cache.HandleCacheEvents()
 	go storage.Add(h.cache)
@@ -37,6 +38,8 @@ func (h hub) HandleActions() {
 			h.send(message)
 		case <-h.cache.Users.UpdateUsers:
 			h.updateUserList()
+		case <-h.cache.Playlist.UpdatePlaylist:
+			h.updatePlaylist()
 		}
 	}
 }
@@ -60,6 +63,14 @@ func (h hub) add(user *user) {
 	}
 
 	h.hub[user.UUID] = user.Conn
+
+	playlist := h.cache.Playlist.GetAllPlaylist()
+
+	if playlist != nil {
+		h.sendUpatesTo(&updates{
+			Playlist: playlist,
+		}, user.Conn)
+	}
 }
 
 func (h hub) remove(conn *websocket.Conn) {
@@ -118,12 +129,19 @@ func (h hub) send(msg *response) {
 	}
 }
 
-func (h hub) sendUpdates(upd *updates) {
+func (h hub) broadcastUpdate(upd *updates) {
 	for _, conn := range h.hub {
 		if err := websocket.WriteJSON(conn, upd); err != nil {
 			h.unregister <- conn
 			conn.Close()
 		}
+	}
+}
+
+func (h hub) sendUpatesTo(upd *updates, conn *websocket.Conn) {
+	if err := websocket.WriteJSON(conn, upd); err != nil {
+		h.unregister <- conn
+		conn.Close()
 	}
 }
 

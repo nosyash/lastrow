@@ -1,6 +1,10 @@
 package cache
 
-import "github.com/nosyash/backrow/db"
+import (
+	"time"
+
+	"github.com/nosyash/backrow/db"
+)
 
 // Cache object
 type Cache struct {
@@ -31,18 +35,17 @@ type User struct {
 }
 
 type playlist struct {
-	playlist map[string]*video
-	AddVideo chan VideoRequest
-	DelVideo chan string
+	playlist       map[string]*Video
+	AddVideo       chan string
+	DelVideo       chan string
+	FeedBack       chan error
+	UpdatePlaylist chan struct{}
 }
 
-type VideoRequest struct {
-	URL   string
-	Proxy bool
-}
-
-type video struct {
-	Title    string `json:"title"`
-	Duration int    `json:"duration"`
-	ID       string `json:"__id"`
+type Video struct {
+	Title    string        `json:"title"`
+	Duration time.Duration `json:"duration"`
+	URL      string        `json:"url"`
+	Index    int           `json:"index"`
+	ID       string        `json:"__id"`
 }

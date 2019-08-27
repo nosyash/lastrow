@@ -1,25 +1,47 @@
 package cache
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"path/filepath"
+
+	"github.com/nosyash/backrow/ffprobe"
 )
 
-func (pl playlist) addVideo(vr VideoRequest) error {
-	rURL, _ := url.Parse(vr.URL)
-	ext := filepath.Ext(rURL.String())
+func (pl *playlist) addVideo(vURL string) {
+	pURL, _ := url.Parse(vURL)
+	ext := filepath.Ext(pURL.String())
 
 	switch ext {
-	case ".mp4":
-		fmt.Println("mp4", vr.Proxy)
 	case ".m3u8":
-		fmt.Println(".m3u8", vr.Proxy)
+	case ".mp4":
+		duration, title := ffprobe.GetMetaData(vURL)
+		ID := getRandomUUID()
+
+		pl.playlist[ID] = &Video{
+			Title:    title,
+			Duration: duration,
+			URL:      vURL,
+			ID:       getRandomUUID(),
+			Index:    len(pl.playlist),
+		}
+		pl.FeedBack <- nil
 	case "":
-		fmt.Println(rURL, vr.Proxy)
+		hostname := pURL.Hostname()
+		fmt.Println(hostname)
 	default:
-		// TODO
-		// Unsupport video format
+		pl.FeedBack <- errors.New("Unsupported video format")
 	}
-	return nil
+}
+
+// GetAllPlaylist return all videos in playlist
+func (pl *playlist) GetAllPlaylist() []*Video {
+	var list []*Video
+
+	for _, v := range pl.playlist {
+		list = append(list, v)
+	}
+
+	return list
 }

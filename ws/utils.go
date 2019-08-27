@@ -19,7 +19,6 @@ func sendResponse(conn *websocket.Conn, r *response) error {
 
 func sendError(conn *websocket.Conn, msg string) error {
 	err := websocket.WriteJSON(conn, errorResponse{msg})
-	conn.Close()
 	return err
 }
 
