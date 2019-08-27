@@ -20,8 +20,7 @@ const InitialState = {
       url: 'https://www.youtube.com/watch?v=7BSCgMMJoHA',
     },
     {
-      title:
-        "(vlog) 🤓Taeyeon's Daily Life: Drive, Carpool Karaoke, Nutella Pancake",
+      title: "(vlog) 🤓Taeyeon's Daily Life: Drive, Carpool Karaoke, Nutella Pancake",
       url: 'https://www.youtube.com/watch?v=VkaBsETSR18',
     },
   ],
@@ -63,8 +62,14 @@ const Player = (state = InitialState, action) => {
       return { ...state, volume: action.payload };
     }
 
-    case types.UPDATE_SUBS: {
+    case types.SET_SUBS: {
       return { ...state, subs: { ...state.subs, ...action.payload } };
+    }
+
+    case types.SET_CURRENT_SUBS: {
+      const { subs } = state;
+      subs.text = action.payload;
+      return { ...state, subs };
     }
 
     case types.RESET_MEDIA: {

@@ -24,11 +24,7 @@ export function setCursorStyle(cur) {
     unsetCursorStyle();
     return;
   }
-  document.documentElement.style.setProperty(
-    'cursor',
-    `${cur}-resize`,
-    'important'
-  );
+  document.documentElement.style.setProperty('cursor', `${cur}-resize`, 'important');
 }
 
 export function togglePointerEvent(element) {
@@ -81,3 +77,23 @@ export const getRandom = m => {
   }
   return s;
 };
+
+export function getFirstOccurrences(array, condition) {
+  const newArray = [];
+  let hasItem = false;
+  let j = 0;
+  for (let i = 0; i < array.length; i++) {
+    if (!condition(array[i])) {
+      if (hasItem) {
+        console.log(j);
+        break;
+      }
+    } else {
+      newArray.push(array[i]);
+      hasItem = true;
+    }
+    j = i;
+  }
+  console.log(j);
+  return newArray;
+}
