@@ -1,76 +1,66 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import MiniProfile from './MiniProfile';
 
-class ChatHeader extends Component {
-  state = {
-    showProfile: false,
-    currentProfile: 0,
-  };
+function ChatHeader(props) {
+  const [showProfile, setShowProfile] = useState(false)
+  const [currentProfile, setCurrentProfile] = useState(0)
 
-  componentDidMount() {
-    document.addEventListener('mousedown', this.handleClick);
-  }
+  useEffect(() => {
+    document.addEventListener('mousedown', handleClick);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+    }
+  })
 
-  componentWillUnmount() {
-    document.removeEventListener('mousedown', this.handleClick);
-  }
-
-  handleClick = e => {
+  function handleClick(e) {
     const { target } = e;
     if (!target.closest('.user-icon') && !target.closest('.mini-profile')) {
-      this.setState({ showProfile: false });
+      setShowProfile(false)
     }
   };
 
-  handleUserClick = userProfile => {
-    this.setState({ showProfile: true, currentProfile: userProfile });
+  function handleUserClick(userProfile) {
+    setShowProfile(true);
+    setCurrentProfile(userProfile)
   };
 
-  render() {
-    const { showProfile, currentProfile } = this.state;
-    const { userList } = this.props;
-    return (
-      <React.Fragment>
-        <div className="chat-header">
-          {showProfile && !currentProfile.guest && (
-            <MiniProfile currentProfile={currentProfile} />
-          )}
-          <div className="chat-header_userlist">
-            {userList.map((userProfile, index) => (
-              <UserIcon
-                onClick={() => this.handleUserClick(userProfile)}
-                key={index}
-                name={userProfile.name}
-                color={userProfile.color}
-                guest={userProfile.guest}
-              />
-            ))}
-          </div>
-          <div className="chat-header_arrow">
-            <i className="fa fa-angle-down" />
-          </div>
-        </div>
-      </React.Fragment>
-    );
-  }
+  const { userList } = props;
+  return (
+    <div className="chat-header">
+      {showProfile && !currentProfile.guest && (
+        <MiniProfile currentProfile={currentProfile} />
+      )}
+      <div className="chat-header_userlist">
+        {userList.map((userProfile, index) => (
+          <UserIcon
+            onClick={() => handleUserClick(userProfile)}
+            key={index}
+            name={userProfile.name}
+            color={userProfile.color}
+            guest={userProfile.guest}
+          />
+        ))}
+      </div>
+      <div className="chat-header_arrow">
+        <i className="fa fa-angle-down" />
+      </div>
+    </div>
+  );
 }
 
-class UserIcon extends Component {
-  render() {
-    const { id, onClick, name, color, guest } = this.props;
-    const classes = `fa fa-user${guest ? '-secret' : ''}`;
-    return (
-      <span
-        onClick={() => onClick(id)}
-        title={name}
-        _id={id}
-        className="user-icon"
-      >
-        <i style={{ color }} className={classes} />
-      </span>
-    );
-  }
+function UserIcon(props) {
+  const { id, onClick, name, color, guest } = props;
+  return (
+    <span
+      onClick={() => onClick(id)}
+      title={name}
+      _id={id}
+      className="user-icon"
+    >
+      <i style={{ color }} className={classes} />
+    </span>
+  );
 }
 
 const mapStateToProps = state => ({ userList: state.Chat.users });
