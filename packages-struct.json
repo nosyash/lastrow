@@ -25,7 +25,7 @@
 
 {
   "ticker": {
-    "id": "00558ab4060d4a8391c2f38757930ef6f9ae8f7dc030e3a28d5e052d7703dc82",
+    "__id": "00558ab4060d4a8391c2f38757930ef6f9ae8f7dc030e3a28d5e052d7703dc82",
     "duration": 2359,
     "elapsed_time": 0
   }

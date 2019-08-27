@@ -83,7 +83,7 @@ type data struct {
 }
 
 type currentTime struct {
-	ID          string `json:"id"`
+	ID          string `json:"__id"`
 	Duration    int    `json:"duration"`
 	ElapsedTime int    `json:"elapsed_time"`
 }
