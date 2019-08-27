@@ -1,71 +1,49 @@
-import React, { Component } from 'react';
+import React, { Component, useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 
-class ProgressBar extends Component {
-  constructor() {
-    super();
-    window.requestAnimationFrame =
-      window.requestAnimationFrame ||
-      window.webkitRequestAnimationFrame ||
-      window.mozRequestAnimationFrame ||
-      window.msRequestAnimationFrame ||
-      function(f) {
-        return setTimeout(f, 1000 / 60);
-      };
-    window.cancelAnimationFrame =
-      window.cancelAnimationFrame ||
-      window.mozCancelAnimationFrame ||
-      function(requestID) {
-        clearTimeout(requestID);
-      };
-  }
+let animRef = null;
 
-  state = {
-    transform: 'translateX(-100%)',
-  };
+function ProgressBar(props) {
+  const [transform, setStransform] = useState('translateX(-100%)')
 
-  componentDidMount = () => {
-    this.updatePosition();
-  };
+  useEffect(() => {
+    updatePosition();
 
-  componentWillUnmount() {
-    window.cancelAnimationFrame(this.animRef);
-  }
+    return () => {
+      window.cancelAnimationFrame(animRef);
+    }
+  }, [])
 
-  updatePosition = () => {
-    const { media, player } = this.props;
+  function updatePosition() {
+    const { media, player } = props;
     const { duration } = media;
 
     const currentTime = player.getCurrentTime();
     const percentage = -(100 - (currentTime / duration) * 100);
     const transform = `translateX(${percentage}%)`;
-    this.setState({ transform });
-    this.animRef = window.requestAnimationFrame(this.updatePosition);
+    setStransform(transform)
+    animRef = window.requestAnimationFrame(this.updatePosition);
   };
-
-  render() {
-    const { seek } = this.props;
-    const { transform } = this.state;
-    return (
-      <React.Fragment>
-        <div
-          ref={ref => seek(ref)}
-          className="progress-bar_container seek_trigger"
-        >
-          <div style={{ transform }} className="scrubber_container">
-            <div className="scrubber" />
-          </div>
-          <div className="progress-bar">
-            <div
-              style={{ transform }}
-              ref={ref => (this.progress = ref)}
-              className="progress-bar_passed"
-            />
-          </div>
+  const { seek } = props;
+  return (
+    <React.Fragment>
+      <div
+        ref={ref => seek(ref)}
+        className="progress-bar_container seek_trigger"
+      >
+        <div style={{ transform }} className="scrubber_container">
+          <div className="scrubber" />
         </div>
-      </React.Fragment>
-    );
-  }
+        <div className="progress-bar">
+          <div
+            style={{ transform }}
+            ref={ref => (this.progress = ref)}
+            className="progress-bar_passed"
+          />
+        </div>
+      </div>
+    </React.Fragment>
+  );
 }
 
 const mapStateToProps = state => ({
