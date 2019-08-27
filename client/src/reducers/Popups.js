@@ -2,15 +2,23 @@ import * as types from '../constants/ActionTypes';
 
 const initialState = {
   list: [],
+  addMedia: false,
+  colorPicker: false,
+  guestAuth: false,
+  imagePicker: false,
+  logForm: false,
+  newRoom: false,
+  playlist: false,
+  profileSettings: false,
 };
 
 const Popups = (state = initialState, action) => {
   switch (action.type) {
     case types.ADD_POPUP: {
       const tempList = [...state.list, action.payload];
-      const list = tempList.filter(
-        (obj, pos, arr) => arr.map(popup => popup.id).indexOf(obj.id) === pos
-      );
+      const list = tempList
+        .filter((obj, index, arr) =>
+          arr.map(popup => popup.id).indexOf(obj.id) === index);
       return { list };
     }
 
