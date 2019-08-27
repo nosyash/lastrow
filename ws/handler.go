@@ -1,12 +1,19 @@
 package ws
 
 import (
+	"context"
 	"errors"
+	"time"
 
 	"github.com/nosyash/backrow/ffprobe"
 
 	"github.com/gorilla/websocket"
 	"github.com/nosyash/backrow/cache"
+)
+
+const (
+	syncPeriod       = 5
+	sleepBeforeStart = 3
 )
 
 func handleRegRequest(conn *websocket.Conn) (*user, string, error) {
@@ -70,21 +77,16 @@ func (h hub) handlePlayerEvent(req *request, conn *websocket.Conn) {
 			h.cache.Playlist.AddVideo <- req.Body.Event.Data.URL
 		}
 
-		if err := <-h.cache.Playlist.FeedBack; err != nil {
+		if err := <-h.cache.Playlist.AddFeedBack; err != nil {
 			switch err {
 			case cache.ErrUnsupportedFormat:
-				sendError(conn, "This video formant not support. Support only .mp4, .m3u8")
+				sendError(conn, "This video formant not support. Support only .mp4, .m3u8, .webm")
 			case ffprobe.ErrBinNotFound:
 				sendError(conn, "Internal server error while trying to get metadata")
 			case ffprobe.ErrTimeout:
 				sendError(conn, "Timeout on getting metadata")
 			}
-		} else {
-			h.cache.Playlist.UpdatePlaylist <- struct{}{}
 		}
-
-		// Set up timer for head element in playlist
-		// and every 5 second send broadcast sync package
 	}
 }
 
@@ -112,24 +114,57 @@ func (h hub) handleMessage(msg, uuid string) {
 }
 
 func (h hub) updateUserList() {
-	users := h.cache.Users.GetAllUsers()
-	var upd *updates
-
-	if users == nil {
-		upd = &updates{
-			Users: []*cache.User{},
-		}
-	} else {
-		upd = &updates{
-			Users: users,
-		}
-	}
-
-	h.broadcastUpdate(upd)
+	h.broadcastUpdate(&updates{
+		Users: h.cache.Users.GetAllUsers(),
+	})
 }
 
 func (h hub) updatePlaylist() {
+	playlist := h.cache.Playlist.GetAllPlaylist()
+
+	if playlist == nil {
+		return
+	}
+
 	h.broadcastUpdate(&updates{
-		Playlist: h.cache.Playlist.GetAllPlaylist(),
+		Playlist: playlist,
 	})
+}
+
+func (h *hub) syncCurrentTime() {
+	for {
+		if h.cache.Playlist.Size() == 0 {
+			h.syncer.sleep = true
+			<-h.syncer.wakeUp
+			h.syncer.sleep = false
+		}
+		video := h.cache.Playlist.TakeHeadElement()
+		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration+sleepBeforeStart)*time.Second))
+		ticker := time.Tick(syncPeriod * time.Second)
+		elapsedTime := 0
+
+		time.Sleep(sleepBeforeStart * time.Second)
+
+	loop:
+		for {
+			select {
+			case <-ticker:
+				h.broadcastUpdate(&updates{
+					Ticker: &currentTime{
+						ID:          video.ID,
+						Duration:    video.Duration,
+						ElapsedTime: elapsedTime,
+					},
+				})
+				elapsedTime += syncPeriod
+
+			case <-ctx.Done():
+				cancel()
+				break loop
+			}
+		}
+
+		h.cache.Playlist.DelVideo <- video.ID
+		<-h.cache.Playlist.DelFeedBack
+	}
 }

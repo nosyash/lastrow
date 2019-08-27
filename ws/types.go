@@ -22,6 +22,7 @@ type hub struct {
 	register   chan *user
 	unregister chan *websocket.Conn
 	cache      *cache.Cache
+	syncer     syncer
 	id         string
 }
 
@@ -49,9 +50,15 @@ type response struct {
 	Body   body   `json:"body"`
 }
 
+type syncer struct {
+	sleep  bool
+	wakeUp chan struct{}
+}
+
 type updates struct {
 	Users    []*cache.User  `json:"users,omitempty"`
 	Playlist []*cache.Video `json:"videos,omitempty"`
+	Ticker   *currentTime   `json:"ticker,omitempty"`
 }
 
 type body struct {
@@ -72,8 +79,13 @@ type data struct {
 	Title    string `json:"title,omitempty"`
 	Duration int    `json:"duration,omitempty"`
 	URL      string `json:"url,omitempty"`
-	Proxy    bool   `json:proxy,omitempty`
 	ID       string `json:"__id,omitempty"`
+}
+
+type currentTime struct {
+	ID          string `json:"id"`
+	Duration    int    `json:"duration"`
+	ElapsedTime int    `json:"elapsed_time"`
 }
 
 const (

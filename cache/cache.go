@@ -22,6 +22,7 @@ func New(id string) *Cache {
 			make(chan string),
 			make(chan string),
 			make(chan error),
+			make(chan error),
 			make(chan struct{}),
 		},
 		id,
@@ -41,6 +42,8 @@ func (cache Cache) HandleCacheEvents() {
 			cache.Users.delUser(uuid)
 		case url := <-cache.Playlist.AddVideo:
 			cache.Playlist.addVideo(url)
+		case id := <-cache.Playlist.DelVideo:
+			cache.Playlist.delVideo(id)
 		}
 	}
 }

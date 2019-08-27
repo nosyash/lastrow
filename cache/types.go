@@ -1,8 +1,6 @@
 package cache
 
 import (
-	"time"
-
 	"github.com/nosyash/backrow/db"
 )
 
@@ -38,14 +36,15 @@ type playlist struct {
 	playlist       map[string]*Video
 	AddVideo       chan string
 	DelVideo       chan string
-	FeedBack       chan error
+	AddFeedBack    chan error
+	DelFeedBack    chan error
 	UpdatePlaylist chan struct{}
 }
 
 type Video struct {
-	Title    string        `json:"title"`
-	Duration time.Duration `json:"duration"`
-	URL      string        `json:"url"`
-	Index    int           `json:"index"`
-	ID       string        `json:"__id"`
+	Title    string `json:"title"`
+	Duration int    `json:"duration"`
+	URL      string `json:"url"`
+	Index    int    `json:"index"`
+	ID       string `json:"__id"`
 }

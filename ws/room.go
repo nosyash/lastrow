@@ -16,6 +16,10 @@ func NewRoomHub(id string) *hub {
 		make(chan *user),
 		make(chan *websocket.Conn),
 		cache.New(id),
+		syncer{
+			false,
+			make(chan struct{}),
+		},
 		id,
 	}
 }
@@ -23,6 +27,7 @@ func NewRoomHub(id string) *hub {
 // HandleActions handle internal room and client events one at time
 func (h hub) HandleActions() {
 	go h.cache.HandleCacheEvents()
+	go h.syncCurrentTime()
 	go storage.Add(h.cache)
 
 	for {
@@ -40,6 +45,9 @@ func (h hub) HandleActions() {
 			h.updateUserList()
 		case <-h.cache.Playlist.UpdatePlaylist:
 			h.updatePlaylist()
+			if h.syncer.sleep && h.cache.Playlist.Size() > 0 {
+				h.syncer.wakeUp <- struct{}{}
+			}
 		}
 	}
 }

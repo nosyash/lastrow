@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log"
 	"os/exec"
 	"strconv"
 	"time"
@@ -32,7 +33,7 @@ var (
 
 // GetMetaData read metadata about a video file
 // return duration is number of seconds and video title
-func GetMetaData(url string) (time.Duration, string, error) {
+func GetMetaData(url string) (int, string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
@@ -51,8 +52,10 @@ func GetMetaData(url string) (time.Duration, string, error) {
 	err := cmd.Start()
 
 	if err == exec.ErrNotFound {
+		log.Println("Couldn't execute /bin/ffprobe command. ffprobe exists?")
 		return 0, "", ErrBinNotFound
 	} else if err != nil {
+		log.Printf("Error while trying to execute /bin/ffprobe: %v", err)
 		return 0, "", err
 	}
 
@@ -70,6 +73,7 @@ func GetMetaData(url string) (time.Duration, string, error) {
 		return 0, "", err
 	case err = <-done:
 		if err != nil {
+			log.Printf("Error while trying to execute /bin/ffprobe: %v", err)
 			return 0, "", err
 		}
 	}
@@ -84,5 +88,5 @@ func GetMetaData(url string) (time.Duration, string, error) {
 		return 0, "", err
 	}
 
-	return time.Duration(int(dFloat)), meta.Format.Tags.Title, nil
+	return int(dFloat), meta.Format.Tags.Title, nil
 }
