@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import RoomItem from './RoomItem';
 import http from '../../utils/httpServices';
@@ -8,41 +8,37 @@ import * as api from '../../constants/apiActions';
 import { API_FETCH_TIMEOUT } from '../../constants';
 import LogForm from '../UI/Popups/LogForm';
 
-class RoomListBase extends Component {
-  state = {
-    connected: false,
-  };
+function RoomListBase(props) {
+  const [connected, setConnected] = useState(false);
 
-  async componentDidMount() {
-    const { clearPopups } = this.props;
-    clearPopups();
-    this.getRoomList();
-  }
+  useEffect(() => {
+    props.clearPopups();
+    getRoomList();
+  }, []);
 
-  getRoomList = async () => {
-    const { UpdateRoomList } = this.props;
+  async function getRoomList() {
+    const { UpdateRoomList } = props;
     const url = api.API_ROOMS();
     await http
       .get(url)
       .then(res => {
         UpdateRoomList(res.data.rooms);
-        this.setState({ connected: true });
+        setConnected(true);
       })
-      .catch(res => setTimeout(() => this.getRoomList(), API_FETCH_TIMEOUT));
+      .catch(() => {
+        setTimeout( getRoomList, API_FETCH_TIMEOUT)
+      });
   };
 
-  render() {
-    const { rooms, history } = this.props;
-    const { connected } = this.state;
-    return (
-      <RenderList
-        getRoomList={this.getRoomList}
-        rooms={rooms}
-        history={history}
-        connected={connected}
-      />
-    );
-  }
+  const { rooms, history } = props;
+  return (
+    <RenderList
+      getRoomList={getRoomList}
+      rooms={rooms}
+      history={history}
+      connected={connected}
+    />
+  );
 }
 
 const RenderList = ({ rooms, connected, getRoomList, history }) => (
