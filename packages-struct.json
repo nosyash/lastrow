@@ -1,0 +1,32 @@
+{
+  "action": "player_event",
+  "body": {
+    "event": {
+      "type": "playlist_add",
+      "data": {
+        "url": "https://stream.bona.cafe/uzzu/ep15.mp4"
+      }
+    }
+  },
+  "user_uuid": "bu-bu-bu"
+}
+
+{
+  "videos": [
+    {
+      "title": "[V LIVE] [UZZU TAPE (우쭈테잎)] EP. 16 경복궁 야간기행, 시간의 다리를 건너다!",
+      "duration": 2359,
+      "url": "https://stream.bona.cafe/uzzu/ep15.mp4",
+      "index": 0,
+      "__id": "00558ab4060d4a8391c2f38757930ef6f9ae8f7dc030e3a28d5e052d7703dc82"
+    }
+  ]
+}
+
+{
+  "ticker": {
+    "id": "00558ab4060d4a8391c2f38757930ef6f9ae8f7dc030e3a28d5e052d7703dc82",
+    "duration": 2359,
+    "elapsed_time": 0
+  }
+}
