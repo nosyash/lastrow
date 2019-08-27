@@ -1,9 +1,15 @@
 import React from 'react';
 
-const MiniProfile = ({ currentProfile }) => {
-  const { name, image, color } = currentProfile;
+function getStyles(image, color) {
   const backgroundImage = image ? `url(${image})` : '';
   const backgroundColor = !image ? color : '';
+  return { backgroundColor, backgroundImage }
+}
+
+const MiniProfile = ({ currentProfile }) => {
+  const { name, image, color } = currentProfile;
+  const { backgroundColor, backgroundImage } = getStyles(image, color);
+
   return (
     <div className="mini-profile">
       <div

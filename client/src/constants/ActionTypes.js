@@ -21,7 +21,9 @@ export const UPDATE_MEDIA_URL = 'UPDATE_MEDIA_URL';
 export const SWITCH_PLAY = 'SWITCH_PLAY';
 export const SWITCH_MUTE = 'SWITCH_MUTE';
 export const SET_VOLUME = 'SET_VOLUME';
-export const UPDATE_SUBS = 'UPDATE_SUBS';
+export const SET_SUBS = 'SET_SUBS';
+export const SET_CURRENT_SUBS = 'SET_CURRENT_SUBS';
+export const FETCH_SUBS = 'FETCH_SUBS';
 
 // Popups
 export const ADD_POPUP = 'ADD_POPUP';
