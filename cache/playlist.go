@@ -9,15 +9,23 @@ import (
 	"github.com/nosyash/backrow/ffprobe"
 )
 
+var (
+	// ErrUnsupportedFormat return when link to unsupported video format was received
+	ErrUnsupportedFormat = errors.New("Unsupported video format")
+)
+
 func (pl *playlist) addVideo(vURL string) {
 	pURL, _ := url.Parse(vURL)
 	ext := filepath.Ext(pURL.String())
 
 	switch ext {
-	case ".m3u8":
-	case ".mp4":
-		duration, title := ffprobe.GetMetaData(vURL)
+	case ".mp4", ".m3u8":
+		duration, title, err := ffprobe.GetMetaData(vURL)
 		ID := getRandomUUID()
+
+		if err != nil {
+			pl.FeedBack <- err
+		}
 
 		pl.playlist[ID] = &Video{
 			Title:    title,
@@ -31,7 +39,7 @@ func (pl *playlist) addVideo(vURL string) {
 		hostname := pURL.Hostname()
 		fmt.Println(hostname)
 	default:
-		pl.FeedBack <- errors.New("Unsupported video format")
+		pl.FeedBack <- ErrUnsupportedFormat
 	}
 }
 
