@@ -1,51 +1,44 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import * as types from '../../../constants/ActionTypes';
 import * as keys from '../../../constants/keys';
 import { MAX_MESSAGE_LENGTH } from '../../../constants';
 import * as api from '../../../constants/apiActions';
 
-class ChatInput extends Component {
-  constructor() {
-    super();
-    this.historyN = 0;
-    this.state = {
-      inputValue: '',
-    };
-  }
+let historyN = 0;
 
-  componentDidMount() {
-    document.addEventListener('click', this.handleClick);
-  }
+function ChatInput(props) {
+  const [inputValue, setInputValue] = useState('');
+  let inputEl = useRef(null);
 
-  componentWillUnmount() {
-    document.removeEventListener('click', this.handleClick);
-  }
-
-  handleClick = e => {
+  useEffect(() => {
+    document.addEventListener('click', handleClick);
+    return () => {
+      document.removeEventListener('click', handleClick);
+    }
+  })
+  function handleClick(e) {
     let { target } = e;
     if (target.closest('.chat-message_reply')) {
       target = target.closest('.chat-message_reply');
       const { name } = target.dataset;
-      const { inputValue } = this.state;
       if (name) {
         const value = `@${name} ${inputValue}`;
-        this.setState({ inputValue: value });
+        setInputValue(value);
       }
-      this.input.focus();
+      inputEl.current.focus();
     }
   };
 
-  handleFormSubmit = e => {
-    const { socket, socketState, profile } = this.props;
-    let { inputValue } = this.state;
+  function handleFormSubmit(e) {
+    const { socket, socketState, profile } = props;
 
     if (e.keyCode === keys.ENTER && !e.shiftKey) {
       e.preventDefault();
       inputValue = inputValue.trim();
       if (!socketState || !inputValue) return;
       socket.send(api.SEND_MESSAGE(inputValue, profile.uuid));
-      this.setState({ inputValue: '' });
+      setInputValue('')
     }
   };
 
@@ -54,25 +47,22 @@ class ChatInput extends Component {
     if (value.length > MAX_MESSAGE_LENGTH) {
       value = value.substr(0, MAX_MESSAGE_LENGTH);
     }
-    this.setState({ inputValue: value });
+    setInputValue(value)
   };
 
-  render() {
-    const { inputValue } = this.state;
-    return (
-      <div className="chat-input">
-        <textarea
-          onKeyDown={this.handleFormSubmit}
-          ref={ref => (this.input = ref)}
-          value={inputValue}
-          autoFocus
-          placeholder="Write something..."
-          onChange={this.handleInputChange}
-          className="chat-input"
-        />
-      </div>
-    );
-  }
+  return (
+    <div className="chat-input">
+      <textarea
+        onKeyDown={handleFormSubmit}
+        ref={inputEl}
+        value={inputValue}
+        autoFocus
+        placeholder="Write something..."
+        onChange={handleInputChange}
+        className="chat-input"
+      />
+    </div>
+  );
 }
 
 const mapStateToProps = state => ({
