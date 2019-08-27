@@ -22,7 +22,7 @@ function ProgressBar(props) {
     const percentage = -(100 - (currentTime / duration) * 100);
     const transform = `translateX(${percentage}%)`;
     setStransform(transform)
-    animRef = window.requestAnimationFrame(this.updatePosition);
+    animRef = window.requestAnimationFrame(updatePosition);
   };
   const { seek } = props;
   return (
@@ -37,7 +37,6 @@ function ProgressBar(props) {
         <div className="progress-bar">
           <div
             style={{ transform }}
-            ref={ref => (this.progress = ref)}
             className="progress-bar_passed"
           />
         </div>
