@@ -35,6 +35,7 @@ function Player(props) {
 
     return () => {
       removeEvents();
+      videoEl = null;
       props.resetMedia();
     };
   }, []);

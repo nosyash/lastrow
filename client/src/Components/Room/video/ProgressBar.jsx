@@ -11,6 +11,7 @@ function ProgressBar(props) {
 
     return () => {
       window.cancelAnimationFrame(animRef);
+      animRef = null;
     }
   }, [])
 
