@@ -30,31 +30,34 @@ function Player(props) {
   let volume = null;
 
   useEffect(() => {
-    document.addEventListener('mousedown', handleGlobalDown);
-    document.addEventListener('mousemove', handleGlobalMove);
-    document.addEventListener('mouseup', handleGlobalUp);
-
-    init(() => {
-      handleSubs();
-    });
+    addEvents();
+    init();
 
     return () => {
-      const { resetMedia } = props;
-      resetMedia();
-      document.removeEventListener('mousedown', handleGlobalDown);
-      document.removeEventListener('mousemove', handleGlobalMove);
-      document.removeEventListener('mouseup', handleGlobalUp);
+      removeEvents();
+      props.resetMedia();
     };
   }, []);
 
-  function init(callback) {
+  function addEvents() {
+    document.addEventListener('mousedown', handleGlobalDown);
+    document.addEventListener('mousemove', handleGlobalMove);
+    document.addEventListener('mouseup', handleGlobalUp);
+  }
+
+  function removeEvents() {
+    document.removeEventListener('mousedown', handleGlobalDown);
+    document.removeEventListener('mousemove', handleGlobalMove);
+    document.removeEventListener('mouseup', handleGlobalUp);
+  }
+
+  function init() {
     const { updatePlayer } = props;
     // eslint-disable-next-line prefer-destructuring
     volume = localStorage.volume;
     volume = JSON.parse(volume || 1);
     updatePlayer({ volume });
-
-    if (callback) callback();
+    handleSubs()
   }
 
   async function handleSubs() {
