@@ -3,6 +3,8 @@ package ws
 import (
 	"errors"
 
+	"github.com/nosyash/backrow/ffprobe"
+
 	"github.com/gorilla/websocket"
 	"github.com/nosyash/backrow/cache"
 )
@@ -69,10 +71,20 @@ func (h hub) handlePlayerEvent(req *request, conn *websocket.Conn) {
 		}
 
 		if err := <-h.cache.Playlist.FeedBack; err != nil {
-			sendError(conn, err.Error())
+			switch err {
+			case cache.ErrUnsupportedFormat:
+				sendError(conn, "This video formant not support. Support only .mp4, .m3u8")
+			case ffprobe.ErrBinNotFound:
+				sendError(conn, "Internal server error while trying to get metadata")
+			case ffprobe.ErrTimeout:
+				sendError(conn, "Timeout on getting metadata")
+			}
 		} else {
 			h.cache.Playlist.UpdatePlaylist <- struct{}{}
 		}
+
+		// Set up timer for head element in playlist
+		// and every 5 second send broadcast sync package
 	}
 }
 
