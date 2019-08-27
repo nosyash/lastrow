@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 let animRef = null;
 
-function ProgressBar(props) {
+function ProgressBar({ media, player, seekEl }) {
   const [transform, setStransform] = useState('translateX(-100%)')
 
   useEffect(() => {
@@ -16,7 +16,6 @@ function ProgressBar(props) {
   }, [])
 
   function updatePosition() {
-    const { media, player } = props;
     const { duration } = media;
 
     const currentTime = player.getCurrentTime();
@@ -25,24 +24,22 @@ function ProgressBar(props) {
     setStransform(transform)
     animRef = window.requestAnimationFrame(updatePosition);
   };
-  const { seek } = props;
+
   return (
-    <React.Fragment>
-      <div
-        ref={ref => seek(ref)}
-        className="progress-bar_container seek_trigger"
-      >
-        <div style={{ transform }} className="scrubber_container">
-          <div className="scrubber" />
-        </div>
-        <div className="progress-bar">
-          <div
-            style={{ transform }}
-            className="progress-bar_passed"
-          />
-        </div>
+    <div
+      ref={ref => seekEl(ref)}
+      className="progress-bar_container seek_trigger"
+    >
+      <div style={{ transform }} className="scrubber_container">
+        <div className="scrubber" />
       </div>
-    </React.Fragment>
+      <div className="progress-bar">
+        <div
+          style={{ transform }}
+          className="progress-bar_passed"
+        />
+      </div>
+    </div>
   );
 }
 

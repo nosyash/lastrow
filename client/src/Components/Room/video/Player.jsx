@@ -19,15 +19,15 @@ import { fetchSubs } from '../../../actions';
 
 let minimizeTimer = null;
 let videoEl = null;
+let seekEl = null;
 function Player(props) {
   const [moving, setMoving] = useState(false);
   const [changingVolume, setChangingVolume] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const playerRef = useRef(null);
 
-  let seek = null;
   let wasPlaying = false;
-  let volume = null;
+  let volume = 0.3;
 
   useEffect(() => {
     addEvents();
@@ -35,10 +35,15 @@ function Player(props) {
 
     return () => {
       removeEvents();
-      videoEl = null;
+      resetRefs();
       props.resetMedia();
     };
   }, []);
+
+  function resetRefs() {
+    videoEl = null;
+    seekEl = null;
+  }
 
   function addEvents() {
     document.addEventListener('mousedown', handleGlobalDown);
@@ -236,7 +241,7 @@ function Player(props) {
     return (
       <div className="video-player_top">
         <div className="video-time current-time">{formatTime(media.currentTime)}</div>
-        <ProgressBar player={playerRef.current} seek={ref => (seek = ref)} />
+        <ProgressBar player={playerRef.current} seek={ref => (seekEl = ref)} />
         <div className="video-time duration">{formatTime(media.duration)}</div>
       </div>
     );
