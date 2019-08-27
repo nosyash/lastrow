@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import MiniProfile from './MiniProfile';
 
-function ChatHeader(props) {
+function ChatHeader({ userList }) {
   const [showProfile, setShowProfile] = useState(false)
   const [currentProfile, setCurrentProfile] = useState(0)
 
@@ -13,9 +13,10 @@ function ChatHeader(props) {
     }
   })
 
-  function handleClick(e) {
-    const { target } = e;
-    if (!target.closest('.user-icon') && !target.closest('.mini-profile')) {
+  function handleClick({ target }) {
+    const isUserIcon = target.closest('.user-icon')
+    const isMenuProfile = target.closest('.mini-profile')
+    if (!isUserIcon && !isMenuProfile) {
       setShowProfile(false)
     }
   };
@@ -25,7 +26,6 @@ function ChatHeader(props) {
     setCurrentProfile(userProfile)
   };
 
-  const { userList } = props;
   return (
     <div className="chat-header">
       {showProfile && !currentProfile.guest && (
@@ -49,8 +49,7 @@ function ChatHeader(props) {
   );
 }
 
-function UserIcon(props) {
-  const { id, onClick, name, color, guest } = props;
+function UserIcon({ id, onClick, name, color, guest }) {
   return (
     <span
       onClick={() => onClick(id)}
