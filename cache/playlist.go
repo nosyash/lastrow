@@ -19,7 +19,7 @@ var (
 
 	// ErrEmptyYoutubeVideoID return when youtube video id (v param in link) is empty
 	ErrEmptyYoutubeVideoID = errors.New("Youtube video ID is empty")
-}
+)
 
 func (pl *playlist) addVideo(vURL string) {
 	pURL, _ := url.Parse(vURL)
