@@ -8,13 +8,33 @@ function ProgressBar({ media, player, seekEl }) {
   const [transform, setStransform] = useState('translateX(-100%)');
   duration = media.duration;
   useEffect(() => {
-    updatePosition();
+    // updatePosition();
+    addEvents();
 
     return () => {
       cancelAnimationFrame(animRef);
+      removeEvents();
       animRef = null;
     };
   }, []);
+
+  function addEvents() {
+    document.addEventListener('videoplay', onPlay);
+    document.addEventListener('videopause', onPause);
+  }
+  function removeEvents() {
+    document.removeEventListener('videoplay', onPlay);
+    document.removeEventListener('videopause', onPause);
+  }
+
+  function onPlay() {
+    cancelAnimationFrame(animRef);
+    updatePosition();
+  }
+
+  function onPause() {
+    cancelAnimationFrame(animRef);
+  }
 
   function updatePosition() {
     console.log(duration);

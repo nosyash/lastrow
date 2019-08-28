@@ -195,6 +195,16 @@ function Player(props) {
     }
   }
 
+  const handlePlay = () => {
+    const e = new Event('videoplay');
+    document.dispatchEvent(e);
+  };
+
+  const handlePause = () => {
+    const e = new Event('videopause');
+    document.dispatchEvent(e);
+  };
+
   function renderPlayer() {
     const { media } = props;
     return (
@@ -204,6 +214,8 @@ function Player(props) {
           className="player-inner"
           width="100%"
           height=""
+          onPlay={handlePlay}
+          onPause={handlePause}
           config={playerConf}
           autoPlay={false}
           controls={false}
