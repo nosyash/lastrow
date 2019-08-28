@@ -10,13 +10,6 @@ function ControlPanel(props) {
   function handleProfileSettings() {
     const { addPopup } = props;
     addPopup('profileSettings');
-    // const id = 'profile-settings';
-    // addPopup({
-    //   id,
-    //   el: <ProfileSettings id={id} />,
-    //   width: 400,
-    //   height: 500,
-    // });
   }
 
   // TODO: Refactor
