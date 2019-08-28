@@ -54,6 +54,7 @@ func (pl *playlist) addVideo(vURL string) {
 			duration, title, err := vapi.GetVideoDetails(vID)
 			if err != nil {
 				pl.AddFeedBack <- err
+				return
 			}
 
 			ID := getRandomUUID()

@@ -95,6 +95,7 @@ func (h *hub) handlePlayerEvent(req *request, conn *websocket.Conn) {
 		if ID != "" && len(ID) == 64 {
 			if h.syncer.currentVideoID == ID {
 				h.syncer.skip <- struct{}{}
+				return
 			}
 			h.cache.Playlist.DelVideo <- ID
 			if err := <-h.cache.Playlist.DelFeedBack; err != nil {
