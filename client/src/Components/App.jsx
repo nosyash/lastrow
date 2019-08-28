@@ -12,7 +12,9 @@ import { getRandom } from '../utils/base';
 function App(props) {
   const [loaded, setLoaded] = useState(false);
 
-  useEffect(() => {
+  useEffect(handleProfile, []);
+
+  async function handleProfile() {
     const { updateProfile } = props;
     const profile = await getProfile();
 
@@ -24,7 +26,7 @@ function App(props) {
     }
 
     setLoaded(true);
-  }, [])
+  }
 
   return (
     <BrowserRouter>
