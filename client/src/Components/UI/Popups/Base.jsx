@@ -4,6 +4,13 @@ import { throttle } from 'lodash';
 import { getCenteredRect } from '../../../utils/base';
 import * as types from '../../../constants/ActionTypes';
 import { POPUP_HEADER } from '../../../constants';
+import AddMedia from './AddMedia';
+import ColorPicker from './ColorPicker';
+import GuestAuth from './GuestAuth';
+import ImagePicker from './ImagePicker';
+import LogForm from './LogForm';
+import NewRoom from './NewRoom';
+import Playlist from './Playlist';
 import ProfileSettings from './ProfileSettings';
 
 function Popups({ popups, removePopup, id }) {
@@ -37,12 +44,17 @@ function Popups({ popups, removePopup, id }) {
       removePopup(lastPopup.id);
     }
   }
-
+  const p = popups;
   return (
     <div className="popups_container">
-      {popups.profileSettings &&
-        renderSinglePopup(<ProfileSettings />, 'profileSettings')}
-      {/* {popups.map(popup => renderSinglePopup(popup))} */}
+      {p.profileSettings && renderSinglePopup(<ProfileSettings />, 'profileSettings')}
+      {p.addMedia && renderSinglePopup(<AddMedia />, 'addMedia')}
+      {p.colorPicker && renderSinglePopup(<ColorPicker />, 'colorPicker')}
+      {p.guestAuth && renderSinglePopup(<GuestAuth />, 'guestAuth')}
+      {p.imagePicker && renderSinglePopup(<ImagePicker />, 'imagePicker')}
+      {p.logForm && renderSinglePopup(<LogForm />, 'logForm')}
+      {p.newRoom && renderSinglePopup(<NewRoom />, 'newRoom')}
+      {p.playlist && renderSinglePopup(<Playlist />, 'playlist')}
     </div>
   );
 

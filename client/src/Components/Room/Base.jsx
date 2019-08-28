@@ -82,16 +82,10 @@ class RoomBase extends Component {
 
   handleNicknamePopup = () => {
     const { togglePopup } = this.props;
-    const id = 'profile-settings';
-    togglePopup({
-      id,
-      el: <GuestAuth onSubmit={this.handleGuestAuth} id={id} />,
-      width: 500,
-      height: 300,
-      noBG: true,
-    });
+    togglePopup('guestAuth');
   };
 
+  // TODO: Move to GuestAuth component
   handleGuestAuth = name => {
     const { removePopup, updateProfile } = this.props;
     removePopup('profile-settings');

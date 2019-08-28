@@ -114,24 +114,12 @@ class LogForm extends Form {
 
   handleRoomCreation = () => {
     const { addPopup } = this.props;
-    const id = 'NewRoom';
-    addPopup({
-      id,
-      el: <NewRoom id={id} />,
-      width: 500,
-      height: 500,
-    });
+    addPopup('newRoom');
   };
 
   handleProfileSettings = () => {
     const { addPopup } = this.props;
-    const id = 'profile-settings';
-    addPopup({
-      id,
-      el: <ProfileSettings id={id} />,
-      width: 400,
-      height: 500,
-    });
+    addPopup('profile-settings');
   };
 
   render() {
