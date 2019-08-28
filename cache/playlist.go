@@ -49,6 +49,7 @@ func (pl *playlist) addVideo(vURL string) {
 			vID := pURL.Query().Get("v")
 			if vID == "" {
 				pl.AddFeedBack <- ErrEmptyYoutubeVideoID
+				return
 			}
 			duration, title, err := vapi.GetVideoDetails(vID)
 			if err != nil {
