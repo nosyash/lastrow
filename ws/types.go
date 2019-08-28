@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// Register a new connection in room cache
 var Register chan *websocket.Conn
 var close chan string
 
@@ -21,6 +22,7 @@ type hub struct {
 	register   chan *user
 	unregister chan *websocket.Conn
 	cache      *cache.Cache
+	syncer     syncer
 	id         string
 }
 
@@ -48,8 +50,17 @@ type response struct {
 	Body   body   `json:"body"`
 }
 
+type syncer struct {
+	sleep          bool
+	wakeUp         chan struct{}
+	skip           chan struct{}
+	currentVideoID string
+}
+
 type updates struct {
-	Users []*cache.User `json:"users,omitempty"`
+	Users    []*cache.User  `json:"users,omitempty"`
+	Playlist []*cache.Video `json:"videos,omitempty"`
+	Ticker   *currentTime   `json:"ticker,omitempty"`
 }
 
 type body struct {
@@ -73,6 +84,12 @@ type data struct {
 	ID       string `json:"__id,omitempty"`
 }
 
+type currentTime struct {
+	ID          string `json:"__id"`
+	Duration    int    `json:"duration"`
+	ElapsedTime int    `json:"elapsed_time"`
+}
+
 const (
 	USER_REGISTER  = "user_register"
 	GUEST_REGISTER = "guest_register"
@@ -83,5 +100,5 @@ const (
 const (
 	ETYPE_MSG    = "message"
 	ETYPE_PL_ADD = "playlist_add"
-	ETYPE_PL_DEL = "playlist_delete"
+	ETYPE_PL_DEL = "playlist_del"
 )

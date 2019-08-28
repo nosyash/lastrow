@@ -19,42 +19,51 @@ import { fetchSubs } from '../../../actions';
 
 let minimizeTimer = null;
 let videoEl = null;
+let seekEl = null;
 function Player(props) {
   const [moving, setMoving] = useState(false);
-  const [voluming, setVoluming] = useState(false);
+  const [changingVolume, setChangingVolume] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const playerRef = useRef(null);
 
-  let seek = null;
   let wasPlaying = false;
-  let volume = null;
+  let volume = 0.3;
 
   useEffect(() => {
-    document.addEventListener('mousedown', handleGlobalDown);
-    document.addEventListener('mousemove', handleGlobalMove);
-    document.addEventListener('mouseup', handleGlobalUp);
-
-    init(() => {
-      handleSubs();
-    });
+    addEvents();
+    init();
 
     return () => {
-      const { resetMedia } = props;
-      resetMedia();
-      document.removeEventListener('mousedown', handleGlobalDown);
-      document.removeEventListener('mousemove', handleGlobalMove);
-      document.removeEventListener('mouseup', handleGlobalUp);
+      removeEvents();
+      resetRefs();
+      props.resetMedia();
     };
   }, []);
 
-  function init(callback) {
+  function resetRefs() {
+    videoEl = null;
+    seekEl = null;
+  }
+
+  function addEvents() {
+    document.addEventListener('mousedown', handleGlobalDown);
+    document.addEventListener('mousemove', handleGlobalMove);
+    document.addEventListener('mouseup', handleGlobalUp);
+  }
+
+  function removeEvents() {
+    document.removeEventListener('mousedown', handleGlobalDown);
+    document.removeEventListener('mousemove', handleGlobalMove);
+    document.removeEventListener('mouseup', handleGlobalUp);
+  }
+
+  function init() {
     const { updatePlayer } = props;
     // eslint-disable-next-line prefer-destructuring
     volume = localStorage.volume;
     volume = JSON.parse(volume || 1);
     updatePlayer({ volume });
-
-    if (callback) callback();
+    handleSubs()
   }
 
   async function handleSubs() {
@@ -90,19 +99,19 @@ function Player(props) {
 
     // TODO: This has to be completely reworked
     if (target.closest(SEEK_SEL) || target.closest(VOLUME_SEL)) {
-      const isVoluming = target.closest(VOLUME_SEL);
-      if (media.playing && !isVoluming) {
+      const isChangingVolume = target.closest(VOLUME_SEL);
+      if (media.playing && !isChangingVolume) {
         updatePlayer({ playing: false });
         wasPlaying = true;
       }
-      if (isVoluming) setVoluming(true);
+      if (isChangingVolume) setChangingVolume(true);
       else setMoving(true);
       target = target.closest(SEEK_SEL) || target.closest(VOLUME_SEL);
       const { left, width } = target.getBoundingClientRect();
       const offset = e.clientX - left;
       let mult = offset / width;
       mult = Math.max(0, Math.min(1, mult));
-      if (isVoluming) {
+      if (isChangingVolume) {
         setVolume(mult);
         if (media.muted) {
           switchMute();
@@ -114,24 +123,24 @@ function Player(props) {
   function handleGlobalMove(e) {
     handlePlayerMove(e);
     const { setVolume } = props;
-    if (!moving && !voluming) return;
-    const target = voluming ? volume : seek;
+    if (!moving && !changingVolume) return;
+    const target = changingVolume ? volume : seek;
     const { left, width } = target.getBoundingClientRect();
     const offset = e.clientX - left;
     let mult = offset / width;
     mult = Math.min(1, mult);
     mult = Math.max(0, mult);
-    if (voluming) setVolume(mult);
+    if (changingVolume) setVolume(mult);
     else playerRef.current.seekTo(mult);
   }
 
   function handleGlobalUp() {
     const { updatePlayer, media } = props;
 
-    if (!moving && !voluming) return;
-    if (voluming) {
+    if (!moving && !changingVolume) return;
+    if (changingVolume) {
       localStorage.volume = media.volume;
-      setVoluming(false);
+      setChangingVolume(false);
     } else {
       setMoving(false);
       if (wasPlaying) updatePlayer({ playing: true });
@@ -142,14 +151,15 @@ function Player(props) {
   function handlePlayerMove(e) {
     let { target } = e;
 
-    // Firefox returns "document" object in some cases,
+    // Firefox returns "document" object as target in some cases,
     // which causes an error on target.closest()
-    if (target && target !== document) {
-      target = target.closest(VIDEO_ELEMENT_SEL);
-      clearTimeout(minimizeTimer);
-      if (minimized) {
-        setMinimized(false);
-      }
+    if (!target) return;
+    if (target === document) return;
+
+    target = target.closest(VIDEO_ELEMENT_SEL);
+    clearTimeout(minimizeTimer);
+    if (minimized) {
+      setMinimized(false);
     }
   }
 
@@ -231,7 +241,7 @@ function Player(props) {
     return (
       <div className="video-player_top">
         <div className="video-time current-time">{formatTime(media.currentTime)}</div>
-        <ProgressBar player={playerRef.current} seek={ref => (seek = ref)} />
+        <ProgressBar player={playerRef.current} seek={ref => (seekEl = ref)} />
         <div className="video-time duration">{formatTime(media.duration)}</div>
       </div>
     );

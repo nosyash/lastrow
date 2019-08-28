@@ -105,8 +105,8 @@ func (server Server) getAllRooms(w http.ResponseWriter) {
 	for i, r := range rooms {
 		about[i].Title = r.Title
 		about[i].Path = r.Path
-		about[i].Play = storage.WhatsPlayNow(r.Path)
-		about[i].Users = strconv.Itoa(storage.UsersInRoom(r.Path))
+		about[i].Play = storage.GetCurrentVideoTitle(r.Path)
+		about[i].Users = strconv.Itoa(storage.GetUsersCount(r.Path))
 	}
 
 	resp := db.Rooms{

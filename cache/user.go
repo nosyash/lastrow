@@ -1,6 +1,7 @@
 package cache
 
-func (u *Users) add(uuid string) {
+// AddUser read information about user from Database and add the user to the user cache
+func (u *Users) addUser(uuid string) {
 	userProfile, _ := u.db.GetUserProfile(uuid)
 
 	u.users[uuid] = &User{
@@ -10,15 +11,20 @@ func (u *Users) add(uuid string) {
 		Guest: false,
 		ID:    getHashOfString(uuid[:8]),
 	}
+
+	u.UpdateUsers <- struct{}{}
 }
 
-// TODO: Rename this func
-func (u *Users) _addGuest(user *User) {
+// AddGuest add guest user to the user cache
+func (u *Users) addGuest(user *User) {
 	u.users[user.UUID] = user
+	u.UpdateUsers <- struct{}{}
 }
 
+// DelUser delete a user from the cache
 func (u *Users) delUser(uuid string) {
 	delete(u.users, uuid)
+	u.UpdateUsers <- struct{}{}
 }
 
 // GetUser return user object by UUID

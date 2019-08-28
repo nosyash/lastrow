@@ -1,7 +1,10 @@
 package cache
 
-import "github.com/nosyash/backrow/db"
+import (
+	"github.com/nosyash/backrow/db"
+)
 
+// Cache object
 type Cache struct {
 	Users    Users
 	Playlist playlist
@@ -9,15 +12,17 @@ type Cache struct {
 	Close    chan struct{}
 }
 
+// Users is users storage and channels for adding/removing users
 type Users struct {
 	users       map[string]*User
 	AddUser     chan string
-	DelUser     chan string
 	AddGuest    chan *User
+	DelUser     chan string
 	UpdateUsers chan struct{}
 	db          *db.Database
 }
 
+// User is user object view
 type User struct {
 	Name  string `json:"name"`
 	Color string `json:"color,omitempty"`
@@ -28,14 +33,18 @@ type User struct {
 }
 
 type playlist struct {
-	playlist       map[string]*video
-	AddURL         chan string
-	DelURL         chan string
+	playlist       map[string]*Video
+	AddVideo       chan string
+	DelVideo       chan string
+	AddFeedBack    chan error
+	DelFeedBack    chan error
 	UpdatePlaylist chan struct{}
 }
 
-type video struct {
+type Video struct {
 	Title    string `json:"title"`
 	Duration int    `json:"duration"`
+	URL      string `json:"url"`
+	Index    int    `json:"index"`
 	ID       string `json:"__id"`
 }

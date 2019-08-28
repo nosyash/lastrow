@@ -15,6 +15,7 @@ type Database struct {
 	sc *mgo.Collection
 }
 
+// Connect to the database and create collections if needed
 func Connect(dbAddr string) *Database {
 	session, err := mgo.Dial(dbAddr)
 	if err != nil {
@@ -32,6 +33,7 @@ func Connect(dbAddr string) *Database {
 	}
 }
 
+// Close connections for the database
 func (db Database) Close() {
 	db.db.Close()
 }

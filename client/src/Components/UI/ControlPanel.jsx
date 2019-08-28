@@ -5,11 +5,11 @@ import ProfileSettings from './Popups/ProfileSettings';
 import Playlist from './Popups/Playlist';
 import AddMedia from './Popups/AddMedia';
 
-class ControlPanel extends Component {
-  state = {};
+function ControlPanel(props) {
 
-  handleProfileSettings = () => {
-    const { addPopup } = this.props;
+  // TODO: Refactor
+  function handleProfileSettings() {
+    const { addPopup } = props;
     const id = 'profile-settings';
     addPopup({
       id,
@@ -19,8 +19,9 @@ class ControlPanel extends Component {
     });
   };
 
-  handlePlaylist = id => {
-    const { togglePopup } = this.props;
+  // TODO: Refactor
+  function handlePlaylist(id) {
+    const { togglePopup } = props;
     togglePopup({
       id,
       el: <Playlist id={id} />,
@@ -30,8 +31,9 @@ class ControlPanel extends Component {
     });
   };
 
-  handleAddMedia = id => {
-    const { togglePopup } = this.props;
+  // TODO: Refactor
+  function handleAddMedia(id) {
+    const { togglePopup } = props;
     togglePopup({
       id,
       el: <AddMedia id={id} />,
@@ -41,20 +43,19 @@ class ControlPanel extends Component {
     });
   };
 
-  handleClick = id => {
+  function handleClick(id) {
     switch (id) {
       case 'showPlaylist':
-        return this.handlePlaylist(id);
+        return handlePlaylist(id);
       case 'addToPlaylist':
-        return this.handleAddMedia(id);
+        return handleAddMedia(id);
 
       default:
         break;
     }
   };
 
-  render() {
-    const { profile, playlist } = this.props;
+    const { profile, playlist } = props;
     const upNext = playlist[0] || { title: '', url: '' };
     const { logged } = profile;
     return (
@@ -62,19 +63,18 @@ class ControlPanel extends Component {
         <RenderPlaylister
           upNext={upNext}
           logged={logged}
-          onClick={this.handleClick}
+          onClick={handleClick}
         />
         <div className="divider" />
         {logged && (
           <RenderProfile
             logged={logged}
-            onProfileSettings={this.handleProfileSettings}
+            onProfileSettings={handleProfileSettings}
             profile={profile}
           />
         )}
       </div>
     );
-  }
 }
 
 const RenderPlaylister = ({ onClick, logged, upNext }) => (

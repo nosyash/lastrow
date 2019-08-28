@@ -16,24 +16,20 @@ func init() {
 	}
 }
 
+// Add a cache to storage and wait for closing
 func Add(cache *cache.Cache) {
 	storage.cs[cache.ID] = cache
-	go func() {
-		for {
-			select {
-			case <-cache.Close:
-				println("delete", cache.ID)
-				delete(storage.cs, cache.ID)
-				return
-			}
-		}
-	}()
+
+	<-cache.Close
+	delete(storage.cs, cache.ID)
 }
 
+// Size return storage size
 func Size() int {
 	return len(storage.cs)
 }
 
+// UpdateUser user in cache
 func UpdateUser(userUUID string) {
 	for _, cache := range storage.cs {
 		_, ok := cache.Users.GetUser(userUUID)
@@ -43,14 +39,15 @@ func UpdateUser(userUUID string) {
 	}
 }
 
-func UsersInRoom(roomPath string) int {
+// GetUsersCount return users count in room by roomPath
+func GetUsersCount(roomPath string) int {
 	if _, ok := storage.cs[roomPath]; ok {
 		return storage.cs[roomPath].Users.UsersCount()
-	} else {
-		return 0
 	}
+	return 0
 }
 
-func WhatsPlayNow(roomPath string) string {
-	return "Пока ничего(((("
+// GetCurrentVideoTitle return current video title by roomPath
+func GetCurrentVideoTitle(roomPath string) string {
+	return "WJSN - Babyface"
 }

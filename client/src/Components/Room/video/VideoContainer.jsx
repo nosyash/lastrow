@@ -1,13 +1,10 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Player from './Player';
 
-export default class VideoContainer extends Component {
-  render() {
-    const { videoRef } = this.props;
-    return (
-      <div ref={videoRef} className="video-container">
-        <Player />
-      </div>
-    );
-  }
+export default function VideoContainer({ videoRef }) {
+  return (
+    <div ref={videoRef} className="video-container">
+      <Player />
+    </div>
+  );
 }

@@ -1,13 +1,18 @@
 package ws
 
 import (
-	"fmt"
+	"errors"
 	"time"
 
 	"github.com/nosyash/backrow/cache"
 	"github.com/nosyash/backrow/storage"
 
 	"github.com/gorilla/websocket"
+)
+
+var (
+	// ErrUnknownAction send when was received unknown action type
+	ErrUnknownAction = errors.New("Unknown action type")
 )
 
 func NewRoomHub(id string) *hub {
@@ -17,27 +22,40 @@ func NewRoomHub(id string) *hub {
 		make(chan *user),
 		make(chan *websocket.Conn),
 		cache.New(id),
+		syncer{
+			false,
+			make(chan struct{}),
+			make(chan struct{}),
+			"",
+		},
 		id,
 	}
 }
 
+// HandleActions handle internal room and client events one at time
 func (h hub) HandleActions() {
-	go h.cache.Init()
-	storage.Add(h.cache)
+	go h.cache.HandleCacheEvents()
+	go h.syncCurrentTime()
+	go storage.Add(h.cache)
 
 	for {
 		select {
 		case user := <-h.register:
-			go h.add(user)
+			h.add(user)
 			go h.read(user.Conn)
 			go h.ping(user.Conn)
 			go h.pong(user.Conn)
 		case conn := <-h.unregister:
-			go h.remove(conn)
-		case msg := <-h.broadcast:
-			go h.send(msg)
+			h.remove(conn)
+		case message := <-h.broadcast:
+			h.send(message)
 		case <-h.cache.Users.UpdateUsers:
-			go h.updateUserList()
+			h.updateUserList()
+		case <-h.cache.Playlist.UpdatePlaylist:
+			h.updatePlaylist()
+			if h.syncer.sleep && h.cache.Playlist.Size() > 0 {
+				h.syncer.wakeUp <- struct{}{}
+			}
 		}
 	}
 }
@@ -50,7 +68,6 @@ func (h hub) add(user *user) {
 		}
 	}
 	if user.Guest {
-
 		h.cache.Users.AddGuest <- &cache.User{
 			Name:  user.Name,
 			Guest: true,
@@ -63,7 +80,13 @@ func (h hub) add(user *user) {
 
 	h.hub[user.UUID] = user.Conn
 
-	fmt.Printf("Add [%s]\t%s\n", user.UUID, user.Conn.RemoteAddr().String())
+	playlist := h.cache.Playlist.GetAllPlaylist()
+
+	if playlist != nil {
+		h.sendUpatesTo(&updates{
+			Playlist: playlist,
+		}, user.Conn)
+	}
 }
 
 func (h hub) remove(conn *websocket.Conn) {
@@ -76,21 +99,22 @@ func (h hub) remove(conn *websocket.Conn) {
 		}
 	}
 	if uuid != "" {
-
 		delete(h.hub, uuid)
 		h.cache.Users.DelUser <- uuid
 
 		if len(h.hub) == 0 {
 			close <- h.id
+
+			// FIX
+			// If last user leave the room, playlist will be deleted
+			// If we not close cache, playlist will not be deleted but sync timers will be reset
 			h.cache.Close <- struct{}{}
 			return
 		}
-
-		fmt.Printf("Remove [%s]\t%s\n", uuid, conn.RemoteAddr().String())
 	}
 }
 
-func (h hub) read(conn *websocket.Conn) {
+func (h *hub) read(conn *websocket.Conn) {
 	defer func() {
 		conn.Close()
 		h.unregister <- conn
@@ -110,7 +134,7 @@ func (h hub) read(conn *websocket.Conn) {
 			case PLAYER_EVENT:
 				go h.handlePlayerEvent(req, conn)
 			default:
-				sendError(conn, "Unknown action")
+				go sendError(conn, ErrUnknownAction)
 			}
 		}
 	}
@@ -118,41 +142,42 @@ func (h hub) read(conn *websocket.Conn) {
 
 func (h hub) send(msg *response) {
 	for _, conn := range h.hub {
-		err := sendResponse(conn, msg)
-		if err != nil {
-			fmt.Println(err)
+		if err := sendResponse(conn, msg); err != nil {
+			h.unregister <- conn
 			conn.Close()
 		}
 	}
 }
 
-func (h hub) sendUpdates(upd *updates) {
+func (h hub) broadcastUpdate(upd *updates) {
 	for _, conn := range h.hub {
-		err := websocket.WriteJSON(conn, upd)
-		if err != nil {
-			fmt.Println(err)
+		if err := websocket.WriteJSON(conn, upd); err != nil {
+			h.unregister <- conn
 			conn.Close()
 		}
+	}
+}
+
+func (h hub) sendUpatesTo(upd *updates, conn *websocket.Conn) {
+	if err := websocket.WriteJSON(conn, upd); err != nil {
+		h.unregister <- conn
+		conn.Close()
 	}
 }
 
 func (h hub) ping(conn *websocket.Conn) {
-	ticker := time.NewTicker(54 * time.Second)
+	ticker := time.NewTicker(10 * time.Second)
 	defer func() {
 		ticker.Stop()
-		conn.Close()
 		h.unregister <- conn
+		conn.Close()
 	}()
 
 	for {
 		select {
 		case <-ticker.C:
-			conn.SetWriteDeadline(time.Now().Add(60 * time.Second))
-
-			fmt.Println("ping to:", conn.RemoteAddr().String())
-
+			conn.SetWriteDeadline(time.Now().Add(15 * time.Second))
 			if err := conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				conn.Close()
 				return
 			}
 		}
@@ -160,12 +185,9 @@ func (h hub) ping(conn *websocket.Conn) {
 }
 
 func (h hub) pong(conn *websocket.Conn) {
-	conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+	conn.SetReadDeadline(time.Now().Add(15 * time.Second))
 	conn.SetPongHandler(func(string) error {
-
-		fmt.Println("pong from:", conn.RemoteAddr().String())
-
-		conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+		conn.SetReadDeadline(time.Now().Add(15 * time.Second))
 		return nil
 	})
 }

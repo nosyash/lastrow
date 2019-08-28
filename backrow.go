@@ -12,7 +12,6 @@ import (
 )
 
 func main() {
-
 	var apiAddr, uplPath, imgPath, dbAddr string
 
 	if err := godotenv.Load(); err != nil {
@@ -35,6 +34,9 @@ func main() {
 		dbAddr = os.Getenv("DB_ENDPOINT")
 		uplPath = os.Getenv("UPLOAD_PATH")
 		imgPath = os.Getenv("UPLOAD_IMAGES_PATH")
+		if os.Getenv("YT_API_KEY") == "" {
+			log.Println("Warning! Youtube API key was not specified in .env file")
+		}
 	}
 
 	// This is for cache package and that's very stupid

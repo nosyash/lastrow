@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/nosyash/backrow/db"
@@ -13,15 +12,17 @@ func New(id string) *Cache {
 		Users{
 			make(map[string]*User),
 			make(chan string),
-			make(chan string),
 			make(chan *User),
+			make(chan string),
 			make(chan struct{}),
 			db.Connect(os.Getenv("DB_ENDPOINT")),
 		},
 		playlist{
-			make(map[string]*video),
+			make(map[string]*Video),
 			make(chan string),
 			make(chan string),
+			make(chan error),
+			make(chan error),
 			make(chan struct{}),
 		},
 		id,
@@ -29,26 +30,20 @@ func New(id string) *Cache {
 	}
 }
 
-// Init the cache
-func (cache Cache) Init() {
+// HandleCacheEvents handle cache event one at time
+func (cache Cache) HandleCacheEvents() {
 	for {
 		select {
-		case uuid := <-cache.Users.AddUser:
-			fmt.Printf("Add %s to cache for %s\n", uuid, cache.ID)
-			cache.Users.add(uuid)
-			cache.Users.UpdateUsers <- struct{}{}
+		case user := <-cache.Users.AddUser:
+			cache.Users.addUser(user)
 		case guest := <-cache.Users.AddGuest:
-			cache.Users._addGuest(guest)
-			cache.Users.UpdateUsers <- struct{}{}
+			cache.Users.addGuest(guest)
 		case uuid := <-cache.Users.DelUser:
-			fmt.Printf("Remove %s from cache for %s\n", uuid, cache.ID)
 			cache.Users.delUser(uuid)
-			cache.Users.UpdateUsers <- struct{}{}
-		case <-cache.Close:
-			fmt.Printf("Cache for %s was closed\n", cache.ID)
-			return
-		case URL := <-cache.Playlist.AddURL:
-			cache.Playlist.add(URL)
+		case url := <-cache.Playlist.AddVideo:
+			cache.Playlist.addVideo(url)
+		case id := <-cache.Playlist.DelVideo:
+			cache.Playlist.delVideo(id)
 		}
 	}
 }
