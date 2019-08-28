@@ -15,11 +15,12 @@ const initialState = {
 const Popups = (state = initialState, action) => {
   switch (action.type) {
     case types.ADD_POPUP: {
-      const tempList = [...state.list, action.payload];
-      const list = tempList
-        .filter((obj, index, arr) =>
-          arr.map(popup => popup.id).indexOf(obj.id) === index);
-      return { list };
+      // const tempList = [...state.list, action.payload];
+      // const list = tempList.filter(
+      //   (obj, index, arr) => arr.map(popup => popup.id).indexOf(obj.id) === index
+      // );
+
+      return { ...state, [action.payload]: true };
     }
 
     case types.REMOVE_POPUP: {

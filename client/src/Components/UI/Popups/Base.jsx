@@ -1,35 +1,34 @@
-import React, { Component } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { throttle } from 'lodash';
 import { getCenteredRect } from '../../../utils/base';
 import * as types from '../../../constants/ActionTypes';
 import { POPUP_HEADER } from '../../../constants';
+import ProfileSettings from './ProfileSettings';
 
-class Popups extends Component {
-  constructor() {
-    super();
-    this.handleResizeTh = throttle(this.handleResize, 16);
+function Popups({ popups, removePopup, id }) {
+  const handleResizeTh = throttle(handleResize, 16);
+  useEffect(() => {
+    addEvents();
+
+    return () => {
+      removeEvents();
+    };
+  }, []);
+
+  function addEvents() {
+    document.addEventListener('keydown', handleKey);
+    window.addEventListener('resize', handleResizeTh);
   }
 
-  componentDidMount() {
-    document.addEventListener('keydown', this.handleKey);
-    window.addEventListener('resize', this.handleResizeTh);
+  function removeEvents() {
+    document.removeEventListener('keydown', handleKey);
+    window.removeEventListener('resize', handleResizeTh);
   }
 
-  componentWillUnmount() {
-    document.removeEventListener('keydown', this.handleKey);
-    window.removeEventListener('resize', this.handleResizeTh);
-  }
+  function handleResize() {}
 
-  handleResize = () => {
-    const { popups } = this.props;
-    if (popups.length) {
-      this.forceUpdate();
-    }
-  };
-
-  handleKey = e => {
-    const { popups, removePopup } = this.props;
+  function handleKey(e) {
     const { keyCode } = e;
     const lastPopup = popups[popups.length - 1];
     if (keyCode !== 27) return;
@@ -37,119 +36,127 @@ class Popups extends Component {
       if (lastPopup.id === 'profile-settings') return;
       removePopup(lastPopup.id);
     }
-  };
-
-  handleClose = (e, id, removePopup) =>
-    e.target.matches('.close-area') ? removePopup(id) : null;
-
-  render() {
-    const { popups } = this.props;
-
-    return (
-      <div className="popups_container">
-        {popups.map(popup => this.renderSinglePopup(popup))}
-      </div>
-    );
   }
 
-  renderSinglePopup = popup => (
-    <Popup
-      key={popup.id}
-      // eslint-disable-next-line react/destructuring-assignment
-      removePopup={this.props.removePopup}
-      popupElement={popup}
-    />
+  function handleClose(e) {
+    if (e.target.matches('.close-area')) {
+      removePopup(id);
+    }
+  }
+
+  return (
+    <div className="popups_container">
+      {popups.profileSettings && renderSinglePopup(<ProfileSettings />)}
+      {/* {popups.map(popup => renderSinglePopup(popup))} */}
+    </div>
+  );
+
+  function renderSinglePopup(popup) {
+    return <Popup removePopup={() => null} popupElement={popup} />;
+  }
+}
+
+let clientX = null;
+let clientY = null;
+
+function Popup(props) {
+  const [width, setWidth] = useState(0);
+  const [top, setTop] = useState(0);
+  const [left, setLeft] = useState(0);
+  const [moving, setMoving] = useState(false);
+  const [show, setShow] = useState(false);
+  const popupEl = useRef(null);
+
+  useEffect(() => {
+    const { width: w, height: h } = popupEl.current.getBoundingClientRect();
+    setStates({ ...getCenteredRect(w, h) });
+    setShow(true);
+  }, []);
+
+  useEffect(() => {
+    // const { popupElement } = props;
+
+    removeEvents();
+    addEvents();
+    return () => {
+      removeEvents();
+    };
+  }, [width, top, left, moving]);
+
+  function setStates(states) {
+    if (states.width) setWidth(states.width);
+    if (states.top) setTop(states.top);
+    if (states.left) setLeft(states.left);
+    if (states.moving) setMoving(states.moving);
+  }
+
+  function addEvents() {
+    popupEl.current.addEventListener('mousedown', handleMouseDown);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }
+
+  function removeEvents() {
+    popupEl.current.removeEventListener('mousedown', handleMouseDown);
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', handleMouseUp);
+  }
+
+  function handleMouseDown(e) {
+    if (moving) return;
+    const { left: left_, top: top_ } = popupEl.current.getBoundingClientRect();
+    const { target, clientX: clientX_, clientY: clientY_ } = e;
+    clientX = clientX_ - left_;
+    clientY = clientY_ - top_;
+    if (target.matches(POPUP_HEADER)) {
+      setMoving(true);
+    }
+  }
+
+  function handleMouseMove(e) {
+    if (!moving) return;
+
+    const { clientX: clientX_, clientY: clientY_ } = e;
+
+    const { left: left_, top: top_ } = popupEl.current.getBoundingClientRect();
+    const offsetX = left_ + (clientX_ - (left_ + clientX));
+    const offsetY = top_ + (clientY_ - (top_ + clientY));
+    setStates({ left: offsetX, top: offsetY });
+  }
+
+  function handleMouseUp() {
+    if (moving) {
+      setMoving(false);
+    }
+  }
+
+  const { removePopup, popupElement } = props;
+  const visibility = show ? 'visible' : 'hidden';
+  return (
+    <div
+      ref={popupEl}
+      style={{
+        width: width || 'auto',
+        top: top || 'auto',
+        left: left || 'auto',
+        visibility,
+      }}
+      className="popup"
+    >
+      <div data-id={0} className="popup-header">
+        <div className="header-controls controls-container">
+          <span onClick={() => removePopup()} className="control">
+            <i className="fas fa-times" />
+          </span>
+        </div>
+      </div>
+      {popupElement}
+    </div>
   );
 }
 
-class Popup extends Component {
-  constructor() {
-    super();
-    this.state = {
-      width: 0,
-      top: 0,
-      left: 0,
-      moving: false,
-    };
-    this.clientX = null;
-    this.clientY = null;
-    this.element = null;
-  }
-
-  componentDidMount() {
-    const { popupElement } = this.props;
-    const { height, width } = popupElement;
-    this.setState({ ...getCenteredRect(width, height) });
-
-    this.element.addEventListener('mousedown', this.handleMouseDown);
-    document.addEventListener('mousemove', this.handleMouseMove);
-    document.addEventListener('mouseup', this.handleMouseUp);
-  }
-
-  componentWillUnmount() {
-    this.element.removeEventListener('mousedown', this.handleMouseDown);
-    document.removeEventListener('mousemove', this.handleMouseMove);
-    document.removeEventListener('mouseup', this.handleMouseUp);
-  }
-
-  handleMouseDown = e => {
-    const { moving } = this.state;
-    if (moving) return;
-    const { left, top } = this.element.getBoundingClientRect();
-    const { target, clientX, clientY } = e;
-    this.clientX = clientX - left;
-    this.clientY = clientY - top;
-    if (target.matches(POPUP_HEADER)) {
-      this.setState({ moving: true });
-    }
-  };
-
-  handleMouseMove = e => {
-    const { moving } = this.state;
-    if (!moving) return;
-
-    const { clientX, clientY } = e;
-
-    const { left, top } = this.element.getBoundingClientRect();
-    const offsetX = left + (clientX - (left + this.clientX));
-    const offsetY = top + (clientY - (top + this.clientY));
-    this.setState({ left: offsetX, top: offsetY });
-  };
-
-  handleMouseUp = () => {
-    const { moving } = this.state;
-    if (moving) {
-      this.setState({ moving: false });
-    }
-  };
-
-  render() {
-    const { removePopup, popupElement } = this.props;
-    const { id, el: element } = popupElement;
-    const { width, top, left } = this.state;
-    return (
-      <div
-        ref={ref => (this.element = ref)}
-        style={{ width, top, left }}
-        className="popup"
-      >
-        <React.Fragment>
-          <div data-id={id} className="popup-header">
-            <div className="header-controls controls-container">
-              <span onClick={() => removePopup(id)} className="control">
-                <i className="fas fa-times" />
-              </span>
-            </div>
-          </div>
-          {element}
-        </React.Fragment>
-      </div>
-    );
-  }
-}
-
 const mapStateToProps = state => ({
-  popups: state.Popups.list,
+  popups: state.Popups,
 });
 
 const mapDispatchToProps = {
