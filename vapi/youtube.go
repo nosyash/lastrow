@@ -13,11 +13,11 @@ import (
 )
 
 var (
-	// ErrDetailsIsEmpty return when youtube API return empty video details
-	ErrDetailsIsEmpty = errors.New("Was received empty video details")
+	// ErrIncorrectVideoID return when youtube API return empty video details
+	ErrIncorrectVideoID = errors.New("Specified video ID is incorrect")
 
-	// ErrApiKeyIsEmpty return when os.Getenv() return empty Youtube API key
-	ErrApiKeyIsEmpty = errors.New("Youtube API key was not specified")
+	// ErrAPIKeyIsEmpty return when os.Getenv() return empty Youtube API key
+	ErrAPIKeyIsEmpty = errors.New("Youtube API key was not specified")
 )
 
 const (
@@ -57,7 +57,7 @@ func GetVideoDetails(id string) (int, string, error) {
 	if len(details.Items) > 0 {
 		return iso8601ToSec(details.Items[0].ContentDetails.Duration), details.Items[0].Snippet.Title, nil
 	}
-	return 0, "", ErrDetailsIsEmpty
+	return 0, "", ErrIncorrectVideoID
 }
 
 func getDetail(id string) ([]byte, error) {
@@ -67,7 +67,7 @@ func getDetail(id string) ([]byte, error) {
 
 	if youtubeAPIKey == "" {
 		cancel()
-		return nil, ErrApiKeyIsEmpty
+		return nil, ErrAPIKeyIsEmpty
 	}
 
 	if err != nil {
