@@ -38,21 +38,16 @@ function Popups({ popups, removePopup, id }) {
     }
   }
 
-  function handleClose(e) {
-    if (e.target.matches('.close-area')) {
-      removePopup(id);
-    }
-  }
-
   return (
     <div className="popups_container">
-      {popups.profileSettings && renderSinglePopup(<ProfileSettings />)}
+      {popups.profileSettings &&
+        renderSinglePopup(<ProfileSettings />, 'profileSettings')}
       {/* {popups.map(popup => renderSinglePopup(popup))} */}
     </div>
   );
 
-  function renderSinglePopup(popup) {
-    return <Popup removePopup={() => null} popupElement={popup} />;
+  function renderSinglePopup(popup, name) {
+    return <Popup removePopup={() => removePopup(name)} popupElement={popup} />;
   }
 }
 

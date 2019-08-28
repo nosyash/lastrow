@@ -24,8 +24,8 @@ const Popups = (state = initialState, action) => {
     }
 
     case types.REMOVE_POPUP: {
-      const filtered = state.list.filter(el => el.id !== action.payload);
-      return { list: [...filtered] };
+      // const filtered = state.list.filter(el => el.id !== action.payload);
+      return { ...state, [action.payload]: false };
     }
 
     case types.TOGGLE_POPUP: {
