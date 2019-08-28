@@ -1,12 +1,18 @@
 package ws
 
 import (
+	"errors"
 	"time"
 
 	"github.com/nosyash/backrow/cache"
 	"github.com/nosyash/backrow/storage"
 
 	"github.com/gorilla/websocket"
+)
+
+var (
+	// ErrUnknownAction send when was received unknown action type
+	ErrUnknownAction = errors.New("Unknown action type")
 )
 
 func NewRoomHub(id string) *hub {
@@ -19,6 +25,8 @@ func NewRoomHub(id string) *hub {
 		syncer{
 			false,
 			make(chan struct{}),
+			make(chan struct{}),
+			"",
 		},
 		id,
 	}
@@ -96,13 +104,17 @@ func (h hub) remove(conn *websocket.Conn) {
 
 		if len(h.hub) == 0 {
 			close <- h.id
+
+			// FIX
+			// If last user leave the room, playlist will be deleted
+			// If we not close cache, playlist will not be deleted but sync timers will be reset
 			h.cache.Close <- struct{}{}
 			return
 		}
 	}
 }
 
-func (h hub) read(conn *websocket.Conn) {
+func (h *hub) read(conn *websocket.Conn) {
 	defer func() {
 		conn.Close()
 		h.unregister <- conn
@@ -122,7 +134,7 @@ func (h hub) read(conn *websocket.Conn) {
 			case PLAYER_EVENT:
 				go h.handlePlayerEvent(req, conn)
 			default:
-				go sendError(conn, "Unknown action")
+				go sendError(conn, ErrUnknownAction)
 			}
 		}
 	}

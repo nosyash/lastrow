@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// Register new connection in a room cache
+// Register a new connection in room cache
 var Register chan *websocket.Conn
 var close chan string
 
@@ -51,8 +51,10 @@ type response struct {
 }
 
 type syncer struct {
-	sleep  bool
-	wakeUp chan struct{}
+	sleep          bool
+	wakeUp         chan struct{}
+	skip           chan struct{}
+	currentVideoID string
 }
 
 type updates struct {
@@ -98,5 +100,5 @@ const (
 const (
 	ETYPE_MSG    = "message"
 	ETYPE_PL_ADD = "playlist_add"
-	ETYPE_PL_DEL = "playlist_delete"
+	ETYPE_PL_DEL = "playlist_del"
 )

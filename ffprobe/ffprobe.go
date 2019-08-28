@@ -52,7 +52,7 @@ func GetMetaData(url string) (int, string, error) {
 	err := cmd.Start()
 
 	if err == exec.ErrNotFound {
-		log.Println("Couldn't execute /bin/ffprobe command. ffprobe exists?")
+		log.Println("Couldn't execute /bin/ffprobe command. ffprobe is exists?")
 		return 0, "", ErrBinNotFound
 	} else if err != nil {
 		log.Printf("Error while trying to execute /bin/ffprobe: %v", err)

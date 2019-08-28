@@ -17,8 +17,8 @@ func sendResponse(conn *websocket.Conn, r *response) error {
 	return websocket.WriteJSON(conn, r)
 }
 
-func sendError(conn *websocket.Conn, msg string) error {
-	err := websocket.WriteJSON(conn, errorResponse{msg})
+func sendError(conn *websocket.Conn, errMsg error) error {
+	err := websocket.WriteJSON(conn, errorResponse{errMsg.Error()})
 	return err
 }
 

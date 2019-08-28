@@ -5,15 +5,26 @@ import (
 	"errors"
 	"time"
 
-	"github.com/nosyash/backrow/ffprobe"
-
 	"github.com/gorilla/websocket"
-	"github.com/nosyash/backrow/cache"
 )
 
 const (
 	syncPeriod       = 5
 	sleepBeforeStart = 3
+)
+
+var (
+	// ErrRegArgumentAreEmpty send when one or more required registration argument are empty
+	ErrRegArgumentAreEmpty = errors.New("One or more required registration arguments are empty")
+
+	// ErrInvalidRegRequest send when has received invalid registration request
+	ErrInvalidRegRequest = errors.New("Invalid registration request")
+
+	// ErrUnknowEventType send when has received unknown event type
+	ErrUnknowEventType = errors.New("Unknown event type")
+
+	// ErrInvalidEventRequest send when has received invalid event request
+	ErrInvalidEventRequest = errors.New("Invalid event request")
 )
 
 func handleRegRequest(conn *websocket.Conn) (*user, string, error) {
@@ -24,7 +35,7 @@ func handleRegRequest(conn *websocket.Conn) (*user, string, error) {
 
 	room, uuid := req.RoomID, req.UserUUID
 	if room == "" || uuid == "" || len(req.UserUUID) != 64 {
-		return nil, "", errors.New("One or more required arguments are empty")
+		return nil, "", ErrRegArgumentAreEmpty
 	}
 
 	if req.Action == GUEST_REGISTER {
@@ -32,7 +43,7 @@ func handleRegRequest(conn *websocket.Conn) (*user, string, error) {
 	}
 
 	if req.Action != USER_REGISTER {
-		return nil, "", errors.New("Invalid registration request")
+		return nil, "", ErrInvalidRegRequest
 	}
 
 	return &user{
@@ -66,26 +77,31 @@ func (h hub) handleUserEvent(req *request, conn *websocket.Conn) {
 			h.handleMessage(req.Body.Event.Data.Message, req.UserUUID)
 		}
 	default:
-		sendError(conn, "Unknown event type")
+		sendError(conn, ErrUnknowEventType)
 	}
 }
 
-func (h hub) handlePlayerEvent(req *request, conn *websocket.Conn) {
+func (h *hub) handlePlayerEvent(req *request, conn *websocket.Conn) {
 	switch req.Body.Event.Type {
 	case ETYPE_PL_ADD:
 		if req.Body.Event.Data.URL != "" {
 			h.cache.Playlist.AddVideo <- req.Body.Event.Data.URL
 		}
-
 		if err := <-h.cache.Playlist.AddFeedBack; err != nil {
-			switch err {
-			case cache.ErrUnsupportedFormat:
-				sendError(conn, "This video formant not support. Support only .mp4, .m3u8, .webm")
-			case ffprobe.ErrBinNotFound:
-				sendError(conn, "Internal server error while trying to get metadata")
-			case ffprobe.ErrTimeout:
-				sendError(conn, "Timeout on getting metadata")
+			sendError(conn, err)
+		}
+	case ETYPE_PL_DEL:
+		ID := req.Body.Event.Data.ID
+		if ID != "" && len(ID) == 64 {
+			if h.syncer.currentVideoID == ID {
+				h.syncer.skip <- struct{}{}
 			}
+			h.cache.Playlist.DelVideo <- ID
+			if err := <-h.cache.Playlist.DelFeedBack; err != nil {
+				sendError(conn, err)
+			}
+		} else {
+			sendError(conn, ErrInvalidEventRequest)
 		}
 	}
 }
@@ -143,6 +159,8 @@ func (h *hub) syncCurrentTime() {
 		ticker := time.Tick(syncPeriod * time.Second)
 		elapsedTime := 0
 
+		h.syncer.currentVideoID = video.ID
+
 		time.Sleep(sleepBeforeStart * time.Second)
 
 	loop:
@@ -157,8 +175,10 @@ func (h *hub) syncCurrentTime() {
 					},
 				})
 				elapsedTime += syncPeriod
-
 			case <-ctx.Done():
+				cancel()
+				break loop
+			case <-h.syncer.skip:
 				cancel()
 				break loop
 			}
