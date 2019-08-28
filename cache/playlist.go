@@ -16,7 +16,10 @@ var (
 
 	// ErrVideoNotFound return when video by specified ID was not found
 	ErrVideoNotFound = errors.New("Video with this ID was not found")
-)
+
+	// ErrEmptyYoutubeVideoID return when youtube video id (v param in link) is empty
+	ErrEmptyYoutubeVideoID = errors.New("Youtube video ID is empty")
+}
 
 func (pl *playlist) addVideo(vURL string) {
 	pURL, _ := url.Parse(vURL)
@@ -43,7 +46,11 @@ func (pl *playlist) addVideo(vURL string) {
 		pl.UpdatePlaylist <- struct{}{}
 	case "":
 		if hostname == "www.youtube.com" || hostname == "youtube.com" {
-			duration, title, err := vapi.GetVideoDetails(pURL.Query().Get("v"))
+			vID := pURL.Query().Get("v")
+			if vID == "" {
+				pl.AddFeedBack <- ErrEmptyYoutubeVideoID
+			}
+			duration, title, err := vapi.GetVideoDetails(vID)
 			if err != nil {
 				pl.AddFeedBack <- err
 			}
