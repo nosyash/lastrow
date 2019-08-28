@@ -12,8 +12,8 @@ import ChatInner from './ChatInner';
 import { UPDATE_MAIN_STATES } from '../../../constants/ActionTypes';
 import ControlPanel from '../../UI/ControlPanel';
 
-let left = 0;
-let top = 0;
+const left = 0;
+const top = 0;
 let baseX = 0;
 let baseY = 0;
 let resizing = false;
@@ -40,22 +40,21 @@ function ChatContainer(props) {
       setStates(coordinates);
     }
 
-    document.addEventListener('mousedown', this.handleGlobalMouseDown);
-    document.addEventListener('mousemove', this.handleGlobalMouseMove);
-    document.addEventListener('mouseup', this.handleGlobalMouseUp);
+    document.addEventListener('mousedown', handleGlobalMouseDown);
+    document.addEventListener('mousemove', handleGlobalMouseMove);
+    document.addEventListener('mouseup', handleGlobalMouseUp);
 
     return () => {
       document.removeEventListener('mousedown', handleGlobalMouseDown);
       document.removeEventListener('mousemove', handleGlobalMouseMove);
       document.removeEventListener('mouseup', handleGlobalMouseUp);
-
-    }
-  }, [])
+    };
+  }, []);
 
   function setStates({ width, height, top, left }) {
-    if (width) setWidth(width)
-    if (height) setHeight(height)
-    if (top) setTop(top)
+    if (width) setWidth(width);
+    if (height) setHeight(height);
+    if (top) setTop(top);
     if (left) setLeft(left);
   }
 
@@ -75,7 +74,7 @@ function ChatContainer(props) {
         handleHeaderDown(e);
       }
     }
-  };
+  }
 
   function handleGlobalMouseMove(e) {
     const { chat, cinemaMode } = props;
@@ -84,7 +83,7 @@ function ChatContainer(props) {
     if (resizing && cinemaMode) handleResize(e, { resizer: true });
     if (resizing && !cinemaMode) handleResize(e, { divider: true });
     if (moving) handleMove(e);
-  };
+  }
 
   function handleGlobalMouseUp() {
     if (!resizing && !moving) return;
@@ -98,7 +97,7 @@ function ChatContainer(props) {
     toggleUserSelect();
     unsetCursorStyle();
     togglePointerEvent(video.current);
-  };
+  }
 
   function handleResizerDown(e, { resizer, divider }) {
     const { video, chat } = props;
@@ -117,7 +116,7 @@ function ChatContainer(props) {
     if (resizer) toggleCursor('se-resize');
     if (divider) toggleCursor('e-resize');
     togglePointerEvent(video.current);
-  };
+  }
 
   function handleHeaderDown(e) {
     const { video, chat } = props;
@@ -136,7 +135,7 @@ function ChatContainer(props) {
     toggleUserSelect();
     toggleCursor('move');
     togglePointerEvent(video.current);
-  };
+  }
 
   function handleResize(e, { resizer, divider }) {
     let { chat } = props;
@@ -154,7 +153,7 @@ function ChatContainer(props) {
 
     if (resizer) setStates({ width, height });
     if (divider) setStates({ width });
-  };
+  }
 
   function handleMove(e) {
     if (!moving) return;
@@ -163,7 +162,7 @@ function ChatContainer(props) {
     const top = top + clientY - baseY;
 
     setStates({ left, top });
-  };
+  }
 
   const { chat, cinemaMode, socket } = props;
   let newHeight = height;

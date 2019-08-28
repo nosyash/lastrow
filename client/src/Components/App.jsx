@@ -12,7 +12,9 @@ import { getRandom } from '../utils/base';
 function App(props) {
   const [loaded, setLoaded] = useState(false);
 
-  useEffect(handleProfile, []);
+  useEffect(() => {
+    handleProfile();
+  }, []);
 
   async function handleProfile() {
     const { updateProfile } = props;

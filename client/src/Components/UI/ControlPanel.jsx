@@ -6,7 +6,6 @@ import Playlist from './Popups/Playlist';
 import AddMedia from './Popups/AddMedia';
 
 function ControlPanel(props) {
-
   // TODO: Refactor
   function handleProfileSettings() {
     const { addPopup } = props;
@@ -17,7 +16,7 @@ function ControlPanel(props) {
       width: 400,
       height: 500,
     });
-  };
+  }
 
   // TODO: Refactor
   function handlePlaylist(id) {
@@ -29,7 +28,7 @@ function ControlPanel(props) {
       height: 200,
       noBG: true,
     });
-  };
+  }
 
   // TODO: Refactor
   function handleAddMedia(id) {
@@ -41,7 +40,7 @@ function ControlPanel(props) {
       height: 123,
       noBG: true,
     });
-  };
+  }
 
   function handleClick(id) {
     switch (id) {
@@ -53,28 +52,24 @@ function ControlPanel(props) {
       default:
         break;
     }
-  };
+  }
 
-    const { profile, playlist } = props;
-    const upNext = playlist[0] || { title: '', url: '' };
-    const { logged } = profile;
-    return (
-      <div className="control-panel_container">
-        <RenderPlaylister
-          upNext={upNext}
+  const { profile, playlist } = props;
+  const upNext = playlist[0] || { title: '', url: '' };
+  const { logged } = profile;
+  return (
+    <div className="control-panel_container">
+      <RenderPlaylister upNext={upNext} logged={logged} onClick={handleClick} />
+      <div className="divider" />
+      {logged && (
+        <RenderProfile
           logged={logged}
-          onClick={handleClick}
+          onProfileSettings={handleProfileSettings}
+          profile={profile}
         />
-        <div className="divider" />
-        {logged && (
-          <RenderProfile
-            logged={logged}
-            onProfileSettings={handleProfileSettings}
-            profile={profile}
-          />
-        )}
-      </div>
-    );
+      )}
+    </div>
+  );
 }
 
 const RenderPlaylister = ({ onClick, logged, upNext }) => (
@@ -95,12 +90,7 @@ const RenderPlaylister = ({ onClick, logged, upNext }) => (
     )}
     <div className="item">
       <div>Up next:</div>
-      <a
-        className="control"
-        target="_blank"
-        rel="noopener noreferrer"
-        href={upNext.url}
-      >
+      <a className="control" target="_blank" rel="noopener noreferrer" href={upNext.url}>
         {upNext.title}
       </a>
       {/* <i className="fa fa-arrow-right" /> */}
@@ -123,10 +113,7 @@ const RenderProfile = ({ profile, onProfileSettings }) => {
   const backgroundImage = `url(${image})`;
   return (
     <div className="mini-profile">
-      <div
-        style={{ backgroundColor, backgroundImage }}
-        className="chat-avatar"
-      />
+      <div style={{ backgroundColor, backgroundImage }} className="chat-avatar" />
       <div className="mini-profile_second-section">
         <span style={{ color }} className="chat-name">
           {name}

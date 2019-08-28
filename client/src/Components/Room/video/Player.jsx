@@ -63,7 +63,7 @@ function Player(props) {
     volume = localStorage.volume;
     volume = JSON.parse(volume || 1);
     updatePlayer({ volume });
-    handleSubs()
+    handleSubs();
   }
 
   async function handleSubs() {
@@ -124,7 +124,7 @@ function Player(props) {
     handlePlayerMove(e);
     const { setVolume } = props;
     if (!moving && !changingVolume) return;
-    const target = changingVolume ? volume : seek;
+    const target = changingVolume ? volume : seekEl;
     const { left, width } = target.getBoundingClientRect();
     const offset = e.clientX - left;
     let mult = offset / width;
@@ -174,14 +174,12 @@ function Player(props) {
     videoEl = playerRef.current.getInternalPlayer();
     const duration = playerRef.current.getDuration();
     const currentTime = playerRef.current.getCurrentTime();
-
     updatePlayer({ duration, currentTime });
   }
 
   function handlePlaying(progress) {
     const { updatePlayer } = props;
     const { playedSeconds } = progress;
-
     updatePlayer({ currentTime: playedSeconds });
     // handleMinimizeTimer();
   }
@@ -241,7 +239,7 @@ function Player(props) {
     return (
       <div className="video-player_top">
         <div className="video-time current-time">{formatTime(media.currentTime)}</div>
-        <ProgressBar player={playerRef.current} seek={ref => (seekEl = ref)} />
+        <ProgressBar player={playerRef.current} seekEl={ref => (seekEl = ref)} />
         <div className="video-time duration">{formatTime(media.duration)}</div>
       </div>
     );

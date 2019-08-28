@@ -9,4 +9,4 @@ export default function RoomItem({ title, movie, users, link }) {
       <span>{movie}</span>
     </Link>
   );
-};
+}

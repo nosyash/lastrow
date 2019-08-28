@@ -1,43 +1,36 @@
-import React, { Component, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 
 let animRef = null;
 
+let duration = 0;
 function ProgressBar({ media, player, seekEl }) {
-  const [transform, setStransform] = useState('translateX(-100%)')
-
+  const [transform, setStransform] = useState('translateX(-100%)');
+  duration = media.duration;
   useEffect(() => {
     updatePosition();
 
     return () => {
-      window.cancelAnimationFrame(animRef);
+      cancelAnimationFrame(animRef);
       animRef = null;
-    }
-  }, [])
+    };
+  }, []);
 
   function updatePosition() {
-    const { duration } = media;
-
+    console.log(duration);
     const currentTime = player.getCurrentTime();
     const percentage = -(100 - (currentTime / duration) * 100);
-    const transform = `translateX(${percentage}%)`;
-    setStransform(transform)
-    animRef = window.requestAnimationFrame(updatePosition);
-  };
+    setStransform(`translateX(${percentage}%)`);
+    animRef = requestAnimationFrame(updatePosition);
+  }
 
   return (
-    <div
-      ref={ref => seekEl(ref)}
-      className="progress-bar_container seek_trigger"
-    >
+    <div ref={ref => seekEl(ref)} className="progress-bar_container seek_trigger">
       <div style={{ transform }} className="scrubber_container">
         <div className="scrubber" />
       </div>
       <div className="progress-bar">
-        <div
-          style={{ transform }}
-          className="progress-bar_passed"
-        />
+        <div style={{ transform }} className="progress-bar_passed" />
       </div>
     </div>
   );

@@ -26,9 +26,9 @@ function RoomListBase(props) {
         setConnected(true);
       })
       .catch(() => {
-        setTimeout( getRoomList, API_FETCH_TIMEOUT)
+        setTimeout(getRoomList, API_FETCH_TIMEOUT);
       });
-  };
+  }
 
   const { rooms, history } = props;
   return (

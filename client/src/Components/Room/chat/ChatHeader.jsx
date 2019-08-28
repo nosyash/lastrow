@@ -3,28 +3,28 @@ import { connect } from 'react-redux';
 import MiniProfile from './MiniProfile';
 
 function ChatHeader({ userList }) {
-  const [showProfile, setShowProfile] = useState(false)
-  const [currentProfile, setCurrentProfile] = useState(0)
+  const [showProfile, setShowProfile] = useState(false);
+  const [currentProfile, setCurrentProfile] = useState(0);
 
   useEffect(() => {
     document.addEventListener('mousedown', handleClick);
     return () => {
       document.removeEventListener('mousedown', handleClick);
-    }
-  })
+    };
+  });
 
   function handleClick({ target }) {
-    const isUserIcon = target.closest('.user-icon')
-    const isMenuProfile = target.closest('.mini-profile')
+    const isUserIcon = target.closest('.user-icon');
+    const isMenuProfile = target.closest('.mini-profile');
     if (!isUserIcon && !isMenuProfile) {
-      setShowProfile(false)
+      setShowProfile(false);
     }
-  };
+  }
 
   function handleUserClick(userProfile) {
     setShowProfile(true);
-    setCurrentProfile(userProfile)
-  };
+    setCurrentProfile(userProfile);
+  }
 
   return (
     <div className="chat-header">
@@ -51,13 +51,8 @@ function ChatHeader({ userList }) {
 
 function UserIcon({ id, onClick, name, color, guest }) {
   return (
-    <span
-      onClick={() => onClick(id)}
-      title={name}
-      _id={id}
-      className="user-icon"
-    >
-      <i style={{ color }} className={classes} />
+    <span onClick={() => onClick(id)} title={name} _id={id} className="user-icon">
+      <i style={{ color }} />
     </span>
   );
 }
