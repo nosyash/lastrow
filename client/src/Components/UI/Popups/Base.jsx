@@ -81,8 +81,6 @@ function Popup(props) {
   }, []);
 
   useEffect(() => {
-    // const { popupElement } = props;
-
     removeEvents();
     addEvents();
     return () => {

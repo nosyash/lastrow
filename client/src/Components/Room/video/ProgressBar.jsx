@@ -8,15 +8,18 @@ function ProgressBar({ media, player, seekEl }) {
   const [transform, setStransform] = useState('translateX(-100%)');
   duration = media.duration;
   useEffect(() => {
-    // updatePosition();
-    addEvents();
+    updatePosition();
 
     return () => {
       cancelAnimationFrame(animRef);
-      removeEvents();
       animRef = null;
     };
   }, []);
+
+  useEffect(() => {
+    removeEvents();
+    addEvents();
+  }, [transform]);
 
   function addEvents() {
     document.addEventListener('videoplay', onPlay);
@@ -28,16 +31,15 @@ function ProgressBar({ media, player, seekEl }) {
   }
 
   function onPlay() {
-    cancelAnimationFrame(animRef);
-    updatePosition();
+    // cancelAnimationFrame(animRef);
+    // updatePosition();
   }
 
   function onPause() {
-    cancelAnimationFrame(animRef);
+    // cancelAnimationFrame(animRef);
   }
 
   function updatePosition() {
-    console.log(duration);
     const currentTime = player.getCurrentTime();
     const percentage = -(100 - (currentTime / duration) * 100);
     setStransform(`translateX(${percentage}%)`);
