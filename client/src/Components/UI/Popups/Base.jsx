@@ -47,18 +47,18 @@ function Popups({ popups, removePopup, id }) {
   const p = popups;
   return (
     <div className="popups_container">
-      {p.profileSettings && renderSinglePopup(<ProfileSettings />, 'profileSettings')}
-      {p.addMedia && renderSinglePopup(<AddMedia />, 'addMedia')}
-      {p.colorPicker && renderSinglePopup(<ColorPicker />, 'colorPicker')}
-      {p.guestAuth && renderSinglePopup(<GuestAuth />, 'guestAuth')}
-      {p.imagePicker && renderSinglePopup(<ImagePicker />, 'imagePicker')}
-      {p.logForm && renderSinglePopup(<LogForm />, 'logForm')}
-      {p.newRoom && renderSinglePopup(<NewRoom />, 'newRoom')}
-      {p.playlist && renderSinglePopup(<Playlist />, 'playlist')}
+      {p.profileSettings && wrapPopup(<ProfileSettings />, 'profileSettings')}
+      {p.addMedia && wrapPopup(<AddMedia />, 'addMedia')}
+      {p.colorPicker && wrapPopup(<ColorPicker />, 'colorPicker')}
+      {p.guestAuth && wrapPopup(<GuestAuth />, 'guestAuth')}
+      {p.imagePicker && wrapPopup(<ImagePicker />, 'imagePicker')}
+      {p.logForm && wrapPopup(<LogForm />, 'logForm')}
+      {p.newRoom && wrapPopup(<NewRoom />, 'newRoom')}
+      {p.playlist && wrapPopup(<Playlist />, 'playlist')}
     </div>
   );
 
-  function renderSinglePopup(popup, name) {
+  function wrapPopup(popup, name) {
     return <Popup removePopup={() => removePopup(name)} popupElement={popup} />;
   }
 }

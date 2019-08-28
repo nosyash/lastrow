@@ -6,9 +6,7 @@ import Form from '../Form';
 import * as api from '../../../constants/apiActions';
 import * as types from '../../../constants/ActionTypes';
 import http from '../../../utils/httpServices';
-import ImagePicker from './ImagePicker';
 import { toastOpts } from '../../../constants';
-import ColorPicker from './ColorPicker';
 
 // TODO: Extremely poorly made. Refactor!
 class ProfileSettings extends Form {
