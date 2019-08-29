@@ -35,9 +35,9 @@ function ChatInput(props) {
 
     if (e.keyCode === keys.ENTER && !e.shiftKey) {
       e.preventDefault();
-      inputValue = inputValue.trim();
-      if (!socketState || !inputValue) return;
-      socket.send(api.SEND_MESSAGE(inputValue, profile.uuid));
+      const newValue = inputValue.trim();
+      if (!socketState || !newValue) return;
+      socket.send(api.SEND_MESSAGE(newValue, profile.uuid));
       setInputValue('');
     }
   }

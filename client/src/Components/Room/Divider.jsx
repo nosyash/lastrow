@@ -24,7 +24,6 @@ class Divider extends Component {
     const { clientX } = e;
     const { chatWidth, chatLeft } = this.getChatCoordinates();
     this.offsetX = clientX - (chatWidth + chatLeft) + chatLeft;
-    console.log(this.offsetX);
   };
 
   handleMouseMove = e => {
