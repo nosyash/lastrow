@@ -41,8 +41,19 @@ class ProgressBar extends Component {
 
   toFixed = value => parseFloat(value.toFixed(4));
 
+  handleWheelClick = () => {
+    const { onWheelClick } = this.props;
+    if (onWheelClick) onWheelClick();
+  };
+
   handleGlobalDown = e => {
-    const { clientX, target } = e;
+    const { clientX, target, which } = e;
+
+    // 0 is Left Mouse Button
+    console.log(e.button);
+    if (e.button === 1) this.handleWheelClick();
+    if (e.button) return;
+
     const element = target.closest(SEEK_SEL);
     if (element.isEqualNode(this.progressEl.current)) return;
     if (!element) return;
@@ -133,17 +144,31 @@ class ProgressBar extends Component {
   // animRef = requestAnimationFrame(updatePosition);
   // };
 
+  handleWheel = e => {
+    const { wheel } = this.props;
+    if (!wheel) return;
+
+    const delta = e.deltaY < 0 ? 1 : -1;
+
+    const { value } = this.props;
+    const { onProgressChange } = this.props;
+
+    const percentage = Math.max(0, Math.min(100, value + delta * 10));
+    onProgressChange(percentage);
+  };
+
   getTransformStyle() {
     const { value } = this.props;
-    return `translateX(-${100 - value || 100}%)`;
+    const isUndefined = value === undefined;
+    return `translateX(-${isUndefined ? 100 : 100 - value}%)`;
   }
 
   render() {
     const { classes } = this.props;
     const transform = this.getTransformStyle();
-    console.log(transform);
     return (
       <div
+        onWheel={this.handleWheel}
         ref={this.progressContainerEl}
         onMouseDown={this.handleGlobalDown}
         className={`progress-bar_container seek-trigger ${classes || ''}`}

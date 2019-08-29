@@ -69,7 +69,6 @@ function Player(props) {
   async function handleSubs() {
     const { media, updateSubs } = props;
     if (!media || !media.subs.url) return;
-    console.log(updateSubs);
     props.getSubs(media.subs.url);
     // const res = await http.get(media.subs.url).catch(error => {
     //   if (error.response) {
@@ -287,13 +286,14 @@ function Player(props) {
   }
 
   function renderVolumeControl() {
-    // const { media, switchMute } = props;
+    const { switchMute } = props;
     const { muted, volume } = props.media;
-    console.log(volume * 100);
     // const transformValue = 100 - volume * 100;
     // const transform = `translateX(-${muted ? 100 : transformValue}%)`;
     return (
       <ProgressBar
+        wheel
+        onWheelClick={switchMute}
         classes="volume-control"
         onProgressChange={handleVolumeChange}
         value={volume * 100}
@@ -315,23 +315,6 @@ function Player(props) {
       //   </div>
       // </div>
     );
-  }
-
-  function handleWheel(e) {
-    const { setVolume, switchMute, media } = props;
-    const { volume: currentVolume, muted } = media;
-    const delta = e.deltaY < 0 ? 1 : -1;
-
-    let volumeNew = currentVolume + VOLUME_WHEEL * delta;
-    volumeNew = Math.max(0, Math.min(1, volumeNew));
-
-    if (muted) {
-      return switchMute();
-    }
-
-    if (currentVolume !== volumeNew) {
-      setVolume(volumeNew);
-    }
   }
 
   const classes = `video-element ${minimized ? 'player-minimized' : 'player-maximized'}`;
