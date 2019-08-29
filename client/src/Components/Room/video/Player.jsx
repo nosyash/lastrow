@@ -5,12 +5,9 @@ import { parse } from 'subtitle';
 import * as types from '../../../constants/ActionTypes';
 import { formatTime } from '../../../utils/base';
 import {
-  SEEK_SEL,
-  VOLUME_SEL,
   playerConf,
   VIDEO_ELEMENT_SEL,
   PLAYER_MINIMIZE_TIMEOUT,
-  VOLUME_WHEEL,
 } from '../../../constants';
 import http from '../../../utils/httpServices';
 import ProgressBar from './ProgressBar';
@@ -19,11 +16,8 @@ import { fetchSubs } from '../../../actions';
 
 let minimizeTimer = null;
 let videoEl = null;
-let seekEl = null;
 const wasPlaying = false;
 function Player(props) {
-  const [moving, setMoving] = useState(false);
-  const [changingVolume, setChangingVolume] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const playerRef = useRef(null);
 

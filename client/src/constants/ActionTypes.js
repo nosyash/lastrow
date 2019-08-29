@@ -5,6 +5,7 @@ export const CLEAR_USERS = 'CLEAR_USERS';
 export const APPEND_TO_HISTORY = 'APPEND_TO_HISTORY';
 export const UPDATE_USERLIST = 'UPDATE_USERLIST';
 export const UPDATE_SOCKET_STATE = 'UPDATE_SOCKET_STATE';
+export const SET_CHAT_WIDTH = 'SET_CHAT_WIDTH';
 
 // Room
 export const ADD_EMOJIS = 'ADD_EMOJIS';

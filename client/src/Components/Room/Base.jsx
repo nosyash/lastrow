@@ -9,6 +9,7 @@ import * as types from '../../constants/ActionTypes';
 import { roomExist } from '../../utils/apiRequests';
 import * as api from '../../constants/apiActions';
 import GuestAuth from '../UI/Popups/GuestAuth';
+import Divider from './Divider';
 
 let socket = null;
 
@@ -235,7 +236,8 @@ const RenderRoom = ({ connected, cinemaMode, divider, video, chat }) => (
       video={video}
       chat={chat}
     />
-    {!cinemaMode && <div className="custom-divider" ref={divider} />}
+    {/* {!cinemaMode && <div className="custom-divider" ref={divider} />} */}
+    <Divider />
     <VideoContainer videoRef={video} />
   </div>
 );

@@ -138,10 +138,19 @@ body {
 
 .custom-divider {
   user-select: none;
+  border-radius: 3px;
   padding: 0 5px;
-  background: transparent;
-  width: 0;
   cursor: e-resize; // display: none;
+
+  transition-delay: 0.05s;
+
+  &:hover {
+    background: #404850
+  }
+}
+
+.custom-divider_moving {
+  background: #404850
 }
 
 //  Chat
