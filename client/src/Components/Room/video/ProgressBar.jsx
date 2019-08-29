@@ -1,11 +1,8 @@
-import React, { Component, useState, useEffect } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { throttle } from 'lodash';
 import { SEEK_SEL } from '../../../constants';
 
-const animRef = null;
-
-const duration = 0;
 class ProgressBar extends Component {
   constructor() {
     super();
