@@ -55,7 +55,7 @@ func GetVideoDetails(id string) (int, string, error) {
 	}
 
 	if len(details.Items) > 0 {
-		return iso8601ToSec(details.Items[0].ContentDetails.Duration), details.Items[0].Snippet.Title, nil
+		return iso8601ToInt(details.Items[0].ContentDetails.Duration), details.Items[0].Snippet.Title, nil
 	}
 	return 0, "", ErrIncorrectVideoID
 }
@@ -112,7 +112,7 @@ func unmarshalDetails(rawDetails []byte) (*detailsItems, error) {
 	return &details, nil
 }
 
-func iso8601ToSec(duration string) int {
+func iso8601ToInt(duration string) int {
 	var hours, minutes, seconds int
 	exp := regexp.MustCompile(`\d+`)
 

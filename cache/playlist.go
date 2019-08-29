@@ -19,6 +19,9 @@ var (
 
 	// ErrEmptyYoutubeVideoID return when youtube video id (v param in link) is empty
 	ErrEmptyYoutubeVideoID = errors.New("Youtube video ID is empty")
+
+	// ErrUnsupportedHost return when video link has unsupported host
+	ErrUnsupportedHost = errors.New("Unsupported host")
 )
 
 func (pl *playlist) addVideo(vURL string) {
@@ -51,6 +54,7 @@ func (pl *playlist) addVideo(vURL string) {
 				pl.AddFeedBack <- ErrEmptyYoutubeVideoID
 				return
 			}
+
 			duration, title, err := vapi.GetVideoDetails(vID)
 			if err != nil {
 				pl.AddFeedBack <- err
@@ -68,6 +72,8 @@ func (pl *playlist) addVideo(vURL string) {
 			}
 			pl.AddFeedBack <- nil
 			pl.UpdatePlaylist <- struct{}{}
+		} else {
+			pl.AddFeedBack <- ErrUnsupportedHost
 		}
 	default:
 		pl.AddFeedBack <- ErrUnsupportedFormat

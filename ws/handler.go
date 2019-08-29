@@ -156,6 +156,12 @@ func (h *hub) syncCurrentTime() {
 			h.syncer.sleep = false
 		}
 		video := h.cache.Playlist.TakeHeadElement()
+
+		// if video.iframe = true
+		// h.syncer.sleep = true
+		// <-h.synver.wakeup
+		// continue
+
 		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration+sleepBeforeStart)*time.Second))
 		ticker := time.Tick(syncPeriod * time.Second)
 		elapsedTime := 0
