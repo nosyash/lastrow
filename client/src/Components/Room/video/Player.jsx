@@ -24,11 +24,9 @@ function Player(props) {
   let volume = 0.3;
 
   useEffect(() => {
-    addEvents();
     init();
 
     return () => {
-      removeEvents();
       resetRefs();
       props.resetMedia();
     };
@@ -36,19 +34,6 @@ function Player(props) {
 
   function resetRefs() {
     videoEl = null;
-    seekEl = null;
-  }
-
-  function addEvents() {
-    // document.addEventListener('mousedown', handleGlobalDown);
-    // document.addEventListener('mousemove', handleGlobalMove);
-    // document.addEventListener('mouseup', handleGlobalUp);
-  }
-
-  function removeEvents() {
-    // document.removeEventListener('mousedown', handleGlobalDown);
-    // document.removeEventListener('mousemove', handleGlobalMove);
-    // document.removeEventListener('mouseup', handleGlobalUp);
   }
 
   function init() {
@@ -235,22 +220,6 @@ function Player(props) {
           value={muted ? 0 : volume * 100}
         />
       </React.Fragment>
-      // <div onWheel={handleWheel} className="volume-control">
-      // <div onClick={switchMute} className="control volume-button">
-      //   <i className={`fa fa-volume-${muted ? 'mute' : 'up'}`} />
-      // </div>
-      // <div
-      //     // ref={ref => (volume = ref)}
-      //     className="progress-bar_container volume_trigger"
-      //   >
-      //     <div style={{ transform }} className="scrubber_container">
-      //       <div className="scrubber" />
-      //     </div>
-      //     <div className="progress-bar">
-      //       <div style={{ transform }} className="progress-bar_passed" />
-      //     </div>
-      //   </div>
-      // </div>
     );
   }
 

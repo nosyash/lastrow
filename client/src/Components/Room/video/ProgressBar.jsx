@@ -25,13 +25,11 @@ class ProgressBar extends Component {
   }
 
   addEvents = () => {
-    // document.addEventListener('mousedown', this.handleGlobalDown);
     document.addEventListener('mousemove', this.mouseMove);
     document.addEventListener('mouseup', this.handleGlobalUp);
   };
 
   removeEvents = () => {
-    // document.removeEventListener('mousedown', this.handleGlobalDown);
     document.removeEventListener('mousemove', this.mouseMove);
     document.removeEventListener('mouseup', this.handleGlobalUp);
   };
