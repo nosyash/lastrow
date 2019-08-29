@@ -26,7 +26,7 @@ function Player(props) {
   const [minimized, setMinimized] = useState(false);
   const playerRef = useRef(null);
 
-  let wasPlaying = false;
+  const wasPlaying = false;
   let volume = 0.3;
 
   useEffect(() => {
@@ -46,15 +46,15 @@ function Player(props) {
   }
 
   function addEvents() {
-    document.addEventListener('mousedown', handleGlobalDown);
-    document.addEventListener('mousemove', handleGlobalMove);
-    document.addEventListener('mouseup', handleGlobalUp);
+    // document.addEventListener('mousedown', handleGlobalDown);
+    // document.addEventListener('mousemove', handleGlobalMove);
+    // document.addEventListener('mouseup', handleGlobalUp);
   }
 
   function removeEvents() {
-    document.removeEventListener('mousedown', handleGlobalDown);
-    document.removeEventListener('mousemove', handleGlobalMove);
-    document.removeEventListener('mouseup', handleGlobalUp);
+    // document.removeEventListener('mousedown', handleGlobalDown);
+    // document.removeEventListener('mousemove', handleGlobalMove);
+    // document.removeEventListener('mouseup', handleGlobalUp);
   }
 
   function init() {
@@ -89,64 +89,64 @@ function Player(props) {
     // updateSubs({ srt: parse(data) });
   }
 
-  function handleGlobalDown(e) {
-    const { setVolume, updatePlayer, switchMute } = props;
-    const { media } = props;
-    let { target } = e;
+  // function handleGlobalDown(e) {
+  //   const { setVolume, updatePlayer, switchMute } = props;
+  //   const { media } = props;
+  //   let { target } = e;
 
-    if (moving) return;
-    if (!playerRef) return;
+  //   if (moving) return;
+  //   if (!playerRef) return;
 
-    // TODO: This has to be completely reworked
-    if (target.closest(SEEK_SEL) || target.closest(VOLUME_SEL)) {
-      const isChangingVolume = target.closest(VOLUME_SEL);
-      if (media.playing && !isChangingVolume) {
-        updatePlayer({ playing: false });
-        wasPlaying = true;
-      }
-      if (isChangingVolume) setChangingVolume(true);
-      else setMoving(true);
-      target = target.closest(SEEK_SEL) || target.closest(VOLUME_SEL);
-      const { left, width } = target.getBoundingClientRect();
-      const offset = e.clientX - left;
-      let mult = offset / width;
-      mult = Math.max(0, Math.min(1, mult));
-      if (isChangingVolume) {
-        setVolume(mult);
-        if (media.muted) {
-          switchMute();
-        }
-      } else playerRef.current.seekTo(mult);
-    }
-  }
+  //   // TODO: This has to be completely reworked
+  //   if (target.closest(SEEK_SEL) || target.closest(VOLUME_SEL)) {
+  //     const isChangingVolume = target.closest(VOLUME_SEL);
+  //     if (media.playing && !isChangingVolume) {
+  //       updatePlayer({ playing: false });
+  //       wasPlaying = true;
+  //     }
+  //     if (isChangingVolume) setChangingVolume(true);
+  //     else setMoving(true);
+  //     target = target.closest(SEEK_SEL) || target.closest(VOLUME_SEL);
+  //     const { left, width } = target.getBoundingClientRect();
+  //     const offset = e.clientX - left;
+  //     let mult = offset / width;
+  //     mult = Math.max(0, Math.min(1, mult));
+  //     if (isChangingVolume) {
+  //       setVolume(mult);
+  //       if (media.muted) {
+  //         switchMute();
+  //       }
+  //     } else playerRef.current.seekTo(mult);
+  //   }
+  // }
 
-  function handleGlobalMove(e) {
-    handlePlayerMove(e);
-    const { setVolume } = props;
-    if (!moving && !changingVolume) return;
-    const target = changingVolume ? volume : seekEl;
-    const { left, width } = target.getBoundingClientRect();
-    const offset = e.clientX - left;
-    let mult = offset / width;
-    mult = Math.min(1, mult);
-    mult = Math.max(0, mult);
-    if (changingVolume) setVolume(mult);
-    else playerRef.current.seekTo(mult);
-  }
+  // function handleGlobalMove(e) {
+  //   handlePlayerMove(e);
+  //   const { setVolume } = props;
+  //   if (!moving && !changingVolume) return;
+  //   const target = changingVolume ? volume : seekEl;
+  //   const { left, width } = target.getBoundingClientRect();
+  //   const offset = e.clientX - left;
+  //   let mult = offset / width;
+  //   mult = Math.min(1, mult);
+  //   mult = Math.max(0, mult);
+  //   if (changingVolume) setVolume(mult);
+  //   else playerRef.current.seekTo(mult);
+  // }
 
-  function handleGlobalUp() {
-    const { updatePlayer, media } = props;
+  // function handleGlobalUp() {
+  //   const { updatePlayer, media } = props;
 
-    if (!moving && !changingVolume) return;
-    if (changingVolume) {
-      localStorage.volume = media.volume;
-      setChangingVolume(false);
-    } else {
-      setMoving(false);
-      if (wasPlaying) updatePlayer({ playing: true });
-      wasPlaying = false;
-    }
-  }
+  //   if (!moving && !changingVolume) return;
+  //   if (changingVolume) {
+  //     localStorage.volume = media.volume;
+  //     setChangingVolume(false);
+  //   } else {
+  //     setMoving(false);
+  //     if (wasPlaying) updatePlayer({ playing: true });
+  //     wasPlaying = false;
+  //   }
+  // }
 
   function handlePlayerMove(e) {
     let { target } = e;
@@ -246,12 +246,19 @@ function Player(props) {
     );
   }
 
+  function handleProgressChange(percent) {
+    playerRef.current.seekTo(percent / 100, 'fraction');
+  }
+
   function renderVideoTop() {
     const { media } = props;
+    const currentTime = playerRef.current.getCurrentTime();
+    const progressValue = (currentTime / media.duration) * 100;
     return (
       <div className="video-player_top">
         <div className="video-time current-time">{formatTime(media.currentTime)}</div>
-        <ProgressBar player={playerRef.current} seekEl={ref => (seekEl = ref)} />
+        {/* <ProgressBar player={playerRef.current} seekEl={ref => (seekEl = ref)} /> */}
+        <ProgressBar onProgressChange={handleProgressChange} value={progressValue} />
         <div className="video-time duration">{formatTime(media.duration)}</div>
       </div>
     );
@@ -274,28 +281,39 @@ function Player(props) {
     );
   }
 
+  function handleVolumeChange(percent) {
+    // console.log(percent);
+    props.setVolume(percent / 100);
+  }
+
   function renderVolumeControl() {
-    const { media, switchMute } = props;
-    const { muted, volume } = media;
-    const transformValue = 100 - volume * 100;
-    const transform = `translateX(-${muted ? 100 : transformValue}%)`;
+    // const { media, switchMute } = props;
+    const { muted, volume } = props.media;
+    console.log(volume * 100);
+    // const transformValue = 100 - volume * 100;
+    // const transform = `translateX(-${muted ? 100 : transformValue}%)`;
     return (
-      <div onWheel={handleWheel} className="volume-control">
-        <div onClick={switchMute} className="control volume-button">
-          <i className={`fa fa-volume-${muted ? 'mute' : 'up'}`} />
-        </div>
-        <div
-          // ref={ref => (volume = ref)}
-          className="progress-bar_container volume_trigger"
-        >
-          <div style={{ transform }} className="scrubber_container">
-            <div className="scrubber" />
-          </div>
-          <div className="progress-bar">
-            <div style={{ transform }} className="progress-bar_passed" />
-          </div>
-        </div>
-      </div>
+      <ProgressBar
+        classes="volume-control"
+        onProgressChange={handleVolumeChange}
+        value={volume * 100}
+      />
+      // <div onWheel={handleWheel} className="volume-control">
+      //   <div onClick={switchMute} className="control volume-button">
+      //     <i className={`fa fa-volume-${muted ? 'mute' : 'up'}`} />
+      //   </div>
+      //   <div
+      //     // ref={ref => (volume = ref)}
+      //     className="progress-bar_container volume_trigger"
+      //   >
+      //     <div style={{ transform }} className="scrubber_container">
+      //       <div className="scrubber" />
+      //     </div>
+      //     <div className="progress-bar">
+      //       <div style={{ transform }} className="progress-bar_passed" />
+      //     </div>
+      //   </div>
+      // </div>
     );
   }
 
