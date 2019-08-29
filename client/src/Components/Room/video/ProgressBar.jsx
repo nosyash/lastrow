@@ -49,9 +49,8 @@ class ProgressBar extends Component {
   handleGlobalDown = e => {
     const { clientX, target, which } = e;
 
-    // 0 is Left Mouse Button
-    console.log(e.button);
     if (e.button === 1) this.handleWheelClick();
+    // 0 is Left Mouse Button
     if (e.button) return;
 
     const element = target.closest(SEEK_SEL);
