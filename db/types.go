@@ -12,11 +12,12 @@ type AboutRoom struct {
 	Users string `json:"users"`
 }
 
-type RoomID struct {
+type Room struct {
 	Title  string  `json:"title"`
 	Path   string  `json:"path"`
 	UUID   string  `json:"uuid"`
 	Owners []owner `json:"owners"`
+	Emoji  []emoji `json:"emoji"`
 }
 
 type userProfile struct {
@@ -41,7 +42,17 @@ type owner struct {
 	Permissions int    `json:"permissions"`
 }
 
+type emoji struct {
+	Name string `json:"name"`
+	Path string `json:"path"`
+}
+
 type session struct {
 	ID   string `json:"session_id"`
 	UUID string `json:"uuid"`
 }
+
+const (
+	maxOwners = 15
+	maxEmoji  = 82
+)

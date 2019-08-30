@@ -4,7 +4,7 @@ import (
 	"github.com/nosyash/backrow/db"
 )
 
-// Cache object
+// Cache is storage of users and playlist for a room
 type Cache struct {
 	Users    Users
 	Playlist playlist
@@ -12,7 +12,7 @@ type Cache struct {
 	Close    chan struct{}
 }
 
-// Users is users storage and channels for adding/removing users
+// Users is users storage and channels for adding/removing
 type Users struct {
 	users       map[string]*User
 	AddUser     chan string
@@ -22,7 +22,7 @@ type Users struct {
 	db          *db.Database
 }
 
-// User is user object view
+// User is single user instance
 type User struct {
 	Name  string `json:"name"`
 	Color string `json:"color,omitempty"`
@@ -41,6 +41,7 @@ type playlist struct {
 	UpdatePlaylist chan struct{}
 }
 
+// Video is instance of a video in playlist
 type Video struct {
 	Title    string `json:"title"`
 	Duration int    `json:"duration"`

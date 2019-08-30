@@ -57,7 +57,7 @@ func (server Server) RunServer() error {
 	r := mux.NewRouter()
 	go ws.HandleWsConnection(server.db)
 
-	r.HandleFunc("/api/rooms", server.roomsHandler).Methods("GET", "POST")
+	r.HandleFunc("/api/room", server.roomsHandler).Methods("GET", "POST")
 	r.HandleFunc("/api/r/{roomPath}", server.roomInnerHandler).Methods("GET")
 	r.HandleFunc("/api/user", server.userHandler).Methods("GET", "POST")
 	r.HandleFunc("/api/auth", server.authHandler).Methods("POST")

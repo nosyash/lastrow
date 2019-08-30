@@ -2,12 +2,26 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"regexp"
 	"time"
 
 	"gopkg.in/mgo.v2"
+)
+
+const (
+	minUsername = 1
+	maxUsername = 20
+
+	minPassword = 8
+	maxPassword = 32
+)
+
+var (
+	errInvalidSessionID = errors.New("Your sessionID is invalid")
 )
 
 func (server Server) authHandler(w http.ResponseWriter, r *http.Request) {
@@ -54,16 +68,16 @@ func (server Server) register(w http.ResponseWriter, uname, passwd, email, name 
 		return
 	}
 
-	if len(uname) < 3 || len(uname) > 20 {
+	if len(uname) < minUsername || len(uname) > maxUsername {
 		sendResponse(w, http.StatusBadRequest, message{
-			Error: "Username length must be no more than 20 characters and at least 3",
+			Error: fmt.Errorf("Username length must be no more than %d characters and at least %d", maxUsername, minUsername).Error(),
 		})
 		return
 	}
 
-	if len(passwd) < 8 || len(passwd) > 32 {
+	if len(passwd) < minPassword || len(passwd) > maxPassword {
 		sendResponse(w, http.StatusBadRequest, message{
-			Error: "Password length must be no more than 32 characters and at least 8",
+			Error: fmt.Errorf("Password length must be no more than %d characters and at least %d", maxPassword, minPassword).Error(),
 		})
 		return
 	}
@@ -79,7 +93,7 @@ func (server Server) register(w http.ResponseWriter, uname, passwd, email, name 
 	}
 	if !result {
 		sendResponse(w, http.StatusBadRequest, message{
-			Error: "This user already exists",
+			Error: "This username or email is already taken",
 		})
 		return
 	}
@@ -89,7 +103,7 @@ func (server Server) register(w http.ResponseWriter, uname, passwd, email, name 
 func (server Server) login(w http.ResponseWriter, uname, passwd string) {
 	if uname == "" || passwd == "" {
 		sendResponse(w, http.StatusBadRequest, message{
-			Error: "Username or password is empty",
+			Error: "Username or password are empty",
 		})
 		return
 	}
@@ -114,7 +128,7 @@ func (server Server) logout(w http.ResponseWriter, sessionID string) {
 	err := server.db.DeleteSession(sessionID)
 	if err != nil {
 		sendResponse(w, http.StatusBadRequest, message{
-			Error: "Your sessionID is invalid",
+			Error: errInvalidSessionID.Error(),
 		})
 		return
 	}
@@ -137,4 +151,17 @@ func (server Server) setUpAuthSession(w http.ResponseWriter, userUUID string) {
 		Path:    "/",
 		Expires: time.Now().Add(5 * 365 * 24 * time.Hour),
 	})
+}
+
+func (server Server) getUserUUIDBySessionID(w http.ResponseWriter, r *http.Request) (string, error) {
+	sessionID, err := r.Cookie("session_id")
+	if err != nil || sessionID.Value == "" {
+		return "", errors.New("Couldn't get your session_id")
+	}
+
+	userUUID, err := server.db.GetSession(sessionID.Value)
+	if err != nil || userUUID == "" {
+		return "", errInvalidSessionID
+	}
+	return userUUID, nil
 }

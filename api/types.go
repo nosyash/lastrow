@@ -30,12 +30,15 @@ type userBody struct {
 }
 
 type imageBody struct {
-	Content string `json:"raw_img"`
+	Data string `json:"raw_img"`
+	Name string `json:"name"`
 }
 
 type roomBody struct {
-	Title string `json:"title"`
-	Path  string `json:"path"`
+	UpdateType string    `json:"type"`
+	Title      string    `json:"title"`
+	Path       string    `json:"path"`
+	Data       imageBody `json:"data"`
 }
 
 type authBody struct {
@@ -56,6 +59,12 @@ const (
 	roomCreate = "room_create"
 	roomUpdate = "room_update"
 	roomDelete = "room_delete"
+)
+
+const (
+	updateTitle = "update_title"
+	addEmoji    = "add_emoji"
+	delEmoji    = "del_emoji"
 )
 
 const (

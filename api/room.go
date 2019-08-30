@@ -14,7 +14,6 @@ import (
 )
 
 func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
-
 	if r.Method == http.MethodGet {
 		server.getAllRooms(w)
 		return
@@ -38,7 +37,9 @@ func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch roomReq.Action {
 	case roomCreate:
-		server.create(w, roomReq.Body.Title, roomReq.Body.Path, userUUID)
+		server.createRoom(w, roomReq.Body.Title, roomReq.Body.Path, userUUID)
+	case roomUpdate:
+		server.updateRoom(w, &roomReq)
 	default:
 		sendResponse(w, http.StatusBadRequest, message{
 			Error: "Unknown /api/room action",
@@ -46,8 +47,7 @@ func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (server Server) create(w http.ResponseWriter, title, path, userUUID string) {
-
+func (server Server) createRoom(w http.ResponseWriter, title, path, userUUID string) {
 	var validPath = regexp.MustCompile(`[^a-zA-Z0-9-_]`)
 
 	if title == "" || path == "" {
@@ -85,8 +85,18 @@ func (server Server) create(w http.ResponseWriter, title, path, userUUID string)
 	}
 }
 
-func (server Server) roomInnerHandler(w http.ResponseWriter, r *http.Request) {
+func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest) {
+	switch req.Body.UpdateType {
+	case addEmoji:
+		println("add shmailik")
+	default:
+		sendResponse(w, http.StatusBadRequest, message{
+			Error: "Unknown action type",
+		})
+	}
+}
 
+func (server Server) roomInnerHandler(w http.ResponseWriter, r *http.Request) {
 	if !server.db.RoomIsExists(mux.Vars(r)["roomPath"]) {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -96,7 +106,6 @@ func (server Server) roomInnerHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (server Server) getAllRooms(w http.ResponseWriter) {
-
 	var about []db.AboutRoom
 	rooms, _ := server.db.GetAllRooms()
 

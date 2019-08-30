@@ -14,7 +14,6 @@ import (
 )
 
 func (server Server) userHandler(w http.ResponseWriter, r *http.Request) {
-
 	userUUID, err := server.getUserUUIDBySessionID(w, r)
 	if err != nil {
 		sendResponse(w, http.StatusBadRequest, message{
@@ -41,7 +40,7 @@ func (server Server) userHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch userReq.Action {
 	case userUpdateImg:
-		server.updateProfileImage(w, userUUID, &userReq.Body.Image.Content)
+		server.updateProfileImage(w, userUUID, &userReq.Body.Image.Data)
 		if storage.Size() > 0 {
 			storage.UpdateUser(userUUID)
 		}
@@ -65,7 +64,6 @@ func (server Server) userHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (server Server) getUser(w http.ResponseWriter, userUUID string) {
-
 	user, _ := server.db.GetUserProfile(userUUID)
 	userAsByte, _ := json.Marshal(user)
 
@@ -74,7 +72,6 @@ func (server Server) getUser(w http.ResponseWriter, userUUID string) {
 }
 
 func (server Server) updateProfileImage(w http.ResponseWriter, userUUID string, b64Img *string) {
-
 	oldpath, err := server.db.GetUserImage(userUUID)
 	if err != nil {
 		sendResponse(w, http.StatusBadRequest, message{
@@ -102,7 +99,6 @@ func (server Server) updateProfileImage(w http.ResponseWriter, userUUID string, 
 }
 
 func (server Server) deleteProfileImage(w http.ResponseWriter, userUUID string) {
-
 	imgPath, err := server.db.GetUserImage(userUUID)
 	if err != nil {
 		sendResponse(w, http.StatusBadRequest, message{
@@ -119,7 +115,6 @@ func (server Server) deleteProfileImage(w http.ResponseWriter, userUUID string) 
 }
 
 func (server Server) updatePersonalInfo(w http.ResponseWriter, userUUID, name, color string) {
-
 	if color != "" {
 		server.db.UpdateUserValue(userUUID, "color", color)
 	}
@@ -139,7 +134,6 @@ func (server Server) updatePersonalInfo(w http.ResponseWriter, userUUID, name, c
 }
 
 func (server Server) updatePassword(w http.ResponseWriter, userUUID, curPasswd, newPasswd string) {
-
 	if curPasswd == "" || newPasswd == "" {
 		sendResponse(w, http.StatusBadRequest, message{
 			Error: "One or more required arguments are empty",

@@ -4,6 +4,7 @@
 /client/build
 /public
 /media
+/ws-test
 
 .DS_Store
 .env*

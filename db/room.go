@@ -8,8 +8,8 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-func (db Database) GetAllRooms() ([]RoomID, error) {
-	var rooms []RoomID
+func (db Database) GetAllRooms() ([]Room, error) {
+	var rooms []Room
 
 	err := db.rc.Find(nil).All(&rooms)
 	return rooms, err
@@ -20,7 +20,7 @@ func (db Database) CreateNewRoom(title, path, userUUID, roomUUID string) error {
 		return errors.New("Room with this path is already in use")
 	}
 
-	newRoom := RoomID{
+	newRoom := Room{
 		Title: title,
 		Path:  path,
 		UUID:  roomUUID,
