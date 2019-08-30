@@ -33,7 +33,6 @@ class Divider extends Component {
     if (!this.state.moving) return;
     const { setChatWidth } = this.props;
     const { clientX } = e;
-    console.log('set');
     setChatWidth(clientX - this.offsetX);
   };
 
