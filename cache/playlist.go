@@ -43,6 +43,7 @@ func (pl *playlist) addVideo(vURL string) {
 			Duration: duration,
 			URL:      vURL,
 			ID:       ID,
+			Direct:   true,
 			Index:    len(pl.playlist),
 		}
 		pl.AddFeedBack <- nil
@@ -68,6 +69,7 @@ func (pl *playlist) addVideo(vURL string) {
 				Duration: duration,
 				URL:      vURL,
 				ID:       ID,
+				Direct:   false,
 				Index:    len(pl.playlist),
 			}
 			pl.AddFeedBack <- nil

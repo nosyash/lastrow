@@ -46,5 +46,6 @@ type Video struct {
 	Duration int    `json:"duration"`
 	URL      string `json:"url"`
 	Index    int    `json:"index"`
+	Direct   bool   `json:"direct"`
 	ID       string `json:"__id"`
 }
