@@ -37,7 +37,3 @@ export const webSocketSend = data => {
 export const webSocketDisconnect = () => {
   if (socket) socket.destroy();
 };
-
-// export const registerGuest = (name) => dispatch => {
-//   http.get
-// }

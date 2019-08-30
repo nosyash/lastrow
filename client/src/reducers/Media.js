@@ -1,7 +1,7 @@
 import * as types from '../constants/ActionTypes';
 
 const InitialState = {
-  url: 'https://stream.bona.cafe/uzzu/ep15.mp4',
+  url: '',
   subs: {
     url: 'https://stream.bona.cafe/uzzu/ep15.srt',
     text: [],
@@ -10,20 +10,7 @@ const InitialState = {
     end: 0,
   },
   showSubs: true,
-  playlist: [
-    {
-      title: 'WJSN - Babyface',
-      url: 'https://www.youtube.com/watch?v=M2wCxfJrMqU',
-    },
-    {
-      title: '[MV] WJSN(우주소녀) _ La La Love',
-      url: 'https://www.youtube.com/watch?v=7BSCgMMJoHA',
-    },
-    {
-      title: "(vlog) 🤓Taeyeon's Daily Life: Drive, Carpool Karaoke, Nutella Pancake",
-      url: 'https://www.youtube.com/watch?v=VkaBsETSR18',
-    },
-  ],
+  playlist: [],
   duration: 0,
   currentTime: 0,
   playing: false,

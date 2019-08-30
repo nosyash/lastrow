@@ -100,7 +100,9 @@ class Socket {
   _handleMessage = ({ data: data_ }) => {
     const error = api.GET_ERROR(data_);
     if (error) {
-      return this._resetStates();
+      console.log(error);
+      return;
+      // return this._resetStates();
     }
     const data = api.GET_WS_DATA(data_);
     switch (data.type) {

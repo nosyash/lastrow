@@ -105,3 +105,20 @@ export const GET_ERROR = json => {
   const obj = JSON.parse(json);
   if (obj.error) return obj.error;
 };
+
+export const SEND_MEDIA_TO_PLAYLIST = ({ url, uuid }) => {
+  const request = {
+    action: 'player_event',
+    body: {
+      event: {
+        type: 'playlist_add',
+        data: {
+          url,
+        },
+      },
+    },
+    user_uuid: uuid,
+  };
+
+  return JSON.stringify(request);
+};
