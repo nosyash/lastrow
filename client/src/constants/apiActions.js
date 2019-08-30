@@ -59,7 +59,9 @@ export const UPDATE_PASSWORD = (cur_passwd, new_passwd) =>
     },
   });
 
-// WebSocket
+// ####################
+//      WebSocket
+// ####################
 export const USER_REGISTER = (room_id, user_uuid) =>
   JSON.stringify({
     action: 'user_register',

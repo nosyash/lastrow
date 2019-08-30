@@ -1,15 +1,38 @@
 import axios from 'axios';
 import { parse } from 'subtitle';
-import { FETCH_SUBS, SET_SUBS } from '../constants/ActionTypes';
+import { SET_SUBS } from '../constants/ActionTypes';
 import http from '../utils/httpServices';
 
-export const fetchSubs = url => dispatch =>
-  http
+import Socket from '../utils/WebSocket';
+import { store } from '../store';
+import { SOCKET_ENDPOINT } from '../constants';
+
+export const fetchSubs = url => dispatch => {
+  return http
     .get(url)
     .then(response => {
-      console.log(dispatch);
       dispatch({ type: SET_SUBS, payload: { srt: parse(response.data) } });
     })
     .catch(error => {
       throw error;
     });
+};
+
+let socket = null;
+
+export const webSocketConnect = ({ roomID, uuid, guest, name }) => {
+  const url = SOCKET_ENDPOINT;
+  socket = new Socket({ url, roomID, uuid, guest, name });
+  return socket.state();
+};
+
+export const webSocketSend = data => {
+  return socket
+    .state()
+    .then(() => socket.sendMessage(data))
+    .catch(() => alert('socket connection closed'));
+};
+
+export const webSocketDisconnect = () => {
+  if (socket) socket.destroy();
+};

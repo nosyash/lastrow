@@ -5,6 +5,7 @@
 /public
 /media
 /ws-test
+/uploads
 
 .DS_Store
 .env*

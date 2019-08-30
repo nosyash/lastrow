@@ -11,12 +11,11 @@ class ChatInner extends Component {
   }
 
   render() {
-    const { socket } = this.props;
     return (
-      <div className="chat-inner">
+      <div className="chat-inner" id="chat-inner">
         <ChatHeader />
-        {socket && <ListMessages socket={socket} />}
-        <ChatInput socket={socket} />
+        <ListMessages />
+        <ChatInput />
       </div>
     );
   }

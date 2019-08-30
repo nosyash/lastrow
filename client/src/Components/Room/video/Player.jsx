@@ -5,12 +5,9 @@ import { parse } from 'subtitle';
 import * as types from '../../../constants/ActionTypes';
 import { formatTime } from '../../../utils/base';
 import {
-  SEEK_SEL,
-  VOLUME_SEL,
   playerConf,
   VIDEO_ELEMENT_SEL,
   PLAYER_MINIMIZE_TIMEOUT,
-  VOLUME_WHEEL,
 } from '../../../constants';
 import http from '../../../utils/httpServices';
 import ProgressBar from './ProgressBar';
@@ -19,22 +16,17 @@ import { fetchSubs } from '../../../actions';
 
 let minimizeTimer = null;
 let videoEl = null;
-let seekEl = null;
+const wasPlaying = false;
 function Player(props) {
-  const [moving, setMoving] = useState(false);
-  const [changingVolume, setChangingVolume] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const playerRef = useRef(null);
 
-  let wasPlaying = false;
   let volume = 0.3;
 
   useEffect(() => {
-    addEvents();
     init();
 
     return () => {
-      removeEvents();
       resetRefs();
       props.resetMedia();
     };
@@ -42,19 +34,6 @@ function Player(props) {
 
   function resetRefs() {
     videoEl = null;
-    seekEl = null;
-  }
-
-  function addEvents() {
-    document.addEventListener('mousedown', handleGlobalDown);
-    document.addEventListener('mousemove', handleGlobalMove);
-    document.addEventListener('mouseup', handleGlobalUp);
-  }
-
-  function removeEvents() {
-    document.removeEventListener('mousedown', handleGlobalDown);
-    document.removeEventListener('mousemove', handleGlobalMove);
-    document.removeEventListener('mouseup', handleGlobalUp);
   }
 
   function init() {
@@ -63,13 +42,12 @@ function Player(props) {
     volume = localStorage.volume;
     volume = JSON.parse(volume || 1);
     updatePlayer({ volume });
-    handleSubs()
+    handleSubs();
   }
 
   async function handleSubs() {
     const { media, updateSubs } = props;
     if (!media || !media.subs.url) return;
-    console.log(updateSubs);
     props.getSubs(media.subs.url);
     // const res = await http.get(media.subs.url).catch(error => {
     //   if (error.response) {
@@ -87,65 +65,6 @@ function Player(props) {
 
     // const { data } = res;
     // updateSubs({ srt: parse(data) });
-  }
-
-  function handleGlobalDown(e) {
-    const { setVolume, updatePlayer, switchMute } = props;
-    const { media } = props;
-    let { target } = e;
-
-    if (moving) return;
-    if (!playerRef) return;
-
-    // TODO: This has to be completely reworked
-    if (target.closest(SEEK_SEL) || target.closest(VOLUME_SEL)) {
-      const isChangingVolume = target.closest(VOLUME_SEL);
-      if (media.playing && !isChangingVolume) {
-        updatePlayer({ playing: false });
-        wasPlaying = true;
-      }
-      if (isChangingVolume) setChangingVolume(true);
-      else setMoving(true);
-      target = target.closest(SEEK_SEL) || target.closest(VOLUME_SEL);
-      const { left, width } = target.getBoundingClientRect();
-      const offset = e.clientX - left;
-      let mult = offset / width;
-      mult = Math.max(0, Math.min(1, mult));
-      if (isChangingVolume) {
-        setVolume(mult);
-        if (media.muted) {
-          switchMute();
-        }
-      } else playerRef.current.seekTo(mult);
-    }
-  }
-
-  function handleGlobalMove(e) {
-    handlePlayerMove(e);
-    const { setVolume } = props;
-    if (!moving && !changingVolume) return;
-    const target = changingVolume ? volume : seek;
-    const { left, width } = target.getBoundingClientRect();
-    const offset = e.clientX - left;
-    let mult = offset / width;
-    mult = Math.min(1, mult);
-    mult = Math.max(0, mult);
-    if (changingVolume) setVolume(mult);
-    else playerRef.current.seekTo(mult);
-  }
-
-  function handleGlobalUp() {
-    const { updatePlayer, media } = props;
-
-    if (!moving && !changingVolume) return;
-    if (changingVolume) {
-      localStorage.volume = media.volume;
-      setChangingVolume(false);
-    } else {
-      setMoving(false);
-      if (wasPlaying) updatePlayer({ playing: true });
-      wasPlaying = false;
-    }
   }
 
   function handlePlayerMove(e) {
@@ -174,14 +93,12 @@ function Player(props) {
     videoEl = playerRef.current.getInternalPlayer();
     const duration = playerRef.current.getDuration();
     const currentTime = playerRef.current.getCurrentTime();
-
     updatePlayer({ duration, currentTime });
   }
 
   function handlePlaying(progress) {
     const { updatePlayer } = props;
     const { playedSeconds } = progress;
-
     updatePlayer({ currentTime: playedSeconds });
     // handleMinimizeTimer();
   }
@@ -197,6 +114,16 @@ function Player(props) {
     }
   }
 
+  const handlePlay = () => {
+    const e = new Event('videoplay');
+    document.dispatchEvent(e);
+  };
+
+  const handlePause = () => {
+    const e = new Event('videopause');
+    document.dispatchEvent(e);
+  };
+
   function renderPlayer() {
     const { media } = props;
     return (
@@ -206,6 +133,8 @@ function Player(props) {
           className="player-inner"
           width="100%"
           height=""
+          onPlay={handlePlay}
+          onPause={handlePause}
           config={playerConf}
           autoPlay={false}
           controls={false}
@@ -236,12 +165,19 @@ function Player(props) {
     );
   }
 
+  function handleProgressChange(percent) {
+    console.log(props.media);
+    playerRef.current.seekTo(percent / 100, 'fraction');
+  }
+
   function renderVideoTop() {
     const { media } = props;
+    const currentTime = playerRef.current.getCurrentTime();
+    const progressValue = (currentTime / media.duration) * 100;
     return (
       <div className="video-player_top">
         <div className="video-time current-time">{formatTime(media.currentTime)}</div>
-        <ProgressBar player={playerRef.current} seek={ref => (seekEl = ref)} />
+        <ProgressBar onProgressChange={handleProgressChange} value={progressValue} />
         <div className="video-time duration">{formatTime(media.duration)}</div>
       </div>
     );
@@ -264,46 +200,27 @@ function Player(props) {
     );
   }
 
+  function handleVolumeChange(percent) {
+    props.setVolume(percent / 100);
+  }
+
   function renderVolumeControl() {
-    const { media, switchMute } = props;
-    const { muted, volume } = media;
-    const transformValue = 100 - volume * 100;
-    const transform = `translateX(-${muted ? 100 : transformValue}%)`;
+    const { switchMute } = props;
+    const { muted, volume } = props.media;
     return (
-      <div onWheel={handleWheel} className="volume-control">
+      <React.Fragment>
         <div onClick={switchMute} className="control volume-button">
           <i className={`fa fa-volume-${muted ? 'mute' : 'up'}`} />
         </div>
-        <div
-          // ref={ref => (volume = ref)}
-          className="progress-bar_container volume_trigger"
-        >
-          <div style={{ transform }} className="scrubber_container">
-            <div className="scrubber" />
-          </div>
-          <div className="progress-bar">
-            <div style={{ transform }} className="progress-bar_passed" />
-          </div>
-        </div>
-      </div>
+        <ProgressBar
+          wheel
+          onWheelClick={switchMute}
+          classes={`volume-control ${muted ? 'volume-control_muted' : ''}`}
+          onProgressChange={handleVolumeChange}
+          value={muted ? 0 : volume * 100}
+        />
+      </React.Fragment>
     );
-  }
-
-  function handleWheel(e) {
-    const { setVolume, switchMute, media } = props;
-    const { volume: currentVolume, muted } = media;
-    const delta = e.deltaY < 0 ? 1 : -1;
-
-    let volumeNew = currentVolume + VOLUME_WHEEL * delta;
-    volumeNew = Math.max(0, Math.min(1, volumeNew));
-
-    if (muted) {
-      return switchMute();
-    }
-
-    if (currentVolume !== volumeNew) {
-      setVolume(volumeNew);
-    }
   }
 
   const classes = `video-element ${minimized ? 'player-minimized' : 'player-maximized'}`;

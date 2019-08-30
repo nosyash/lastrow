@@ -6,6 +6,8 @@ import Slider from '@material-ui/lab/Slider';
 import { toastOpts } from '../../../constants';
 import getCroppedImg from '../../../utils/cropImage';
 import * as types from '../../../constants/ActionTypes';
+import httpServices from '../../../utils/httpServices';
+import * as api from '../../../constants/apiActions';
 
 class ImagePicker extends Component {
   constructor() {
@@ -20,22 +22,14 @@ class ImagePicker extends Component {
 
   componentDidMount() {
     const { startEvents, endEvents } = this;
-    startEvents.map(ev =>
-      document.addEventListener(ev, this.handleDropStart, false)
-    );
-    endEvents.map(ev =>
-      document.addEventListener(ev, this.handleDropEnd, false)
-    );
+    startEvents.map(ev => document.addEventListener(ev, this.handleDropStart, false));
+    endEvents.map(ev => document.addEventListener(ev, this.handleDropEnd, false));
   }
 
   componentWillUnmount() {
     const { startEvents, endEvents } = this;
-    startEvents.map(ev =>
-      document.removeEventListener(ev, this.handleDropStart, false)
-    );
-    endEvents.map(ev =>
-      document.removeEventListener(ev, this.handleDropEnd, false)
-    );
+    startEvents.map(ev => document.removeEventListener(ev, this.handleDropStart, false));
+    endEvents.map(ev => document.removeEventListener(ev, this.handleDropEnd, false));
   }
 
   handleDropStart = e => {
@@ -86,18 +80,26 @@ class ImagePicker extends Component {
   };
 
   handleImage = data => {
-    const { onImageUpdate } = this.props;
-
     // Server accepts only values without base64 prefix...
     const prefix = /^.*base64,/;
     const base64 = data.replace(prefix, '');
-    onImageUpdate(base64);
+    this.handleImageUpdate(base64);
     this.handleClose();
   };
 
+  handleImageUpdate = async data => {
+    const { updateProfile } = this.props;
+    const res = await httpServices.post(api.API_USER(), api.UPDATE_IMAGE(data));
+
+    if (!res.data) {
+      return;
+    }
+    updateProfile({ ...res.data });
+  };
+
   handleClose = () => {
-    const { id, removePopup } = this.props;
-    removePopup(id);
+    const { removePopup } = this.props;
+    removePopup('imagePicker');
   };
 
   render() {
@@ -176,11 +178,7 @@ class CropTool extends Component {
     const { onImageGet } = this.props;
 
     const options = { width: 500, height: 500 };
-    const croppedImage = await getCroppedImg(
-      base64,
-      croppedAreaPixels,
-      options
-    );
+    const croppedImage = await getCroppedImg(base64, croppedAreaPixels, options);
     onImageGet(croppedImage);
   };
 
@@ -224,11 +222,7 @@ class CropTool extends Component {
             onChange={(e, z) => this.onZoomChange(z)}
           />
           <div className="controls-container">
-            <button
-              onClick={this.saveCrop}
-              type="button"
-              className="button button-save"
-            >
+            <button onClick={this.saveCrop} type="button" className="button button-save">
               Save
             </button>
             {base64 && (
@@ -252,6 +246,7 @@ class CropTool extends Component {
 
 const mapDispatchToProps = {
   removePopup: payload => ({ type: types.REMOVE_POPUP, payload }),
+  updateProfile: payload => ({ type: types.UPDATE_PROFILE, payload }),
 };
 
 export default connect(

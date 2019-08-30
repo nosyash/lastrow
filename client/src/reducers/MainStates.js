@@ -3,6 +3,7 @@ import * as types from '../constants/ActionTypes';
 const initialState = {
   cinemaMode: false,
   roomID: '',
+  chatWidth: parseInt(localStorage.chatWidth) || 300,
 };
 
 const MainStates = (state = initialState, action) => {
@@ -13,6 +14,10 @@ const MainStates = (state = initialState, action) => {
   if (action.type === types.TOGGLE_CINEMAMODE) {
     localStorage.cinemaMode = !state.cinemaMode;
     return { ...state, cinemaMode: !state.cinemaMode };
+  }
+
+  if (action.type === types.SET_CHAT_WIDTH) {
+    return { ...state, chatWidth: action.payload };
   }
 
   return state;

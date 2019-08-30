@@ -4,19 +4,20 @@ import * as types from '../../../constants/ActionTypes';
 import * as keys from '../../../constants/keys';
 import { MAX_MESSAGE_LENGTH } from '../../../constants';
 import * as api from '../../../constants/apiActions';
+import { webSocketSend } from '../../../actions';
 
-let historyN = 0;
+const historyN = 0;
 
 function ChatInput(props) {
   const [inputValue, setInputValue] = useState('');
-  let inputEl = useRef(null);
+  const inputEl = useRef(null);
 
   useEffect(() => {
     document.addEventListener('click', handleClick);
     return () => {
       document.removeEventListener('click', handleClick);
-    }
-  })
+    };
+  });
   function handleClick(e) {
     let { target } = e;
     if (target.closest('.chat-message_reply')) {
@@ -28,27 +29,28 @@ function ChatInput(props) {
       }
       inputEl.current.focus();
     }
-  };
+  }
 
   function handleFormSubmit(e) {
-    const { socket, socketState, profile } = props;
+    const { socketState, profile } = props;
 
     if (e.keyCode === keys.ENTER && !e.shiftKey) {
       e.preventDefault();
-      inputValue = inputValue.trim();
-      if (!socketState || !inputValue) return;
-      socket.send(api.SEND_MESSAGE(inputValue, profile.uuid));
-      setInputValue('')
+      const newValue = inputValue.trim();
+      if (!socketState || !newValue) return;
+      webSocketSend(api.SEND_MESSAGE(newValue, profile.uuid));
+      // socket.send(api.SEND_MESSAGE(newValue, profile.uuid));
+      setInputValue('');
     }
-  };
+  }
 
-  handleInputChange = e => {
+  function handleInputChange(e) {
     let { value } = e.target;
     if (value.length > MAX_MESSAGE_LENGTH) {
       value = value.substr(0, MAX_MESSAGE_LENGTH);
     }
-    setInputValue(value)
-  };
+    setInputValue(value);
+  }
 
   return (
     <div className="chat-input">

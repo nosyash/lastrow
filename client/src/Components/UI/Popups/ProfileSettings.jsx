@@ -6,9 +6,7 @@ import Form from '../Form';
 import * as api from '../../../constants/apiActions';
 import * as types from '../../../constants/ActionTypes';
 import http from '../../../utils/httpServices';
-import ImagePicker from './ImagePicker';
 import { toastOpts } from '../../../constants';
-import ColorPicker from './ColorPicker';
 
 // TODO: Extremely poorly made. Refactor!
 class ProfileSettings extends Form {
@@ -80,47 +78,30 @@ class ProfileSettings extends Form {
   handleColorPicker = () => {
     const { color, name } = this.props.profile;
     const { togglePopup } = this.props;
-    const id = 'ColorPicker';
-    togglePopup({
-      id,
-      el: (
-        <ColorPicker
-          onClose={this.handleColorPicker}
-          onSave={data => {
-            this.handleColorPicker();
-            this.handleColorUpdate(data);
-          }}
-          name={name}
-          color={color}
-          id={id}
-        />
-      ),
-      width: 225,
-      height: 225,
-    });
+
+    togglePopup('colorPicker');
+    // TODO: Do something about this
+    // togglePopup({
+    //   id,
+    //   el: (
+    //     <ColorPicker
+    //       onClose={this.handleColorPicker}
+    //       onSave={data => {
+    //         this.handleColorPicker();
+    //         this.handleColorUpdate(data);
+    //       }}
+    //       name={name}
+    //       color={color}
+    //       id={id}
+    //     />
+    //   ),
+    //   width: 225,
+    //   height: 225,
+    // });
   };
 
   handleImagePicker = () => {
-    const { addPopup } = this.props;
-    const id = 'ImagePicker';
-
-    // TODO: Handle popup close outside of the component (here).
-    addPopup({
-      id,
-      el: <ImagePicker id={id} onImageUpdate={this.handleImageUpdate} />,
-      width: 600,
-      height: 600,
-    });
-  };
-
-  handleImageUpdate = async data => {
-    const { updateProfile } = this.props;
-    const res = await http.post(api.API_USER(), api.UPDATE_IMAGE(data));
-
-    if (!res.data) {
-      return;
-    }
-    updateProfile({ ...res.data });
+    this.props.addPopup('imagePicker');
   };
 
   handleColorUpdate = async color => {

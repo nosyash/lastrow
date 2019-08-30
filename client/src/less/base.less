@@ -138,10 +138,19 @@ body {
 
 .custom-divider {
   user-select: none;
+  border-radius: 3px;
   padding: 0 5px;
-  background: transparent;
-  width: 0;
   cursor: e-resize; // display: none;
+
+  transition-delay: 0.05s;
+
+  &:hover {
+    background: #404850
+  }
+}
+
+.custom-divider_moving {
+  background: #404850
 }
 
 //  Chat
@@ -976,10 +985,11 @@ body {
 }
 
 .progress-bar_container {
+  width: 100%;
   height: 29px;
   cursor: pointer;
   position: relative;
-  flex: 1;
+  // flex: 1;
 }
 
 .progress-bar {
@@ -991,8 +1001,7 @@ body {
   right: 0;
   bottom: 0;
   background: rgba(172, 175, 179, 0.4);
-  ;
-  margin: auto 6px;
+  margin: auto 0;
   overflow: hidden;
 }
 
@@ -1011,8 +1020,8 @@ body {
   height: 0;
   position: absolute;
   background: transparent;
-  right: -7px;
-  left: 20px;
+  right: 0px;
+  left: 0px;
   bottom: 0;
   top: 0;
   margin: auto;
@@ -1023,8 +1032,8 @@ body {
     height: 10px;
     position: absolute;
     background: #DBDBDB;
-    ;
-    right: 8px;
+
+    right: -5px;
     top: 0;
     bottom: 0;
     margin: auto;
@@ -1034,8 +1043,7 @@ body {
 }
 
 .volume-control {
-  display: flex;
-  flex-direction: row;
+  // display: flex;// flex-direction: row;
   width: 100px;
 
   .progress-bar_container {

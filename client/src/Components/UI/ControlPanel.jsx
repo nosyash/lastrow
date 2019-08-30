@@ -1,80 +1,36 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import * as types from '../../constants/ActionTypes';
-import ProfileSettings from './Popups/ProfileSettings';
-import Playlist from './Popups/Playlist';
-import AddMedia from './Popups/AddMedia';
 
 function ControlPanel(props) {
-
-  // TODO: Refactor
-  function handleProfileSettings() {
-    const { addPopup } = props;
-    const id = 'profile-settings';
-    addPopup({
-      id,
-      el: <ProfileSettings id={id} />,
-      width: 400,
-      height: 500,
-    });
-  };
-
-  // TODO: Refactor
-  function handlePlaylist(id) {
-    const { togglePopup } = props;
-    togglePopup({
-      id,
-      el: <Playlist id={id} />,
-      width: 400,
-      height: 200,
-      noBG: true,
-    });
-  };
-
-  // TODO: Refactor
-  function handleAddMedia(id) {
-    const { togglePopup } = props;
-    togglePopup({
-      id,
-      el: <AddMedia id={id} />,
-      width: 400,
-      height: 123,
-      noBG: true,
-    });
-  };
-
   function handleClick(id) {
     switch (id) {
       case 'showPlaylist':
-        return handlePlaylist(id);
+        return props.togglePopup('playlist');
       case 'addToPlaylist':
-        return handleAddMedia(id);
+        return props.togglePopup('addMedia');
 
       default:
         break;
     }
-  };
+  }
 
-    const { profile, playlist } = props;
-    const upNext = playlist[0] || { title: '', url: '' };
-    const { logged } = profile;
-    return (
-      <div className="control-panel_container">
-        <RenderPlaylister
-          upNext={upNext}
+  const { profile, playlist } = props;
+  const upNext = playlist[0] || { title: '', url: '' };
+  const { logged } = profile;
+  return (
+    <div className="control-panel_container">
+      <RenderPlaylister upNext={upNext} logged={logged} onClick={handleClick} />
+      <div className="divider" />
+      {logged && (
+        <RenderProfile
           logged={logged}
-          onClick={handleClick}
+          onProfileSettings={() => props.addPopup('profileSettings')}
+          profile={profile}
         />
-        <div className="divider" />
-        {logged && (
-          <RenderProfile
-            logged={logged}
-            onProfileSettings={handleProfileSettings}
-            profile={profile}
-          />
-        )}
-      </div>
-    );
+      )}
+    </div>
+  );
 }
 
 const RenderPlaylister = ({ onClick, logged, upNext }) => (
@@ -95,12 +51,7 @@ const RenderPlaylister = ({ onClick, logged, upNext }) => (
     )}
     <div className="item">
       <div>Up next:</div>
-      <a
-        className="control"
-        target="_blank"
-        rel="noopener noreferrer"
-        href={upNext.url}
-      >
+      <a className="control" target="_blank" rel="noopener noreferrer" href={upNext.url}>
         {upNext.title}
       </a>
       {/* <i className="fa fa-arrow-right" /> */}
@@ -123,10 +74,7 @@ const RenderProfile = ({ profile, onProfileSettings }) => {
   const backgroundImage = `url(${image})`;
   return (
     <div className="mini-profile">
-      <div
-        style={{ backgroundColor, backgroundImage }}
-        className="chat-avatar"
-      />
+      <div style={{ backgroundColor, backgroundImage }} className="chat-avatar" />
       <div className="mini-profile_second-section">
         <span style={{ color }} className="chat-name">
           {name}

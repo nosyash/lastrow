@@ -61,7 +61,6 @@ const RenderSubs = React.memo(({ text }) => {
 const RenderSub = ({ text }) => {
   const minify = text.length > 3;
   const classes = `subs-container${minify ? ' subs-container_minified' : ''}`;
-  console.log('rerendered');
   return (
     <div className={classes}>
       {text.map(currentSub => (

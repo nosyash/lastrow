@@ -1,19 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { createStore, applyMiddleware } from 'redux';
+
 import { Provider } from 'react-redux';
 import '../../node_modules/bootstrap/dist/css/bootstrap.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import 'react-toastify/dist/ReactToastify.css';
-import thunk from 'redux-thunk';
-import { composeWithDevTools } from 'redux-devtools-extension';
-import reducer from './reducers/Base';
 
 import './.css/main.css';
 import * as serviceWorker from './serviceWorker';
 import App from './Components/App';
 
-export const store = createStore(reducer, composeWithDevTools(applyMiddleware(thunk)));
+import { store } from './store';
+
 ReactDOM.render(
   <Provider store={store}>
     {/* <BrowserRouter> */}
