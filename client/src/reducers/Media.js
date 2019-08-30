@@ -14,7 +14,7 @@ const InitialState = {
   duration: 0,
   currentTime: 0,
   actualTime: 0,
-  playing: false,
+  playing: true,
   playbackRate: 0,
   height: 0,
   width: 0,

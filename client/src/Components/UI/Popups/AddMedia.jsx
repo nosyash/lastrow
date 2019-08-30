@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import Joi from 'joi-browser';
 import Form from '../Form';
 import * as api from '../../../constants/apiActions';
+import * as types from '../../../constants/ActionTypes';
 import { webSocketSend } from '../../../actions';
 // import * as types from '../../constants/ActionTypes';
 
@@ -28,12 +29,13 @@ class AddMedia extends Form {
   );
 
   handleSubmit = e => {
-    const { uuid } = this.props;
+    const { uuid, removePopup } = this.props;
     console.log('submited');
     e.preventDefault();
 
     const { link } = this.state.data;
     webSocketSend(api.SEND_MEDIA_TO_PLAYLIST({ url: link, uuid }));
+    removePopup('addMedia');
   };
 
   render() {
@@ -58,4 +60,11 @@ const mapStateToProps = state => ({
   uuid: state.profile.uuid,
 });
 
-export default connect(mapStateToProps)(AddMedia);
+const mapDispatchToProps = {
+  removePopup: payload => ({ type: types.REMOVE_POPUP, payload }),
+};
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(AddMedia);
