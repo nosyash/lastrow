@@ -1,19 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { RESIZER_SEL, CHAT_HEADER_SEL, DIVIDER_SEL } from '../../../constants';
-import {
-  unsetCursorStyle,
-  toggleUserSelect,
-  togglePointerEvent,
-  toggleCursor,
-} from '../../../utils/base';
 import ChatInner from './ChatInner';
 import { UPDATE_MAIN_STATES } from '../../../constants/ActionTypes';
 import ControlPanel from '../../UI/ControlPanel';
 
 function ChatContainer(props) {
-  const { chat, cinemaMode, socket, chatWidth } = props;
+  const { chat, cinemaMode, chatWidth } = props;
   const className = cinemaMode ? 'cinema-mode' : '';
 
   return (
@@ -31,7 +24,7 @@ function ChatContainer(props) {
         <i className="fa fa-arrow-left" />
         {' Back to rooms'}
       </Link>
-      <ChatInner socket={socket} />
+      <ChatInner />
       <ControlPanel />
     </div>
   );

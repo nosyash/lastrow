@@ -4,6 +4,7 @@
 /client/build
 /public
 /media
+/uploads
 
 .DS_Store
 .env*

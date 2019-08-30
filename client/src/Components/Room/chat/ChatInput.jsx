@@ -4,6 +4,7 @@ import * as types from '../../../constants/ActionTypes';
 import * as keys from '../../../constants/keys';
 import { MAX_MESSAGE_LENGTH } from '../../../constants';
 import * as api from '../../../constants/apiActions';
+import { webSocketSend } from '../../../actions';
 
 const historyN = 0;
 
@@ -31,13 +32,14 @@ function ChatInput(props) {
   }
 
   function handleFormSubmit(e) {
-    const { socket, socketState, profile } = props;
+    const { socketState, profile } = props;
 
     if (e.keyCode === keys.ENTER && !e.shiftKey) {
       e.preventDefault();
       const newValue = inputValue.trim();
       if (!socketState || !newValue) return;
-      socket.send(api.SEND_MESSAGE(newValue, profile.uuid));
+      webSocketSend(api.SEND_MESSAGE(newValue, profile.uuid));
+      // socket.send(api.SEND_MESSAGE(newValue, profile.uuid));
       setInputValue('');
     }
   }

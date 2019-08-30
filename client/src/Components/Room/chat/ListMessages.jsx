@@ -47,9 +47,7 @@ class ListMessages extends Component {
     const currentList = list[roomID] || [];
     return (
       <div ref={ref => (this.messages = ref)} className="chat-messages">
-        {currentList.map((message, index) =>
-          this.getSingleMessage(message, index)
-        )}
+        {currentList.map((message, index) => this.getSingleMessage(message, index))}
       </div>
     );
   }
