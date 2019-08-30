@@ -102,7 +102,7 @@ class RoomBase extends Component {
   };
 
   render() {
-    const { cinemaMode, connected, wsConnected } = this.props;
+    const { cinemaMode, connected } = this.props;
     const { exists } = this.state;
     return (
       exists && (
@@ -118,7 +118,7 @@ class RoomBase extends Component {
   }
 }
 
-const RenderRoom = ({ connected, cinemaMode, divider, video, chat }) => (
+const RenderRoom = ({ connected, divider, video, chat }) => (
   <div className={cn(['room-container', { 'room-container_disconected': !connected }])}>
     <ChatContainer connected={connected} divider={divider} video={video} chat={chat} />
     {/* {!cinemaMode && <div className="custom-divider" ref={divider} />} */}

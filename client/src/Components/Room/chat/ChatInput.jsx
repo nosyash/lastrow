@@ -6,8 +6,6 @@ import { MAX_MESSAGE_LENGTH } from '../../../constants';
 import * as api from '../../../constants/apiActions';
 import { webSocketSend } from '../../../actions';
 
-const historyN = 0;
-
 function ChatInput(props) {
   const [inputValue, setInputValue] = useState('');
   const inputEl = useRef(null);

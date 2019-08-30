@@ -1,4 +1,4 @@
-import React, { Component, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Route, Switch, BrowserRouter } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { connect } from 'react-redux';
@@ -17,7 +17,7 @@ function App(props) {
   }, []);
 
   async function handleProfile() {
-    const { updateProfile, addPopup } = props;
+    const { updateProfile } = props;
     const profile = await getProfile();
 
     if (profile) {

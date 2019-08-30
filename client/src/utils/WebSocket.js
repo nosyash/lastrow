@@ -1,6 +1,5 @@
 import * as api from '../constants/apiActions';
 import * as types from '../constants/ActionTypes';
-import { WEBSOCKET_TIMEOUT } from '../constants';
 import { store } from '../store';
 
 const { dispatch } = store;
