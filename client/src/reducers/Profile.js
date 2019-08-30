@@ -2,6 +2,7 @@ import * as types from '../constants/ActionTypes';
 
 const profile = {
   logged: undefined,
+  guest: false,
   name: '',
   username: '',
   color: '#dddddd',

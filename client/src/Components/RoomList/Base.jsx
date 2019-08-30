@@ -14,6 +14,10 @@ function RoomListBase(props) {
   useEffect(() => {
     props.clearPopups();
     getRoomList();
+
+    if (props.guest) {
+      props.updateProfile({ logged: false });
+    }
   }, []);
 
   async function getRoomList() {
@@ -82,10 +86,14 @@ const RenderList = ({ rooms, connected, getRoomList, history }) => (
   </div>
 );
 
-const mapStateToProps = state => ({ rooms: state.Rooms.list });
+const mapStateToProps = state => ({
+  rooms: state.Rooms.list,
+  guest: state.profile.guest,
+});
 
 const mapDispatchToProps = {
   UpdateRoomList: payload => ({ type: types.UPDATE_ROOMLIST, payload }),
+  updateProfile: payload => ({ type: types.UPDATE_PROFILE, payload }),
   clearPopups: () => ({ type: types.CLEAR_POPUPS }),
 };
 

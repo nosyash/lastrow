@@ -1,16 +1,26 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import cn from 'classnames';
 import ChatContainer from './chat/ChatContainer';
 import VideoContainer from './video/VideoContainer';
 import getEmojiList from '../../utils/InitEmojis';
 import * as types from '../../constants/ActionTypes';
 import { roomExist } from '../../utils/apiRequests';
-import * as api from '../../constants/apiActions';
-import GuestAuth from '../UI/Popups/GuestAuth';
 import Divider from './Divider';
 import { webSocketConnect, webSocketDisconnect } from '../../actions';
 
-// const socket = null;
+// We authorize before render room,
+// so we could easier initialize WebSocket...
+function RoomBaseWrapper(props) {
+  const { addPopup } = props;
+  const { logged, guest } = props.profile;
+
+  if (guest && !logged) {
+    addPopup('guestAuth');
+    return null;
+  }
+  return <RoomBase {...props} />;
+}
 
 class RoomBase extends Component {
   constructor() {
@@ -49,9 +59,9 @@ class RoomBase extends Component {
   };
 
   initWebsocket = () => {
-    const { match, profile } = this.props;
+    const { match } = this.props;
     const { id: roomID } = match.params;
-    webSocketConnect({ roomID, uuid: profile.uuid });
+    webSocketConnect({ roomID });
   };
 
   initStore = callback => {
@@ -92,7 +102,7 @@ class RoomBase extends Component {
   };
 
   render() {
-    const { cinemaMode, connected } = this.props;
+    const { cinemaMode, connected, wsConnected } = this.props;
     const { exists } = this.state;
     return (
       exists && (
@@ -109,7 +119,7 @@ class RoomBase extends Component {
 }
 
 const RenderRoom = ({ connected, cinemaMode, divider, video, chat }) => (
-  <div className="room-container">
+  <div className={cn(['room-container', { 'room-container_disconected': !connected }])}>
     <ChatContainer connected={connected} divider={divider} video={video} chat={chat} />
     {/* {!cinemaMode && <div className="custom-divider" ref={divider} />} */}
     <Divider />
@@ -138,6 +148,7 @@ const mapDispatchToProps = {
   updatePlayer: payload => ({ type: types.UPDATE_MEDIA, payload }),
   togglePopup: payload => ({ type: types.TOGGLE_POPUP, payload }),
   removePopup: payload => ({ type: types.REMOVE_POPUP, payload }),
+  addPopup: payload => ({ type: types.ADD_POPUP, payload }),
   clearPopups: () => ({ type: types.CLEAR_POPUPS }),
   updateProfile: payload => ({ type: types.UPDATE_PROFILE, payload }),
 };
@@ -145,4 +156,4 @@ const mapDispatchToProps = {
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(RoomBase);
+)(RoomBaseWrapper);

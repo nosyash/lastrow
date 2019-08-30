@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import cn from 'classnames';
 import ChatInner from './ChatInner';
 import { UPDATE_MAIN_STATES } from '../../../constants/ActionTypes';
 import ControlPanel from '../../UI/ControlPanel';
 
 function ChatContainer(props) {
   const { chat, cinemaMode, chatWidth } = props;
-  const className = cinemaMode ? 'cinema-mode' : '';
+  const className = cn({ 'cinema-mode': cinemaMode });
 
   return (
     <div
@@ -37,6 +38,7 @@ const mapDispatchToProps = {
 const mapStateToProps = state => ({
   cinemaMode: state.MainStates.cinemaMode,
   chatWidth: state.MainStates.chatWidth,
+  wsConnected: state.Chat.connected,
 });
 
 export default connect(

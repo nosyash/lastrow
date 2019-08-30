@@ -20,7 +20,8 @@ export const fetchSubs = url => dispatch => {
 
 let socket = null;
 
-export const webSocketConnect = ({ roomID, uuid, guest, name }) => {
+export const webSocketConnect = ({ roomID }) => {
+  const { uuid, name, guest } = store.getState().profile;
   const url = SOCKET_ENDPOINT;
   socket = new Socket({ url, roomID, uuid, guest, name });
   return socket.state();
@@ -36,3 +37,7 @@ export const webSocketSend = data => {
 export const webSocketDisconnect = () => {
   if (socket) socket.destroy();
 };
+
+// export const registerGuest = (name) => dispatch => {
+//   http.get
+// }

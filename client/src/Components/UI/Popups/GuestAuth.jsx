@@ -20,14 +20,25 @@ class GuestAuth extends Form {
 
   handleSubmit = e => {
     e.preventDefault();
-    const { onSubmit } = this.props;
+    const { updateProfile, removePopup } = this.props;
     const { data } = this.state;
-    onSubmit(data.name);
+    updateProfile({ name: data.name, logged: true });
+
+    removePopup('guestAuth');
+    this.sendEvent();
   };
 
   handleClose = () => {
-    const { onSubmit } = this.props;
-    onSubmit('Guest');
+    const { updateProfile, removePopup } = this.props;
+    updateProfile({ name: 'Guest', logged: true, guest: true });
+
+    removePopup('guestAuth');
+    this.sendEvent();
+  };
+
+  sendEvent = () => {
+    const e = new Event('logged');
+    document.dispatchEvent(e);
   };
 
   render() {
@@ -57,12 +68,8 @@ const RenderForm = props => {
         {renderInput(inputOpts)}
         <div className="controls-container">
           {renderButton('Save')}
-          <button
-            onClick={onClose}
-            type="button"
-            className="button button-cancel"
-          >
-            Close
+          <button onClick={onClose} type="button" className="button button-cancel">
+            Skip
           </button>
         </div>
       </form>

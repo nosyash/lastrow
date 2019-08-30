@@ -27,6 +27,9 @@ class Socket {
         const { readyState } = this.instance;
 
         if (this._getReadyState(readyState) === 'CLOSED') {
+          alert('Websocket connection closed');
+          dispatch({ type: types.SET_SOCKET_CONNECTED, payload: false });
+          dispatch({ type: types.SET_SOCKET_ERROR, payload: true });
           clearInterval(this.timer);
           reject();
         }

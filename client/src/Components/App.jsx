@@ -17,14 +17,14 @@ function App(props) {
   }, []);
 
   async function handleProfile() {
-    const { updateProfile } = props;
+    const { updateProfile, addPopup } = props;
     const profile = await getProfile();
 
     if (profile) {
       updateProfile({ ...profile.data, logged: true });
     } else {
       const uuid = getRandom(64);
-      updateProfile({ logged: false, uuid });
+      updateProfile({ logged: false, uuid, guest: true });
     }
 
     setLoaded(true);
@@ -54,6 +54,7 @@ function App(props) {
 
 const mapDispatchToProps = {
   updateProfile: payload => ({ type: types.UPDATE_PROFILE, payload }),
+  addPopup: payload => ({ type: types.ADD_POPUP, payload }),
 };
 
 const mapStateToProps = state => ({
