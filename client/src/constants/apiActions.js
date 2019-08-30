@@ -91,10 +91,34 @@ export const SEND_MESSAGE = (message, user_uuid) =>
     user_uuid,
   });
 
+// "__id": "00558ab4060d4a8391c2f38757930ef6f9ae8f7dc030e3a28d5e052d7703dc82",
+// "duration": 2359,
+// "elapsed_time": 0
+
+// {
+//   "videos": [
+//     {
+//       "title": "[V LIVE] [UZZU TAPE (우쭈테잎)] EP. 16 경복궁 야간기행, 시간의 다리를 건너다!",
+//       "duration": 2359,
+//       "url": "https://stream.bona.cafe/uzzu/ep15.mp4",
+//       "index": 0,
+//       "__id": "00558ab4060d4a8391c2f38757930ef6f9ae8f7dc030e3a28d5e052d7703dc82"
+//     }
+//   ]
+// }
+
 export const GET_WS_DATA = json => {
   const obj = JSON.parse(json);
   if (obj.users || obj.users === null) {
     return { type: 'user_list', users: obj.users ? obj.users : [] };
+  }
+  console.log(obj);
+  if (obj.ticker) {
+    return { type: 'ticker', ...obj.ticker };
+  }
+
+  if (obj.videos) {
+    return { type: 'playlist', videos: obj.videos };
   }
   const { event } = obj.body;
   const { type } = event;

@@ -13,6 +13,7 @@ const InitialState = {
   playlist: [],
   duration: 0,
   currentTime: 0,
+  actualTime: 0,
   playing: false,
   playbackRate: 0,
   height: 0,
@@ -29,6 +30,10 @@ const Player = (state = InitialState, action) => {
   switch (action.type) {
     case types.UPDATE_MEDIA: {
       return { ...state, ...action.payload };
+    }
+
+    case types.ADD_TO_PLAYLIST: {
+      return { ...state, playlist: action.payload };
     }
 
     case types.UPDATE_MEDIA_URL: {

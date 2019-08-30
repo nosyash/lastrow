@@ -2,6 +2,7 @@ import React, { useState, useContext, useRef, useEffect } from 'react';
 import { connect } from 'react-redux';
 import ReactPlayer from 'react-player';
 import { parse } from 'subtitle';
+import cn from 'classnames';
 import * as types from '../../../constants/ActionTypes';
 import { formatTime } from '../../../utils/base';
 import {
@@ -13,8 +14,10 @@ import http from '../../../utils/httpServices';
 import ProgressBar from './ProgressBar';
 import Subtitles from './Subtitles';
 import { fetchSubs } from '../../../actions';
+import { store } from '../../../store';
 
 let minimizeTimer = null;
+const delayTimer = null;
 let videoEl = null;
 const wasPlaying = false;
 function Player(props) {
@@ -31,6 +34,10 @@ function Player(props) {
       props.resetMedia();
     };
   }, []);
+
+  useEffect(() => {
+    checkDelay();
+  }, [props.media.actualTime]);
 
   function resetRefs() {
     videoEl = null;
@@ -96,6 +103,14 @@ function Player(props) {
     updatePlayer({ duration, currentTime });
   }
 
+  function checkDelay() {
+    const { actualTime, currentTime } = props.media;
+
+    if (Math.abs(actualTime - currentTime) > 15) {
+      playerRef.current.seekTo(actualTime);
+    }
+  }
+
   function handlePlaying(progress) {
     const { updatePlayer } = props;
     const { playedSeconds } = progress;
@@ -124,8 +139,20 @@ function Player(props) {
     document.dispatchEvent(e);
   };
 
+  function getCurrentVideo() {
+    const { playlist } = props;
+    if (playlist.length) return playlist[0];
+  }
+
+  function getCurrentUrl() {
+    const video = getCurrentVideo();
+    if (video) return video.url;
+    return '';
+  }
+
   function renderPlayer() {
     const { media } = props;
+    const url = getCurrentUrl();
     return (
       <React.Fragment>
         <ReactPlayer
@@ -139,17 +166,17 @@ function Player(props) {
           autoPlay={false}
           controls={false}
           loop={false}
-          progressInterval={400}
+          progressInterval={100}
           muted={media.muted}
           playing={media.playing}
           volume={media.volume}
-          url={media.url}
+          url={url}
           onProgress={handlePlaying}
           // onPlay={handlePlay}
           // onPause={handlePause}
           onReady={handleReady}
         />
-        <div className="video-overlay" />
+        {isDirectLink() && <div className="video-overlay" />}
       </React.Fragment>
     );
   }
@@ -166,7 +193,6 @@ function Player(props) {
   }
 
   function handleProgressChange(percent) {
-    console.log(props.media);
     playerRef.current.seekTo(percent / 100, 'fraction');
   }
 
@@ -223,12 +249,24 @@ function Player(props) {
     );
   }
 
-  const classes = `video-element ${minimized ? 'player-minimized' : 'player-maximized'}`;
+  function isDirectLink() {
+    return getCurrentVideo() && getCurrentVideo().direct;
+  }
+
+  const classes = cn([
+    'video-element',
+    {
+      'player-minimized': minimized,
+      'player-maximized': !minimized,
+      'player-raw': isDirectLink(),
+      'player-embed': !isDirectLink(),
+    },
+  ]);
   return (
     <React.Fragment>
       <div onMouseEnter={() => setMinimized(false)} className={classes}>
         {renderPlayer()}
-        {playerRef.current && renderPlayerGUI()}
+        {isDirectLink() && playerRef.current && renderPlayerGUI()}
       </div>
     </React.Fragment>
   );
@@ -236,6 +274,7 @@ function Player(props) {
 
 const mapStateToProps = state => ({
   media: state.Media,
+  playlist: state.Media.playlist,
   subs: state.Media.subs,
   playing: state.Media.playing,
   cinemaMode: state.MainStates.cinemaMode,

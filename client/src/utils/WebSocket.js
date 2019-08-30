@@ -115,6 +115,17 @@ class Socket {
         return dispatch({ type: types.UPDATE_USERLIST, payload: data.users });
       }
 
+      case 'ticker': {
+        return dispatch({
+          type: types.UPDATE_MEDIA,
+          payload: { actualTime: data.elapsed_time },
+        });
+      }
+
+      case 'playlist': {
+        return dispatch({ type: types.ADD_TO_PLAYLIST, payload: data.videos });
+      }
+
       default:
         break;
     }
