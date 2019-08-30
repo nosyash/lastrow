@@ -50,9 +50,11 @@ function ChatHeader({ userList }) {
 }
 
 function UserIcon({ id, onClick, name, color, guest }) {
+  const classes = `fa fa-user${guest ? '-secret' : ''}`;
+
   return (
     <span onClick={() => onClick(id)} title={name} _id={id} className="user-icon">
-      <i style={{ color }} />
+      <i className={classes} style={{ color }} />
     </span>
   );
 }
