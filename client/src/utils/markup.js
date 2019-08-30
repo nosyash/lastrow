@@ -17,10 +17,10 @@ export default function parseMarkup({ body, emojiList, name }) {
   const hideHeader = ME.test(tempBody) || DO.test(tempBody) || TODO.test(tempBody);
   if (preformated) tempBody = tempBody.replace(PREFORMATTED, '<pre>$2</pre>');
 
-  const isSad = Math.random() < 0.5;
+  const isSad = Math.random() < 0.1;
   const src = isSad
-    ? 'https://files.catbox.moe/gawu0e.png'
-    : 'https://files.catbox.moe/iq25ih.png';
+    ? 'https://files.catbox.moe/iq25ih.png'
+    : 'https://files.catbox.moe/gawu0e.png';
   if (!preformated) {
     tempBody = tempBody
       .replace(PARAGRAPH, '<p>$1</p>')
