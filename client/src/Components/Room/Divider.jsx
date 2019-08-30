@@ -1,6 +1,7 @@
 import React, { Component, PureComponent } from 'react';
 import { connect } from 'react-redux';
 import cn from 'classnames';
+import { throttle } from 'lodash';
 import * as types from '../../constants/ActionTypes';
 
 class Divider extends Component {
@@ -11,11 +12,13 @@ class Divider extends Component {
     this.state = {
       moving: false,
     };
+
+    this.mouseMove = throttle(this.handleMouseMove, 16);
   }
 
   componentDidMount() {
     document.addEventListener('mouseup', this.handleMouseUp);
-    document.addEventListener('mousemove', this.handleMouseMove);
+    document.addEventListener('mousemove', this.mouseMove);
   }
 
   handleMouseDown = e => {
@@ -30,7 +33,7 @@ class Divider extends Component {
     if (!this.state.moving) return;
     const { setChatWidth } = this.props;
     const { clientX } = e;
-
+    console.log('set');
     setChatWidth(clientX - this.offsetX);
   };
 
