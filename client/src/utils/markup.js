@@ -14,9 +14,13 @@ import {
 export default function parseMarkup({ body, emojiList, name }) {
   let tempBody = body;
   const preformated = PREFORMATTED.test(tempBody);
-  const hideHeader =
-    ME.test(tempBody) || DO.test(tempBody) || TODO.test(tempBody);
+  const hideHeader = ME.test(tempBody) || DO.test(tempBody) || TODO.test(tempBody);
   if (preformated) tempBody = tempBody.replace(PREFORMATTED, '<pre>$2</pre>');
+
+  const isSad = Math.random() < 0.5;
+  const src = isSad
+    ? 'https://files.catbox.moe/gawu0e.png'
+    : 'https://files.catbox.moe/iq25ih.png';
   if (!preformated) {
     tempBody = tempBody
       .replace(PARAGRAPH, '<p>$1</p>')
@@ -28,7 +32,7 @@ export default function parseMarkup({ body, emojiList, name }) {
       .replace(SPOILER, '<del>$2</del>')
       .replace(
         EMOTE,
-        '<img className="emote" src="https://files.catbox.moe/iq25ih.png" srcSet="https://files.catbox.moe/iq25ih.png 1x, https://files.catbox.moe/igwn7x.png 2x" title="$1$2$3"></img>'
+        `<img className="emote" src="${src}" srcSet="${src} 1x, https://files.catbox.moe/igwn7x.png 2x" title="$1$2$3"></img>`
       );
   }
   if (!preformated) {
