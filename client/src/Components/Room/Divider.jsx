@@ -13,12 +13,12 @@ class Divider extends Component {
       moving: false,
     };
 
-    this.mouseMove = throttle(this.handleMouseMove, 16);
+    // this.mouseMove = requestAnimationFrame(this.handleMouseMove);
   }
 
   componentDidMount() {
     document.addEventListener('mouseup', this.handleMouseUp);
-    document.addEventListener('mousemove', this.mouseMove);
+    document.addEventListener('mousemove', this.handleMouseMove);
   }
 
   handleMouseDown = e => {
@@ -27,6 +27,20 @@ class Divider extends Component {
     const { clientX } = e;
     const { chatWidth, chatLeft } = this.getChatCoordinates();
     this.offsetX = clientX - (chatWidth + chatLeft) + chatLeft;
+
+    this.disableUserSelect();
+  };
+
+  disableUserSelect = () => {
+    const element = document.getElementById('video-container');
+    if (!element) return;
+    element.classList.add('no-user-select');
+  };
+
+  enableUserSelect = () => {
+    const element = document.getElementById('video-container');
+    if (!element) return;
+    element.classList.remove('no-user-select');
   };
 
   handleMouseMove = e => {
@@ -45,6 +59,8 @@ class Divider extends Component {
   handleMouseUp = () => {
     if (this.state.moving) this.setState({ moving: false });
     localStorage.chatWidth = this.props.chatWidth;
+
+    this.enableUserSelect();
   };
 
   render() {
