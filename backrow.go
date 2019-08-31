@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	var apiAddr, uplPath, imgPath, dbAddr string
+	var apiAddr, uplPath, profImgPath, dbAddr string
 
 	if err := godotenv.Load(); err != nil {
 		log.Printf("Error while trying to load .env file: %v", err)
@@ -24,8 +24,8 @@ func main() {
 		println("UPLOAD_PATH are empty and will be set to default value: (pwd)")
 		uplPath = "./"
 
-		println("UPLOAD_IMAGES_PATH are empty and will be set to default value: /media/")
-		imgPath = "/media/"
+		println("PROFILE_IMG_PATH are empty and will be set to default value: /profile/")
+		profImgPath = "/profile/"
 
 		println("DB_ENDPOINT are empty and will be set to default value: /media/")
 		dbAddr = "0.0.0.0:27017"
@@ -33,7 +33,7 @@ func main() {
 		apiAddr = os.Getenv("API_ENDPOINT")
 		dbAddr = os.Getenv("DB_ENDPOINT")
 		uplPath = os.Getenv("UPLOAD_PATH")
-		imgPath = os.Getenv("UPLOAD_IMAGES_PATH")
+		profImgPath = os.Getenv("PROFILE_IMG_PATH")
 		if os.Getenv("YT_API_KEY") == "" {
 			log.Println("Warning! Youtube API key was not specified in .env file")
 		}
@@ -45,7 +45,7 @@ func main() {
 	db := db.Connect(dbAddr)
 	defer db.Close()
 
-	apis := api.NewServer(apiAddr, uplPath, imgPath, db)
+	apis := api.NewServer(apiAddr, uplPath, profImgPath, db)
 	if err := apis.RunServer(); err != http.ErrServerClosed {
 		log.Fatalf("Error while trying to run server: %v", err)
 	}

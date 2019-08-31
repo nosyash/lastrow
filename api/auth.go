@@ -101,7 +101,7 @@ func (server Server) login(w http.ResponseWriter, uname, passwd string) {
 		return
 	}
 
-	user, err := server.db.FindUser("uname", strings.TrimSpace(uname), getHashOfString(passwd))
+	user, err := server.db.FindUser("uname", uname, getHashOfString(passwd))
 	if err == mgo.ErrNotFound {
 		sendResponse(w, http.StatusBadRequest, message{
 			Error: "Username or password is invalid",

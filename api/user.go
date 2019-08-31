@@ -82,7 +82,7 @@ func (server Server) updateProfileImage(w http.ResponseWriter, userUUID string, 
 
 	rndUUID := getRandomUUID()
 
-	imgPath := filepath.Join(server.imageServer.ImgPath, rndUUID[:16], fmt.Sprintf("%s.jpg", rndUUID[16:32]))
+	imgPath := filepath.Join(filepath.Join("media", server.imageServer.ProfImgPath), rndUUID[:16], fmt.Sprintf("%s.jpg", rndUUID[16:32]))
 	fullPath := filepath.Join(server.imageServer.UplPath, imgPath)
 
 	img := newImage(filepath.Join(server.imageServer.UplPath, oldpath), fullPath)
