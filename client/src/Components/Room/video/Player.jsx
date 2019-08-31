@@ -150,17 +150,16 @@ function Player(props) {
     return '';
   }
 
-  function showControls() {
-    let controls = false;
+  function isDirect() {
     const current = getCurrentVideo();
-    if (current && !current.direct) controls = true;
-    return controls;
+    if (current) return current.direct;
+    return false;
   }
 
-  function renderPlayer() {
+  function RenderPlayer() {
     const { media } = props;
     const url = getCurrentUrl();
-    const controls = showControls();
+    const direct = isDirect();
     return (
       <React.Fragment>
         <ReactPlayer
@@ -172,7 +171,8 @@ function Player(props) {
           onPause={handlePause}
           config={playerConf}
           autoPlay
-          controls={controls}
+          // WTF IS GOING ON HERE
+          controls={!direct}
           loop={false}
           progressInterval={100}
           muted={media.muted}
@@ -274,7 +274,7 @@ function Player(props) {
   return (
     <React.Fragment>
       <div onMouseEnter={() => setMinimized(false)} className={classes}>
-        {renderPlayer()}
+        {RenderPlayer()}
         {isDirectLink() && playerRef.current && renderPlayerGUI()}
       </div>
     </React.Fragment>

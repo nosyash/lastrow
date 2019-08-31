@@ -18,7 +18,7 @@ const InitialState = {
   playbackRate: 0,
   height: 0,
   width: 0,
-  volume: 0,
+  volume: 50,
   muted: false,
 };
 
