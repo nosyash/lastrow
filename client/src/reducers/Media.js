@@ -9,8 +9,18 @@ const InitialState = {
     start: 0,
     end: 0,
   },
-  showSubs: true,
-  playlist: [],
+  showSubs: false,
+  playlist: [
+    {
+      title:
+        '[V LIVE] [UZZU TAPE (우쭈테잎)] EP. 16 경복궁 야간기행, 시간의 다리를 건너다!123123213',
+      duration: 2359,
+      url: 'https://stream.bona.cafe/uzzu/ep15.mp4',
+      index: 0,
+      direct: true,
+      __id: '00558ab4060d4a8391c2f38757930ef6f9ae8f7dc030e3a28d5e052d7703dc82',
+    },
+  ],
   duration: 0,
   currentTime: 0,
   actualTime: 0,

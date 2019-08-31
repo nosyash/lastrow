@@ -112,7 +112,6 @@ export const GET_WS_DATA = json => {
   if (obj.users || obj.users === null) {
     return { type: 'user_list', users: obj.users ? obj.users : [] };
   }
-  console.log(obj);
   if (obj.ticker) {
     return { type: 'ticker', ...obj.ticker };
   }

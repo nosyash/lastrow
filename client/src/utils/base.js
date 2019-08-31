@@ -101,3 +101,10 @@ export function getFirstOccurrences(array, condition) {
 export function sortPlaylistByIndex(playlist) {
   return playlist.sort((a, b) => (a.index > b.index ? 1 : -1));
 }
+
+// export function formatTime(sec) {
+//   date = new Date(null);
+//   date.setSeconds(sec); 
+//   var result = date.toISOString().substr(11, 8);
+//   console.log(result)
+// }
