@@ -97,3 +97,7 @@ export function getFirstOccurrences(array, condition) {
   console.log(j);
   return newArray;
 }
+
+export function sortPlaylistByIndex(playlist) {
+  return playlist.sort((a, b) => (a.index > b.index ? 1 : -1));
+}
