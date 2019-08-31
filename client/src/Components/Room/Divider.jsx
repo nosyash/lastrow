@@ -1,7 +1,6 @@
-import React, { Component, PureComponent } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import cn from 'classnames';
-import { throttle } from 'lodash';
 import * as types from '../../constants/ActionTypes';
 
 class Divider extends Component {

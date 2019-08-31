@@ -104,7 +104,7 @@ export function sortPlaylistByIndex(playlist) {
 
 // export function formatTime(sec) {
 //   date = new Date(null);
-//   date.setSeconds(sec); 
+//   date.setSeconds(sec);
 //   var result = date.toISOString().substr(11, 8);
 //   console.log(result)
 // }

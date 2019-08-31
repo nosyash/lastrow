@@ -28,7 +28,7 @@ function SubtitlesContainer(props) {
 
   function formatSubs() {
     const { subs } = props;
-    const { updateSubs, setCurrentSubs } = props;
+    const { setCurrentSubs } = props;
 
     const currentText = subs.text;
 
@@ -54,6 +54,7 @@ function SubtitlesContainer(props) {
   return <RenderSubs text={text} />;
 }
 
+// eslint-disable-next-line react/display-name
 const RenderSubs = React.memo(({ text }) => {
   return <RenderSub text={text} />;
 });

@@ -1,25 +1,16 @@
-import React, { useState, useContext, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { connect } from 'react-redux';
 import ReactPlayer from 'react-player';
-import { parse } from 'subtitle';
 import cn from 'classnames';
 import * as types from '../../../constants/ActionTypes';
 import { formatTime } from '../../../utils/base';
-import {
-  playerConf,
-  VIDEO_ELEMENT_SEL,
-  PLAYER_MINIMIZE_TIMEOUT,
-} from '../../../constants';
-import http from '../../../utils/httpServices';
+import { playerConf } from '../../../constants';
 import ProgressBar from './ProgressBar';
 import Subtitles from './Subtitles';
 import { fetchSubs } from '../../../actions';
-import { store } from '../../../store';
 
-let minimizeTimer = null;
-const delayTimer = null;
+// const minimizeTimer = null;
 let videoEl = null;
-const wasPlaying = false;
 function Player(props) {
   const [minimized, setMinimized] = useState(false);
   const playerRef = useRef(null);
@@ -53,40 +44,9 @@ function Player(props) {
   }
 
   async function handleSubs() {
-    const { media, updateSubs } = props;
+    const { media } = props;
     if (!media || !media.subs.url) return;
     props.getSubs(media.subs.url);
-    // const res = await http.get(media.subs.url).catch(error => {
-    //   if (error.response) {
-    //     console.log(error.response.status);
-    //   } else if (error.request) {
-    //     console.log(error.request);
-    //   } else {
-    //     console.log('Error', error.message);
-    //   }
-    // });
-
-    // if (!res) {
-    //   return;
-    // }
-
-    // const { data } = res;
-    // updateSubs({ srt: parse(data) });
-  }
-
-  function handlePlayerMove(e) {
-    let { target } = e;
-
-    // Firefox returns "document" object as target in some cases,
-    // which causes an error on target.closest()
-    if (!target) return;
-    if (target === document) return;
-
-    target = target.closest(VIDEO_ELEMENT_SEL);
-    clearTimeout(minimizeTimer);
-    if (minimized) {
-      setMinimized(false);
-    }
   }
 
   function handleReady() {
@@ -118,16 +78,16 @@ function Player(props) {
     // handleMinimizeTimer();
   }
 
-  function handleMinimizeTimer() {
-    if (minimized) {
-      clearTimeout(minimizeTimer);
-    } else {
-      minimizeTimer = setTimeout(() => {
-        console.log('minimized');
-        setMinimized(true);
-      }, PLAYER_MINIMIZE_TIMEOUT);
-    }
-  }
+  // function handleMinimizeTimer() {
+  //   if (minimized) {
+  //     clearTimeout(minimizeTimer);
+  //   } else {
+  //     minimizeTimer = setTimeout(() => {
+  //       console.log('minimized');
+  //       setMinimized(true);
+  //     }, PLAYER_MINIMIZE_TIMEOUT);
+  //   }
+  // }
 
   const handlePlay = () => {
     const e = new Event('videoplay');
@@ -241,7 +201,7 @@ function Player(props) {
 
   function renderVolumeControl() {
     const { switchMute } = props;
-    const { muted, volume } = props.media;
+    const { muted, volume: volume_ } = props.media;
     return (
       <React.Fragment>
         <div onClick={switchMute} className="control volume-button">
@@ -252,7 +212,7 @@ function Player(props) {
           onWheelClick={switchMute}
           classes={`volume-control ${muted ? 'volume-control_muted' : ''}`}
           onProgressChange={handleVolumeChange}
-          value={muted ? 0 : volume * 100}
+          value={muted ? 0 : volume_ * 100}
         />
       </React.Fragment>
     );

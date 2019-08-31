@@ -42,7 +42,7 @@ class ProgressBar extends Component {
   };
 
   handleGlobalDown = e => {
-    const { clientX, target, which } = e;
+    const { clientX, target } = e;
 
     if (e.button === 1) this.handleWheelClick();
     // 0 is Left Mouse Button

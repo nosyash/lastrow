@@ -14,7 +14,7 @@ import NewRoom from './NewRoom';
 import Playlist from './Playlist';
 import ProfileSettings from './ProfileSettings';
 
-function Popups({ popups, removePopup, id }) {
+function Popups({ popups, removePopup }) {
   const handleResizeTh = throttle(handleResize, 16);
   useEffect(() => {
     addEvents();

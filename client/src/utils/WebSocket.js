@@ -22,7 +22,7 @@ class Socket {
     this._resetStates();
     this.instance = new WebSocket(this.url);
     this._listen();
-  }
+  };
 
   state = () => {
     return new Promise((resolve, reject) => {
@@ -137,20 +137,20 @@ class Socket {
 
   _handleError = e => {
     console.log(e);
-    this.handleReconnect()
+    this.handleReconnect();
   };
 
   _handleClose = e => {
     console.log(e);
-    this.handleReconnect()
+    this.handleReconnect();
   };
 
   handleReconnect = () => {
-    clearTimeout(this.reconnectTimer)
+    clearTimeout(this.reconnectTimer);
     this.reconnectTimer = setTimeout(() => {
       this.initWebSocket();
     }, 1000);
-  }
+  };
 
   _unsubscribeEvents = () => {
     this.instance.onopen = () => null;

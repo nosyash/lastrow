@@ -6,9 +6,7 @@ import Form from '../Form';
 import http from '../../../utils/httpServices';
 import { toastOpts } from '../../../constants';
 import * as types from '../../../constants/ActionTypes';
-import NewRoom from './NewRoom';
 import * as api from '../../../constants/apiActions';
-import ProfileSettings from './ProfileSettings';
 
 class LogForm extends Form {
   state = {

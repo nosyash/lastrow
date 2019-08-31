@@ -75,31 +75,6 @@ class ProfileSettings extends Form {
     this.setState({ data });
   };
 
-  handleColorPicker = () => {
-    const { color, name } = this.props.profile;
-    const { togglePopup } = this.props;
-
-    togglePopup('colorPicker');
-    // TODO: Do something about this
-    // togglePopup({
-    //   id,
-    //   el: (
-    //     <ColorPicker
-    //       onClose={this.handleColorPicker}
-    //       onSave={data => {
-    //         this.handleColorPicker();
-    //         this.handleColorUpdate(data);
-    //       }}
-    //       name={name}
-    //       color={color}
-    //       id={id}
-    //     />
-    //   ),
-    //   width: 225,
-    //   height: 225,
-    // });
-  };
-
   handleImagePicker = () => {
     this.props.addPopup('imagePicker');
   };

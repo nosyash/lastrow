@@ -50,7 +50,7 @@ class ColorPicker extends React.Component {
 }
 
 export default connect(
-  state => ({}),
+  null,
   {
     updateColor: payload => requestColorUpdate(payload),
     closePopup: () => ({ type: types.REMOVE_POPUP, payload: 'colorPicker' }),

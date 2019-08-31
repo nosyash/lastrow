@@ -1,6 +1,3 @@
-/* eslint-disable prefer-template */
-const { REACT_APP_API_ENDPOINT, REACT_APP_API_PORT } = process.env;
-
 // Selectors
 export const CHAT_NAME_SEL = '.chat-name';
 export const CHAT_HEADER_SEL = '.chat-header';
@@ -29,7 +26,7 @@ const origin = window.location.origin;
 const https = window.location.protocol === 'https:';
 const hostname = window.location.hostname;
 export const API_ENDPOINT = `${origin}/api`;
-export const SOCKET_ENDPOINT = (https ? 'wss' : 'ws') + `:${hostname}/api/ws`;
+export const SOCKET_ENDPOINT = `${https ? 'wss' : 'ws'}:${hostname}/api/ws`;
 
 // RegExp
 export const PARAGRAPH = new RegExp(/^((.*)?)$/gim);

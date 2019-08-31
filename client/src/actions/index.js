@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { parse } from 'subtitle';
 import { toast } from 'react-toastify';
 import http from '../utils/httpServices';
