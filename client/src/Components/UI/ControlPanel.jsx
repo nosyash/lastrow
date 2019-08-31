@@ -49,7 +49,7 @@ const RenderPlaylister = ({ onClick, logged, upNext }) => (
         text="Add To Playlist"
       />
     )}
-    <div className="item">
+    <div style={{ visibility: upNext ? '' : 'hidden' }} className="item">
       <div>Up next: </div>
       <a
         className="control"
