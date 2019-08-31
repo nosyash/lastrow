@@ -2,19 +2,20 @@ import React, { useState, useRef, useEffect } from 'react';
 import { connect } from 'react-redux';
 import ReactPlayer from 'react-player';
 import cn from 'classnames';
+import { throttle } from 'lodash';
 import * as types from '../../../constants/ActionTypes';
 import { formatTime } from '../../../utils/base';
-import { playerConf } from '../../../constants';
+import { playerConf, PLAYER_MINIMIZE_TIMEOUT } from '../../../constants';
 import ProgressBar from './ProgressBar';
 import Subtitles from './Subtitles';
 import { fetchSubs } from '../../../actions';
 
-// const minimizeTimer = null;
+let minimizeTimer = null;
 let videoEl = null;
+
 function Player(props) {
   const [minimized, setMinimized] = useState(false);
   const playerRef = useRef(null);
-
   let volume = 0.3;
 
   useEffect(() => {
@@ -25,6 +26,11 @@ function Player(props) {
       props.resetMedia();
     };
   }, []);
+
+  useEffect(() => {
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mousemove', handleMouseMove);
+  });
 
   useEffect(() => {
     checkDelay();
@@ -51,7 +57,7 @@ function Player(props) {
 
   function handleReady() {
     updateTime();
-    // handleMinimizeTimer();
+    // handleMouseMove();
   }
 
   function updateTime() {
@@ -75,19 +81,18 @@ function Player(props) {
     const { updatePlayer } = props;
     const { playedSeconds } = progress;
     updatePlayer({ currentTime: playedSeconds });
-    // handleMinimizeTimer();
+    // handleMouseMove();
   }
 
-  // function handleMinimizeTimer() {
-  //   if (minimized) {
-  //     clearTimeout(minimizeTimer);
-  //   } else {
-  //     minimizeTimer = setTimeout(() => {
-  //       console.log('minimized');
-  //       setMinimized(true);
-  //     }, PLAYER_MINIMIZE_TIMEOUT);
-  //   }
-  // }
+  function handleMouseMove({ target }) {
+    clearTimeout(minimizeTimer);
+    if (target.closest('.video-player')) return;
+    if (!minimized) {
+      minimizeTimer = setTimeout(() => {
+        setMinimized(true);
+      }, PLAYER_MINIMIZE_TIMEOUT);
+    }
+  }
 
   const handlePlay = () => {
     const e = new Event('videoplay');
@@ -233,7 +238,11 @@ function Player(props) {
   ]);
   return (
     <React.Fragment>
-      <div onMouseEnter={() => setMinimized(false)} className={classes}>
+      <div
+        onMouseLeave={() => setMinimized(true)}
+        onMouseMove={() => setMinimized(false)}
+        className={classes}
+      >
         {RenderPlayer()}
         {isDirectLink() && playerRef.current && renderPlayerGUI()}
       </div>
