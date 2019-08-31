@@ -63,20 +63,21 @@ const RenderMessage = props => {
           <div style={{ backgroundImage, backgroundColor }} className="chat-avatar" />
           <span
             ref={_ref}
+            data-name={name}
             onClick={handleProfile}
             style={{ color }}
-            className="chat-name"
+            className="chat-name reply-trigger"
           >
             {name}
           </span>
-          <span
+          {/* <span
             data-name={name}
             style={{ color }}
             title="Reply"
             className="control chat-message_reply"
           >
             <i className="fa fa-reply" />
-          </span>
+          </span> */}
         </div>
       )}
       <div className="chat-message_body">{safelySetInnerHTML(tempBody)}</div>

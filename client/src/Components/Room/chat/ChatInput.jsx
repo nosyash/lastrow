@@ -17,9 +17,8 @@ function ChatInput(props) {
     };
   });
   function handleClick(e) {
-    let { target } = e;
-    if (target.closest('.chat-message_reply')) {
-      target = target.closest('.chat-message_reply');
+    const target = e.target.closest('.reply-trigger');
+    if (target) {
       const { name } = target.dataset;
       if (name) {
         const value = `@${name} ${inputValue}`;
