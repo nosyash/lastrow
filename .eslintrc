@@ -67,7 +67,8 @@
     "import": 0,
     "import/resolver": {
       "node": {
-        "paths": ["src/"]
+        "paths": ["src", "client/src", "./client/src", "client/src/", "./client/src/"],
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
       }
     },
     "func-names": 0,

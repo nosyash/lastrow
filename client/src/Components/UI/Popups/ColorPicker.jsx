@@ -1,5 +1,8 @@
 import React from 'react';
 import { ChromePicker } from 'react-color';
+import { connect } from 'react-redux';
+import * as types from '../../../constants/ActionTypes';
+import { requestColorUpdate } from '../../../actions';
 
 class ColorPicker extends React.Component {
   state = {
@@ -20,10 +23,11 @@ class ColorPicker extends React.Component {
     onClose();
   };
 
-  handleSave = () => {
-    const { onSave } = this.props;
+  handleSave = async () => {
+    const { updateColor, closePopup } = this.props;
     const { color } = this.state;
-    onSave(color);
+    await updateColor(color);
+    closePopup();
   };
 
   render() {
@@ -36,11 +40,7 @@ class ColorPicker extends React.Component {
         </div>
         <ChromePicker onChange={this.handleChange} color={color} disableAlpha />
         <div className="controls-container">
-          <button
-            onClick={this.handleSave}
-            type="button"
-            className="button button-save"
-          >
+          <button onClick={this.handleSave} type="button" className="button button-save">
             Save
           </button>
         </div>
@@ -49,4 +49,10 @@ class ColorPicker extends React.Component {
   }
 }
 
-export default ColorPicker;
+export default connect(
+  state => ({}),
+  {
+    updateColor: payload => requestColorUpdate(payload),
+    closePopup: () => ({ type: types.REMOVE_POPUP, payload: 'colorPicker' }),
+  }
+)(ColorPicker);

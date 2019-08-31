@@ -1,17 +1,19 @@
 import axios from 'axios';
 import { parse } from 'subtitle';
-import { SET_SUBS } from '../constants/ActionTypes';
+import { toast } from 'react-toastify';
 import http from '../utils/httpServices';
+import * as api from '../constants/apiActions';
+import * as types from '../constants/ActionTypes';
 
 import Socket from '../utils/WebSocket';
 import { store } from '../store';
-import { SOCKET_ENDPOINT } from '../constants';
+import { SOCKET_ENDPOINT, toastOpts } from '../constants';
 
 export const fetchSubs = url => dispatch => {
   return http
     .get(url)
     .then(response => {
-      dispatch({ type: SET_SUBS, payload: { srt: parse(response.data) } });
+      dispatch({ type: types.SET_SUBS, payload: { srt: parse(response.data) } });
     })
     .catch(error => {
       throw error;
@@ -36,4 +38,18 @@ export const webSocketSend = data => {
 
 export const webSocketDisconnect = () => {
   if (socket) socket.destroy();
+};
+
+export const requestColorUpdate = color => async dispatch => {
+  // const { updateProfile } = this.props;
+  const res = await http.post(api.API_USER(), api.UPDATE_USER('', color));
+
+  if (!res.data) {
+    toast.error('There was an error updating your color...', toastOpts);
+    return;
+  }
+  toast.success('Color successfully changed', toastOpts);
+
+  dispatch({ type: types.UPDATE_PROFILE, payload: { ...res.data } });
+  return Promise.resolve();
 };
