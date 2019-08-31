@@ -4,7 +4,7 @@ import safelySetInnerHTML from '../../../utils/safelySetInnerHTML ';
 import parseMarkup from '../../../utils/markup';
 import playSound from '../../../utils/HandleSounds';
 
-class Message extends PureComponent {
+class Message extends Component {
   getClassNames = classes => {
     const { online } = classes;
     let { highlight } = classes;
@@ -15,25 +15,25 @@ class Message extends PureComponent {
     return { className: `chat-message ${onlineClass} ${highlight}` };
   };
 
-  getStyles(image, color) {
+  getStyles = (image, color) => {
     const backgroundImage = image ? `url(${image})` : '';
     const backgroundColor = color;
 
     return { backgroundImage, backgroundColor };
-  }
+  };
 
-  handleSounds(highlight) {
+  handleSounds = highlight => {
     const pageVissible = document.visibilityState === 'visible';
     if (highlight && !pageVissible) {
       playSound();
     }
-  }
+  };
 
   render() {
     const { online, color, image, highlight, body } = this.props;
     const { name, emojiList } = this.props;
 
-    this.handleSounds(highlight)
+    this.handleSounds(highlight);
 
     const renderMessageArgs = {
       ...this.getStyles(image, color),
@@ -56,14 +56,12 @@ const RenderMessage = props => {
   const { _ref, id, name, tempBody } = props;
   const { renderHeader, hideHeader } = props;
   const { handleProfile } = props;
+  console.log('rendered');
   return (
     <div data-id={id} className={className}>
       {renderHeader && !hideHeader && (
         <div className="chat-message_header">
-          <div
-            style={{ backgroundImage, backgroundColor }}
-            className="chat-avatar"
-          />
+          <div style={{ backgroundImage, backgroundColor }} className="chat-avatar" />
           <span
             ref={_ref}
             onClick={handleProfile}

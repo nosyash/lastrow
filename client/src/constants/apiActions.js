@@ -145,3 +145,20 @@ export const SEND_MEDIA_TO_PLAYLIST = ({ url, uuid }) => {
 
   return JSON.stringify(request);
 };
+
+export const DELETE_VIDEO_FROM_PLAYLIST = ({ __id, uuid }) => {
+  const request = {
+    action: 'player_event',
+    body: {
+      event: {
+        type: 'playlist_del',
+        data: {
+          __id,
+        },
+      },
+    },
+    user_uuid: uuid,
+  };
+
+  return JSON.stringify(request);
+};

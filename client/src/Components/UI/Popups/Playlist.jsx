@@ -1,10 +1,16 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { formatTime } from '../../../utils/base';
-// import * as types from '../../constants/ActionTypes';
+import { webSocketSend } from '../../../actions';
+import * as api from '../../../constants/apiActions';
 
 class Playlist extends Component {
   state = {};
+
+  handleDelete = ({ __id }) => {
+    const { uuid } = this.props;
+    webSocketSend(api.DELETE_VIDEO_FROM_PLAYLIST({ __id, uuid }));
+  };
 
   renderElement = (element, i) => (
     <div key={i} className="paylist-item">
@@ -12,6 +18,12 @@ class Playlist extends Component {
         {element.title || element.url}
       </a>
       <span className="playlist-item__duration">{formatTime(element.duration)}</span>
+      <span
+        onClick={() => this.handleDelete(element)}
+        className="control playlist-item__remove-icon"
+      >
+        <i className="fa fa-times"></i>
+      </span>
     </div>
   );
 
@@ -28,6 +40,7 @@ class Playlist extends Component {
 
 const mapStateToProps = state => ({
   playlist: state.Media.playlist,
+  uuid: state.profile.uuid,
 });
 
 export default connect(mapStateToProps)(Playlist);
