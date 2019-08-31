@@ -119,7 +119,7 @@ class LogForm extends Form {
 
   handleProfileSettings = () => {
     const { addPopup } = this.props;
-    addPopup('profile-settings');
+    addPopup('profileSettings');
   };
 
   render() {
