@@ -135,13 +135,12 @@ class Socket {
     }
   };
 
-  _handleError = e => {
-    console.log(e);
+  _handleError = () => {
     this.handleReconnect();
   };
 
-  _handleClose = e => {
-    console.log(e);
+  _handleClose = () => {
+    console.log('WebSocket conection closed');
     this.handleReconnect();
   };
 
