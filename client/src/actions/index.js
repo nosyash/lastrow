@@ -33,7 +33,7 @@ export const webSocketSend = data => {
   return socket
     .state()
     .then(() => socket.sendMessage(data))
-    .catch(() => alert('socket connection closed'));
+    .catch(() => alert('something went wrong in websocket'));
 };
 
 export const webSocketDisconnect = () => {

@@ -14,9 +14,12 @@ class Socket {
     this.uuid = uuid;
 
     this.timer = null;
+    this.reconnectTimer = null;
+    this.initWebSocket();
+  }
 
+  initWebSocket = () => {
     this._resetStates();
-
     this.instance = new WebSocket(this.url);
     this._listen();
   }
@@ -27,7 +30,6 @@ class Socket {
         const { readyState } = this.instance;
 
         if (this._getReadyState(readyState) === 'CLOSED') {
-          alert('Websocket connection closed');
           dispatch({ type: types.SET_SOCKET_CONNECTED, payload: false });
           dispatch({ type: types.SET_SOCKET_ERROR, payload: true });
           clearInterval(this.timer);
@@ -135,11 +137,20 @@ class Socket {
 
   _handleError = e => {
     console.log(e);
+    this.handleReconnect()
   };
 
   _handleClose = e => {
     console.log(e);
+    this.handleReconnect()
   };
+
+  handleReconnect = () => {
+    clearTimeout(this.reconnectTimer)
+    this.reconnectTimer = setTimeout(() => {
+      this.initWebSocket();
+    }, 1000);
+  }
 
   _unsubscribeEvents = () => {
     this.instance.onopen = () => null;
