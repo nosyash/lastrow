@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/url"
 	"path/filepath"
+	"strings"
 
 	"github.com/nosyash/backrow/vapi"
 
@@ -25,18 +26,23 @@ var (
 )
 
 func (pl *playlist) addVideo(vURL string) {
-	pURL, _ := url.Parse(vURL)
+	pURL, err := url.Parse(strings.TrimSpace(vURL))
+	if err != nil {
+		pl.AddFeedBack <- err
+		return
+	}
 	ext := filepath.Ext(pURL.String())
 	hostname := pURL.Hostname()
 
 	switch ext {
 	case ".mp4", ".m3u8", ".webm":
 		duration, title, err := ffprobe.GetMetaData(vURL)
-		ID := getRandomUUID()
-
 		if err != nil {
 			pl.AddFeedBack <- err
+			return
 		}
+
+		ID := getRandomUUID()
 
 		pl.playlist[ID] = &Video{
 			Title:    title,

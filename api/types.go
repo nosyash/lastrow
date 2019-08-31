@@ -30,7 +30,7 @@ type userBody struct {
 }
 
 type imageBody struct {
-	Data string `json:"raw_img"`
+	Img  string `json:"raw_img"`
 	Name string `json:"name"`
 }
 
@@ -72,4 +72,25 @@ const (
 	userDeleteImg  = "user_delete_img"
 	userUpdatePer  = "user_update_per"
 	userUpdatePswd = "user_update_pswd"
+)
+
+const (
+	minUsername = 1
+	maxUsername = 20
+
+	minPassword = 8
+	maxPassword = 32
+)
+
+const (
+	minRoomTitle = 4
+	maxRoomTitle = 20
+
+	minRoomPath = 4
+	maxRoomPath = 15
+)
+
+const (
+	minEmojiName = 4
+	maxEmojiName = 20
 )

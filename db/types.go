@@ -54,5 +54,5 @@ type session struct {
 
 const (
 	maxOwners = 15
-	maxEmoji  = 82
+	maxEmoji  = 100
 )

@@ -7,17 +7,10 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 
 	"gopkg.in/mgo.v2"
-)
-
-const (
-	minUsername = 1
-	maxUsername = 20
-
-	minPassword = 8
-	maxPassword = 32
 )
 
 var (
@@ -83,7 +76,7 @@ func (server Server) register(w http.ResponseWriter, uname, passwd, email, name 
 	}
 
 	userUUID := getRandomUUID()
-	result, err := server.db.CreateNewUser(uname, uname, getHashOfString(passwd), email, userUUID)
+	result, err := server.db.CreateNewUser(uname, uname, getHashOfString(passwd), strings.TrimSpace(email), userUUID)
 
 	if err != nil {
 		sendResponse(w, http.StatusInternalServerError, message{
@@ -108,7 +101,7 @@ func (server Server) login(w http.ResponseWriter, uname, passwd string) {
 		return
 	}
 
-	user, err := server.db.FindUser("uname", uname, getHashOfString(passwd))
+	user, err := server.db.FindUser("uname", strings.TrimSpace(uname), getHashOfString(passwd))
 	if err == mgo.ErrNotFound {
 		sendResponse(w, http.StatusBadRequest, message{
 			Error: "Username or password is invalid",

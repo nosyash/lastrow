@@ -40,7 +40,7 @@ func (server Server) userHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch userReq.Action {
 	case userUpdateImg:
-		server.updateProfileImage(w, userUUID, &userReq.Body.Image.Data)
+		server.updateProfileImage(w, userUUID, &userReq.Body.Image.Img)
 		if storage.Size() > 0 {
 			storage.UpdateUser(userUUID)
 		}

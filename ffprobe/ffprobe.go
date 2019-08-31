@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"os"
 	"os/exec"
 	"strconv"
 	"time"
@@ -49,6 +50,7 @@ func GetMetaData(url string) (int, string, error) {
 	)
 
 	cmd.Stdout = &out
+	cmd.Stderr = os.Stdout
 	err := cmd.Start()
 
 	if err == exec.ErrNotFound {

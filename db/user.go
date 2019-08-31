@@ -7,7 +7,6 @@ import (
 )
 
 func (db Database) CreateNewUser(name, uname, hash, email, uuid string) (bool, error) {
-
 	uniq, err := db.checkUniqueUser(uname, email)
 	if err != nil {
 		return false, err

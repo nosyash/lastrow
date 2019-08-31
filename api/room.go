@@ -2,9 +2,11 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/nosyash/backrow/db"
@@ -21,13 +23,16 @@ func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 
 	userUUID, err := server.getUserUUIDBySessionID(w, r)
 	if err != nil {
+		sendResponse(w, http.StatusBadRequest, message{
+			Error: err.Error(),
+		})
 		return
 	}
 
-	var roomReq roomRequest
+	var req roomRequest
 	decoder := json.NewDecoder(r.Body)
 
-	err = decoder.Decode(&roomReq)
+	err = decoder.Decode(&req)
 	if err != nil {
 		sendResponse(w, http.StatusBadRequest, message{
 			Error: err.Error(),
@@ -35,11 +40,11 @@ func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	switch roomReq.Action {
+	switch req.Action {
 	case roomCreate:
-		server.createRoom(w, roomReq.Body.Title, roomReq.Body.Path, userUUID)
+		server.createRoom(w, req.Body.Title, req.Body.Path, userUUID)
 	case roomUpdate:
-		server.updateRoom(w, &roomReq)
+		server.updateRoom(w, &req)
 	default:
 		sendResponse(w, http.StatusBadRequest, message{
 			Error: "Unknown /api/room action",
@@ -48,7 +53,7 @@ func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (server Server) createRoom(w http.ResponseWriter, title, path, userUUID string) {
-	var validPath = regexp.MustCompile(`[^a-zA-Z0-9-_]`)
+	var exp = regexp.MustCompile(`[^a-zA-Z0-9-_]`)
 
 	if title == "" || path == "" {
 		sendResponse(w, http.StatusBadRequest, message{
@@ -57,21 +62,21 @@ func (server Server) createRoom(w http.ResponseWriter, title, path, userUUID str
 		return
 	}
 
-	if validPath.MatchString(path) {
+	if exp.MatchString(path) {
 		sendResponse(w, http.StatusBadRequest, message{
 			Error: "Room path must contain only string characters and numbers",
 		})
 		return
 	}
 
-	if utf8.RuneCountInString(title) > 20 || utf8.RuneCountInString(title) < 4 {
+	if utf8.RuneCountInString(title) > maxRoomTitle || utf8.RuneCountInString(title) < minRoomTitle {
 		sendResponse(w, http.StatusBadRequest, message{
-			Error: "Title length must be no more than 20 characters and at least 4",
+			Error: fmt.Errorf("Title length must be no more than %d characters and at least %d", maxRoomTitle, minRoomTitle).Error(),
 		})
 		return
-	} else if len(path) > 15 || len(path) < 4 {
+	} else if len(path) > maxRoomPath || len(path) < minRoomPath {
 		sendResponse(w, http.StatusBadRequest, message{
-			Error: "Path length must be no more than 15 characters and at least 4",
+			Error: fmt.Errorf("Path length must be no more than %d characters and at least %d", maxRoomPath, minRoomPath).Error(),
 		})
 		return
 	}
@@ -88,7 +93,32 @@ func (server Server) createRoom(w http.ResponseWriter, title, path, userUUID str
 func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest) {
 	switch req.Body.UpdateType {
 	case addEmoji:
-		println("add shmailik")
+		if req.Body.Data.Name == "" || req.Body.Data.Img == "" || req.RoomUUID == "" {
+			sendResponse(w, http.StatusBadRequest, message{
+				Error: "One or more required arguments are empty",
+			})
+			return
+		}
+
+		name := strings.TrimSpace(req.Body.Data.Name)
+		// img := req.Body.Data.Img
+		// uuid := req.RoomUUID
+
+		var exp = regexp.MustCompile(`[^a-zA-Z0-9-_]`)
+		if exp.MatchString(name) {
+			sendResponse(w, http.StatusBadRequest, message{
+				Error: "Emoji name must contain only string characters and numbers",
+			})
+			return
+		}
+
+		if len(name) > maxEmojiName || len(name) < minEmojiName {
+			sendResponse(w, http.StatusBadRequest, message{
+				Error: fmt.Errorf("Length emoji name must be no more than %d characters and at least %d", maxEmojiName, minEmojiName).Error(),
+			})
+			return
+		}
+
 	default:
 		sendResponse(w, http.StatusBadRequest, message{
 			Error: "Unknown action type",
