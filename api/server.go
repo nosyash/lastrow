@@ -74,7 +74,6 @@ func (server Server) RunServer() error {
 func (server Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ext := filepath.Ext(r.URL.Path)
 	if r.URL.Path == "/" || ext != "" {
-		println(r.URL.Path)
 		http.ServeFile(w, r, filepath.Join("public", r.URL.Path))
 	}
 }

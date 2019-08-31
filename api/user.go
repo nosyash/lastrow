@@ -82,7 +82,7 @@ func (server Server) updateProfileImage(w http.ResponseWriter, userUUID string, 
 
 	rndUUID := getRandomUUID()
 
-	imgPath := filepath.Join(filepath.Join("media", server.imageServer.ProfImgPath), rndUUID[:16], fmt.Sprintf("%s.jpg", rndUUID[16:32]))
+	imgPath := filepath.Join(filepath.Join("/media", server.imageServer.ProfImgPath), rndUUID[:16], fmt.Sprintf("%s.jpg", rndUUID[16:32]))
 	fullPath := filepath.Join(server.imageServer.UplPath, imgPath)
 
 	img := newImage(filepath.Join(server.imageServer.UplPath, oldpath), fullPath)
@@ -108,6 +108,7 @@ func (server Server) deleteProfileImage(w http.ResponseWriter, userUUID string) 
 	}
 
 	imgFolder, _ := filepath.Split(imgPath)
+	fmt.Println(imgFolder, imgPath)
 	os.RemoveAll(filepath.Join(server.imageServer.UplPath, imgFolder))
 
 	server.db.UpdateUserValue(userUUID, "image", "")
