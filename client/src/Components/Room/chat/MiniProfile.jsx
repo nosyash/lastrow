@@ -6,7 +6,7 @@ function getStyles(image, color) {
   return { backgroundColor, backgroundImage };
 }
 
-const MiniProfile = ({ currentProfile }) => {
+const MiniProfile = ({ currentProfile, hideProfile }) => {
   const { name, image, color } = currentProfile;
   const { backgroundColor, backgroundImage } = getStyles(image, color);
 
@@ -14,7 +14,12 @@ const MiniProfile = ({ currentProfile }) => {
     <div className="mini-profile">
       <div style={{ backgroundColor, backgroundImage }} className="chat-avatar" />
       {name && (
-        <span style={{ color }} className="chat-name">
+        <span
+          onClick={hideProfile}
+          data-name={name}
+          style={{ color }}
+          className="chat-name reply-trigger"
+        >
           {name}
         </span>
       )}
@@ -23,14 +28,14 @@ const MiniProfile = ({ currentProfile }) => {
           <span className="sr-only">Loading...</span>
         </div>
       )}
-      <span
+      {/* <span
         data-name={name}
         title="Reply"
         style={{ color }}
         className="control chat-message_reply"
       >
         <i className="fa fa-reply" />
-      </span>
+      </span> */}
     </div>
   );
 };

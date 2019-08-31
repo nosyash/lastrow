@@ -26,10 +26,14 @@ function ChatHeader({ userList }) {
     setCurrentProfile(userProfile);
   }
 
+  function handleHideProfile() {
+    requestAnimationFrame(() => setShowProfile(false));
+  }
+
   return (
     <div className="chat-header">
       {showProfile && !currentProfile.guest && (
-        <MiniProfile currentProfile={currentProfile} />
+        <MiniProfile hideProfile={handleHideProfile} currentProfile={currentProfile} />
       )}
       <div className="chat-header_userlist">
         {userList.map((userProfile, index) => (
