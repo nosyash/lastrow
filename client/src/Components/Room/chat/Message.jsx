@@ -56,7 +56,6 @@ const RenderMessage = props => {
   const { _ref, id, name, tempBody } = props;
   const { renderHeader, hideHeader } = props;
   const { handleProfile } = props;
-  console.log('rendered');
   return (
     <div data-id={id} className={className}>
       {renderHeader && !hideHeader && (
