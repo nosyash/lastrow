@@ -92,6 +92,10 @@ body {
 }
 
 
+.video-container.no-user-select {
+  user-select: none;
+  pointer-events: none;
+}
 
 .video-container {
   overflow: hidden;
@@ -155,12 +159,13 @@ body {
   transition-delay: 0.05s;
 
   &:hover {
-    background: #404850
+    // background: #404850
   }
 }
 
 .custom-divider_moving {
-  background: #404850
+  // TODO: Remove divider background for now
+  // background: #404850
 }
 
 //  Chat
