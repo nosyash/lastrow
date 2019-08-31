@@ -49,22 +49,31 @@ const RenderPlaylister = ({ onClick, logged, upNext }) => (
         text="Add To Playlist"
       />
     )}
-    {upNext && (
-      <div className="item">
-        <div>Up next:</div>
-        <a
-          className="control"
-          target="_blank"
-          rel="noopener noreferrer"
-          href={upNext.url}
-        >
-          {upNext.title}
-        </a>
-        {/* <i className="fa fa-arrow-right" /> */}
-      </div>
-    )}
+    <div className="item">
+      <div>Up next: </div>
+      <a
+        className="control"
+        target="_blank"
+        rel="noopener noreferrer"
+        href={getUpNextUrl(upNext)}
+      >
+        {getUpNextTitle(upNext)}
+      </a>
+      {/* <i className="fa fa-arrow-right" /> */}
+    </div>
   </div>
 );
+
+const getUpNextUrl = upnext => {
+  if (upnext) return upnext.url;
+  return '';
+};
+
+const getUpNextTitle = upnext => {
+  if (!upnext) return '';
+  if (upnext.title) return upnext.title;
+  if (upnext.url) return upnext.url;
+};
 
 const RenderItem = ({ classes, onClick, dataId, text }) => (
   <div>
