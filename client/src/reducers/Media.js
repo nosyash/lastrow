@@ -20,10 +20,6 @@ const InitialState = {
   width: 0,
   volume: 0,
   muted: false,
-  kind: {
-    hls: false,
-    directFile: false,
-  },
 };
 
 const Player = (state = InitialState, action) => {
