@@ -150,9 +150,17 @@ function Player(props) {
     return '';
   }
 
+  function showControls() {
+    let controls = false;
+    const current = getCurrentVideo();
+    if (current && !current.direct) controls = true;
+    return controls;
+  }
+
   function renderPlayer() {
     const { media } = props;
     const url = getCurrentUrl();
+    const controls = showControls();
     return (
       <React.Fragment>
         <ReactPlayer
@@ -163,8 +171,8 @@ function Player(props) {
           onPlay={handlePlay}
           onPause={handlePause}
           config={playerConf}
-          autoPlay={false}
-          controls={false}
+          autoPlay
+          controls={controls}
           loop={false}
           progressInterval={100}
           muted={media.muted}
@@ -182,11 +190,12 @@ function Player(props) {
   }
 
   function renderPlayerGUI() {
+    const { showSubs } = props.media;
     return (
       <div className="video-player">
         {renderVideoTop()}
         {renderVideoMid()}
-        {videoEl && <Subtitles videoEl={videoEl} />}
+        {showSubs && videoEl && <Subtitles videoEl={videoEl} />}
         <div className="video-player_overflow" />
       </div>
     );

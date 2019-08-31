@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { throttle } from 'lodash';
+import cn from 'classnames';
 import { getCenteredRect } from '../../../utils/base';
 import * as types from '../../../constants/ActionTypes';
 import { POPUP_HEADER } from '../../../constants';
@@ -59,7 +60,9 @@ function Popups({ popups, removePopup, id }) {
   );
 
   function wrapPopup(popup, name) {
-    return <Popup removePopup={() => removePopup(name)} popupElement={popup} />;
+    return (
+      <Popup removePopup={() => removePopup(name)} popupElement={popup} name={name} />
+    );
   }
 }
 
@@ -135,7 +138,7 @@ function Popup(props) {
     }
   }
 
-  const { removePopup, popupElement } = props;
+  const { removePopup, popupElement, name } = props;
   const visibility = show ? 'visible' : 'hidden';
   return (
     <div
@@ -146,7 +149,7 @@ function Popup(props) {
         left: left || 'auto',
         visibility,
       }}
-      className="popup"
+      className={cn(['popup', name])}
     >
       <div data-id={0} className="popup-header">
         <div className="header-controls controls-container">

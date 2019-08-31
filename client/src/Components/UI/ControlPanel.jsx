@@ -16,7 +16,7 @@ function ControlPanel(props) {
   }
 
   const { profile, playlist } = props;
-  const upNext = playlist[0] || { title: '', url: '' };
+  const upNext = playlist[1];
   const { logged } = profile;
   return (
     <div className="control-panel_container">
@@ -49,13 +49,20 @@ const RenderPlaylister = ({ onClick, logged, upNext }) => (
         text="Add To Playlist"
       />
     )}
-    <div className="item">
-      <div>Up next:</div>
-      <a className="control" target="_blank" rel="noopener noreferrer" href={upNext.url}>
-        {upNext.title}
-      </a>
-      {/* <i className="fa fa-arrow-right" /> */}
-    </div>
+    {upNext && (
+      <div className="item">
+        <div>Up next:</div>
+        <a
+          className="control"
+          target="_blank"
+          rel="noopener noreferrer"
+          href={upNext.url}
+        >
+          {upNext.title}
+        </a>
+        {/* <i className="fa fa-arrow-right" /> */}
+      </div>
+    )}
   </div>
 );
 

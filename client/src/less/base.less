@@ -92,6 +92,10 @@ body {
 }
 
 
+.video-container.no-user-select {
+  user-select: none;
+  pointer-events: none;
+}
 
 .video-container {
   overflow: hidden;
@@ -155,12 +159,13 @@ body {
   transition-delay: 0.05s;
 
   &:hover {
-    background: #404850
+    // background: #404850
   }
 }
 
 .custom-divider_moving {
-  background: #404850
+  // TODO: Remove divider background for now
+  // background: #404850
 }
 
 //  Chat
@@ -959,7 +964,8 @@ body {
   height: 70px;
   max-width: 800px;
   margin: auto;
-  background: rgba(37, 39, 40, 0.9);
+  background: rgba(37, 39, 40, 0.85);
+  backdrop-filter: saturate(300%) blur(18px);
   border-radius: 4px;
   user-select: none;
   display: flex;
@@ -1200,6 +1206,10 @@ body {
   }
 }
 
+.toggle-cinemamode {
+  visibility: hidden;
+}
+
 .go-back {
   line-height: 0;
   font-size: 0.9em;
@@ -1293,6 +1303,7 @@ body {
 .popup {
   overflow: hidden;
   border-radius: 4px;
+  backdrop-filter: saturate(300%) blur(18px);
   box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
   position: fixed;
   left: 0;
@@ -1465,12 +1476,27 @@ body {
   background: rgba(37, 39, 40, 0.9);
   // height: 100%;
   box-shadow: none;
+
 }
 
 .paylist-item {
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+
+  a {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+
+  }
+}
+
+.popup.playlist {
+  max-width: 600px;
+}
+
+.playlist-item__duration {
+  margin-left: 5px;
 }
 
 // Add media

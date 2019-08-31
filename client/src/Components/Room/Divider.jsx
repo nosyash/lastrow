@@ -1,6 +1,7 @@
 import React, { Component, PureComponent } from 'react';
 import { connect } from 'react-redux';
 import cn from 'classnames';
+import { throttle } from 'lodash';
 import * as types from '../../constants/ActionTypes';
 
 class Divider extends Component {
@@ -11,6 +12,8 @@ class Divider extends Component {
     this.state = {
       moving: false,
     };
+
+    // this.mouseMove = requestAnimationFrame(this.handleMouseMove);
   }
 
   componentDidMount() {
@@ -24,13 +27,26 @@ class Divider extends Component {
     const { clientX } = e;
     const { chatWidth, chatLeft } = this.getChatCoordinates();
     this.offsetX = clientX - (chatWidth + chatLeft) + chatLeft;
+
+    this.disableUserSelect();
+  };
+
+  disableUserSelect = () => {
+    const element = document.getElementById('video-container');
+    if (!element) return;
+    element.classList.add('no-user-select');
+  };
+
+  enableUserSelect = () => {
+    const element = document.getElementById('video-container');
+    if (!element) return;
+    element.classList.remove('no-user-select');
   };
 
   handleMouseMove = e => {
     if (!this.state.moving) return;
     const { setChatWidth } = this.props;
     const { clientX } = e;
-
     setChatWidth(clientX - this.offsetX);
   };
 
@@ -43,6 +59,8 @@ class Divider extends Component {
   handleMouseUp = () => {
     if (this.state.moving) this.setState({ moving: false });
     localStorage.chatWidth = this.props.chatWidth;
+
+    this.enableUserSelect();
   };
 
   render() {

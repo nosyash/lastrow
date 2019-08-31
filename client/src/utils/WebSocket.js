@@ -1,6 +1,7 @@
 import * as api from '../constants/apiActions';
 import * as types from '../constants/ActionTypes';
 import { store } from '../store';
+import { sortPlaylistByIndex } from './base';
 
 const { dispatch } = store;
 
@@ -123,7 +124,8 @@ class Socket {
       }
 
       case 'playlist': {
-        return dispatch({ type: types.ADD_TO_PLAYLIST, payload: data.videos });
+        const playlist = sortPlaylistByIndex(data.videos);
+        return dispatch({ type: types.ADD_TO_PLAYLIST, payload: playlist });
       }
 
       default:
