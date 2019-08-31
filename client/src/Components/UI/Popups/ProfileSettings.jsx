@@ -146,7 +146,8 @@ class ProfileSettings extends Form {
 
     if (data.image) {
       const res = await http.post(api.API_USER(), api.UPDATE_IMAGE(data.image));
-      updateProfile({ ...profile, ...res.data });
+      const imgSrc = res.data.image ? `/uploads/${res.data.image}` : '';
+      updateProfile({ ...profile, ...res.data, image: imgSrc });
 
       if (res.data) {
         toast.success('Profile image successfully changed', toastOpts);

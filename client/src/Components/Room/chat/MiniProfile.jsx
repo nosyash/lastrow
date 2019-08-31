@@ -3,7 +3,7 @@ import React from 'react';
 function getStyles(image, color) {
   const backgroundImage = image ? `url(${image})` : '';
   const backgroundColor = !image ? color : '';
-  return { backgroundColor, backgroundImage }
+  return { backgroundColor, backgroundImage };
 }
 
 const MiniProfile = ({ currentProfile }) => {
@@ -12,10 +12,7 @@ const MiniProfile = ({ currentProfile }) => {
 
   return (
     <div className="mini-profile">
-      <div
-        style={{ backgroundColor, backgroundImage }}
-        className="chat-avatar"
-      />
+      <div style={{ backgroundColor, backgroundImage }} className="chat-avatar" />
       {name && (
         <span style={{ color }} className="chat-name">
           {name}

@@ -19,6 +19,7 @@ class Playlist extends Component {
     const { playlist } = this.props;
     return (
       <div className="popup-element playlist_container">
+        {!playlist.length && <p>No items</p>}
         {playlist.map((element, i) => this.renderElement(element, i))}
       </div>
     );
