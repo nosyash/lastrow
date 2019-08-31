@@ -182,11 +182,12 @@ function Player(props) {
   }
 
   function renderPlayerGUI() {
+    const { showSubs } = props.media;
     return (
       <div className="video-player">
         {renderVideoTop()}
         {renderVideoMid()}
-        {videoEl && <Subtitles videoEl={videoEl} />}
+        {showSubs && videoEl && <Subtitles videoEl={videoEl} />}
         <div className="video-player_overflow" />
       </div>
     );
