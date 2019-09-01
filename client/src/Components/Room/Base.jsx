@@ -43,7 +43,7 @@ class RoomBase extends Component {
   }
 
   componentWillUnmount() {
-    webSocketDisconnect();
+    // webSocketDisconnect();
   }
 
   init = async () => {
@@ -130,6 +130,7 @@ const RenderRoom = ({ connected, divider, video, chat }) => (
 const mapStateToProps = state => ({
   MainStates: state.MainStates,
   connected: state.Chat.connected,
+  currentRoomID: state.Chat.currentRoomID,
   cinemaMode: state.MainStates.cinemaMode,
   roomID: state.MainStates.roomID,
   emojiList: state.emojis.list,

@@ -22,6 +22,7 @@ export const fetchSubs = url => dispatch => {
 let socket = null;
 
 export const webSocketConnect = ({ roomID }) => {
+  webSocketDisconnect();
   const { uuid, name, guest } = store.getState().profile;
   const url = SOCKET_ENDPOINT;
   socket = new Socket({ url, roomID, uuid, guest, name });
@@ -29,10 +30,7 @@ export const webSocketConnect = ({ roomID }) => {
 };
 
 export const webSocketSend = data => {
-  return socket
-    .state()
-    .then(() => socket.sendMessage(data))
-    .catch(() => alert('something went wrong in websocket'));
+  return socket.sendMessage(data);
 };
 
 export const webSocketDisconnect = () => {
