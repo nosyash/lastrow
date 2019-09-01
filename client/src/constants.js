@@ -31,16 +31,18 @@ export const API_ENDPOINT = `${origin}/api`;
 export const SOCKET_ENDPOINT = `${https ? 'wss' : 'ws'}:${hostname}/api/ws`;
 
 // RegExp
-export const PARAGRAPH = new RegExp(/^((.*)?)$/gim);
-export const ME = new RegExp(/<p>\/me\s(\S{1,})<\/p>$/gim);
-export const DO = new RegExp(/<p>\/do\s(\S{1,})<\/p>$/gim);
-export const QUOTE = new RegExp(/<p>(>.*)<\/p>/gim);
+export const PARAGRAPH = new RegExp(/^(.*)$/gim);
+export const LINK = new RegExp(/(https?:\/\/[^\s<>]+[a-z])/gim);
+export const ME = new RegExp(/<p>\/me\s(.+)<\/p>$/gim);
+export const DO = new RegExp(/<p>\/do\s(\S+)<\/p>$/gim);
+export const QUOTE = new RegExp(/<p>(>.+?)<\/p>/gim);
 export const TODO = new RegExp(/\/todo\s(.*)\s\*\s(.*)$/gim);
-export const ITALIC = new RegExp(/(\*)(.{1,}?)(\*)/gi);
-export const BOLD = new RegExp(/(\*\*)(.{1,}?)(\*\*)/gi);
-export const SPOILER = new RegExp(/(%%)(.{1,}?)(%%)/gi);
-export const PREFORMATTED = new RegExp(/(^```)((.|\n){1,})(```$)/, 'gim');
-export const EMOTE = new RegExp(/(:)(\S{1,31})(:)/, 'gim');
+export const ITALIC = new RegExp(/(\*)(.+?)(\*)/gi);
+export const CENSORED = new RegExp(/(--)(.+?)(--)/gi);
+export const BOLD = new RegExp(/(\*\*)(.+?)(\*\*)/gi);
+export const SPOILER = new RegExp(/(%%)(.+?)(%%)/gi);
+export const PREFORMATTED = new RegExp(/(^```)((.|\n)+)(```$)/, 'gim');
+export const EMOTE = new RegExp(/([> ])(:)([a-zA-Z0-9_]+)(:)([ <])/g);
 
 // WebSocket ReadyStates
 export const CONNECTING = 0;

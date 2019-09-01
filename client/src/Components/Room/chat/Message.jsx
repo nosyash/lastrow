@@ -70,14 +70,6 @@ const RenderMessage = props => {
           >
             {name}
           </span>
-          {/* <span
-            data-name={name}
-            style={{ color }}
-            title="Reply"
-            className="control chat-message_reply"
-          >
-            <i className="fa fa-reply" />
-          </span> */}
         </div>
       )}
       <div className="chat-message_body">{safelySetInnerHTML(tempBody)}</div>

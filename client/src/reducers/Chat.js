@@ -1,18 +1,8 @@
 import { MAX_MESSAGES, MAX_HISTORY } from '../constants';
 import * as types from '../constants/ActionTypes';
 
-let id_ = 0;
 const initialState = {
-  roomsMessages: [
-    ...Array(100).fill({
-      message: `${Math.random().toString()}63b64406cc815bc102bf37cc5f08bafea3e22d1c29fa27a6c8d1bc52a9202034`,
-      image: '/media/c3daee00b55c4058/8d498591d835ed6d.jpg',
-      name: 'sader',
-      __id: '63b64406cc815bc102bf37cc5f08bafea3e22d1c29fa27a6c8d1bc52a9202034',
-      roomID: 'sadd',
-      id: id_++,
-    }),
-  ],
+  roomsMessages: [],
   // currentRoomID: '',
   history: [],
   users: [],
