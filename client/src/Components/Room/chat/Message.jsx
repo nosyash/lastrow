@@ -40,7 +40,7 @@ class Message extends PureComponent {
       ...this.getClassNames({ online, highlight }),
       ...parseMarkup({ body, emojiList, name }),
     };
-
+    console.log('render message');
     return <RenderMessage {...renderMessageArgs} {...this.props} />;
   }
 }

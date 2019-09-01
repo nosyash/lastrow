@@ -1,8 +1,19 @@
 import { MAX_MESSAGES, MAX_HISTORY } from '../constants';
 import * as types from '../constants/ActionTypes';
 
+let id_ = 0;
 const initialState = {
-  list: {},
+  roomsMessages: [
+    ...Array(100).fill({
+      message: `${Math.random().toString()}63b64406cc815bc102bf37cc5f08bafea3e22d1c29fa27a6c8d1bc52a9202034`,
+      image: '/media/c3daee00b55c4058/8d498591d835ed6d.jpg',
+      name: 'sader',
+      __id: '63b64406cc815bc102bf37cc5f08bafea3e22d1c29fa27a6c8d1bc52a9202034',
+      roomID: 'sadd',
+      id: id_++,
+    }),
+  ],
+  // currentRoomID: '',
   history: [],
   users: [],
   connected: false,
@@ -14,6 +25,11 @@ const initialState = {
 
 let id = 0;
 
+const getRoomMessages = room => {
+  if (room && room.list) return room.list;
+  return [];
+};
+
 const Messages = (state = initialState, action) => {
   const historyTemp = Object.assign([], [...state.history, action.payload]);
 
@@ -22,20 +38,34 @@ const Messages = (state = initialState, action) => {
       id++;
       const message = { ...action.payload };
       const { roomID } = message;
+
       // delete message.roomID;
       delete message.type;
+      message.id = id;
 
-      const list = Object.assign({}, state.list);
-      const currentRoom = [...(list[roomID] || []), { ...message, id }] || [message];
+      // const room = state.roomsMessages.find(item => item.roomID === roomID);
+      // const currentList = getRoomMessages(room);
 
-      if (currentRoom.length > MAX_MESSAGES) currentRoom.shift();
-      list[roomID] = currentRoom;
+      // const roomUpdated = Object.assign({}, { ...room, list: currentList });
+      // roomUpdated.roomID = roomID;
+      // roomUpdated.list.push(message);
+      // const currentRoom = [...(list[roomID] || []), { ...message, id }] || [message];
+      const roomsMessages = [...state.roomsMessages, message];
+      console.log(roomsMessages.length > MAX_MESSAGES);
+      if (roomsMessages.length > MAX_MESSAGES) roomsMessages.shift();
+      // list[roomID] = currentRoom;
+      // const roomsMessages = state.roomsMessages;
 
-      return { ...state, list: { ...list } };
+      // return { ...state, roomsMessages: [...state.roomsMessages, roomUpdated] };
+      return { ...state, roomsMessages };
     }
 
     case types.CLEAR_MESSAGE_LIST: {
-      return { ...state, list: [] };
+      return { ...state, roomsMessages: [] };
+    }
+
+    case types.SET_CURRENT_ROOMID: {
+      return { ...state, currentRoomID: action.payload };
     }
 
     case types.CLEAR_USERS: {

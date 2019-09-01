@@ -1,29 +1,30 @@
-import React, { Component } from 'react';
+import React, { Component, useMemo } from 'react';
 import { connect } from 'react-redux';
 import Message from './Message';
 import { isEdge } from '../../../constants';
 
 class ListMessages extends Component {
   componentDidUpdate() {
+    if (!this.messages) return;
     if (isEdge) this.messages.scrollTop = 100000;
     else this.messages.scrollTo(0, 100000);
   }
 
   getSingleMessage = (currentMessage, i) => {
-    const { list, roomID, selfName, users } = this.props;
+    const { roomsMessages, roomID, selfName, users } = this.props;
     let renderHeader = true;
-    const previousMessage = list[roomID][i - 1];
+    const previousMessage = roomsMessages[i - 1];
     if (previousMessage && previousMessage.__id === currentMessage.__id) {
       renderHeader = false;
     }
-    const nameRegExp = new RegExp(`@${selfName}`);
+
     let highlight = false;
-    if (nameRegExp.test(currentMessage.message)) {
+    if (currentMessage.message.includes(`@${selfName}`)) {
       highlight = true;
     }
 
     if (currentMessage.roomID !== roomID) {
-      return;
+      return null;
     }
 
     const online = !!users.find(user => user.__id === currentMessage.__id);
@@ -43,18 +44,17 @@ class ListMessages extends Component {
   };
 
   render() {
-    const { list, roomID } = this.props;
-    const currentList = list[roomID] || [];
+    const { roomsMessages, roomID } = this.props;
     return (
       <div ref={ref => (this.messages = ref)} className="chat-messages">
-        {currentList.map((message, index) => this.getSingleMessage(message, index))}
+        {roomsMessages.map((message, index) => this.getSingleMessage(message, index))}
       </div>
     );
   }
 }
 
 const mapStateToProps = state => ({
-  list: state.Chat.list,
+  roomsMessages: state.Chat.roomsMessages,
   users: state.Chat.users,
   selfName: state.profile.name,
   roomID: state.MainStates.roomID,
