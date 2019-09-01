@@ -102,6 +102,16 @@ export function sortPlaylistByIndex(playlist) {
   return playlist.sort((a, b) => (a.index > b.index ? 1 : -1));
 }
 
+export function reverse(s) {
+  let s2 = '';
+  for (let i = s.length - 1; i >= 0; i--) {
+    s2 += s[i];
+  }
+  return s2;
+}
+
+export const mod = (n, m) => ((n % m) + m) % m;
+
 // export function formatTime(sec) {
 //   date = new Date(null);
 //   date.setSeconds(sec);

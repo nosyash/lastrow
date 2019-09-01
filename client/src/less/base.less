@@ -449,10 +449,47 @@ body {
   border: none;
   display: flex;
 
+  position: relative;
+
   textarea {
     height: 100px;
     padding: 5px;
   }
+}
+
+.emote-search {
+  position: absolute;
+  display: flex;
+  // max-width: 100px;
+  overflow-x: auto;
+  background: #3b3b3b;
+  z-index: 100000;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  flex-direction: column;
+  left: 0;
+  right: 0;
+  bottom: 105px;
+}
+
+.emote-search__emote span {
+  font-weight: 600;
+  margin-left: 10px;
+  font-size: 0.9em;
+  vertical-align: middle;
+}
+
+.emote-search__emote {
+  padding: 5px;
+  cursor: pointer;
+
+  &:hover {
+    background: #586a7c
+  }
+}
+
+.emote-search__emote_selected {
+  background: #586a7c;
 }
 
 .chat-header {
