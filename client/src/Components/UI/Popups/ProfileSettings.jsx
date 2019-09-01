@@ -79,6 +79,10 @@ class ProfileSettings extends Form {
     this.props.addPopup('imagePicker');
   };
 
+  handleColorPicker = () => {
+    this.props.addPopup('colorPicker');
+  };
+
   handleColorUpdate = async color => {
     const { updateProfile } = this.props;
     const res = await http.post(api.API_USER(), api.UPDATE_USER('', color));
