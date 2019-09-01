@@ -26,7 +26,7 @@ export const MAX_CHAT_WIDTH = 700;
 // API
 const origin = window.location.origin;
 const https = window.location.protocol === 'https:';
-const hostname = window.location.host;
+const hostname = window.location.hostname;
 export const API_ENDPOINT = `${origin}/api`;
 export const SOCKET_ENDPOINT = `${https ? 'wss' : 'ws'}:${hostname}/api/ws`;
 

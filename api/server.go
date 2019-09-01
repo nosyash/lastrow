@@ -25,7 +25,7 @@ type Server struct {
 	imageServer ImageServer
 }
 
-// NewServer create and return a new instance of API Server.
+// NewServer create and return a new instance of API Server
 func NewServer(address, uplPath, pofImgPath string, db *db.Database) *Server {
 	return &Server{
 		&http.Server{
@@ -52,7 +52,7 @@ func NewServer(address, uplPath, pofImgPath string, db *db.Database) *Server {
 	}
 }
 
-// RunServer starting the API server.
+// RunServer starting the API server
 func (server Server) RunServer() error {
 	r := mux.NewRouter()
 	go ws.HandleWsConnection(server.db)
