@@ -49,5 +49,11 @@ func GetUsersCount(roomPath string) int {
 
 // GetCurrentVideoTitle return current video title by roomPath
 func GetCurrentVideoTitle(roomPath string) string {
-	return "WJSN - Babyface"
+	if _, ok := storage.cs[roomPath]; ok {
+		if storage.cs[roomPath].Playlist.Size() == 0 {
+			return ""
+		}
+		return storage.cs[roomPath].Playlist.GetCurrentTitle()
+	}
+	return ""
 }

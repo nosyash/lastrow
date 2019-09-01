@@ -140,3 +140,13 @@ func (pl playlist) TakeHeadElement() *Video {
 	}
 	return nil
 }
+
+// GetCurrentTitle return title of head element in playlist
+func (pl playlist) GetCurrentTitle() string {
+	for _, v := range pl.playlist {
+		if v.Index == 0 {
+			return v.Title
+		}
+	}
+	return ""
+}
