@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import cn from 'classnames';
 import * as types from '../../constants/ActionTypes';
+import { MIN_CHAT_WIDTH, MAX_CHAT_WIDTH } from '../../constants';
 
 class Divider extends Component {
   constructor() {
@@ -10,14 +11,14 @@ class Divider extends Component {
     this.chatInnerEl = null;
     this.state = {
       moving: false,
+      width: 0,
     };
-
-    // this.mouseMove = requestAnimationFrame(this.handleMouseMove);
   }
 
   componentDidMount() {
     document.addEventListener('mouseup', this.handleMouseUp);
     document.addEventListener('mousemove', this.handleMouseMove);
+    this.setState({ width: this.props.chatWidth });
   }
 
   handleMouseDown = e => {
@@ -44,9 +45,11 @@ class Divider extends Component {
 
   handleMouseMove = e => {
     if (!this.state.moving) return;
-    const { setChatWidth } = this.props;
     const { clientX } = e;
-    setChatWidth(clientX - this.offsetX);
+
+    const width = clientX - this.offsetX;
+    // setChatWidth(width);
+    this.setState({ width: Math.max(MIN_CHAT_WIDTH, Math.min(MAX_CHAT_WIDTH, width)) });
   };
 
   getChatCoordinates() {
@@ -57,18 +60,27 @@ class Divider extends Component {
 
   handleMouseUp = () => {
     if (this.state.moving) this.setState({ moving: false });
-    localStorage.chatWidth = this.props.chatWidth;
 
     this.enableUserSelect();
+    const { setChatWidth } = this.props;
+    const width = Math.max(MIN_CHAT_WIDTH, Math.min(MAX_CHAT_WIDTH, this.state.width));
+    localStorage.chatWidth = width;
+    setChatWidth(width);
   };
 
   render() {
-    const { moving } = this.state;
+    const { moving, width } = this.state;
+    const transform = `translateX(${width}px)`;
     return (
-      <div
-        onMouseDown={this.handleMouseDown}
-        className={cn('custom-divider', { 'custom-divider_moving': moving })}
-      />
+      <React.Fragment>
+        <div
+          style={{ transform }}
+          onMouseDown={this.handleMouseDown}
+          className={cn('custom-divider', { 'custom-divider_moving': moving })}
+        >
+          {moving && <div className="custom-divider__background"></div>}
+        </div>
+      </React.Fragment>
     );
   }
 }

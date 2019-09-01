@@ -20,6 +20,8 @@ export const WEBSOCKET_TIMEOUT = 2000;
 export const API_FETCH_TIMEOUT = 2000;
 export const PLAYER_MINIMIZE_TIMEOUT = 2000;
 export const VOLUME_WHEEL = 0.1;
+export const MIN_CHAT_WIDTH = 140;
+export const MAX_CHAT_WIDTH = 700;
 
 // API
 const origin = window.location.origin;

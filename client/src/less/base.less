@@ -53,6 +53,7 @@ body {
   display: flex; // margin-top: 20px;
   height: 100%;
   max-height: 100%;
+  position: relative;
 }
 
 .top-nav {
@@ -162,13 +163,14 @@ body {
 
 .chat-container {
   flex-shrink: 0;
-  max-width: 50vw;
-  min-width: 140px;
+  // max-width: 600px;
+  // min-width: 140px;
   min-height: 300px;
   word-break: break-word;
   background: transparent;
   overflow: visible; // padding-right: 10px;
   z-index: 10;
+  margin-right: 10px;
 }
 
 .chat-container.collapsed {
@@ -184,18 +186,31 @@ body {
   user-select: none;
   border-radius: 3px;
   padding: 0 5px;
-  cursor: e-resize; // display: none;
-
-  transition-delay: 0.05s;
+  cursor: e-resize;
+  position: absolute;
+  left: 0;
+  height: 100%;
+  transform: translateX(0);
+  // background: red;
+  z-index: 1999;
 
   &:hover {
-    // background: #404850
+    background: #404850
   }
 }
 
+.custom-divider__background {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: #2d363e8f;
+  width: 100vw;
+  z-index: 100000;
+}
+
 .custom-divider_moving {
-  // TODO: Remove divider background for now
-  // background: #404850
+  background: #404850
 }
 
 //  Chat
