@@ -14,11 +14,23 @@ import {
 } from '../constants';
 import { store } from '../store';
 
-// TODO: later..
-import showdown from './showdown';
+function handleEmotes(body = '') {
+  const { list: emoteList } = store.getState().emojis;
+  return body.replace(EMOTE, (match, ...args) => {
+    const emoteName = args[2];
+    const emoteFounded = emoteList.find(emote => emote.name === emoteName);
+    if (!emoteFounded) return match;
+    const { url, url2x } = emoteFounded;
 
-console.log(showdown.getOptions());
-console.log(showdown.makeHtml('http://127.0.0.1/r/sadd:smart:'));
+    let string = '';
+    string += args[0];
+    string += `<img className="emote" src="${url}" srcSet="${url} 1x, ${url2x} 2x" title="`;
+    string += args[2];
+    string += `">`;
+    string += args[4];
+    return string;
+  });
+}
 
 export default function parseMarkup({ body, name }) {
   const { users } = store.getState().Chat.users;
@@ -47,11 +59,9 @@ export default function parseMarkup({ body, name }) {
         (_, ...args) =>
           `<em className="censored">${String('*').repeat(args[1].length)}</em>`
       )
-      .replace(SPOILER, '<del>$2</del>')
-      .replace(
-        EMOTE,
-        `$1<img className="emote" src="${src}" srcSet="${src} 1x, https://files.catbox.moe/igwn7x.png 2x" title="$3">$5`
-      );
+      .replace(SPOILER, '<del>$2</del>');
+
+    tempBody = handleEmotes(tempBody);
   }
   if (!preformated) {
     if (EMOTE.test(tempBody)) {
