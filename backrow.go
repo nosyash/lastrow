@@ -17,30 +17,20 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Printf("Error while trying to load .env file: %v", err)
 		log.Printf("Will be use defaults value")
-
-		println("API_ENDPOINT are empty and will be set to default value: :3333")
-		apiAddr = ":8080"
-
-		println("UPLOAD_PATH are empty and will be set to default value: (pwd)")
-		uplPath = "./"
-
-		println("PROFILE_IMG_PATH are empty and will be set to default value: /profile/")
-		profImgPath = "/profile/"
-
-		println("DB_ENDPOINT are empty and will be set to default value: /media/")
-		dbAddr = "0.0.0.0:27017"
-	} else {
-		apiAddr = os.Getenv("API_ENDPOINT")
-		dbAddr = os.Getenv("DB_ENDPOINT")
-		uplPath = os.Getenv("UPLOAD_PATH")
-		profImgPath = os.Getenv("PROFILE_IMG_PATH")
-		if os.Getenv("YT_API_KEY") == "" {
-			log.Println("Warning! Youtube API key was not specified in .env file")
-		}
 	}
 
-	// This is for cache package and that's very stupid
+	apiAddr = getEnvOrDefault("API_ENDPOINT", ":8080")
+	dbAddr = getEnvOrDefault("DB_ENDPOINT", "localhost:27017")
+	uplPath = getEnvOrDefault("UPLOAD_PATH", "./")
+	profImgPath = getEnvOrDefault("PROFILE_IMG_PATH", "profile")
+
+	// FIX THAT!
+	// For db package
 	os.Setenv("DB_ENDPOINT", dbAddr)
+
+	if os.Getenv("YT_API_KEY") == "" {
+		log.Println("Warning! Youtube API key was not specified in .env file")
+	}
 
 	db := db.Connect(dbAddr)
 	defer db.Close()
@@ -49,4 +39,13 @@ func main() {
 	if err := apis.RunServer(); err != http.ErrServerClosed {
 		log.Fatalf("Error while trying to run server: %v", err)
 	}
+}
+
+func getEnvOrDefault(key, def string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		log.Printf("%s are empty and will be set to default value: %s\n", key, def)
+		return def
+	}
+	return value
 }

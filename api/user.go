@@ -108,7 +108,6 @@ func (server Server) deleteProfileImage(w http.ResponseWriter, userUUID string) 
 	}
 
 	imgFolder, _ := filepath.Split(imgPath)
-	fmt.Println(imgFolder, imgPath)
 	os.RemoveAll(filepath.Join(server.imageServer.UplPath, imgFolder))
 
 	server.db.UpdateUserValue(userUUID, "image", "")

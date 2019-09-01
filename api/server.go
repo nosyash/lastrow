@@ -75,12 +75,16 @@ func (server Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ext := filepath.Ext(r.URL.Path)
 	if r.URL.Path == "/" || ext != "" {
 		http.ServeFile(w, r, filepath.Join("public", r.URL.Path))
+	} else {
+		w.WriteHeader(http.StatusForbidden)
 	}
 }
 
 func (is ImageServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if ext := filepath.Ext(r.URL.Path); ext != "" {
 		http.ServeFile(w, r, filepath.Join(is.UplPath, r.URL.Path))
+	} else {
+		w.WriteHeader(http.StatusForbidden)
 	}
 }
 
