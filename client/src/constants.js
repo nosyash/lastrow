@@ -32,7 +32,7 @@ export const SOCKET_ENDPOINT = `${https ? 'wss' : 'ws'}:${hostname}/api/ws`;
 
 // RegExp
 export const PARAGRAPH = new RegExp(/^(.*)$/gim);
-export const LINK = new RegExp(/(https?:\/\/[^\s<>]+[a-z])/gim);
+export const LINK = new RegExp(/(https?:\/\/[^\s<>]+)/gim);
 export const ME = new RegExp(/<p>\/me\s(.+)<\/p>$/gim);
 export const DO = new RegExp(/<p>\/do\s(.+)<\/p>$/gim);
 export const QUOTE = new RegExp(/<p>(>.+?)<\/p>/gim);
@@ -42,7 +42,7 @@ export const CENSORED = new RegExp(/(--)(.+?)(--)/gi);
 export const BOLD = new RegExp(/(\*\*)(.+?)(\*\*)/gi);
 export const SPOILER = new RegExp(/(%%)(.+?)(%%)/gi);
 export const PREFORMATTED = new RegExp(/(^```)((.|\n)+)(```$)/, 'gim');
-export const EMOTE = new RegExp(/([> ])(:)([a-zA-Z0-9_]+)(:)([ <])/g);
+export const EMOTE = new RegExp(/(:)([a-zA-Z0-9_]+)(:)(?!.*<\/a)/gim);
 
 // WebSocket ReadyStates
 export const CONNECTING = 0;
