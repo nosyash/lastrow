@@ -28,7 +28,6 @@ function Player(props) {
   }, []);
 
   useEffect(() => {
-    console.log('use effect');
     document.addEventListener('mousemove', handleMouseMove);
   });
 
@@ -85,25 +84,24 @@ function Player(props) {
   }
 
   function handleMouseMove({ target }) {
+    document.removeEventListener('mousemove', handleMouseMove);
     clearTimeout(minimizeTimer);
-    console.log('move');
     if (target.closest('.video-player')) return;
     if (!minimized) {
       minimizeTimer = setTimeout(() => {
         setMinimized(true);
       }, PLAYER_MINIMIZE_TIMEOUT);
     }
-    document.removeEventListener('mousemove', handleMouseMove);
   }
 
   const handlePlay = () => {
-    const e = new Event('videoplay');
-    document.dispatchEvent(e);
+    // const e = new Event('videoplay');
+    // document.dispatchEvent(e);
   };
 
   const handlePause = () => {
-    const e = new Event('videopause');
-    document.dispatchEvent(e);
+    // const e = new Event('videopause');
+    // document.dispatchEvent(e);
   };
 
   function getCurrentVideo() {
@@ -141,7 +139,7 @@ function Player(props) {
           // WTF IS GOING ON HERE
           controls={!direct}
           loop={false}
-          progressInterval={100}
+          progressInterval={50}
           muted={media.muted}
           playing={media.playing}
           volume={media.volume}
@@ -169,6 +167,7 @@ function Player(props) {
   }
 
   function handleProgressChange(percent) {
+    console.log('seekto');
     playerRef.current.seekTo(percent / 100, 'fraction');
   }
 
