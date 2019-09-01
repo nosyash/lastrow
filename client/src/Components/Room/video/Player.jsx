@@ -28,7 +28,7 @@ function Player(props) {
   }, []);
 
   useEffect(() => {
-    document.removeEventListener('mousemove', handleMouseMove);
+    console.log('use effect');
     document.addEventListener('mousemove', handleMouseMove);
   });
 
@@ -86,12 +86,14 @@ function Player(props) {
 
   function handleMouseMove({ target }) {
     clearTimeout(minimizeTimer);
+    console.log('move');
     if (target.closest('.video-player')) return;
     if (!minimized) {
       minimizeTimer = setTimeout(() => {
         setMinimized(true);
       }, PLAYER_MINIMIZE_TIMEOUT);
     }
+    document.removeEventListener('mousemove', handleMouseMove);
   }
 
   const handlePlay = () => {

@@ -61,7 +61,13 @@ export const isEdge = window.navigator.userAgent.indexOf('Edge') > -1;
 
 export const playerConf = {
   youtube: {
-    playerVars: { autoplay: 1, controls: 1 },
-    preload: true,
+    host: 'http://www.youtube.com',
+    playerVars: {
+      host: 'http://www.youtube.com',
+      autoplay: 1,
+      controls: 1,
+      origin: 'https://www.youtube.com',
+    },
+    preload: false,
   },
 };
