@@ -19,8 +19,6 @@ function handleEmotes(body = '') {
   return body.replace(EMOTE, (match, ...args) => {
     const emoteName = args[1];
     const emoteFounded = emoteList.find(emote => emote.name === emoteName);
-    console.log(match);
-    console.log(args);
     if (!emoteFounded) return match;
     const { url, url2x } = emoteFounded;
     let string = '';
