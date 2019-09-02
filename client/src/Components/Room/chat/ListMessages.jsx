@@ -36,19 +36,13 @@ function ListMessages(props) {
     else messagesEl.current.scrollTo(0, amountOfPixelsToBeAtBottom());
   }
 
-  function amountOfPixelsToBeAtBottom() {
-    return getChatScrollHeight() - getChatOffsetHeight();
-  }
-  function getChatScrollHeight() {
-    return messagesEl.current.scrollHeight;
-  }
-  function getChatOffsetHeight() {
-    return messagesEl.current.offsetHeight;
-  }
+  const amountOfPixelsToBeAtBottom = () => getChatScrollHeight() - getChatOffsetHeight();
 
-  function currentScroll() {
-    return messagesEl.current.scrollTop;
-  }
+  const getChatScrollHeight = () => messagesEl.current.scrollHeight;
+
+  const getChatOffsetHeight = () => messagesEl.current.offsetHeight;
+
+  const currentScroll = () => messagesEl.current.scrollTop;
 
   function handleToBottomClick() {
     setShouldScroll(true);
