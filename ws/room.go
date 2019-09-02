@@ -41,6 +41,8 @@ func (h hub) HandleActions() {
 	for {
 		select {
 		case user := <-h.register:
+			// ok, deadlineClose is true?
+			// call cancel func
 			h.add(user)
 			go h.read(user.Conn)
 			go h.ping(user.Conn)
@@ -107,7 +109,8 @@ func (h hub) remove(conn *websocket.Conn) {
 			// If last user leave the room, playlist will be deleted
 			// If we not close cache, playlist will not be deleted but sync timers will be reset
 
-			// ContextWithDeadLine????
+			// set deadlineClose to true
+			// When ctx.Done() delete current room sessiom from hub and close cache
 			close <- h.id
 			h.cache.Close <- struct{}{}
 			return

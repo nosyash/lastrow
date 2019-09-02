@@ -106,11 +106,14 @@ func (h *hub) handlePlayerEvent(req *request, conn *websocket.Conn) {
 	case ETYPE_PL_DEL:
 		ID := req.Body.Event.Data.ID
 		if ID != "" && len(ID) == 64 {
+
 			if h.syncer.currentVideoID == ID {
 				h.syncer.skip <- struct{}{}
 				return
 			}
+
 			h.cache.Playlist.DelVideo <- ID
+
 			if err := <-h.cache.Playlist.DelFeedBack; err != nil {
 				sendError(conn, err)
 			}
@@ -170,11 +173,6 @@ func (h *hub) syncCurrentTime() {
 		}
 		video := h.cache.Playlist.TakeHeadElement()
 
-		// if video.iframe = true
-		// h.syncer.sleep = true
-		// <-h.synver.wakeup
-		// continue
-
 		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration+sleepBeforeStart)*time.Second))
 		ticker := time.Tick(syncPeriod * time.Second)
 		elapsedTime := 0
@@ -206,5 +204,6 @@ func (h *hub) syncCurrentTime() {
 
 		h.cache.Playlist.DelVideo <- video.ID
 		<-h.cache.Playlist.DelFeedBack
+		h.syncer.currentVideoID = ""
 	}
 }
