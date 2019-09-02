@@ -1,17 +1,62 @@
-import React, { Component, useMemo } from 'react';
+import React, { useState, useEffect, useRef, Fragment } from 'react';
+import cn from 'classnames';
 import { connect } from 'react-redux';
 import Message from './Message';
 import { isEdge } from '../../../constants';
 
-class ListMessages extends Component {
-  componentDidUpdate() {
-    if (!this.messages) return;
-    if (isEdge) this.messages.scrollTop = 100000;
-    else this.messages.scrollTo(0, 100000);
+let event = () => null;
+function ListMessages(props) {
+  const [shouldScroll, setShouldScroll] = useState(true);
+  const messagesEl = useRef(null);
+
+  const { roomsMessages } = props;
+
+  useEffect(() => {
+    messagesEl.current.removeEventListener('wheel', event);
+    event = () => handleManualScroll();
+    messagesEl.current.addEventListener('wheel', event);
+    handleAutoScroll();
+  }, [props.roomsMessages]);
+
+  function handleManualScroll() {
+    const scrolledUp = currentScroll() < amountOfPixelsToBeAtBottom();
+    if (scrolledUp) {
+      setShouldScroll(false);
+    }
   }
 
-  getSingleMessage = (currentMessage, i) => {
-    const { roomsMessages, roomID, selfName, users } = this.props;
+  function handleAutoScroll() {
+    if (!messagesEl) return;
+    if (!shouldScroll) return;
+    scrollToBottom();
+  }
+
+  function scrollToBottom() {
+    if (isEdge) messagesEl.current.scrollTop = 100000;
+    else messagesEl.current.scrollTo(0, amountOfPixelsToBeAtBottom());
+  }
+
+  function amountOfPixelsToBeAtBottom() {
+    return getChatScrollHeight() - getChatOffsetHeight();
+  }
+  function getChatScrollHeight() {
+    return messagesEl.current.scrollHeight;
+  }
+  function getChatOffsetHeight() {
+    return messagesEl.current.offsetHeight;
+  }
+
+  function currentScroll() {
+    return messagesEl.current.scrollTop;
+  }
+
+  function handleToBottomClick() {
+    setShouldScroll(true);
+    scrollToBottom();
+  }
+
+  function getSingleMessage(currentMessage, i) {
+    const { roomID, selfName, users } = props;
     let renderHeader = true;
     const previousMessage = roomsMessages[i - 1];
     if (previousMessage && previousMessage.__id === currentMessage.__id) {
@@ -41,16 +86,23 @@ class ListMessages extends Component {
         body={currentMessage.message}
       />
     );
-  };
-
-  render() {
-    const { roomsMessages, roomID } = this.props;
-    return (
-      <div ref={ref => (this.messages = ref)} className="chat-messages">
-        {roomsMessages.map((message, index) => this.getSingleMessage(message, index))}
-      </div>
-    );
   }
+
+  return (
+    <Fragment>
+      <div
+        ref={messagesEl}
+        className={cn(['chat-messages', { 'scroll-smooth': shouldScroll }])}
+      >
+        {roomsMessages.map((message, index) => getSingleMessage(message, index))}
+      </div>
+      {!shouldScroll && (
+        <div onClick={handleToBottomClick} className="chat-messages__scroll-to-bottom">
+          Enable autoscroll
+        </div>
+      )}
+    </Fragment>
+  );
 }
 
 const mapStateToProps = state => ({
