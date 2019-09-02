@@ -52,19 +52,22 @@ function ListMessages(props) {
   function getSingleMessage(currentMessage, i) {
     const { roomID, selfName, users } = props;
     let renderHeader = true;
+    let highlight = false;
+
     const previousMessage = roomsMessages[i - 1];
-    if (previousMessage && previousMessage.__id === currentMessage.__id) {
+    const sameAuthorMessage = previousMessage && previousMessage.__id === currentMessage.__id;
+    if (sameAuthorMessage) {
       renderHeader = false;
     }
 
-    let highlight = false;
-    if (currentMessage.message.includes(`@${selfName}`)) {
+    const hasYourName = currentMessage.message.includes(`@${selfName}`);
+    const hasEveryone = currentMessage.message.includes(`@everyone`);
+    if (hasYourName || hasEveryone) {
       highlight = true;
     }
 
-    if (currentMessage.roomID !== roomID) {
-      return null;
-    }
+    const correctRoom = currentMessage.roomID === roomID;
+    if (!correctRoom) return null;
 
     const online = !!users.find(user => user.__id === currentMessage.__id);
     return (
