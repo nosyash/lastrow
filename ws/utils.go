@@ -14,12 +14,23 @@ func readRequest(conn *websocket.Conn) (*request, error) {
 }
 
 func sendResponse(conn *websocket.Conn, r *response) error {
-	return websocket.WriteJSON(conn, r)
+	return writeJSON(conn, r)
+}
+
+func sendFeedBack(conn *websocket.Conn, feedback addVideoFeedBack) error {
+	return writeJSON(conn, feedback)
 }
 
 func sendError(conn *websocket.Conn, errMsg error) error {
-	err := websocket.WriteJSON(conn, errorResponse{errMsg.Error()})
-	return err
+	return writeJSON(conn, errorResponse{
+		errMsg.Error(),
+	})
+}
+
+func writeJSON(conn *websocket.Conn, json interface{}) error {
+	lock.Lock()
+	defer lock.Unlock()
+	return websocket.WriteJSON(conn, json)
 }
 
 func getHashOfString(str string) string {

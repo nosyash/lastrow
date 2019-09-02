@@ -11,6 +11,9 @@ import (
 const (
 	syncPeriod       = 5
 	sleepBeforeStart = 3
+
+	minGuestName = 1
+	maxGuestName = 20
 )
 
 var (
@@ -57,7 +60,7 @@ func handleRegRequest(conn *websocket.Conn) (*user, string, error) {
 }
 
 func handleGuestRegister(conn *websocket.Conn, room, uuid, name string) (*user, string, error) {
-	if name != "" && len(name) > 1 && len(name) < 20 {
+	if name != "" && len(name) > minGuestName && len(name) < maxGuestName {
 		return &user{
 				conn,
 				uuid,
@@ -87,9 +90,19 @@ func (h *hub) handlePlayerEvent(req *request, conn *websocket.Conn) {
 		if req.Body.Event.Data.URL != "" {
 			h.cache.Playlist.AddVideo <- req.Body.Event.Data.URL
 		}
+
+		var feedback addVideoFeedBack
+
 		if err := <-h.cache.Playlist.AddFeedBack; err != nil {
-			sendError(conn, err)
+			feedback.Error = err.Error()
+			feedback.URL = req.Body.Event.Data.URL
+		} else {
+			feedback.Message = "success"
+			feedback.URL = req.Body.Event.Data.URL
 		}
+
+		sendFeedBack(conn, feedback)
+
 	case ETYPE_PL_DEL:
 		ID := req.Body.Event.Data.ID
 		if ID != "" && len(ID) == 64 {

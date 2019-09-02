@@ -1,6 +1,8 @@
 package ws
 
 import (
+	"sync"
+
 	"github.com/nosyash/backrow/cache"
 	"github.com/nosyash/backrow/db"
 
@@ -10,6 +12,7 @@ import (
 // Register a new connection in room cache
 var Register chan *websocket.Conn
 var close chan string
+var lock sync.Mutex
 
 type roomsHub struct {
 	rhub map[string]*hub
@@ -28,6 +31,12 @@ type hub struct {
 
 type errorResponse struct {
 	Error string `json:"error"`
+}
+
+type addVideoFeedBack struct {
+	Message string `json:"message,omitempty"`
+	Error   string `json:"error,omitempty"`
+	URL     string `json:"url"`
 }
 
 type user struct {
