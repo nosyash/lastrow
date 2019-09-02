@@ -27,7 +27,7 @@ var (
 )
 
 var (
-	youtubRegExp = regexp.MustCompile(`https?://(?:[^\.]+\.)?` +
+	youtubeRegExp = regexp.MustCompile(`https?://(?:[^\.]+\.)?` +
 		`(?:youtube\.com/watch\?(?:.+&)?v=|youtu\.be/)` +
 		`([a-zA-Z0-9_-]+)`)
 )
