@@ -76,6 +76,11 @@ const getEmojiList = () => [
     url2x: 'https://github.com/cutechan/cutechan/blob/master/smiles/cool.png?raw=true',
   },
   {
+    name: 'confused',
+    url: 'https://i.imgur.com/inQIt22.png',
+    url2x: 'https://i.imgur.com/inQIt22.png',
+  },
+  {
     name: 'dahyun_dab',
     url:
       'https://github.com/cutechan/cutechan/blob/master/smiles/dahyun_dab.png?raw=true',
