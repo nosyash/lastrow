@@ -23,7 +23,7 @@ export const VOLUME_WHEEL = 0.1;
 export const MIN_CHAT_WIDTH = 140;
 export const MAX_CHAT_WIDTH = 700;
 
-export const MAX_VIDEO_SYNC_OFFSET = 10;
+export const MAX_VIDEO_SYNC_OFFSET = 8;
 // export const PIXELS_TO_DISABLE_AUTOSCROLL = 40;
 
 // API
