@@ -55,8 +55,9 @@ function ListMessages(props) {
     let highlight = false;
 
     const previousMessage = roomsMessages[i - 1];
-    const sameAuthorMessage = previousMessage && previousMessage.__id === currentMessage.__id;
-    if (sameAuthorMessage) {
+    const sameUserMessage =
+      previousMessage && previousMessage.__id === currentMessage.__id;
+    if (sameUserMessage) {
       renderHeader = false;
     }
 
