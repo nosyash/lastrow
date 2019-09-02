@@ -28,7 +28,6 @@ function Player(props) {
   }, []);
 
   useEffect(() => {
-    document.removeEventListener('mousemove', handleMouseMove);
     document.addEventListener('mousemove', handleMouseMove);
   });
 
@@ -85,6 +84,7 @@ function Player(props) {
   }
 
   function handleMouseMove({ target }) {
+    document.removeEventListener('mousemove', handleMouseMove);
     clearTimeout(minimizeTimer);
     if (target.closest('.video-player')) return;
     if (!minimized) {
@@ -95,13 +95,13 @@ function Player(props) {
   }
 
   const handlePlay = () => {
-    const e = new Event('videoplay');
-    document.dispatchEvent(e);
+    // const e = new Event('videoplay');
+    // document.dispatchEvent(e);
   };
 
   const handlePause = () => {
-    const e = new Event('videopause');
-    document.dispatchEvent(e);
+    // const e = new Event('videopause');
+    // document.dispatchEvent(e);
   };
 
   function getCurrentVideo() {
@@ -139,7 +139,7 @@ function Player(props) {
           // WTF IS GOING ON HERE
           controls={!direct}
           loop={false}
-          progressInterval={100}
+          progressInterval={50}
           muted={media.muted}
           playing={media.playing}
           volume={media.volume}
@@ -167,6 +167,7 @@ function Player(props) {
   }
 
   function handleProgressChange(percent) {
+    console.log('seekto');
     playerRef.current.seekTo(percent / 100, 'fraction');
   }
 

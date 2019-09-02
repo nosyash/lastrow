@@ -4,16 +4,19 @@ import { throttle } from 'lodash';
 import { SEEK_SEL } from '../../../constants';
 
 class ProgressBar extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = {
       moving: false,
+      // progress: this.props.value,
     };
     this.clientY = 0;
     this.progressContainerEl = React.createRef();
     this.progressEl = React.createRef();
 
-    this.mouseMove = throttle(this.handleGlobalMove, 32);
+    this.seekTimer = null;
+
+    this.mouseMove = throttle(this.handleGlobalMove, 5);
   }
 
   componentDidMount() {
@@ -59,6 +62,7 @@ class ProgressBar extends Component {
 
     const { onProgressChange } = this.props;
     onProgressChange(percentageFixed);
+    // this.setState({ progress: percentageFixed });
   };
 
   isPercentageChanged = percentage => {
@@ -89,54 +93,20 @@ class ProgressBar extends Component {
     const percentage = this.getPercentageOfProgress({ clientX });
     const percentageFixed = this.toFixed(percentage);
     const { onProgressChange } = this.props;
+
+    // clearTimeout(this.seekTimer);
+    // this.setState({ progress: percentageFixed });
+    // this.seekTimer = setTimeout(() => {
     onProgressChange(percentageFixed);
+    // }, 16);
   };
 
   handleGlobalUp = () => {
+    // this.setState({ progress: this.props.value });
     if (this.state.moving) {
-      this.setState({ moving: false });
+      this.setState({ moving: false, progress: this.props.value });
     }
   };
-  // const [transform, setStransform] = useState('translateX(-100%)');
-  // duration = media.duration;
-  // useEffect(() => {
-  //   updatePosition();
-
-  //   return () => {
-  //     cancelAnimationFrame(animRef);
-  //     animRef = null;
-  //   };
-  // }, []);
-
-  // useEffect(() => {
-  //   removeEvents();
-  //   addEvents();
-  // }, [transform]);
-
-  // addEvents() {
-  //   document.addEventListener('videoplay', onPlay);
-  //   document.addEventListener('videopause', onPause);
-  // }
-  // removeEvents() {
-  //   document.removeEventListener('videoplay', onPlay);
-  //   document.removeEventListener('videopause', onPause);
-  // }
-
-  // onPlay() {
-  // cancelAnimationFrame(animRef);
-  // updatePosition();
-  // }
-
-  // onPause() {
-  // cancelAnimationFrame(animRef);
-  // }
-
-  // updatePosition = () => {
-  // const currentTime = player.getCurrentTime();
-  // const percentage = -(100 - (currentTime / duration) * 100);
-  // setStransform(`translateX(${percentage}%)`);
-  // animRef = requestAnimationFrame(updatePosition);
-  // };
 
   handleWheel = e => {
     const { wheel } = this.props;
@@ -144,17 +114,19 @@ class ProgressBar extends Component {
 
     const delta = e.deltaY < 0 ? 1 : -1;
 
-    const { value } = this.props;
+    const { progress } = this.props;
     const { onProgressChange } = this.props;
 
-    const percentage = Math.max(0, Math.min(100, value + delta * 10));
+    const percentage = Math.max(0, Math.min(100, progress + delta * 10));
     onProgressChange(percentage);
   };
 
   getTransformStyle() {
-    const { value } = this.props;
-    const isUndefined = value === undefined;
-    return `translateX(-${isUndefined ? 100 : 100 - value}%)`;
+    const { value: curProgress } = this.props;
+    // const { progress, moving } = this.state;
+    // const curProgress = moving ? progress : value;
+    const isUndefined = curProgress === undefined;
+    return `translateX(-${isUndefined ? 100 : 100 - curProgress}%)`;
   }
 
   render() {

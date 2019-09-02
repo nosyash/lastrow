@@ -82,7 +82,7 @@ function ChatInput(props) {
     } else if (e.keyCode === KEY_DOWN || e.keyCode === KEY_TAB) {
       e.preventDefault();
       setCurrentEmote(mod((cur += 1), last));
-    } else if (e.keyCode === KEY_ENTER) {
+    } else if (e.keyCode === KEY_ENTER && !e.shiftKey) {
       e.preventDefault();
       selectCurrent();
     } else if (
@@ -140,13 +140,14 @@ function ChatInput(props) {
   }
 
   function selectCurrent() {
-    const currentEmoteName = emoteQuery[currentEmote].name;
+    const currentEmoteName = emoteQuery[currentEmote];
+    if (!currentEmoteName) return;
     const { selectionEnd } = inputEl.current;
 
     const inputStart = inputValue.substr(0, selectionEnd - queryLen - 1);
     const inputEnd = inputValue.substr(selectionEnd);
 
-    setInputValue(`${inputStart}:${currentEmoteName}: ${inputEnd}`);
+    setInputValue(`${inputStart}:${currentEmoteName.name}: ${inputEnd}`);
     setCurrentEmote(0);
     setEmoteQuery([]);
   }

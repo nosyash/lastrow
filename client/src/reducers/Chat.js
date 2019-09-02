@@ -41,7 +41,6 @@ const Messages = (state = initialState, action) => {
       // roomUpdated.list.push(message);
       // const currentRoom = [...(list[roomID] || []), { ...message, id }] || [message];
       const roomsMessages = [...state.roomsMessages, message];
-      console.log(roomsMessages.length > MAX_MESSAGES);
       if (roomsMessages.length > MAX_MESSAGES) roomsMessages.shift();
       // list[roomID] = currentRoom;
       // const roomsMessages = state.roomsMessages;

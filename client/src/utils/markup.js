@@ -17,17 +17,16 @@ import { store } from '../store';
 function handleEmotes(body = '') {
   const { list: emoteList } = store.getState().emojis;
   return body.replace(EMOTE, (match, ...args) => {
-    const emoteName = args[2];
+    const emoteName = args[1];
     const emoteFounded = emoteList.find(emote => emote.name === emoteName);
     if (!emoteFounded) return match;
     const { url, url2x } = emoteFounded;
-
     let string = '';
-    string += args[0];
-    string += `<img className="emote" src="${url}" srcSet="${url} 1x, ${url2x} 2x" title="`;
-    string += args[2];
-    string += `">`;
-    string += args[4];
+    // string += args[0];
+    string += `<img className="emote" src="${url}" srcSet="${url} 1x, ${url2x} 2x" title=":`;
+    string += args[1];
+    string += `:">`;
+    // string += args[2];
     return string;
   });
 }
@@ -41,10 +40,6 @@ export default function parseMarkup({ body, name }) {
   const hideHeader = ME.test(tempBody) || DO.test(tempBody) || TODO.test(tempBody);
   if (preformated) tempBody = tempBody.replace(PREFORMATTED, '<pre>$2</pre>');
 
-  const isSad = Math.random() < 0.1;
-  const src = isSad
-    ? 'https://files.catbox.moe/iq25ih.png'
-    : 'https://files.catbox.moe/gawu0e.png';
   if (!preformated) {
     tempBody = tempBody
       .replace(PARAGRAPH, '<p>$1</p>')
@@ -62,15 +57,6 @@ export default function parseMarkup({ body, name }) {
       .replace(SPOILER, '<del>$2</del>');
 
     tempBody = handleEmotes(tempBody);
-  }
-  if (!preformated) {
-    if (EMOTE.test(tempBody)) {
-      console.log(emojiList);
-      emojiList.some(el => el.name === 8);
-      // emojiList.map(e => {
-
-      // })
-    }
   }
   return { tempBody, hideHeader };
 }
