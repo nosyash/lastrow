@@ -335,7 +335,27 @@ body {
   width: calc(100% + 20px);
   padding-bottom: 25px;
   // TODO: Probably not needed
-  scroll-behavior: smooth;
+  
+  position: relative;
+  &.scroll-smooth {
+    scroll-behavior: smooth;
+  }
+}
+
+.chat-messages__scroll-to-bottom {
+  position: absolute;
+  bottom: 100px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  padding: 10px 10px;
+  background: hsla(210, 11%, 28%, 0.8);
+  text-align: center;
+  color: #bbb;
+  cursor: pointer;
+  &:hover {
+    opacity: 0.8;
+  }
 }
 
 .chat-item {
