@@ -85,7 +85,7 @@ const RenderItem = ({ classes, onClick, dataId, text }) => (
 );
 
 const RenderProfile = ({ profile, onProfileSettings }) => {
-  const { name, image, color } = profile;
+  const { name, image, color, guest } = profile;
   const backgroundColor = color;
   const backgroundImage = `url(${image})`;
   return (
@@ -95,14 +95,16 @@ const RenderProfile = ({ profile, onProfileSettings }) => {
         <span style={{ color }} className="chat-name">
           {name}
         </span>
-        <div className="controls-container">
-          <span onClick={onProfileSettings} className="control">
-            <i className="fas fa-users-cog" />
-          </span>
-          <span className="control">
-            <i className="fas fa-cog" />
-          </span>
-        </div>
+        {!guest && (
+          <div className="controls-container">
+            <span onClick={onProfileSettings} className="control">
+              <i className="fas fa-users-cog" />
+            </span>
+            <span className="control">
+              <i className="fas fa-cog" />
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
