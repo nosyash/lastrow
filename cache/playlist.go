@@ -61,7 +61,7 @@ func (pl *playlist) addVideo(vURL string) {
 		pl.AddFeedBack <- nil
 		pl.UpdatePlaylist <- struct{}{}
 	case "":
-		if youtubRegExp.MatchString(vURL) {
+		if youtubeRegExp.MatchString(vURL) {
 			var vID string
 
 			if pURL.Hostname() == "youtu.be" {
