@@ -103,11 +103,12 @@ func (h hub) remove(conn *websocket.Conn) {
 		h.cache.Users.DelUser <- uuid
 
 		if len(h.hub) == 0 {
-			close <- h.id
-
 			// FIX
 			// If last user leave the room, playlist will be deleted
 			// If we not close cache, playlist will not be deleted but sync timers will be reset
+
+			// ContextWithDeadLine????
+			close <- h.id
 			h.cache.Close <- struct{}{}
 			return
 		}
@@ -151,7 +152,7 @@ func (h hub) send(msg *response) {
 
 func (h hub) broadcastUpdate(upd *updates) {
 	for _, conn := range h.hub {
-		if err := websocket.WriteJSON(conn, upd); err != nil {
+		if err := writeJSON(conn, upd); err != nil {
 			h.unregister <- conn
 			conn.Close()
 		}
@@ -159,7 +160,7 @@ func (h hub) broadcastUpdate(upd *updates) {
 }
 
 func (h hub) sendUpatesTo(upd *updates, conn *websocket.Conn) {
-	if err := websocket.WriteJSON(conn, upd); err != nil {
+	if err := writeJSON(conn, upd); err != nil {
 		h.unregister <- conn
 		conn.Close()
 	}
