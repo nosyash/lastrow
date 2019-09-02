@@ -44,12 +44,15 @@ function Player(props) {
   }
 
   function init() {
-    const { updatePlayer } = props;
-    // eslint-disable-next-line prefer-destructuring
-    volume = localStorage.volume;
-    volume = JSON.parse(volume || 1);
-    updatePlayer({ volume });
-    handleSubs();
+    // TODO: fix it later
+    try {
+      const { updatePlayer } = props;
+      // eslint-disable-next-line prefer-destructuring
+      volume = localStorage.volume;
+      volume = JSON.parse(volume || 1);
+      updatePlayer({ volume });
+      handleSubs();
+    } catch (error) {}
   }
 
   async function handleSubs() {
