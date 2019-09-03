@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -10,9 +11,19 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+const (
+	// Timeout in seconds, when cache for this room will be closed
+	closeDeadlineTimeout = 120
+)
+
 var (
 	// ErrUnknownAction send when was received unknown action type
 	ErrUnknownAction = errors.New("Unknown action type")
+)
+
+var (
+	closeDeadline = false
+	cancelChan    = make(chan struct{})
 )
 
 func NewRoomHub(id string) *hub {
@@ -41,8 +52,9 @@ func (h hub) HandleActions() {
 	for {
 		select {
 		case user := <-h.register:
-			// ok, deadlineClose is true?
-			// call cancel func
+			if closeDeadline {
+				cancelChan <- struct{}{}
+			}
 			h.add(user)
 			go h.read(user.Conn)
 			go h.ping(user.Conn)
@@ -105,14 +117,23 @@ func (h hub) remove(conn *websocket.Conn) {
 		h.cache.Users.DelUser <- uuid
 
 		if len(h.hub) == 0 {
-			// FIX
-			// If last user leave the room, playlist will be deleted
-			// If we not close cache, playlist will not be deleted but sync timers will be reset
+			closeDeadline = true
+			ctx, cancel := context.WithTimeout(context.Background(), closeDeadlineTimeout*time.Second)
 
-			// set deadlineClose to true
-			// When ctx.Done() delete current room sessiom from hub and close cache
-			close <- h.id
-			h.cache.Close <- struct{}{}
+		loop:
+			for {
+				select {
+				case <-cancelChan:
+					cancel()
+					break loop
+				case <-ctx.Done():
+					cancel()
+					h.cache.Close <- struct{}{}
+					close <- h.id
+					break loop
+				}
+			}
+			closeDeadline = false
 			return
 		}
 	}
