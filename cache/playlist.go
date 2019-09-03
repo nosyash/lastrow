@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/url"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/nosyash/backrow/vapi"
@@ -25,6 +26,12 @@ var (
 	ErrUnsupportedHost = errors.New("Unsupported host")
 )
 
+var (
+	youtubeRegExp = regexp.MustCompile(`https?://(?:[^\.]+\.)?` +
+		`(?:youtube\.com/watch\?(?:.+&)?v=|youtu\.be/)` +
+		`([a-zA-Z0-9_-]+)`)
+)
+
 func (pl *playlist) addVideo(vURL string) {
 	pURL, err := url.Parse(strings.TrimSpace(vURL))
 	if err != nil {
@@ -32,7 +39,6 @@ func (pl *playlist) addVideo(vURL string) {
 		return
 	}
 	ext := filepath.Ext(pURL.String())
-	hostname := pURL.Hostname()
 
 	switch ext {
 	case ".mp4", ".m3u8", ".webm":
@@ -55,8 +61,18 @@ func (pl *playlist) addVideo(vURL string) {
 		pl.AddFeedBack <- nil
 		pl.UpdatePlaylist <- struct{}{}
 	case "":
-		if hostname == "www.youtube.com" || hostname == "youtube.com" {
-			vID := pURL.Query().Get("v")
+		if youtubeRegExp.MatchString(vURL) {
+			var vID string
+
+			if pURL.Hostname() == "youtu.be" {
+				path := strings.Split(pURL.Path, "/")
+				if len(path) >= 2 {
+					vID = path[1]
+				}
+			} else {
+				vID = pURL.Query().Get("v")
+			}
+
 			if vID == "" {
 				pl.AddFeedBack <- ErrEmptyYoutubeVideoID
 				return
