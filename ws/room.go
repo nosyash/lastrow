@@ -119,6 +119,7 @@ func (h hub) remove(conn *websocket.Conn) {
 		h.cache.Users.DelUser <- uuid
 
 		if len(h.hub) == 0 {
+
 			if h.cache.Playlist.Size() == 0 {
 				h.cache.Close <- struct{}{}
 				close <- h.id
@@ -129,7 +130,6 @@ func (h hub) remove(conn *websocket.Conn) {
 				closeDeadline = true
 				ctx, cancel := context.WithTimeout(context.Background(), closeDeadlineTimeout*time.Second)
 
-				println(h.syncer.sleep)
 				if !h.syncer.sleep {
 					h.syncer.pause <- struct{}{}
 				}
