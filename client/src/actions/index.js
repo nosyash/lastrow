@@ -19,15 +19,19 @@ export const fetchSubs = url => dispatch => {
     });
 };
 
+/** @type Socket */
 let socket = null;
 
 export const webSocketConnect = ({ roomID }) => {
-  webSocketDisconnect();
   const { uuid, name, guest } = store.getState().profile;
-  const url = SOCKET_ENDPOINT;
-  socket = new Socket({ url, roomID, uuid, guest, name });
+
+  if (!isConnectingSameRoom()) webSocketDisconnect();
+
+  socket = new Socket({ url: SOCKET_ENDPOINT, roomID, uuid, guest, name });
   return socket.state();
 };
+
+const isConnectingSameRoom = roomID => (socket ? roomID === socket.roomID : false);
 
 export const webSocketSend = data => {
   return socket.sendMessage(data);
