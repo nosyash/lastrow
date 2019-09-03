@@ -114,10 +114,10 @@ class ProgressBar extends Component {
 
     const delta = e.deltaY < 0 ? 1 : -1;
 
-    const { progress } = this.props;
+    const { value } = this.props;
     const { onProgressChange } = this.props;
 
-    const percentage = Math.max(0, Math.min(100, progress + delta * 10));
+    const percentage = Math.max(0, Math.min(100, value + delta * 10));
     onProgressChange(percentage);
   };
 

@@ -5,7 +5,11 @@ import cn from 'classnames';
 import { throttle } from 'lodash';
 import * as types from '../../../constants/ActionTypes';
 import { formatTime } from '../../../utils/base';
-import { playerConf, PLAYER_MINIMIZE_TIMEOUT } from '../../../constants';
+import {
+  playerConf,
+  PLAYER_MINIMIZE_TIMEOUT,
+  MAX_VIDEO_SYNC_OFFSET,
+} from '../../../constants';
 import ProgressBar from './ProgressBar';
 import Subtitles from './Subtitles';
 import { fetchSubs } from '../../../actions';
@@ -40,12 +44,15 @@ function Player(props) {
   }
 
   function init() {
-    const { updatePlayer } = props;
-    // eslint-disable-next-line prefer-destructuring
-    volume = localStorage.volume;
-    volume = JSON.parse(volume || 1);
-    updatePlayer({ volume });
-    handleSubs();
+    // TODO: fix it later
+    try {
+      const { updatePlayer } = props;
+      // eslint-disable-next-line prefer-destructuring
+      volume = localStorage.volume;
+      volume = JSON.parse(volume || 1);
+      updatePlayer({ volume });
+      handleSubs();
+    } catch (error) {}
   }
 
   async function handleSubs() {
@@ -71,7 +78,7 @@ function Player(props) {
   function checkDelay() {
     const { actualTime, currentTime } = props.media;
 
-    if (Math.abs(actualTime - currentTime) > 15) {
+    if (Math.abs(actualTime - currentTime) > MAX_VIDEO_SYNC_OFFSET) {
       playerRef.current.seekTo(actualTime);
     }
   }

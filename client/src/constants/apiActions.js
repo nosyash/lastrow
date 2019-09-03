@@ -119,7 +119,12 @@ export const GET_WS_DATA = json => {
   if (obj.videos) {
     return { type: 'playlist', videos: obj.videos };
   }
+
+  if (obj.message) {
+    return { type: '' };
+  }
   const { event } = obj.body;
+  if (!event) return { type: '' };
   const { type } = event;
   return { type, ...event.data };
 };
