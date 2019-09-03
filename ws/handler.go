@@ -199,6 +199,8 @@ func (h *hub) syncCurrentTime() {
 			case <-h.syncer.skip:
 				cancel()
 				break loop
+			case <-h.syncer.pause:
+				<-h.syncer.resume
 			}
 		}
 

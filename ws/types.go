@@ -63,6 +63,8 @@ type syncer struct {
 	sleep          bool
 	wakeUp         chan struct{}
 	skip           chan struct{}
+	pause          chan struct{}
+	resume         chan struct{}
 	currentVideoID string
 }
 

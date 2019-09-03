@@ -37,6 +37,8 @@ func NewRoomHub(id string) *hub {
 			false,
 			make(chan struct{}),
 			make(chan struct{}),
+			make(chan struct{}),
+			make(chan struct{}),
 			"",
 		},
 		id,
@@ -127,10 +129,16 @@ func (h hub) remove(conn *websocket.Conn) {
 				closeDeadline = true
 				ctx, cancel := context.WithTimeout(context.Background(), closeDeadlineTimeout*time.Second)
 
+				println(h.syncer.sleep)
+				if !h.syncer.sleep {
+					h.syncer.pause <- struct{}{}
+				}
+
 			loop:
 				for {
 					select {
 					case <-cancelChan:
+						h.syncer.resume <- struct{}{}
 						cancel()
 						break loop
 					case <-ctx.Done():
