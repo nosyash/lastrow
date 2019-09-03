@@ -201,6 +201,7 @@ func (h *hub) syncCurrentTime() {
 				break loop
 			case <-h.syncer.pause:
 				<-h.syncer.resume
+				ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration-elapsedTime+sleepBeforeStart)*time.Second))
 			}
 		}
 

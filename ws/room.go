@@ -130,9 +130,9 @@ func (h hub) remove(conn *websocket.Conn) {
 				closeDeadline = true
 				ctx, cancel := context.WithTimeout(context.Background(), closeDeadlineTimeout*time.Second)
 
-				if !h.syncer.sleep {
-					h.syncer.pause <- struct{}{}
-				}
+				// actually, if playlist size more than zero, syncer are not sleep and we don't need additional check
+				// and this send to channel will be guaranteed or before remove video from playlist(sleep false) or after(sleep true)
+				h.syncer.pause <- struct{}{}
 
 			loop:
 				for {
