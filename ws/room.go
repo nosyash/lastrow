@@ -117,24 +117,32 @@ func (h hub) remove(conn *websocket.Conn) {
 		h.cache.Users.DelUser <- uuid
 
 		if len(h.hub) == 0 {
-			closeDeadline = true
-			ctx, cancel := context.WithTimeout(context.Background(), closeDeadlineTimeout*time.Second)
-
-		loop:
-			for {
-				select {
-				case <-cancelChan:
-					cancel()
-					break loop
-				case <-ctx.Done():
-					cancel()
-					h.cache.Close <- struct{}{}
-					close <- h.id
-					break loop
-				}
+			if h.cache.Playlist.Size() == 0 {
+				h.cache.Close <- struct{}{}
+				close <- h.id
+				return
 			}
-			closeDeadline = false
-			return
+
+			go func() {
+				closeDeadline = true
+				ctx, cancel := context.WithTimeout(context.Background(), closeDeadlineTimeout*time.Second)
+
+			loop:
+				for {
+					select {
+					case <-cancelChan:
+						cancel()
+						break loop
+					case <-ctx.Done():
+						cancel()
+						h.cache.Close <- struct{}{}
+						close <- h.id
+						break loop
+					}
+				}
+				closeDeadline = false
+				return
+			}()
 		}
 	}
 }
