@@ -3,6 +3,7 @@ package ws
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 
 	"github.com/gorilla/websocket"
 )
@@ -27,10 +28,18 @@ func sendError(conn *websocket.Conn, errMsg error) error {
 	})
 }
 
-func writeJSON(conn *websocket.Conn, json interface{}) error {
+func writeJSON(conn *websocket.Conn, message interface{}) error {
+	mb, err := json.Marshal(message)
+	if err != nil {
+		return err
+	}
+	return writeMessage(conn, websocket.TextMessage, mb)
+}
+
+func writeMessage(conn *websocket.Conn, messageType int, message []byte) error {
 	lock.Lock()
 	defer lock.Unlock()
-	return websocket.WriteJSON(conn, json)
+	return conn.WriteMessage(messageType, message)
 }
 
 func getHashOfString(str string) string {

@@ -130,8 +130,6 @@ func (h hub) remove(conn *websocket.Conn) {
 				closeDeadline = true
 				ctx, cancel := context.WithTimeout(context.Background(), closeDeadlineTimeout*time.Second)
 
-				// actually, if playlist size more than zero, syncer are not sleep and we don't need additional check
-				// and this send to channel will be guaranteed or before remove video from playlist(sleep false) or after(sleep true)
 				h.syncer.pause <- struct{}{}
 
 			loop:
@@ -218,7 +216,8 @@ func (h hub) ping(conn *websocket.Conn) {
 		select {
 		case <-ticker.C:
 			conn.SetWriteDeadline(time.Now().Add(15 * time.Second))
-			if err := conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+
+			if err := writeMessage(conn, websocket.PingMessage, nil); err != nil {
 				return
 			}
 		}
