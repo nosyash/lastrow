@@ -168,9 +168,9 @@ func (h *hub) read(conn *websocket.Conn) {
 
 		if req.UserUUID != "" && len(req.UserUUID) == 64 {
 			switch req.Action {
-			case USER_EVENT:
+			case userEvent:
 				go h.handleUserEvent(req, conn)
-			case PLAYER_EVENT:
+			case playerEvent:
 				go h.handlePlayerEvent(req, conn)
 			default:
 				go sendError(conn, ErrUnknownAction)

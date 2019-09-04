@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	syncPeriod       = 5
+	syncPeriod       = 3
 	sleepBeforeStart = 3
 
 	minGuestName = 1
@@ -41,11 +41,11 @@ func handleRegRequest(conn *websocket.Conn) (*user, string, error) {
 		return nil, "", ErrRegArgumentAreEmpty
 	}
 
-	if req.Action == GUEST_REGISTER {
+	if req.Action == guestRegister {
 		return handleGuestRegister(conn, room, uuid, req.Name)
 	}
 
-	if req.Action != USER_REGISTER {
+	if req.Action != userRegister {
 		return nil, "", ErrInvalidRegRequest
 	}
 
@@ -75,7 +75,7 @@ func handleGuestRegister(conn *websocket.Conn, room, uuid, name string) (*user, 
 
 func (h hub) handleUserEvent(req *request, conn *websocket.Conn) {
 	switch req.Body.Event.Type {
-	case ETYPE_MSG:
+	case eTypeMsg:
 		if req.Body.Event.Data.Message != "" {
 			h.handleMessage(req.Body.Event.Data.Message, req.UserUUID)
 		}
@@ -86,7 +86,7 @@ func (h hub) handleUserEvent(req *request, conn *websocket.Conn) {
 
 func (h *hub) handlePlayerEvent(req *request, conn *websocket.Conn) {
 	switch req.Body.Event.Type {
-	case ETYPE_PL_ADD:
+	case eTypePlAdd:
 		if req.Body.Event.Data.URL != "" {
 			h.cache.Playlist.AddVideo <- req.Body.Event.Data.URL
 		}
@@ -103,7 +103,7 @@ func (h *hub) handlePlayerEvent(req *request, conn *websocket.Conn) {
 
 		sendFeedBack(conn, feedback)
 
-	case ETYPE_PL_DEL:
+	case eTypePlDel:
 		ID := req.Body.Event.Data.ID
 		if ID != "" && len(ID) == 64 {
 

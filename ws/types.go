@@ -102,14 +102,14 @@ type currentTime struct {
 }
 
 const (
-	USER_REGISTER  = "user_register"
-	GUEST_REGISTER = "guest_register"
-	USER_EVENT     = "user_event"
-	PLAYER_EVENT   = "player_event"
+	userRegister  = "user_register"
+	guestRegister = "guest_register"
+	userEvent     = "user_event"
+	playerEvent   = "player_event"
 )
 
 const (
-	ETYPE_MSG    = "message"
-	ETYPE_PL_ADD = "playlist_add"
-	ETYPE_PL_DEL = "playlist_del"
+	eTypeMsg   = "message"
+	eTypePlAdd = "playlist_add"
+	eTypePlDel = "playlist_del"
 )
