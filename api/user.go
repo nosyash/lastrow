@@ -72,7 +72,7 @@ func (server Server) getUser(w http.ResponseWriter, userUUID string) {
 }
 
 func (server Server) updateProfileImage(w http.ResponseWriter, userUUID string, b64Img *string) {
-	oldpath, err := server.db.GetUserImage(userUUID)
+	oldPath, err := server.db.GetUserImage(userUUID)
 	if err != nil {
 		sendResponse(w, http.StatusBadRequest, message{
 			Error: err.Error(),
@@ -83,10 +83,14 @@ func (server Server) updateProfileImage(w http.ResponseWriter, userUUID string, 
 	rndUUID := getRandomUUID()
 
 	imgPath := filepath.Join(filepath.Join("/media", server.imageServer.ProfImgPath), rndUUID[:16], fmt.Sprintf("%s.jpg", rndUUID[16:32]))
-	fullPath := filepath.Join(server.imageServer.UplPath, imgPath)
 
-	img := newImage(filepath.Join(server.imageServer.UplPath, oldpath), fullPath)
-	err = img.createFromBase64(b64Img)
+	image := newImage(b64Img)
+	if oldPath == "" {
+		err = image.createImage(filepath.Join(server.imageServer.UplPath, imgPath), "jpg")
+	} else {
+		err = image.replaceImage(filepath.Join(server.imageServer.UplPath, oldPath), filepath.Join(server.imageServer.UplPath, imgPath), "jpg")
+	}
+
 	if err != nil {
 		sendResponse(w, http.StatusBadRequest, message{
 			Error: err.Error(),
