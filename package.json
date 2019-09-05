@@ -83,8 +83,9 @@
   },
   "scripts": {
     "start": "node client/npm-scripts/start.js",
-    "build": "npm-run-all less build-client",
+    "build": "npm-run-all less build-client move-to-public",
     "build-client": "node client/npm-scripts/build.js",
+    "move-to-public": "rm -rf public && mv build public",
     "client": "npm-run-all --parallel start watch-less",
     "less": "node_modules/.bin/lessc client/src/less/main.less client/src/.css/main.css -x",
     "watch-less": "less-watch-compiler client/src/less/ client/src/.css/ main.less",

@@ -74,9 +74,9 @@ const getEmojiList = () => [
   {
     name: 'cigarette2',
     url:
-      'https://raw.githubusercontent.com/bonanov/bona.cafe/master/smiles/cigarette%402x.png?raw=true',
+      'https://raw.githubusercontent.com/bonanov/bona.cafe/master/smiles/cigarette2.png?raw=true',
     url2x:
-      'https://raw.githubusercontent.com/bonanov/bona.cafe/master/smiles/cigarette%402x.png?raw=true',
+      'https://raw.githubusercontent.com/bonanov/bona.cafe/master/smiles/cigarette2.png?raw=true',
   },
   {
     name: 'cool',
