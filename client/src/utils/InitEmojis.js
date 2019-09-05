@@ -66,9 +66,17 @@ const getEmojiList = () => [
   },
   {
     name: 'cigarette',
-    url: 'https://github.com/cutechan/cutechan/blob/master/smiles/cigarette.png?raw=true',
+    url:
+      'https://raw.githubusercontent.com/bonanov/bona.cafe/master/smiles/cigarette.png?raw=true',
     url2x:
-      'https://github.com/cutechan/cutechan/blob/master/smiles/cigarette.png?raw=true',
+      'https://raw.githubusercontent.com/bonanov/bona.cafe/master/smiles/cigarette.png?raw=true',
+  },
+  {
+    name: 'cigarette2',
+    url:
+      'https://raw.githubusercontent.com/bonanov/bona.cafe/master/smiles/cigarette%402x.png?raw=true',
+    url2x:
+      'https://raw.githubusercontent.com/bonanov/bona.cafe/master/smiles/cigarette%402x.png?raw=true',
   },
   {
     name: 'cool',
