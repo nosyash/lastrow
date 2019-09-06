@@ -35,6 +35,7 @@ function ChatInput(props) {
   const [emoteQuery, setEmoteQuery] = useState([]);
   const [queryLen, setQueryLen] = useState(0);
   const [currentEmote, setCurrentEmote] = useState(0);
+  const [showEmotes, setShowEmotes] = useState(false);
   const inputEl = useRef(null);
 
   useEffect(() => {
@@ -153,6 +154,8 @@ function ChatInput(props) {
     setInputValue(`${inputStart}:${name}: ${inputEnd}`);
     setCurrentEmote(0);
     setEmoteQuery([]);
+    setShowEmotes(false);
+    inputEl.current.focus();
   }
 
   function handleInputChange(e) {
@@ -190,6 +193,30 @@ function ChatInput(props) {
           >
             <img src={emote.url} alt={emote.name} title={emote.name} className="emote" />
             <span>:{emote.name}:</span>
+          </span>
+        ))}
+      </div>
+      {showEmotes && (
+        <EmoteMenu list={props.emotesList} onClick={name => pasteEmoteByName(name)} />
+      )}
+      <span onClick={() => setShowEmotes(!showEmotes)} className="control emote-icon">
+        <i className="fa fa-smile"></i>
+      </span>
+    </div>
+  );
+}
+
+function EmoteMenu({ list, onClick }) {
+  return (
+    <div className="emote-menu">
+      <div className="emote-menu__scroll">
+        {list.map(emote => (
+          <span
+            key={emote.name + emote.url}
+            onClick={() => onClick(emote.name)}
+            className="emote-menu__emote"
+          >
+            <img src={emote.url} alt={emote.name} title={emote.name} className="emote" />
           </span>
         ))}
       </div>

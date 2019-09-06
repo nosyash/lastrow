@@ -514,6 +514,54 @@ body {
   background: #586a7c;
 }
 
+.emote-menu {
+  position: absolute;
+  overflow-x: auto;
+  background: #3b3b3b;
+  z-index: 100000;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  left: 0;
+  right: 0;
+  bottom: 105px;
+  flex-direction: row;
+  display: flex;
+  flex-wrap: wrap;
+  overflow: hidden;
+  border-radius: 5px;
+  padding-right: 15px;
+}
+
+.emote-menu__scroll {
+  overflow-y: scroll;
+  height: 100%;
+  max-height: 200px;
+  padding: 4px;
+  margin-right: -35px;
+}
+
+.emote-menu__emote {
+  height: 32px;
+  width: 32px;
+  display: inline-block;
+  // margin: 4px;
+  font-size: 0px;
+  margin: 5px;
+  cursor: pointer;
+
+  &:hover {
+    // background: #586a7c
+    opacity: 0.6;
+  }
+}
+
+
+
+.emote-icon {
+  position: absolute;
+  bottom: 0;
+  right: 4px;
+}
+
 .chat-header {
   background: @darkSecond;
   min-height: 30px;
