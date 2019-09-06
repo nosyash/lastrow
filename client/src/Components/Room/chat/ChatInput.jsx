@@ -142,12 +142,15 @@ function ChatInput(props) {
   function selectCurrent() {
     const currentEmoteName = emoteQuery[currentEmote];
     if (!currentEmoteName) return;
-    const { selectionEnd } = inputEl.current;
+    pasteEmoteByName(currentEmoteName.name);
+  }
 
+  function pasteEmoteByName(name) {
+    const { selectionEnd } = inputEl.current;
     const inputStart = inputValue.substr(0, selectionEnd - queryLen - 1);
     const inputEnd = inputValue.substr(selectionEnd);
 
-    setInputValue(`${inputStart}:${currentEmoteName.name}: ${inputEnd}`);
+    setInputValue(`${inputStart}:${name}: ${inputEnd}`);
     setCurrentEmote(0);
     setEmoteQuery([]);
   }
@@ -178,6 +181,7 @@ function ChatInput(props) {
       <div className="emote-search">
         {emoteQuery.map((emote, index) => (
           <span
+            onClick={() => pasteEmoteByName(emote.name)}
             key={emote.name}
             className={cn([
               'emote-search__emote',
