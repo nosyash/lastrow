@@ -146,9 +146,11 @@ function ChatInput(props) {
     pasteEmoteByName(currentEmoteName.name);
   }
 
-  function pasteEmoteByName(name) {
-    const { selectionEnd } = inputEl.current;
-    const inputStart = inputValue.substr(0, selectionEnd - queryLen - 1);
+  function pasteEmoteByName(name, inPlace) {
+    const { selectionEnd, selectionStart } = inputEl.current;
+    let inputStart = inputValue.substr(0, selectionEnd - queryLen - 1);
+
+    if (inPlace) inputStart = inputValue.substr(0, selectionEnd);
     const inputEnd = inputValue.substr(selectionEnd);
 
     setInputValue(`${inputStart}:${name}: ${inputEnd}`);
@@ -184,7 +186,7 @@ function ChatInput(props) {
       <div className="emote-search">
         {emoteQuery.map((emote, index) => (
           <span
-            onClick={() => pasteEmoteByName(emote.name)}
+            onClick={() => pasteEmoteByName(emote.name, true)}
             key={emote.name}
             className={cn([
               'emote-search__emote',
@@ -197,7 +199,10 @@ function ChatInput(props) {
         ))}
       </div>
       {showEmotes && (
-        <EmoteMenu list={props.emotesList} onClick={name => pasteEmoteByName(name)} />
+        <EmoteMenu
+          list={props.emotesList}
+          onClick={name => pasteEmoteByName(name, true)}
+        />
       )}
       <span onClick={() => setShowEmotes(!showEmotes)} className="control emote-icon">
         <i className="fa fa-smile"></i>
