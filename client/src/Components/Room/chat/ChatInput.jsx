@@ -68,7 +68,6 @@ function ChatInput(props) {
       const newValue = inputValue.trim();
       if (!socketState || !newValue) return;
       webSocketSend(api.SEND_MESSAGE(newValue, profile.uuid));
-      // socket.send(api.SEND_MESSAGE(newValue, profile.uuid));
       setInputValue('');
       return;
     }
@@ -147,13 +146,12 @@ function ChatInput(props) {
   }
 
   function pasteEmoteByName(name, inPlace) {
-    const { selectionEnd, selectionStart } = inputEl.current;
-    let inputStart = inputValue.substr(0, selectionEnd - queryLen - 1);
+    const { selectionEnd } = inputEl.current;
+    let inputStart = inputValue.substr(0, selectionEnd - queryLen - 1).trim();
+    if (inPlace) inputStart = inputValue.substr(0, selectionEnd).trim();
+    const inputEnd = inputValue.substr(selectionEnd).trim();
 
-    if (inPlace) inputStart = inputValue.substr(0, selectionEnd);
-    const inputEnd = inputValue.substr(selectionEnd);
-
-    setInputValue(`${inputStart}:${name}: ${inputEnd}`);
+    setInputValue(`${inputStart} :${name}: ${inputEnd}`);
     setCurrentEmote(0);
     setEmoteQuery([]);
     setShowEmotes(false);
