@@ -5,6 +5,7 @@ import ls from 'local-storage';
 import * as types from '../../../constants/ActionTypes';
 
 // TODO: Extremely poorly made. Refactor!
+
 function ProfileSettings(props) {
   const [notify, setNotify] = useState(ls.get('notify') || false);
 

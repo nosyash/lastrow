@@ -1,4 +1,4 @@
-import ls from 'local-storage'
+import ls from 'local-storage';
 import { notify } from './base';
 
 class Notification {
@@ -33,8 +33,6 @@ class Notification {
   }
 
   _changeTitle() {
-    console.log('this.replies', this.replies);
-    console.log('this.unread', this.unread);
     if (this.replies) document.title = `** ${this.currentTitle}`;
     if (!this.replies && this.unread) document.title = `* ${this.currentTitle}`;
     if (!this.replies && !this.unread) document.title = this.currentTitle;
