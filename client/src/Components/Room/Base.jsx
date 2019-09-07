@@ -41,6 +41,8 @@ class RoomBase extends Component {
     clearPopups();
     clearUsers();
     this.init();
+
+    notifications.setCurrentTitle(document.title);
   }
 
   componentWillUnmount() {

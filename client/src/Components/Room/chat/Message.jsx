@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import safelySetInnerHTML from '../../../utils/safelySetInnerHTML ';
 import parseMarkup from '../../../utils/markup';
 import playSound from '../../../utils/HandleSounds';
+import notifications from '../../../utils/notifications';
 
 class Message extends PureComponent {
   getClassNames = classes => {
@@ -22,11 +23,18 @@ class Message extends PureComponent {
     return { backgroundImage, backgroundColor };
   };
 
+  pageIsVisible = () => document.visibilityState === 'visible';
+
   handleSounds = highlight => {
-    const pageVissible = document.visibilityState === 'visible';
-    if (highlight && !pageVissible) {
+    if (highlight && !this.pageIsVisible()) {
       playSound();
     }
+  };
+
+  handleNotification = highlight => {
+    if (this.pageIsVisible()) return;
+    if (highlight) notifications.addReplies();
+    else notifications.addUnread();
   };
 
   render() {
@@ -34,6 +42,7 @@ class Message extends PureComponent {
     const { name, emojiList } = this.props;
 
     this.handleSounds(highlight);
+    this.handleNotification(highlight);
 
     const renderMessageArgs = {
       ...this.getStyles(image, color),

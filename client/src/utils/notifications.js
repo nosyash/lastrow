@@ -1,0 +1,40 @@
+class Notification {
+  constructor() {
+    this.replies = false;
+    this.unread = false;
+    this.currentTitle = document.title;
+    window.addEventListener('focus', this.removeNotifications);
+  }
+
+  addUnread() {
+    this.unread = true;
+    this._changeTitle();
+  }
+
+  addReplies() {
+    console.log('added');
+    this.replies = true;
+    this._changeTitle();
+  }
+
+  removeNotifications = () => {
+    this.unread = false;
+    this.replies = false;
+    this._changeTitle();
+  };
+
+  setCurrentTitle(title) {
+    this.currentTitle = title;
+    document.title = title;
+  }
+
+  _changeTitle() {
+    console.log('this.replies', this.replies);
+    console.log('this.unread', this.unread);
+    if (this.replies) document.title = `** ${this.currentTitle}`;
+    if (!this.replies && this.unread) document.title = `* ${this.currentTitle}`;
+    if (!this.replies && !this.unread) document.title = this.currentTitle;
+  }
+}
+
+export default new Notification();
