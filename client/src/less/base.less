@@ -310,7 +310,6 @@ body {
 }
 
 
-
 .divider {
   border-bottom: 1px solid rgb(59, 59, 59);
   margin: 8px 10px;
@@ -528,7 +527,7 @@ body {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   left: 0;
   right: 0;
-  bottom: 105px;
+  bottom: 120px;
   flex-direction: row;
   display: flex;
   flex-wrap: wrap;
@@ -564,8 +563,8 @@ body {
 
 .emote-icon {
   position: absolute;
-  bottom: 0;
-  right: 4px;
+  top: -20px;
+  right: 3px;
 }
 
 .chat-header {
@@ -1151,6 +1150,12 @@ body {
   align-items: center;
   text-align: center;
   padding-right: 100px;
+
+  .toggle-cinemamode .fas {
+    font-size: 1.08em;
+    vertical-align: -1px;
+  }
+
 }
 
 .play-button {
@@ -1371,7 +1376,16 @@ body {
 }
 
 .toggle-cinemamode {
-  visibility: hidden;
+  // visibility: hidden;
+  margin: 0 4px;
+}
+
+.toggle-sync {
+  margin-left: 5px;
+}
+
+.toggle-sync.sync-on {
+  color: rgb(0, 180, 141);
 }
 
 .go-back {
@@ -1484,6 +1498,10 @@ body {
   // &>div:not(.popup-header) {
   //   margin: auto;
   // }
+}
+
+.popup.profileSettings {
+  width: 420px !important;
 }
 
 .popup-element {
@@ -1662,6 +1680,10 @@ body {
 
 .playlist-item__duration {
   margin-left: 5px;
+}
+
+.playlist-item__remove-icon {
+  margin-left: 12px;
 }
 
 // Add media

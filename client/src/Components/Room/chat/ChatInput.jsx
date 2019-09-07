@@ -150,8 +150,10 @@ function ChatInput(props) {
     let inputStart = inputValue.substr(0, selectionEnd - queryLen - 1).trim();
     if (inPlace) inputStart = inputValue.substr(0, selectionEnd).trim();
     const inputEnd = inputValue.substr(selectionEnd).trim();
+    // if we're not at the beginning, manually add space before emote;
+    if (inputStart) inputStart += ' ';
 
-    setInputValue(`${inputStart} :${name}: ${inputEnd}`);
+    setInputValue(`${inputStart}:${name}: ${inputEnd}`);
     setCurrentEmote(0);
     setEmoteQuery([]);
     setShowEmotes(false);
@@ -184,7 +186,7 @@ function ChatInput(props) {
       <div className="emote-search">
         {emoteQuery.map((emote, index) => (
           <span
-            onClick={() => pasteEmoteByName(emote.name, true)}
+            onClick={() => pasteEmoteByName(emote.name)}
             key={emote.name}
             className={cn([
               'emote-search__emote',

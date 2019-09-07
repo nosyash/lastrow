@@ -118,3 +118,13 @@ export const mod = (n, m) => ((n % m) + m) % m;
 //   var result = date.toISOString().substr(11, 8);
 //   console.log(result)
 // }
+
+export function requestFullscreen(element) {
+  if (!document.fullscreenElement) {
+    element.requestFullscreen().catch(err => {
+      alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+    });
+  } else {
+    document.exitFullscreen();
+  }
+}

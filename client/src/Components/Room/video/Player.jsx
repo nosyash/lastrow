@@ -4,7 +4,7 @@ import ReactPlayer from 'react-player';
 import cn from 'classnames';
 import { throttle } from 'lodash';
 import * as types from '../../../constants/ActionTypes';
-import { formatTime } from '../../../utils/base';
+import { formatTime, requestFullscreen } from '../../../utils/base';
 import {
   playerConf,
   PLAYER_MINIMIZE_TIMEOUT,
@@ -162,9 +162,13 @@ function Player(props) {
   }
 
   function renderPlayerGUI() {
-    const { showSubs } = props.media;
+    const { showSubs, forceSync } = props.media;
+    const playerClasses = cn('video-player', {
+      'video-player_sync-on': forceSync,
+      'video-player_sincin-off': !forceSync,
+    });
     return (
-      <div className="video-player">
+      <div className={playerClasses}>
         {renderVideoTop()}
         {renderVideoMid()}
         {showSubs && videoEl && <Subtitles videoEl={videoEl} />}
@@ -174,7 +178,6 @@ function Player(props) {
   }
 
   function handleProgressChange(percent) {
-    console.log('seekto');
     playerRef.current.seekTo(percent / 100, 'fraction');
   }
 
@@ -191,19 +194,33 @@ function Player(props) {
     );
   }
 
+  function toggleFullscreen() {
+    const video = document.getElementById('video-container');
+    requestFullscreen(video);
+  }
+
   function renderVideoMid() {
-    const { media, switchPlay, cinemaMode } = props;
-    const { toggleCinemaMode } = props;
+    const { media, switchPlay, cinemaMode, forceSync } = props;
+    const { toggleCinemaMode, toggleSync } = props;
     return (
       <div className="video-player_mid">
         {renderVolumeControl()}
         <div onClick={switchPlay} className="control play-button">
           <i className={`fa fa-${media.playing ? 'pause' : 'play'}`} />
         </div>
-        <div onClick={toggleCinemaMode} className="control toggle-cinemamode">
-          {!cinemaMode && <i className="fas fa-expand" />}
-          {cinemaMode && <i className="fas fa-compress" />}
+        {/* <div onClick={toggleCinemaMode} className="control toggle-cinemamode">
+          {!cinemaMode && <i className="fas fa-film" />}
+          {cinemaMode && <i className="fas fa-film" />}
+        </div> */}
+        <div onClick={toggleFullscreen} className="control toggle-fullscreen">
+          <i className="fas fa-expand" />
         </div>
+        {/* <div
+          onClick={toggleSync}
+          className={cn('control', 'toggle-sync', { 'sync-on': forceSync })}
+        >
+          <i className="fas fa-sync-alt" />
+        </div> */}
       </div>
     );
   }
@@ -264,6 +281,7 @@ const mapStateToProps = state => ({
   subs: state.Media.subs,
   playing: state.Media.playing,
   cinemaMode: state.MainStates.cinemaMode,
+  forceSync: state.Media.forceSync,
 });
 
 const mapDispatchToProps = {
@@ -274,6 +292,7 @@ const mapDispatchToProps = {
   setVolume: payload => ({ type: types.SET_VOLUME, payload }),
   toggleCinemaMode: () => ({ type: types.TOGGLE_CINEMAMODE }),
   updateSubs: payload => ({ type: types.SET_SUBS, payload }),
+  toggleSync: () => ({ type: types.TOGGLE_SYNC }),
   getSubs: payload => fetchSubs(payload),
 };
 

@@ -50,10 +50,11 @@ const RenderPlaylister = ({ onClick, logged, upNext }) => (
       />
     )}
     <div style={{ visibility: upNext ? '' : 'hidden' }} className="item">
-      <div>Up next: </div>
+      <div className="up-nexts-sign">Up next: </div>
       <a
         className="control"
         target="_blank"
+        title={getUpNextTitle(upNext)}
         rel="noopener noreferrer"
         href={getUpNextUrl(upNext)}
       >

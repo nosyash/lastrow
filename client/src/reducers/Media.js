@@ -12,6 +12,7 @@ const InitialState = {
   showSubs: false,
   playlist: [],
   duration: 0,
+  forceSync: true,
   currentTime: 0,
   actualTime: 0,
   playing: true,
@@ -30,6 +31,10 @@ const Player = (state = InitialState, action) => {
 
     case types.ADD_TO_PLAYLIST: {
       return { ...state, playlist: action.payload };
+    }
+
+    case types.TOGGLE_SYNC: {
+      return { ...state, forceSync: !state.forceSync };
     }
 
     case types.SET_PLAY:
