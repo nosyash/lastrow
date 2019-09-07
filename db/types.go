@@ -15,7 +15,6 @@ type AboutRoom struct {
 type Room struct {
 	Title  string  `json:"title"`
 	Path   string  `json:"path"`
-	UUID   string  `json:"uuid"`
 	Owners []owner `json:"owners"`
 	Emoji  []emoji `json:"emoji"`
 }

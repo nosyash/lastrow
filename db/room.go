@@ -15,7 +15,7 @@ func (db Database) GetAllRooms() ([]Room, error) {
 	return rooms, err
 }
 
-func (db Database) CreateNewRoom(title, path, userUUID, roomUUID string) error {
+func (db Database) CreateNewRoom(title, path, userUUID string) error {
 	if db.RoomIsExists(path) {
 		return errors.New("Room with this path is already in use")
 	}
@@ -23,7 +23,6 @@ func (db Database) CreateNewRoom(title, path, userUUID, roomUUID string) error {
 	newRoom := Room{
 		Title: title,
 		Path:  path,
-		UUID:  roomUUID,
 		Owners: []owner{
 			{
 				userUUID,
@@ -35,6 +34,7 @@ func (db Database) CreateNewRoom(title, path, userUUID, roomUUID string) error {
 	return db.rc.Insert(&newRoom)
 }
 
+// RoomIsExists return true if found room by path
 func (db Database) RoomIsExists(path string) bool {
 	n, err := db.rc.Find(bson.M{"path": path}).Count()
 	if n != 0 {

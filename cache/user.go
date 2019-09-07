@@ -41,6 +41,8 @@ func (u *Users) UpdateUser(uuid string) {
 	user.Name = userProfile.Name
 	user.Color = userProfile.Color
 	user.Image = userProfile.Image
+
+	u.UpdateUsers <- struct{}{}
 }
 
 // UsersCount return count users for current room

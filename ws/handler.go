@@ -164,7 +164,7 @@ func (h hub) updatePlaylist() {
 	})
 }
 
-func (h *hub) syncCurrentTime() {
+func (h *hub) syncElapsedTime() {
 	for {
 		if h.cache.Playlist.Size() == 0 {
 			h.syncer.sleep = true

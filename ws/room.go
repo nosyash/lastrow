@@ -48,7 +48,7 @@ func NewRoomHub(id string) *hub {
 // HandleActions handle internal room and client events one at time
 func (h hub) HandleActions() {
 	go h.cache.HandleCacheEvents()
-	go h.syncCurrentTime()
+	go h.syncElapsedTime()
 	go storage.Add(h.cache)
 
 	for {
@@ -205,7 +205,7 @@ func (h hub) sendUpatesTo(upd *updates, conn *websocket.Conn) {
 }
 
 func (h hub) ping(conn *websocket.Conn) {
-	ticker := time.NewTicker(10 * time.Second)
+	ticker := time.NewTicker(30 * time.Second)
 	defer func() {
 		ticker.Stop()
 		h.unregister <- conn
@@ -215,7 +215,7 @@ func (h hub) ping(conn *websocket.Conn) {
 	for {
 		select {
 		case <-ticker.C:
-			conn.SetWriteDeadline(time.Now().Add(15 * time.Second))
+			conn.SetWriteDeadline(time.Now().Add(45 * time.Second))
 
 			if err := writeMessage(conn, websocket.PingMessage, nil); err != nil {
 				return
@@ -225,9 +225,9 @@ func (h hub) ping(conn *websocket.Conn) {
 }
 
 func (h hub) pong(conn *websocket.Conn) {
-	conn.SetReadDeadline(time.Now().Add(15 * time.Second))
+	conn.SetReadDeadline(time.Now().Add(45 * time.Second))
 	conn.SetPongHandler(func(string) error {
-		conn.SetReadDeadline(time.Now().Add(15 * time.Second))
+		conn.SetReadDeadline(time.Now().Add(45 * time.Second))
 		return nil
 	})
 }

@@ -81,7 +81,7 @@ func (server Server) createRoom(w http.ResponseWriter, title, path, userUUID str
 		return
 	}
 
-	err := server.db.CreateNewRoom(title, path, userUUID, getRandomUUID())
+	err := server.db.CreateNewRoom(title, path, userUUID)
 	if err != nil {
 		sendResponse(w, http.StatusOK, message{
 			Error: err.Error(),
@@ -101,8 +101,8 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest) {
 		}
 
 		name := strings.TrimSpace(req.Body.Data.Name)
-		// img := req.Body.Data.Img
-		// uuid := req.RoomUUID
+		img := req.Body.Data.Img
+		roomID := req.RoomUUID
 
 		var exp = regexp.MustCompile(`[^a-zA-Z0-9-_]`)
 		if exp.MatchString(name) {
@@ -118,6 +118,16 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest) {
 			})
 			return
 		}
+
+		if !server.db.RoomIsExists(roomID) {
+			sendResponse(w, http.StatusBadRequest, message{
+				Error: "Room with this room_id was not be found",
+			})
+			return
+		}
+
+		fmt.Println(name, img, roomID)
+		return
 
 	default:
 		sendResponse(w, http.StatusBadRequest, message{
