@@ -8,6 +8,7 @@ import * as types from '../../constants/ActionTypes';
 import { roomExist } from '../../utils/apiRequests';
 import Divider from './Divider';
 import { webSocketConnect, webSocketDisconnect } from '../../actions';
+import notifications from '../../utils/notifications';
 
 // We authorize before render room,
 // so we could easier initialize WebSocket...
@@ -43,7 +44,7 @@ class RoomBase extends Component {
   }
 
   componentWillUnmount() {
-    // webSocketDisconnect();
+    webSocketDisconnect();
   }
 
   init = async () => {
