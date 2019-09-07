@@ -37,6 +37,7 @@
     "jest-resolve": "23.6.0",
     "jest-watch-typeahead": "^0.2.1",
     "joi-browser": "^13.4.0",
+    "local-storage": "^2.0.0",
     "lodash": "^4.17.11",
     "marked": "^0.7.0",
     "mini-css-extract-plugin": "0.5.0",

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { toastOpts } from '../constants';
+import { toastOpts } from '../Conf';
 
 axios.defaults.withCredentials = false;
 

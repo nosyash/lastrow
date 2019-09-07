@@ -9,6 +9,7 @@ import { roomExist } from '../../utils/apiRequests';
 import Divider from './Divider';
 import { webSocketConnect, webSocketDisconnect } from '../../actions';
 import notifications from '../../utils/notifications';
+import { GUEST_AUTH, PROFILE_SETTINGS } from '../../constants';
 
 // We authorize before render room,
 // so we could easier initialize WebSocket...
@@ -17,7 +18,7 @@ function RoomBaseWrapper(props) {
   const { logged, guest } = props.profile;
 
   if (guest && !logged) {
-    addPopup('guestAuth');
+    addPopup(GUEST_AUTH);
     return null;
   }
   return <RoomBase {...props} />;
@@ -87,13 +88,13 @@ class RoomBase extends Component {
 
   handleNicknamePopup = () => {
     const { togglePopup } = this.props;
-    togglePopup('guestAuth');
+    togglePopup(GUEST_AUTH);
   };
 
   // TODO: Move to GuestAuth component
   handleGuestAuth = name => {
     const { removePopup, updateProfile } = this.props;
-    removePopup('profile-settings');
+    removePopup(PROFILE_SETTINGS);
     updateProfile({ name });
   };
 

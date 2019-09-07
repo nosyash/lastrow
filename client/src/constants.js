@@ -53,24 +53,15 @@ export const OPEN = 1;
 export const CLOSING = 2;
 export const CLOSED = 3;
 
-export const toastOpts = {
-  autoClose: 4000,
-  hideProgressBar: true,
-  pauseOnFocusLoss: false,
-  newestOnTop: true,
-};
-
 export const isEdge = window.navigator.userAgent.indexOf('Edge') > -1;
 
-export const playerConf = {
-  youtube: {
-    host: 'http://www.youtube.com',
-    playerVars: {
-      host: 'http://www.youtube.com',
-      autoplay: 1,
-      controls: 1,
-      origin: 'https://www.youtube.com',
-    },
-    preload: false,
-  },
-};
+// popups
+export const ADD_MEDIA = 'addMedia';
+export const COLOR_PICKER = 'colorPicker';
+export const GUEST_AUTH = 'guestAuth';
+export const IMAGE_PICKER = 'imagePicker';
+export const LOG_FORM = 'logForm';
+export const NEW_ROOM = 'newRoom';
+export const PLAYLIST = 'playlist';
+export const PROFILE_SETTINGS = 'profileSettings';
+export const SETTINGS = 'settings';

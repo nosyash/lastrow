@@ -6,7 +6,8 @@ import * as types from '../constants/ActionTypes';
 
 import Socket from '../utils/WebSocket';
 import { store } from '../store';
-import { SOCKET_ENDPOINT, toastOpts } from '../constants';
+import { SOCKET_ENDPOINT } from '../constants';
+import { toastOpts } from '../Conf';
 
 export const fetchSubs = url => dispatch => {
   return http

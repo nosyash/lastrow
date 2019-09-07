@@ -1,3 +1,6 @@
+import ls from 'local-storage'
+import { notify } from './base';
+
 class Notification {
   constructor() {
     this.replies = false;
@@ -11,10 +14,11 @@ class Notification {
     this._changeTitle();
   }
 
-  addReplies() {
-    console.log('added');
+  addReplies({ name, body, image }) {
     this.replies = true;
     this._changeTitle();
+
+    if (ls.get('notify')) notify(`Reply by ${name}`, { body, icon: image });
   }
 
   removeNotifications = () => {

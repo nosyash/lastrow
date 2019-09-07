@@ -4,9 +4,10 @@ import { toast } from 'react-toastify';
 import { connect } from 'react-redux';
 import Form from '../Form';
 import http from '../../../utils/httpServices';
-import { toastOpts } from '../../../constants';
+import { toastOpts } from '../../../Conf';
 import * as types from '../../../constants/ActionTypes';
 import * as api from '../../../constants/apiActions';
+import { NEW_ROOM, PROFILE_SETTINGS } from '../../../constants';
 
 class LogForm extends Form {
   state = {
@@ -112,12 +113,12 @@ class LogForm extends Form {
 
   handleRoomCreation = () => {
     const { addPopup } = this.props;
-    addPopup('newRoom');
+    addPopup(NEW_ROOM);
   };
 
   handleProfileSettings = () => {
     const { addPopup } = this.props;
-    addPopup('profileSettings');
+    addPopup(PROFILE_SETTINGS);
   };
 
   render() {

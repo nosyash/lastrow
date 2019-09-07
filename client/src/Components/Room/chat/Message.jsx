@@ -6,6 +6,8 @@ import playSound from '../../../utils/HandleSounds';
 import notifications from '../../../utils/notifications';
 
 class Message extends PureComponent {
+  shown = false;
+
   getClassNames = classes => {
     const { online } = classes;
     let { highlight } = classes;
@@ -26,14 +28,17 @@ class Message extends PureComponent {
   pageIsVisible = () => document.visibilityState === 'visible';
 
   handleSounds = highlight => {
+    if (this.shown) return;
     if (highlight && !this.pageIsVisible()) {
       playSound();
     }
   };
 
-  handleNotification = highlight => {
+  handleNotification = (highlight, opts) => {
+    if (this.shown) return;
+    this.shown = true;
     if (this.pageIsVisible()) return;
-    if (highlight) notifications.addReplies();
+    if (highlight) notifications.addReplies(opts);
     else notifications.addUnread();
   };
 
@@ -41,8 +46,8 @@ class Message extends PureComponent {
     const { online, color, image, highlight, body } = this.props;
     const { name, emojiList } = this.props;
 
-    this.handleSounds(highlight);
-    this.handleNotification(highlight);
+    // this.handleSounds(highlight);
+    this.handleNotification(highlight, { name, body, image });
 
     const renderMessageArgs = {
       ...this.getStyles(image, color),
