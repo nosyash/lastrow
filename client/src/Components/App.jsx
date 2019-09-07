@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Route, Switch, BrowserRouter } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { connect } from 'react-redux';
+import ls from 'local-storage';
 import RoomBase from './Room/Base';
 import RoomListBase from './RoomList/Base';
 import Popups from './UI/Popups/Base';
@@ -14,6 +15,7 @@ function App(props) {
 
   useEffect(() => {
     handleProfile();
+    if (!ls.get('notifications-requested')) Notification.requestPermission();
   }, []);
 
   async function handleProfile() {

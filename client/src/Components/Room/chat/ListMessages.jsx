@@ -36,7 +36,9 @@ function ListMessages(props) {
     else messagesEl.current.scrollTo(0, amountOfPixelsToBeAtBottom());
   }
 
-  const amountOfPixelsToBeAtBottom = () => getChatScrollHeight() - getChatOffsetHeight();
+  // TODO: fix 1000 later
+  const amountOfPixelsToBeAtBottom = () =>
+    getChatScrollHeight() - getChatOffsetHeight() + 1000;
 
   const getChatScrollHeight = () => messagesEl.current.scrollHeight;
 
@@ -55,7 +57,8 @@ function ListMessages(props) {
     let highlight = false;
 
     const previousMessage = roomsMessages[i - 1];
-    const sameAuthorMessage = previousMessage && previousMessage.__id === currentMessage.__id;
+    const sameAuthorMessage =
+      previousMessage && previousMessage.__id === currentMessage.__id;
     if (sameAuthorMessage) {
       renderHeader = false;
     }

@@ -35,6 +35,7 @@ function ChatInput(props) {
   const [emoteQuery, setEmoteQuery] = useState([]);
   const [queryLen, setQueryLen] = useState(0);
   const [currentEmote, setCurrentEmote] = useState(0);
+  const [showEmotes, setShowEmotes] = useState(false);
   const inputEl = useRef(null);
 
   useEffect(() => {
@@ -67,7 +68,6 @@ function ChatInput(props) {
       const newValue = inputValue.trim();
       if (!socketState || !newValue) return;
       webSocketSend(api.SEND_MESSAGE(newValue, profile.uuid));
-      // socket.send(api.SEND_MESSAGE(newValue, profile.uuid));
       setInputValue('');
       return;
     }
@@ -142,14 +142,22 @@ function ChatInput(props) {
   function selectCurrent() {
     const currentEmoteName = emoteQuery[currentEmote];
     if (!currentEmoteName) return;
+    pasteEmoteByName(currentEmoteName.name);
+  }
+
+  function pasteEmoteByName(name, inPlace) {
     const { selectionEnd } = inputEl.current;
+    let inputStart = inputValue.substr(0, selectionEnd - queryLen - 1).trim();
+    if (inPlace) inputStart = inputValue.substr(0, selectionEnd).trim();
+    const inputEnd = inputValue.substr(selectionEnd).trim();
+    // if we're not at the beginning, manually add space before emote;
+    if (inputStart) inputStart += ' ';
 
-    const inputStart = inputValue.substr(0, selectionEnd - queryLen - 1);
-    const inputEnd = inputValue.substr(selectionEnd);
-
-    setInputValue(`${inputStart}:${currentEmoteName.name}: ${inputEnd}`);
+    setInputValue(`${inputStart}:${name}: ${inputEnd}`);
     setCurrentEmote(0);
     setEmoteQuery([]);
+    setShowEmotes(false);
+    inputEl.current.focus();
   }
 
   function handleInputChange(e) {
@@ -178,6 +186,7 @@ function ChatInput(props) {
       <div className="emote-search">
         {emoteQuery.map((emote, index) => (
           <span
+            onClick={() => pasteEmoteByName(emote.name)}
             key={emote.name}
             className={cn([
               'emote-search__emote',
@@ -186,6 +195,33 @@ function ChatInput(props) {
           >
             <img src={emote.url} alt={emote.name} title={emote.name} className="emote" />
             <span>:{emote.name}:</span>
+          </span>
+        ))}
+      </div>
+      {showEmotes && (
+        <EmoteMenu
+          list={props.emotesList}
+          onClick={name => pasteEmoteByName(name, true)}
+        />
+      )}
+      <span onClick={() => setShowEmotes(!showEmotes)} className="control emote-icon">
+        <i className="fa fa-smile"></i>
+      </span>
+    </div>
+  );
+}
+
+function EmoteMenu({ list, onClick }) {
+  return (
+    <div className="emote-menu">
+      <div className="emote-menu__scroll">
+        {list.map(emote => (
+          <span
+            key={emote.name + emote.url}
+            onClick={() => onClick(emote.name)}
+            className="emote-menu__emote"
+          >
+            <img src={emote.url} alt={emote.name} title={emote.name} className="emote" />
           </span>
         ))}
       </div>

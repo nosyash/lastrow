@@ -1,3 +1,4 @@
+/* eslint-disable no-new */
 export function toggleUserSelect() {
   document.body.classList.toggle('no-select');
 }
@@ -118,3 +119,34 @@ export const mod = (n, m) => ((n % m) + m) % m;
 //   var result = date.toISOString().substr(11, 8);
 //   console.log(result)
 // }
+
+export function requestFullscreen(element) {
+  if (!document.fullscreenElement) {
+    element.requestFullscreen().catch(err => {
+      alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+    });
+  } else {
+    document.exitFullscreen();
+  }
+}
+
+export function notify(text, options) {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted') {
+    const n = new Notification(text, options);
+    handleNotifyClose(n);
+  } else if (Notification.permission !== 'denied') {
+    Notification.requestPermission(permission => {
+      if (permission === 'granted') {
+        const n = new Notification(text, options);
+        handleNotifyClose(n);
+      }
+    });
+  }
+}
+
+function handleNotifyClose(n) {
+  setTimeout(() => {
+    n.close();
+  }, 4000);
+}

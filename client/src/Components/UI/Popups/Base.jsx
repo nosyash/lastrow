@@ -13,6 +13,7 @@ import LogForm from './LogForm';
 import NewRoom from './NewRoom';
 import Playlist from './Playlist';
 import ProfileSettings from './ProfileSettings';
+import Settings from './Settings';
 
 function Popups({ popups, removePopup }) {
   const handleResizeTh = throttle(handleResize, 16);
@@ -56,6 +57,7 @@ function Popups({ popups, removePopup }) {
       {p.logForm && wrapPopup(<LogForm />, 'logForm')}
       {p.newRoom && wrapPopup(<NewRoom />, 'newRoom')}
       {p.playlist && wrapPopup(<Playlist />, 'playlist')}
+      {p.settings && wrapPopup(<Settings />, 'settings')}
     </div>
   );
 

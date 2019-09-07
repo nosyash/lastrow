@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import Joi from 'joi-browser';
 import * as types from '../../../constants/ActionTypes';
 import Form from '../Form';
+import { GUEST_AUTH } from '../../../constants';
 
 class GuestAuth extends Form {
   state = {
@@ -24,7 +25,7 @@ class GuestAuth extends Form {
     const { data } = this.state;
     updateProfile({ name: data.name, logged: true });
 
-    removePopup('guestAuth');
+    removePopup(GUEST_AUTH);
     this.sendEvent();
   };
 
@@ -32,7 +33,7 @@ class GuestAuth extends Form {
     const { updateProfile, removePopup } = this.props;
     updateProfile({ name: 'Guest', logged: true, guest: true });
 
-    removePopup('guestAuth');
+    removePopup(GUEST_AUTH);
     this.sendEvent();
   };
 

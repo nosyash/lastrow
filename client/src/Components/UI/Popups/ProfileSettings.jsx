@@ -6,7 +6,8 @@ import Form from '../Form';
 import * as api from '../../../constants/apiActions';
 import * as types from '../../../constants/ActionTypes';
 import http from '../../../utils/httpServices';
-import { toastOpts } from '../../../constants';
+import { toastOpts } from '../../../Conf';
+import { IMAGE_PICKER, COLOR_PICKER } from '../../../constants';
 
 // TODO: Extremely poorly made. Refactor!
 class ProfileSettings extends Form {
@@ -76,11 +77,11 @@ class ProfileSettings extends Form {
   };
 
   handleImagePicker = () => {
-    this.props.addPopup('imagePicker');
+    this.props.addPopup(IMAGE_PICKER);
   };
 
   handleColorPicker = () => {
-    this.props.addPopup('colorPicker');
+    this.props.addPopup(COLOR_PICKER);
   };
 
   handleColorUpdate = async color => {

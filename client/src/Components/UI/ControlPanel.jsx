@@ -1,14 +1,15 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import * as types from '../../constants/ActionTypes';
+import { PROFILE_SETTINGS, PLAYLIST, ADD_MEDIA, SETTINGS } from '../../constants';
 
 function ControlPanel(props) {
   function handleClick(id) {
     switch (id) {
       case 'showPlaylist':
-        return props.togglePopup('playlist');
+        return props.togglePopup(PLAYLIST);
       case 'addToPlaylist':
-        return props.togglePopup('addMedia');
+        return props.togglePopup(ADD_MEDIA);
 
       default:
         break;
@@ -25,7 +26,8 @@ function ControlPanel(props) {
       {logged && (
         <RenderProfile
           logged={logged}
-          onProfileSettings={() => props.addPopup('profileSettings')}
+          onProfileSettings={() => props.addPopup(PROFILE_SETTINGS)}
+          onSettings={() => props.addPopup(SETTINGS)}
           profile={profile}
         />
       )}
@@ -50,10 +52,11 @@ const RenderPlaylister = ({ onClick, logged, upNext }) => (
       />
     )}
     <div style={{ visibility: upNext ? '' : 'hidden' }} className="item">
-      <div>Up next: </div>
+      <div className="up-nexts-sign">Up next: </div>
       <a
         className="control"
         target="_blank"
+        title={getUpNextTitle(upNext)}
         rel="noopener noreferrer"
         href={getUpNextUrl(upNext)}
       >
@@ -84,7 +87,7 @@ const RenderItem = ({ classes, onClick, dataId, text }) => (
   </div>
 );
 
-const RenderProfile = ({ profile, onProfileSettings }) => {
+const RenderProfile = ({ profile, onProfileSettings, onSettings }) => {
   const { name, image, color, guest } = profile;
   const backgroundColor = color;
   const backgroundImage = `url(${image})`;
@@ -100,7 +103,7 @@ const RenderProfile = ({ profile, onProfileSettings }) => {
             <span onClick={onProfileSettings} className="control">
               <i className="fas fa-users-cog" />
             </span>
-            <span className="control">
+            <span onClick={onSettings} className="control">
               <i className="fas fa-cog" />
             </span>
           </div>

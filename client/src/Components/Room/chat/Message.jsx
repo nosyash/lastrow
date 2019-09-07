@@ -3,8 +3,11 @@ import { connect } from 'react-redux';
 import safelySetInnerHTML from '../../../utils/safelySetInnerHTML ';
 import parseMarkup from '../../../utils/markup';
 import playSound from '../../../utils/HandleSounds';
+import notifications from '../../../utils/notifications';
 
 class Message extends PureComponent {
+  shown = false;
+
   getClassNames = classes => {
     const { online } = classes;
     let { highlight } = classes;
@@ -22,18 +25,29 @@ class Message extends PureComponent {
     return { backgroundImage, backgroundColor };
   };
 
+  pageIsVisible = () => document.visibilityState === 'visible';
+
   handleSounds = highlight => {
-    const pageVissible = document.visibilityState === 'visible';
-    if (highlight && !pageVissible) {
+    if (this.shown) return;
+    if (highlight && !this.pageIsVisible()) {
       playSound();
     }
+  };
+
+  handleNotification = (highlight, opts) => {
+    if (this.shown) return;
+    this.shown = true;
+    if (this.pageIsVisible()) return;
+    if (highlight) notifications.addReplies(opts);
+    else notifications.addUnread();
   };
 
   render() {
     const { online, color, image, highlight, body } = this.props;
     const { name, emojiList } = this.props;
 
-    this.handleSounds(highlight);
+    // this.handleSounds(highlight);
+    this.handleNotification(highlight, { name, body, image });
 
     const renderMessageArgs = {
       ...this.getStyles(image, color),

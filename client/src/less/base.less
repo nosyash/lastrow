@@ -310,7 +310,6 @@ body {
 }
 
 
-
 .divider {
   border-bottom: 1px solid rgb(59, 59, 59);
   margin: 8px 10px;
@@ -334,11 +333,14 @@ body {
   padding-right: 30px;
   width: calc(100% + 20px);
   padding-bottom: 25px;
-  // TODO: Probably not needed
-  
   position: relative;
+
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
   &.scroll-smooth {
-    scroll-behavior: smooth;
+    // scroll-behavior: smooth;
   }
 }
 
@@ -353,6 +355,7 @@ body {
   text-align: center;
   color: #bbb;
   cursor: pointer;
+
   &:hover {
     opacity: 0.8;
   }
@@ -369,6 +372,10 @@ body {
 .chat-message {
   position: relative;
   margin-bottom: 5px;
+
+  &:first-child {
+    margin-top: auto;
+  }
 }
 
 .chat-message.offline {
@@ -510,6 +517,54 @@ body {
 
 .emote-search__emote_selected {
   background: #586a7c;
+}
+
+.emote-menu {
+  position: absolute;
+  overflow-x: auto;
+  background: #3b3b3b;
+  z-index: 100000;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  left: 0;
+  right: 0;
+  bottom: 120px;
+  flex-direction: row;
+  display: flex;
+  flex-wrap: wrap;
+  overflow: hidden;
+  border-radius: 5px;
+  padding-right: 15px;
+}
+
+.emote-menu__scroll {
+  overflow-y: scroll;
+  height: 100%;
+  max-height: 200px;
+  padding: 4px;
+  margin-right: -35px;
+}
+
+.emote-menu__emote {
+  height: 32px;
+  width: 32px;
+  display: inline-block;
+  // margin: 4px;
+  font-size: 0px;
+  margin: 5px;
+  cursor: pointer;
+
+  &:hover {
+    // background: #586a7c
+    opacity: 0.6;
+  }
+}
+
+
+
+.emote-icon {
+  position: absolute;
+  top: -20px;
+  right: 3px;
 }
 
 .chat-header {
@@ -1095,6 +1150,12 @@ body {
   align-items: center;
   text-align: center;
   padding-right: 100px;
+
+  .toggle-cinemamode .fas {
+    font-size: 1.08em;
+    vertical-align: -1px;
+  }
+
 }
 
 .play-button {
@@ -1315,7 +1376,16 @@ body {
 }
 
 .toggle-cinemamode {
-  visibility: hidden;
+  // visibility: hidden;
+  margin: 0 4px;
+}
+
+.toggle-sync {
+  margin-left: 5px;
+}
+
+.toggle-sync.sync-on {
+  color: rgb(0, 180, 141);
 }
 
 .go-back {
@@ -1428,6 +1498,10 @@ body {
   // &>div:not(.popup-header) {
   //   margin: auto;
   // }
+}
+
+.popup.profileSettings {
+  width: 420px !important;
 }
 
 .popup-element {
@@ -1606,6 +1680,10 @@ body {
 
 .playlist-item__duration {
   margin-left: 5px;
+}
+
+.playlist-item__remove-icon {
+  margin-left: 12px;
 }
 
 // Add media

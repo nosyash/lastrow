@@ -1,15 +1,27 @@
 import * as types from '../constants/ActionTypes';
+import {
+  ADD_MEDIA,
+  COLOR_PICKER,
+  GUEST_AUTH,
+  IMAGE_PICKER,
+  LOG_FORM,
+  NEW_ROOM,
+  PLAYLIST,
+  PROFILE_SETTINGS,
+  SETTINGS,
+} from '../constants';
 
 const initialState = {
   list: [],
-  addMedia: false,
-  colorPicker: false,
-  guestAuth: false,
-  imagePicker: false,
-  logForm: false,
-  newRoom: false,
-  playlist: false,
-  profileSettings: false,
+  [ADD_MEDIA]: false,
+  [COLOR_PICKER]: false,
+  [GUEST_AUTH]: false,
+  [IMAGE_PICKER]: false,
+  [LOG_FORM]: false,
+  [NEW_ROOM]: false,
+  [PLAYLIST]: false,
+  [PROFILE_SETTINGS]: false,
+  [SETTINGS]: false,
 };
 
 const Popups = (state = initialState, action) => {
