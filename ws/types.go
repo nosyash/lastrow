@@ -64,7 +64,7 @@ type syncer struct {
 
 type data struct {
 	Message  string         `json:"message,omitempty"`
-	Error    string         `json:"error"`
+	Error    string         `json:"error,omitempty"`
 	Color    string         `json:"color,omitempty"`
 	Image    string         `json:"image,omitempty"`
 	Name     string         `json:"name,omitempty"`
@@ -73,7 +73,7 @@ type data struct {
 	Duration int            `json:"duration,omitempty"`
 	URL      string         `json:"url,omitempty"`
 	ID       string         `json:"__id,omitempty"`
-	Users    []*cache.User  `json:"users,empty"`
+	Users    []*cache.User  `json:"users,omitempty"`
 	Playlist []*cache.Video `json:"videos,omitempty"`
 	Ticker   *elapsedTime   `json:"ticker,omitempty"`
 	FeedBack feedback       `json:"feedback,omitempty"`

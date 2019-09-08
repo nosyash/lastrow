@@ -151,6 +151,11 @@ func (h hub) updatePlaylist() {
 }
 
 func (h *hub) syncElapsedTime() {
+	var ep elapsedTime
+	var d data
+	var elapsed int
+	var ticker = time.Tick(syncPeriod * time.Second)
+
 	for {
 		if h.cache.Playlist.Size() == 0 {
 			h.syncer.sleep = true
@@ -158,10 +163,7 @@ func (h *hub) syncElapsedTime() {
 			h.syncer.sleep = false
 		}
 		video := h.cache.Playlist.TakeHeadElement()
-
 		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration+sleepBeforeStart)*time.Second))
-		ticker := time.Tick(syncPeriod * time.Second)
-		elapsed := 0
 
 		h.syncer.currentVideoID = video.ID
 
@@ -171,13 +173,14 @@ func (h *hub) syncElapsedTime() {
 		for {
 			select {
 			case <-ticker:
-				h.broadcast <- createPacket(playerEvent, eTypeTicker, data{
-					Ticker: &elapsedTime{
-						ID:          video.ID,
-						Duration:    video.Duration,
-						ElapsedTime: elapsed,
-					},
-				})
+				ep.ID = video.ID
+				ep.Duration = video.Duration
+				ep.ElapsedTime = elapsed
+
+				d.Ticker = &ep
+
+				h.broadcast <- createPacket(playerEvent, eTypeTicker, d)
+
 				elapsed += syncPeriod
 			case <-ctx.Done():
 				cancel()
@@ -194,5 +197,6 @@ func (h *hub) syncElapsedTime() {
 		h.cache.Playlist.DelVideo <- video.ID
 		<-h.cache.Playlist.DelFeedBack
 		h.syncer.currentVideoID = ""
+		elapsed = 0
 	}
 }
