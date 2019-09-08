@@ -29,7 +29,7 @@ var (
 func NewRoomHub(id string) *hub {
 	return &hub{
 		make(map[string]*websocket.Conn),
-		make(chan *response),
+		make(chan *packet),
 		make(chan *user),
 		make(chan *websocket.Conn),
 		cache.New(id),
@@ -99,9 +99,9 @@ func (h hub) add(user *user) {
 	playlist := h.cache.Playlist.GetAllPlaylist()
 
 	if playlist != nil {
-		h.sendUpatesTo(&updates{
+		writeJSON(user.Conn, createPacket(playerEvent, eTypePlaylist, data{
 			Playlist: playlist,
-		}, user.Conn)
+		}))
 	}
 }
 
@@ -160,7 +160,7 @@ func (h *hub) read(conn *websocket.Conn) {
 	}()
 
 	for {
-		req, err := readRequest(conn)
+		req, err := readPacket(conn)
 		if err != nil {
 			conn.Close()
 			break
@@ -179,28 +179,12 @@ func (h *hub) read(conn *websocket.Conn) {
 	}
 }
 
-func (h hub) send(msg *response) {
+func (h hub) send(msg *packet) {
 	for _, conn := range h.hub {
-		if err := sendResponse(conn, msg); err != nil {
+		if err := sendPacket(conn, msg); err != nil {
 			h.unregister <- conn
 			conn.Close()
 		}
-	}
-}
-
-func (h hub) broadcastUpdate(upd *updates) {
-	for _, conn := range h.hub {
-		if err := writeJSON(conn, upd); err != nil {
-			h.unregister <- conn
-			conn.Close()
-		}
-	}
-}
-
-func (h hub) sendUpatesTo(upd *updates, conn *websocket.Conn) {
-	if err := writeJSON(conn, upd); err != nil {
-		h.unregister <- conn
-		conn.Close()
 	}
 }
 
