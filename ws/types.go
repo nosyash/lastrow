@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// Register a new connection in room cache
+// Register a new connection in a room cache
 var Register chan *websocket.Conn
 var close chan string
 var lock sync.Mutex
