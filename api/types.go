@@ -48,6 +48,11 @@ type authBody struct {
 	Email  string `json:"email"`
 }
 
+type roomView struct {
+	Title string `json:"title"`
+	UUID  string `json:"uuid"`
+}
+
 const (
 	accountRegistration = "register"
 	accountLogin        = "login"

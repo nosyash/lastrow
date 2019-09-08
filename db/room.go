@@ -15,7 +15,14 @@ func (db Database) GetAllRooms() ([]Room, error) {
 	return rooms, err
 }
 
-func (db Database) CreateNewRoom(title, path, userUUID string) error {
+func (db Database) GetRoom(path string) (Room, error) {
+	var room Room
+
+	err := db.rc.Find(nil).One(&room)
+	return room, err
+}
+
+func (db Database) CreateNewRoom(title, path, userUUID, roomUUID string) error {
 	if db.RoomIsExists(path) {
 		return errors.New("Room with this path is already in use")
 	}
@@ -23,6 +30,7 @@ func (db Database) CreateNewRoom(title, path, userUUID string) error {
 	newRoom := Room{
 		Title: title,
 		Path:  path,
+		UUID:  roomUUID,
 		Owners: []owner{
 			{
 				userUUID,

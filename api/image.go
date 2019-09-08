@@ -45,7 +45,7 @@ func (i image) createImage(path, iType string) error {
 	if err != nil {
 		return err
 	}
-
+	// Еще же гифки будут
 	switch iType {
 	case "jpg", "jpeg":
 		img, err := jpeg.Decode(reader)

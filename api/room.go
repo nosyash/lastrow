@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -81,7 +82,7 @@ func (server Server) createRoom(w http.ResponseWriter, title, path, userUUID str
 		return
 	}
 
-	err := server.db.CreateNewRoom(title, path, userUUID)
+	err := server.db.CreateNewRoom(title, path, userUUID, getRandomUUID())
 	if err != nil {
 		sendResponse(w, http.StatusOK, message{
 			Error: err.Error(),
@@ -137,12 +138,33 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest) {
 }
 
 func (server Server) roomInnerHandler(w http.ResponseWriter, r *http.Request) {
-	if !server.db.RoomIsExists(mux.Vars(r)["roomPath"]) {
-		w.WriteHeader(http.StatusNotFound)
+	path, ok := mux.Vars(r)["roomPath"]
+	if ok {
+		if !server.db.RoomIsExists(path) {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		room, err := server.db.GetRoom(path)
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+
+		rv := roomView{
+			Title: room.Title,
+			UUID:  room.UUID,
+		}
+
+		r, _ := json.Marshal(&rv)
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(r)
+
 		return
 	}
-	w.WriteHeader(http.StatusOK)
-	return
+
+	w.WriteHeader(http.StatusBadRequest)
 }
 
 func (server Server) getAllRooms(w http.ResponseWriter) {
