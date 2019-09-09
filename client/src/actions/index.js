@@ -33,8 +33,8 @@ export const webSocketConnect = ({ roomID }) => {
 
 const isConnectingSameRoom = roomID => (socket ? roomID === socket.roomID : false);
 
-export const webSocketSend = data => {
-  return socket.sendMessage(data);
+export const webSocketSend = (data, messageTypeToGet = '', cb = () => null) => {
+  return socket.sendMessage(data, messageTypeToGet, cb);
 };
 
 export const webSocketDisconnect = () => {

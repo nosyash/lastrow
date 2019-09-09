@@ -109,9 +109,10 @@ export const SEND_MESSAGE = (message, user_uuid) =>
 
 export const GET_WS_DATA = json => {
   const obj = JSON.parse(json);
-  if (obj.users || obj.users === null) {
-    return { type: 'user_list', users: obj.users ? obj.users : [] };
+  if (obj.users) {
+    return { type: 'user_list', users: obj.users };
   }
+
   if (obj.ticker) {
     return { type: 'ticker', ...obj.ticker };
   }
