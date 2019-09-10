@@ -53,9 +53,9 @@ type authBody struct {
 }
 
 type roomView struct {
-	Title string     `json:"title"`
-	UUID  string     `json:"uuid"`
-	Emoji []db.Emoji `json:"emoji"`
+	Title string     `json:"title,omitempty"`
+	UUID  string     `json:"uuid,omitempty"`
+	Emoji []db.Emoji `json:"emoji,omitempty"`
 }
 
 const (
@@ -85,24 +85,27 @@ const (
 )
 
 const (
-	minUsername = 1
-	maxUsername = 20
+	minUsernameLength = 1
+	maxUsernameLength = 20
 
-	minPassword = 8
-	maxPassword = 32
+	minPasswordLength = 8
+	maxPasswordLength = 32
+
+	minNameLength = 1
+	maxNameLength = 20
 )
 
 const (
-	minRoomTitle = 4
-	maxRoomTitle = 30
+	minRoomTitleLength = 4
+	maxRoomTitleLength = 30
 
-	minRoomPath = 4
-	maxRoomPath = 15
+	minRoomPathLength = 4
+	maxRoomPathLength = 15
 )
 
 const (
-	minEmojiName = 4
-	maxEmojiName = 15
+	minEmojiNameLength = 4
+	maxEmojiNameLength = 15
 )
 
 const (
