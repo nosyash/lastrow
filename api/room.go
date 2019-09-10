@@ -202,11 +202,12 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest) {
 			return
 		}
 
-		emjCopy := room.Emoji[:0]
-		for _, v := range room.Emoji {
-			if v.Name != name {
-				emjCopy = append(emjCopy, v)
-			} else {
+		emoji := room.Emoji[:0]
+		emjIdx := -1
+
+		for i, v := range room.Emoji {
+			if v.Name == name {
+				emjIdx = i
 				err := os.Remove(filepath.Join(server.imageServer.UplPath, v.Path))
 				if err != nil {
 					log.Println(err)
@@ -218,7 +219,16 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest) {
 			}
 		}
 
-		if err = server.db.UpdateRoomValue(uuid, "emoji", emjCopy); err != nil {
+		if emjIdx == -1 {
+			sendJson(w, http.StatusBadRequest, message{
+				Error: "Emoji with this name was not be found",
+			})
+			return
+		}
+
+		emoji = append(room.Emoji[:emjIdx], room.Emoji[emjIdx+1:]...)
+
+		if err = server.db.UpdateRoomValue(uuid, "emoji", emoji); err != nil {
 			log.Println(err)
 			sendJson(w, http.StatusBadRequest, message{
 				Error: "Room with this room_id was not be found",
@@ -227,7 +237,7 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest) {
 		}
 
 		sendJson(w, http.StatusOK, roomView{
-			Emoji: emjCopy,
+			Emoji: emoji,
 		})
 
 	default:
