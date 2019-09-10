@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -186,6 +187,73 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest) {
 		})
 
 		if err = server.db.UpdateRoomValue(uuid, "emoji", emoji); err != nil {
+			log.Println(err)
+			sendResponse(w, http.StatusBadRequest, message{
+				Error: "Room with this room_id was not be found",
+			})
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+	case delEmoji:
+		if req.Body.Data.Name == "" || req.RoomUUID == "" {
+			sendResponse(w, http.StatusBadRequest, message{
+				Error: "One or more required arguments are empty",
+			})
+			return
+		}
+
+		name := req.Body.Data.Name
+		uuid := req.RoomUUID
+
+		var exp = regexp.MustCompile(`[^a-zA-Z0-9-_]`)
+		if exp.MatchString(name) {
+			sendResponse(w, http.StatusBadRequest, message{
+				Error: "Emoji name must contain only string characters and numbers",
+			})
+			return
+		}
+
+		if len(name) > maxEmojiName || len(name) < minEmojiName {
+			sendResponse(w, http.StatusBadRequest, message{
+				Error: fmt.Errorf("Length emoji name must be no more than %d characters and at least %d", maxEmojiName, minEmojiName).Error(),
+			})
+			return
+		}
+
+		if !server.db.RoomIsExists("uuid", uuid) {
+			sendResponse(w, http.StatusBadRequest, message{
+				Error: "Room with this room_id was not be found",
+			})
+			return
+		}
+
+		room, err := server.db.GetRoom("uuid", uuid)
+		if err != nil {
+			log.Println(err)
+			sendResponse(w, http.StatusBadRequest, message{
+				Error: "Internal server error",
+			})
+			return
+		}
+
+		emjCopy := room.Emoji[:0]
+		for _, v := range room.Emoji {
+			if v.Name != name {
+				emjCopy = append(emjCopy, v)
+			} else {
+				err := os.Remove(filepath.Join(server.imageServer.UplPath, v.Path))
+				if err != nil {
+					log.Println(err)
+					sendResponse(w, http.StatusBadRequest, message{
+						Error: "Internal server error",
+					})
+					return
+				}
+			}
+		}
+
+		if err = server.db.UpdateRoomValue(uuid, "emoji", emjCopy); err != nil {
 			log.Println(err)
 			sendResponse(w, http.StatusBadRequest, message{
 				Error: "Room with this room_id was not be found",
