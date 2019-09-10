@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	var apiAddr, uplPath, profImgPath, dbAddr string
+	var apiAddr, uplPath, profImgPath, emojiPath, dbAddr string
 
 	if err := godotenv.Load(); err != nil {
 		log.Printf("Error while trying to load .env file: %v\n", err)
@@ -23,7 +23,7 @@ func main() {
 	dbAddr = getEnvOrDefault("DB_ENDPOINT", "localhost:27017")
 	uplPath = getEnvOrDefault("UPLOADS_PATH", "./")
 	profImgPath = getEnvOrDefault("PROFILE_IMG_PATH", "profiles")
-	// emojiPath = getEnvOrDefault("EMOJI_IMG_PATH", "emoji")
+	emojiPath = getEnvOrDefault("EMOJI_IMG_PATH", "emoji")
 
 	// FIX THAT!
 	// For db package
@@ -36,7 +36,7 @@ func main() {
 	db := db.Connect(dbAddr)
 	defer db.Close()
 
-	apis := api.NewServer(apiAddr, uplPath, profImgPath, db)
+	apis := api.NewServer(apiAddr, uplPath, profImgPath, emojiPath, db)
 	if err := apis.RunServer(); err != http.ErrServerClosed {
 		log.Fatalf("Error while trying to run server: %v\n", err)
 	}

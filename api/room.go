@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -103,7 +104,29 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest) {
 
 		name := strings.TrimSpace(req.Body.Data.Name)
 		img := req.Body.Data.Img
-		roomID := req.RoomUUID
+		uuid := req.RoomUUID
+
+		if !server.db.RoomIsExists("uuid", uuid) {
+			sendResponse(w, http.StatusBadRequest, message{
+				Error: "Room with this UUID was not be found",
+			})
+			return
+		}
+
+		ec, err := server.db.GetEmojiCount(uuid)
+		if err != nil {
+			sendResponse(w, http.StatusBadRequest, message{
+				Error: "Internal server error",
+			})
+			return
+		}
+
+		if ec >= maxEmojiCount {
+			sendResponse(w, http.StatusBadRequest, message{
+				Error: fmt.Sprintf("Emoji count must not exceed %d", maxEmojiCount),
+			})
+			return
+		}
 
 		var exp = regexp.MustCompile(`[^a-zA-Z0-9-_]`)
 		if exp.MatchString(name) {
@@ -120,15 +143,57 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest) {
 			return
 		}
 
-		if !server.db.RoomIsExists(roomID) {
+		if !server.db.RoomIsExists("uuid", uuid) {
 			sendResponse(w, http.StatusBadRequest, message{
 				Error: "Room with this room_id was not be found",
 			})
 			return
 		}
 
-		fmt.Println(name, img, roomID)
-		return
+		room, err := server.db.GetRoom("uuid", uuid)
+		if err != nil {
+			log.Println(err)
+			sendResponse(w, http.StatusBadRequest, message{
+				Error: "Internal server error",
+			})
+			return
+		}
+
+		for _, v := range room.Emoji {
+			if v.Name == name {
+				sendResponse(w, http.StatusBadRequest, message{
+					Error: "Emoji with this name already exist in this room",
+				})
+				return
+			}
+		}
+
+		imgPath := filepath.Join(filepath.Join("/media", server.imageServer.EmojiImgPath), room.UUID, fmt.Sprintf("%s.png", getRandomUUID()[32:]))
+		image := newImage(&img)
+
+		err = image.createImage(filepath.Join(server.imageServer.UplPath, imgPath), "png")
+		if err != nil {
+			log.Println(err)
+			sendResponse(w, http.StatusBadRequest, message{
+				Error: "Internal server error",
+			})
+			return
+		}
+
+		emoji := append(room.Emoji, db.Emoji{
+			Name: name,
+			Path: imgPath,
+		})
+
+		if err = server.db.UpdateRoomValue(uuid, "emoji", emoji); err != nil {
+			log.Println(err)
+			sendResponse(w, http.StatusBadRequest, message{
+				Error: "Room with this room_id was not be found",
+			})
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
 
 	default:
 		sendResponse(w, http.StatusBadRequest, message{
@@ -140,12 +205,12 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest) {
 func (server Server) roomInnerHandler(w http.ResponseWriter, r *http.Request) {
 	path, ok := mux.Vars(r)["roomPath"]
 	if ok {
-		if !server.db.RoomIsExists(path) {
+		if !server.db.RoomIsExists("path", path) {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
-		room, err := server.db.GetRoom(path)
+		room, err := server.db.GetRoom("path", path)
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -154,6 +219,7 @@ func (server Server) roomInnerHandler(w http.ResponseWriter, r *http.Request) {
 		rv := roomView{
 			Title: room.Title,
 			UUID:  room.UUID,
+			Emoji: room.Emoji,
 		}
 
 		r, _ := json.Marshal(&rv)
