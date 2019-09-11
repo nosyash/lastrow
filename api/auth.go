@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"regexp"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -52,8 +51,6 @@ func (server Server) authHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (server Server) register(w http.ResponseWriter, uname, passwd, email, name string) {
-	var validUname = regexp.MustCompile(`[^a-zA-Z0-9-_]`)
-
 	if utf8.RuneCountInString(uname) < minUsernameLength || utf8.RuneCountInString(uname) > maxUsernameLength {
 		sendJson(w, http.StatusBadRequest, message{
 			Error: errUnameLength.Error(),
@@ -68,7 +65,7 @@ func (server Server) register(w http.ResponseWriter, uname, passwd, email, name 
 		return
 	}
 
-	if validUname.MatchString(uname) {
+	if exp.MatchString(uname) {
 		sendJson(w, http.StatusBadRequest, message{
 			Error: "Username must contain only string characters and numbers",
 		})

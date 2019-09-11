@@ -58,12 +58,12 @@ func (i image) createImage(path, iType string) error {
 			Quality: 100,
 		})
 	case "gif":
-		img, err := gif.Decode(reader)
+		img, err := gif.DecodeAll(reader)
 		if err != nil {
 			return err
 		}
 
-		gif.Encode(f, img, &gif.Options{})
+		gif.EncodeAll(f, img)
 	case "png":
 		img, err := png.Decode(reader)
 		if err != nil {

@@ -68,8 +68,6 @@ func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (server Server) createRoom(w http.ResponseWriter, title, path, userUUID string) {
-	var exp = regexp.MustCompile(`[^a-zA-Z0-9-_]`)
-
 	if path != "" && exp.MatchString(path) {
 		sendJson(w, http.StatusBadRequest, message{
 			Error: "Room path must contain only string characters and numbers",
@@ -149,7 +147,6 @@ func (server Server) addEmoji(w http.ResponseWriter, name, uuid string, img *str
 		return
 	}
 
-	var exp = regexp.MustCompile(`[^a-zA-Z0-9-_]`)
 	if exp.MatchString(name) {
 		sendJson(w, http.StatusBadRequest, message{
 			Error: "Emoji name must contain only string characters and numbers",
@@ -222,14 +219,7 @@ func (server Server) delEmoji(w http.ResponseWriter, name, uuid string, room *db
 	for i, v := range room.Emoji {
 		if v.Name == name {
 			emjIdx = i
-			err := os.Remove(filepath.Join(server.imageServer.UplPath, v.Path))
-			if err != nil {
-				log.Println(err)
-				sendJson(w, http.StatusBadRequest, message{
-					Error: "Internal server error",
-				})
-				return
-			}
+			_ = os.Remove(filepath.Join(server.imageServer.UplPath, v.Path))
 		}
 	}
 
