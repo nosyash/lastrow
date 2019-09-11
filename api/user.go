@@ -13,10 +13,14 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
+var (
+	errNameLength = fmt.Errorf("Name length must be no more than %d and no less %d", minNameLength, maxNameLength)
+)
+
 func (server Server) userHandler(w http.ResponseWriter, r *http.Request) {
 	userUUID, err := server.getUserUUIDBySessionID(w, r)
 	if err != nil {
-		sendResponse(w, http.StatusBadRequest, message{
+		sendJson(w, http.StatusBadRequest, message{
 			Error: err.Error(),
 		})
 		return
@@ -32,7 +36,7 @@ func (server Server) userHandler(w http.ResponseWriter, r *http.Request) {
 	err = decoder.Decode(&userReq)
 
 	if err != nil {
-		sendResponse(w, http.StatusBadRequest, message{
+		sendJson(w, http.StatusBadRequest, message{
 			Error: err.Error(),
 		})
 		return
@@ -57,7 +61,7 @@ func (server Server) userHandler(w http.ResponseWriter, r *http.Request) {
 	case userUpdatePswd:
 		server.updatePassword(w, userUUID, userReq.Body.CurPasswd, userReq.Body.NewPasswd)
 	default:
-		sendResponse(w, http.StatusBadRequest, message{
+		sendJson(w, http.StatusBadRequest, message{
 			Error: "Unknown /api/user action",
 		})
 	}
@@ -72,9 +76,9 @@ func (server Server) getUser(w http.ResponseWriter, userUUID string) {
 }
 
 func (server Server) updateProfileImage(w http.ResponseWriter, userUUID string, b64Img *string) {
-	oldpath, err := server.db.GetUserImage(userUUID)
+	oldPath, err := server.db.GetUserImage(userUUID)
 	if err != nil {
-		sendResponse(w, http.StatusBadRequest, message{
+		sendJson(w, http.StatusBadRequest, message{
 			Error: err.Error(),
 		})
 		return
@@ -82,13 +86,17 @@ func (server Server) updateProfileImage(w http.ResponseWriter, userUUID string, 
 
 	rndUUID := getRandomUUID()
 
-	imgPath := filepath.Join(filepath.Join("/media", server.imageServer.ProfImgPath), rndUUID[:16], fmt.Sprintf("%s.jpg", rndUUID[16:32]))
-	fullPath := filepath.Join(server.imageServer.UplPath, imgPath)
+	imgPath := filepath.Join(filepath.Join("/media", server.imageServer.ProfImgPath), rndUUID[:32], fmt.Sprintf("%s.jpg", rndUUID[32:]))
 
-	img := newImage(filepath.Join(server.imageServer.UplPath, oldpath), fullPath)
-	err = img.createFromBase64(b64Img)
+	image := newImage(b64Img)
+	if oldPath == "" {
+		err = image.createImage(filepath.Join(server.imageServer.UplPath, imgPath), "jpg")
+	} else {
+		err = image.replaceImage(filepath.Join(server.imageServer.UplPath, oldPath), filepath.Join(server.imageServer.UplPath, imgPath), "jpg")
+	}
+
 	if err != nil {
-		sendResponse(w, http.StatusBadRequest, message{
+		sendJson(w, http.StatusBadRequest, message{
 			Error: err.Error(),
 		})
 		return
@@ -101,7 +109,7 @@ func (server Server) updateProfileImage(w http.ResponseWriter, userUUID string, 
 func (server Server) deleteProfileImage(w http.ResponseWriter, userUUID string) {
 	imgPath, err := server.db.GetUserImage(userUUID)
 	if err != nil {
-		sendResponse(w, http.StatusBadRequest, message{
+		sendJson(w, http.StatusBadRequest, message{
 			Error: err.Error(),
 		})
 		return
@@ -119,43 +127,35 @@ func (server Server) updatePersonalInfo(w http.ResponseWriter, userUUID, name, c
 		server.db.UpdateUserValue(userUUID, "color", color)
 	}
 
-	if name != "" {
-		if utf8.RuneCountInString(name) > 1 && utf8.RuneCountInString(name) < 20 {
-			server.db.UpdateUserValue(userUUID, "name", name)
-		} else {
-			sendResponse(w, http.StatusBadRequest, message{
-				Error: "Name length must be no more than 20 and no less 1",
-			})
-			return
-		}
+	if utf8.RuneCountInString(name) < minNameLength || utf8.RuneCountInString(name) > maxNameLength {
+		sendJson(w, http.StatusBadRequest, message{
+			Error: errNameLength.Error(),
+		})
+		return
 	}
 
+	server.db.UpdateUserValue(userUUID, "name", name)
 	server.getUser(w, userUUID)
 }
 
 func (server Server) updatePassword(w http.ResponseWriter, userUUID, curPasswd, newPasswd string) {
-	if curPasswd == "" || newPasswd == "" {
-		sendResponse(w, http.StatusBadRequest, message{
-			Error: "One or more required arguments are empty",
-		})
-		return
-	} else if len(newPasswd) < 8 || len(newPasswd) > 32 {
-		sendResponse(w, http.StatusBadRequest, message{
-			Error: "Password length must be no more than 32 and no less 8",
+	if utf8.RuneCountInString(newPasswd) < minPasswordLength || utf8.RuneCountInString(newPasswd) > maxPasswordLength {
+		sendJson(w, http.StatusBadRequest, message{
+			Error: errPasswdLength.Error(),
 		})
 		return
 	}
 
 	_, err := server.db.FindUser("uuid", userUUID, getHashOfString(curPasswd))
 	if err == mgo.ErrNotFound {
-		sendResponse(w, http.StatusBadRequest, message{
+		sendJson(w, http.StatusBadRequest, message{
 			Error: "Current password is invalid",
 		})
 		return
 	}
 
 	server.db.UpdateUserValue(userUUID, "hash", getHashOfString(newPasswd))
-	sendResponse(w, http.StatusOK, message{
+	sendJson(w, http.StatusOK, message{
 		Message: "Your password has been successfully changed",
 	})
 }

@@ -31,7 +31,7 @@ var (
 )
 
 func handleRegRequest(conn *websocket.Conn) (*user, string, error) {
-	req, err := readRequest(conn)
+	req, err := readPacket(conn)
 	if err != nil {
 		return nil, "", err
 	}
@@ -41,11 +41,11 @@ func handleRegRequest(conn *websocket.Conn) (*user, string, error) {
 		return nil, "", ErrRegArgumentAreEmpty
 	}
 
-	if req.Action == guestRegister {
+	if req.Action == guestRegisterEvent {
 		return handleGuestRegister(conn, room, uuid, req.Name)
 	}
 
-	if req.Action != userRegister {
+	if req.Action != userRegisterEvent {
 		return nil, "", ErrInvalidRegRequest
 	}
 
@@ -73,7 +73,7 @@ func handleGuestRegister(conn *websocket.Conn, room, uuid, name string) (*user, 
 	return nil, "", nil
 }
 
-func (h hub) handleUserEvent(req *request, conn *websocket.Conn) {
+func (h hub) handleUserEvent(req *packet, conn *websocket.Conn) {
 	switch req.Body.Event.Type {
 	case eTypeMsg:
 		if req.Body.Event.Data.Message != "" {
@@ -84,24 +84,26 @@ func (h hub) handleUserEvent(req *request, conn *websocket.Conn) {
 	}
 }
 
-func (h *hub) handlePlayerEvent(req *request, conn *websocket.Conn) {
+func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 	switch req.Body.Event.Type {
 	case eTypePlAdd:
 		if req.Body.Event.Data.URL != "" {
 			h.cache.Playlist.AddVideo <- req.Body.Event.Data.URL
 		}
 
-		var feedback addVideoFeedBack
+		var fb feedback
 
 		if err := <-h.cache.Playlist.AddFeedBack; err != nil {
-			feedback.Error = err.Error()
-			feedback.URL = req.Body.Event.Data.URL
+			fb.Error = err.Error()
+			fb.URL = req.Body.Event.Data.URL
 		} else {
-			feedback.Message = "success"
-			feedback.URL = req.Body.Event.Data.URL
+			fb.Message = "success"
+			fb.URL = req.Body.Event.Data.URL
 		}
 
-		sendFeedBack(conn, feedback)
+		h.broadcast <- createPacket(playerEvent, eTypeFeedBack, data{
+			FeedBack: fb,
+		})
 
 	case eTypePlDel:
 		ID := req.Body.Event.Data.ID
@@ -126,45 +128,34 @@ func (h *hub) handlePlayerEvent(req *request, conn *websocket.Conn) {
 func (h hub) handleMessage(msg, uuid string) {
 	user, _ := h.cache.Users.GetUser(uuid)
 
-	res := &response{
-		Action: "chat_event",
-		Body: body{
-			Event: eventBody{
-				Type: "message",
-				Data: data{
-					Message: msg,
-					Name:    user.Name,
-					Color:   user.Color,
-					Image:   user.Image,
-					ID:      user.ID,
-					Guest:   user.Guest,
-				},
-			},
-		},
-	}
-
-	h.broadcast <- res
+	h.broadcast <- createPacket(chatEvent, eTypeMsg, data{
+		Message: msg,
+		Name:    user.Name,
+		Color:   user.Color,
+		Image:   user.Image,
+		ID:      user.ID,
+		Guest:   user.Guest,
+	})
 }
 
 func (h hub) updateUserList() {
-	h.broadcastUpdate(&updates{
+	h.broadcast <- createPacket(userEvent, eTypeUpdUserList, data{
 		Users: h.cache.Users.GetAllUsers(),
 	})
 }
 
 func (h hub) updatePlaylist() {
-	playlist := h.cache.Playlist.GetAllPlaylist()
-
-	if playlist == nil {
-		return
-	}
-
-	h.broadcastUpdate(&updates{
-		Playlist: playlist,
+	h.broadcast <- createPacket(userEvent, eTypeUpdUserList, data{
+		Playlist: h.cache.Playlist.GetAllPlaylist(),
 	})
 }
 
-func (h *hub) syncCurrentTime() {
+func (h *hub) syncElapsedTime() {
+	var ep elapsedTime
+	var d data
+	var elapsed int
+	var ticker = time.Tick(syncPeriod * time.Second)
+
 	for {
 		if h.cache.Playlist.Size() == 0 {
 			h.syncer.sleep = true
@@ -172,10 +163,7 @@ func (h *hub) syncCurrentTime() {
 			h.syncer.sleep = false
 		}
 		video := h.cache.Playlist.TakeHeadElement()
-
 		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration+sleepBeforeStart)*time.Second))
-		ticker := time.Tick(syncPeriod * time.Second)
-		elapsedTime := 0
 
 		h.syncer.currentVideoID = video.ID
 
@@ -185,14 +173,15 @@ func (h *hub) syncCurrentTime() {
 		for {
 			select {
 			case <-ticker:
-				h.broadcastUpdate(&updates{
-					Ticker: &currentTime{
-						ID:          video.ID,
-						Duration:    video.Duration,
-						ElapsedTime: elapsedTime,
-					},
-				})
-				elapsedTime += syncPeriod
+				ep.ID = video.ID
+				ep.Duration = video.Duration
+				ep.ElapsedTime = elapsed
+
+				d.Ticker = &ep
+
+				h.broadcast <- createPacket(playerEvent, eTypeTicker, d)
+
+				elapsed += syncPeriod
 			case <-ctx.Done():
 				cancel()
 				break loop
@@ -201,12 +190,13 @@ func (h *hub) syncCurrentTime() {
 				break loop
 			case <-h.syncer.pause:
 				<-h.syncer.resume
-				ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration-elapsedTime+sleepBeforeStart)*time.Second))
+				ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration-elapsed+sleepBeforeStart)*time.Second))
 			}
 		}
 
 		h.cache.Playlist.DelVideo <- video.ID
 		<-h.cache.Playlist.DelFeedBack
 		h.syncer.currentVideoID = ""
+		elapsed = 0
 	}
 }

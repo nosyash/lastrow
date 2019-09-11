@@ -8,28 +8,24 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func readRequest(conn *websocket.Conn) (*request, error) {
-	request := &request{}
+func readPacket(conn *websocket.Conn) (*packet, error) {
+	request := &packet{}
 	err := websocket.ReadJSON(conn, &request)
 	return request, err
 }
 
-func sendResponse(conn *websocket.Conn, r *response) error {
+func sendPacket(conn *websocket.Conn, r *packet) error {
 	return writeJSON(conn, r)
 }
 
-func sendFeedBack(conn *websocket.Conn, feedback addVideoFeedBack) error {
-	return writeJSON(conn, feedback)
-}
-
 func sendError(conn *websocket.Conn, errMsg error) error {
-	return writeJSON(conn, errorResponse{
-		errMsg.Error(),
-	})
+	return writeJSON(conn, createPacket(errorEvent, errorEvent, data{
+		Error: errMsg.Error(),
+	}))
 }
 
-func writeJSON(conn *websocket.Conn, message interface{}) error {
-	mb, err := json.Marshal(message)
+func writeJSON(conn *websocket.Conn, p *packet) error {
+	mb, err := json.Marshal(p)
 	if err != nil {
 		return err
 	}
@@ -40,6 +36,18 @@ func writeMessage(conn *websocket.Conn, messageType int, message []byte) error {
 	lock.Lock()
 	defer lock.Unlock()
 	return conn.WriteMessage(messageType, message)
+}
+
+func createPacket(action, eType string, d data) *packet {
+	return &packet{
+		Action: action,
+		Body: body{
+			Event: eventBody{
+				Type: eType,
+				Data: d,
+			},
+		},
+	}
 }
 
 func getHashOfString(str string) string {

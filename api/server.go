@@ -14,8 +14,9 @@ import (
 )
 
 type ImageServer struct {
-	UplPath     string
-	ProfImgPath string
+	UplPath      string
+	ProfImgPath  string
+	EmojiImgPath string
 }
 
 type Server struct {
@@ -26,7 +27,7 @@ type Server struct {
 }
 
 // NewServer create and return a new instance of API Server
-func NewServer(address, uplPath, pofImgPath string, db *db.Database) *Server {
+func NewServer(address, uplPath, pofImgPath, emojiImgPath string, db *db.Database) *Server {
 	return &Server{
 		&http.Server{
 			Addr:         address,
@@ -48,6 +49,7 @@ func NewServer(address, uplPath, pofImgPath string, db *db.Database) *Server {
 		ImageServer{
 			uplPath,
 			pofImgPath,
+			emojiImgPath,
 		},
 	}
 }

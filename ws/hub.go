@@ -50,7 +50,7 @@ func (rh *roomsHub) registerNewConn(conn *websocket.Conn) {
 		return
 	}
 
-	if !rh.db.RoomIsExists(roomID) {
+	if !rh.db.RoomIsExists("path", roomID) {
 		sendError(conn, ErrRoomWasNotFound)
 		conn.Close()
 		return

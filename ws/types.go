@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// Register a new connection in room cache
+// Register a new connection in a room cache
 var Register chan *websocket.Conn
 var close chan string
 var lock sync.Mutex
@@ -21,22 +21,12 @@ type roomsHub struct {
 
 type hub struct {
 	hub        map[string]*websocket.Conn
-	broadcast  chan *response
+	broadcast  chan *packet
 	register   chan *user
 	unregister chan *websocket.Conn
 	cache      *cache.Cache
 	syncer     syncer
 	id         string
-}
-
-type errorResponse struct {
-	Error string `json:"error"`
-}
-
-type addVideoFeedBack struct {
-	Message string `json:"message,omitempty"`
-	Error   string `json:"error,omitempty"`
-	URL     string `json:"url"`
 }
 
 type user struct {
@@ -46,17 +36,21 @@ type user struct {
 	Guest bool
 }
 
-type request struct {
+type packet struct {
 	Action   string `json:"action"`
-	Body     body   `json:"body,omitempty"`
+	Body     body   `json:"body"`
 	RoomID   string `json:"room_id,omitempty"`
 	UserUUID string `json:"user_uuid,omitempty"`
 	Name     string `json:"name,omitempty"`
 }
 
-type response struct {
-	Action string `json:"action"`
-	Body   body   `json:"body"`
+type body struct {
+	Event eventBody `json:"event"`
+}
+
+type eventBody struct {
+	Type string `json:"type"`
+	Data data   `json:"data"`
 }
 
 type syncer struct {
@@ -68,48 +62,50 @@ type syncer struct {
 	currentVideoID string
 }
 
-type updates struct {
+type data struct {
+	Message  string         `json:"message,omitempty"`
+	Error    string         `json:"error,omitempty"`
+	Color    string         `json:"color,omitempty"`
+	Image    string         `json:"image,omitempty"`
+	Name     string         `json:"name,omitempty"`
+	Guest    bool           `json:"guest,omitempty"`
+	Title    string         `json:"title,omitempty"`
+	Duration int            `json:"duration,omitempty"`
+	URL      string         `json:"url,omitempty"`
+	ID       string         `json:"__id,omitempty"`
 	Users    []*cache.User  `json:"users,omitempty"`
 	Playlist []*cache.Video `json:"videos,omitempty"`
-	Ticker   *currentTime   `json:"ticker,omitempty"`
+	Ticker   *elapsedTime   `json:"ticker,omitempty"`
+	FeedBack feedback       `json:"feedback,omitempty"`
 }
 
-type body struct {
-	Event eventBody `json:"event"`
-}
-
-type eventBody struct {
-	Type string `json:"type"`
-	Data data   `json:"data,omiempty"`
-}
-
-type data struct {
-	Message  string `json:"message,omitempty"`
-	Color    string `json:"color,omitempty"`
-	Image    string `json:"image,omitempty"`
-	Name     string `json:"name,omitempty"`
-	Guest    bool   `json:"guest,omitempty"`
-	Title    string `json:"title,omitempty"`
-	Duration int    `json:"duration,omitempty"`
-	URL      string `json:"url,omitempty"`
-	ID       string `json:"__id,omitempty"`
-}
-
-type currentTime struct {
+type elapsedTime struct {
 	ID          string `json:"__id"`
 	Duration    int    `json:"duration"`
 	ElapsedTime int    `json:"elapsed_time"`
 }
 
+type feedback struct {
+	Message string `json:"message,omitempty"`
+	Error   string `json:"error,omitempty"`
+	URL     string `json:"url"`
+}
+
 const (
-	userRegister  = "user_register"
-	guestRegister = "guest_register"
-	userEvent     = "user_event"
-	playerEvent   = "player_event"
+	userRegisterEvent  = "user_register"
+	guestRegisterEvent = "guest_register"
+	userEvent          = "user_event"
+	playerEvent        = "player_event"
+	chatEvent          = "chat_event"
+	errorEvent         = "error"
 )
 
 const (
-	eTypeMsg   = "message"
-	eTypePlAdd = "playlist_add"
-	eTypePlDel = "playlist_del"
+	eTypeMsg         = "message"
+	eTypePlAdd       = "playlist_add"
+	eTypePlDel       = "playlist_del"
+	eTypeUpdUserList = "update_users"
+	eTypePlaylist    = "playlist"
+	eTypeFeedBack    = "feedback"
+	eTypeTicker      = "ticker"
 )

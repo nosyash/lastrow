@@ -17,7 +17,7 @@ type Room struct {
 	Path   string  `json:"path"`
 	UUID   string  `json:"uuid"`
 	Owners []owner `json:"owners"`
-	Emoji  []emoji `json:"emoji"`
+	Emoji  []Emoji `json:"emoji"`
 }
 
 type userProfile struct {
@@ -42,7 +42,7 @@ type owner struct {
 	Permissions int    `json:"permissions"`
 }
 
-type emoji struct {
+type Emoji struct {
 	Name string `json:"name"`
 	Path string `json:"path"`
 }

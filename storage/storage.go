@@ -53,7 +53,11 @@ func GetCurrentVideoTitle(roomPath string) string {
 		if storage.cs[roomPath].Playlist.Size() == 0 {
 			return ""
 		}
-		return storage.cs[roomPath].Playlist.GetCurrentTitle()
+		if title := storage.cs[roomPath].Playlist.GetCurrentTitle(); title != "" {
+			return title
+		}
+
+		return "Custom media"
 	}
-	return ""
+	return "-"
 }

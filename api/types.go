@@ -1,5 +1,9 @@
 package api
 
+import (
+	"github.com/nosyash/backrow/db"
+)
+
 type message struct {
 	Error   string `json:"error,omitempty"`
 	Message string `json:"message,omitempty"`
@@ -48,6 +52,12 @@ type authBody struct {
 	Email  string `json:"email"`
 }
 
+type roomView struct {
+	Title string     `json:"title,omitempty"`
+	UUID  string     `json:"uuid,omitempty"`
+	Emoji []db.Emoji `json:"emoji,omitempty"`
+}
+
 const (
 	accountRegistration = "register"
 	accountLogin        = "login"
@@ -75,22 +85,30 @@ const (
 )
 
 const (
-	minUsername = 1
-	maxUsername = 20
+	minUsernameLength = 1
+	maxUsernameLength = 20
 
-	minPassword = 8
-	maxPassword = 32
+	minPasswordLength = 8
+	maxPasswordLength = 32
+
+	minNameLength = 1
+	maxNameLength = 20
 )
 
 const (
-	minRoomTitle = 4
-	maxRoomTitle = 20
+	minRoomTitleLength = 4
+	maxRoomTitleLength = 30
 
-	minRoomPath = 4
-	maxRoomPath = 15
+	minRoomPathLength = 4
+	maxRoomPathLength = 15
 )
 
 const (
-	minEmojiName = 4
-	maxEmojiName = 20
+	minEmojiNameLength = 4
+	maxEmojiNameLength = 15
+)
+
+const (
+	maxOwnersCount = 15
+	maxEmojiCount  = 100
 )

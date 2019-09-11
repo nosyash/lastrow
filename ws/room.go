@@ -29,7 +29,7 @@ var (
 func NewRoomHub(id string) *hub {
 	return &hub{
 		make(map[string]*websocket.Conn),
-		make(chan *response),
+		make(chan *packet),
 		make(chan *user),
 		make(chan *websocket.Conn),
 		cache.New(id),
@@ -48,7 +48,7 @@ func NewRoomHub(id string) *hub {
 // HandleActions handle internal room and client events one at time
 func (h hub) HandleActions() {
 	go h.cache.HandleCacheEvents()
-	go h.syncCurrentTime()
+	go h.syncElapsedTime()
 	go storage.Add(h.cache)
 
 	for {
@@ -99,9 +99,9 @@ func (h hub) add(user *user) {
 	playlist := h.cache.Playlist.GetAllPlaylist()
 
 	if playlist != nil {
-		h.sendUpatesTo(&updates{
+		writeJSON(user.Conn, createPacket(playerEvent, eTypePlaylist, data{
 			Playlist: playlist,
-		}, user.Conn)
+		}))
 	}
 }
 
@@ -160,7 +160,7 @@ func (h *hub) read(conn *websocket.Conn) {
 	}()
 
 	for {
-		req, err := readRequest(conn)
+		req, err := readPacket(conn)
 		if err != nil {
 			conn.Close()
 			break
@@ -179,33 +179,17 @@ func (h *hub) read(conn *websocket.Conn) {
 	}
 }
 
-func (h hub) send(msg *response) {
+func (h hub) send(msg *packet) {
 	for _, conn := range h.hub {
-		if err := sendResponse(conn, msg); err != nil {
+		if err := sendPacket(conn, msg); err != nil {
 			h.unregister <- conn
 			conn.Close()
 		}
-	}
-}
-
-func (h hub) broadcastUpdate(upd *updates) {
-	for _, conn := range h.hub {
-		if err := writeJSON(conn, upd); err != nil {
-			h.unregister <- conn
-			conn.Close()
-		}
-	}
-}
-
-func (h hub) sendUpatesTo(upd *updates, conn *websocket.Conn) {
-	if err := writeJSON(conn, upd); err != nil {
-		h.unregister <- conn
-		conn.Close()
 	}
 }
 
 func (h hub) ping(conn *websocket.Conn) {
-	ticker := time.NewTicker(10 * time.Second)
+	ticker := time.NewTicker(30 * time.Second)
 	defer func() {
 		ticker.Stop()
 		h.unregister <- conn
@@ -215,7 +199,7 @@ func (h hub) ping(conn *websocket.Conn) {
 	for {
 		select {
 		case <-ticker.C:
-			conn.SetWriteDeadline(time.Now().Add(15 * time.Second))
+			conn.SetWriteDeadline(time.Now().Add(45 * time.Second))
 
 			if err := writeMessage(conn, websocket.PingMessage, nil); err != nil {
 				return
@@ -225,9 +209,9 @@ func (h hub) ping(conn *websocket.Conn) {
 }
 
 func (h hub) pong(conn *websocket.Conn) {
-	conn.SetReadDeadline(time.Now().Add(15 * time.Second))
+	conn.SetReadDeadline(time.Now().Add(45 * time.Second))
 	conn.SetPongHandler(func(string) error {
-		conn.SetReadDeadline(time.Now().Add(15 * time.Second))
+		conn.SetReadDeadline(time.Now().Add(45 * time.Second))
 		return nil
 	})
 }

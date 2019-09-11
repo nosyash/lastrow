@@ -9,12 +9,17 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"gopkg.in/mgo.v2"
 )
 
 var (
 	errInvalidSessionID = errors.New("Your sessionID is invalid")
+
+	errUnameLength = fmt.Errorf("Username length must be no more than %d characters and at least %d", maxUsernameLength, minUsernameLength)
+
+	errPasswdLength = fmt.Errorf("Password length must be no more than %d characters and at least %d", maxPasswordLength, minPasswordLength)
 )
 
 func (server Server) authHandler(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +28,7 @@ func (server Server) authHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := decoder.Decode(&authReq)
 	if err != nil {
-		sendResponse(w, http.StatusBadRequest, message{
+		sendJson(w, http.StatusBadRequest, message{
 			Error: err.Error(),
 		})
 		return
@@ -40,7 +45,7 @@ func (server Server) authHandler(w http.ResponseWriter, r *http.Request) {
 			server.logout(w, sessionID.Value)
 		}
 	default:
-		sendResponse(w, http.StatusBadRequest, message{
+		sendJson(w, http.StatusBadRequest, message{
 			Error: "Unknown /api/auth action",
 		})
 	}
@@ -49,28 +54,23 @@ func (server Server) authHandler(w http.ResponseWriter, r *http.Request) {
 func (server Server) register(w http.ResponseWriter, uname, passwd, email, name string) {
 	var validUname = regexp.MustCompile(`[^a-zA-Z0-9-_]`)
 
-	if uname == "" || passwd == "" || email == "" {
-		sendResponse(w, http.StatusBadRequest, message{
-			Error: "One or more required arguments are empty",
+	if utf8.RuneCountInString(uname) < minUsernameLength || utf8.RuneCountInString(uname) > maxUsernameLength {
+		sendJson(w, http.StatusBadRequest, message{
+			Error: errUnameLength.Error(),
 		})
 		return
-	} else if validUname.MatchString(uname) {
-		sendResponse(w, http.StatusBadRequest, message{
+	}
+
+	if utf8.RuneCountInString(passwd) < minPasswordLength || utf8.RuneCountInString(passwd) > maxPasswordLength {
+		sendJson(w, http.StatusBadRequest, message{
+			Error: errPasswdLength.Error(),
+		})
+		return
+	}
+
+	if validUname.MatchString(uname) {
+		sendJson(w, http.StatusBadRequest, message{
 			Error: "Username must contain only string characters and numbers",
-		})
-		return
-	}
-
-	if len(uname) < minUsername || len(uname) > maxUsername {
-		sendResponse(w, http.StatusBadRequest, message{
-			Error: fmt.Errorf("Username length must be no more than %d characters and at least %d", maxUsername, minUsername).Error(),
-		})
-		return
-	}
-
-	if len(passwd) < minPassword || len(passwd) > maxPassword {
-		sendResponse(w, http.StatusBadRequest, message{
-			Error: fmt.Errorf("Password length must be no more than %d characters and at least %d", maxPassword, minPassword).Error(),
 		})
 		return
 	}
@@ -79,13 +79,13 @@ func (server Server) register(w http.ResponseWriter, uname, passwd, email, name 
 	result, err := server.db.CreateNewUser(uname, uname, getHashOfString(passwd), strings.TrimSpace(email), userUUID)
 
 	if err != nil {
-		sendResponse(w, http.StatusInternalServerError, message{
+		sendJson(w, http.StatusInternalServerError, message{
 			Error: err.Error(),
 		})
 		return
 	}
 	if !result {
-		sendResponse(w, http.StatusBadRequest, message{
+		sendJson(w, http.StatusBadRequest, message{
 			Error: "This username or email is already taken",
 		})
 		return
@@ -95,7 +95,7 @@ func (server Server) register(w http.ResponseWriter, uname, passwd, email, name 
 
 func (server Server) login(w http.ResponseWriter, uname, passwd string) {
 	if uname == "" || passwd == "" {
-		sendResponse(w, http.StatusBadRequest, message{
+		sendJson(w, http.StatusBadRequest, message{
 			Error: "Username or password are empty",
 		})
 		return
@@ -103,13 +103,13 @@ func (server Server) login(w http.ResponseWriter, uname, passwd string) {
 
 	user, err := server.db.FindUser("uname", uname, getHashOfString(passwd))
 	if err == mgo.ErrNotFound {
-		sendResponse(w, http.StatusBadRequest, message{
+		sendJson(w, http.StatusBadRequest, message{
 			Error: "Username or password is invalid",
 		})
 		return
 	}
 	if err != nil {
-		sendResponse(w, http.StatusInternalServerError, message{
+		sendJson(w, http.StatusInternalServerError, message{
 			Error: err.Error(),
 		})
 		return
@@ -120,7 +120,7 @@ func (server Server) login(w http.ResponseWriter, uname, passwd string) {
 func (server Server) logout(w http.ResponseWriter, sessionID string) {
 	err := server.db.DeleteSession(sessionID)
 	if err != nil {
-		sendResponse(w, http.StatusBadRequest, message{
+		sendJson(w, http.StatusBadRequest, message{
 			Error: errInvalidSessionID.Error(),
 		})
 		return
