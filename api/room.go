@@ -26,6 +26,10 @@ var (
 	errEmojiNameLength = fmt.Errorf("Length emoji name must be no more than %d characters and at least %d", maxEmojiNameLength, minEmojiNameLength)
 )
 
+var (
+	exp = regexp.MustCompile(`[^a-zA-Z0-9-_]`)
+)
+
 func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		server.getAllRooms(w)
@@ -52,9 +56,9 @@ func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch req.Action {
-	case roomCreate:
+	case eTypeRoomCreate:
 		server.createRoom(w, req.Body.Title, req.Body.Path, userUUID)
-	case roomUpdate:
+	case eTypeRoomUpdate:
 		server.updateRoom(w, &req)
 	default:
 		sendJson(w, http.StatusBadRequest, message{
@@ -117,134 +121,136 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest) {
 	}
 
 	switch req.Body.UpdateType {
-	case addEmoji:
-		ec, err := server.db.GetEmojiCount(uuid)
-		if err != nil {
-			sendJson(w, http.StatusBadRequest, message{
-				Error: "Internal server error",
-			})
-			return
-		}
-
-		if ec >= maxEmojiCount {
-			sendJson(w, http.StatusBadRequest, message{
-				Error: fmt.Errorf("Emoji count must not exceed %d", maxEmojiCount).Error(),
-			})
-			return
-		}
-
-		var exp = regexp.MustCompile(`[^a-zA-Z0-9-_]`)
-		if exp.MatchString(name) {
-			sendJson(w, http.StatusBadRequest, message{
-				Error: "Emoji name must contain only string characters and numbers",
-			})
-			return
-		}
-
-		if utf8.RuneCountInString(name) < minEmojiNameLength || utf8.RuneCountInString(name) > maxEmojiNameLength {
-			sendJson(w, http.StatusBadRequest, message{
-				Error: errEmojiNameLength.Error(),
-			})
-			return
-		}
-
-		for _, v := range room.Emoji {
-			if v.Name == name {
-				sendJson(w, http.StatusBadRequest, message{
-					Error: "Emoji with this name already exist in the room",
-				})
-				return
-			}
-		}
-
-		imgPath := filepath.Join(filepath.Join("/media", server.imageServer.EmojiImgPath), room.UUID, fmt.Sprintf("%s.png", getRandomUUID()[32:]))
-		image := newImage(&img)
-
-		err = image.createImage(filepath.Join(server.imageServer.UplPath, imgPath), "png")
-		if err != nil {
-			log.Println(err)
-			sendJson(w, http.StatusBadRequest, message{
-				Error: "Internal server error",
-			})
-			return
-		}
-
-		emoji := append(room.Emoji, db.Emoji{
-			Name: name,
-			Path: imgPath,
-		})
-
-		if err = server.db.UpdateRoomValue(uuid, "emoji", emoji); err != nil {
-			log.Println(err)
-			sendJson(w, http.StatusBadRequest, message{
-				Error: "Room with this room_id was not be found",
-			})
-			return
-		}
-
-		sendJson(w, http.StatusOK, roomView{
-			Emoji: emoji,
-		})
-
-	case delEmoji:
-		var exp = regexp.MustCompile(`[^a-zA-Z0-9-_]`)
-		if exp.MatchString(name) {
-			sendJson(w, http.StatusBadRequest, message{
-				Error: "Emoji name must contain only string characters and numbers",
-			})
-			return
-		}
-
-		if utf8.RuneCountInString(name) < minEmojiNameLength || utf8.RuneCountInString(name) > maxEmojiNameLength {
-			sendJson(w, http.StatusBadRequest, message{
-				Error: errEmojiNameLength.Error(),
-			})
-			return
-		}
-
-		emoji := room.Emoji[:0]
-		emjIdx := -1
-
-		for i, v := range room.Emoji {
-			if v.Name == name {
-				emjIdx = i
-				err := os.Remove(filepath.Join(server.imageServer.UplPath, v.Path))
-				if err != nil {
-					log.Println(err)
-					sendJson(w, http.StatusBadRequest, message{
-						Error: "Internal server error",
-					})
-					return
-				}
-			}
-		}
-
-		if emjIdx == -1 {
-			sendJson(w, http.StatusBadRequest, message{
-				Error: "Emoji with this name was not be found",
-			})
-			return
-		}
-
-		emoji = append(room.Emoji[:emjIdx], room.Emoji[emjIdx+1:]...)
-
-		if err = server.db.UpdateRoomValue(uuid, "emoji", emoji); err != nil {
-			log.Println(err)
-			sendJson(w, http.StatusBadRequest, message{
-				Error: "Room with this room_id was not be found",
-			})
-			return
-		}
-
-		sendJson(w, http.StatusOK, roomView{
-			Emoji: emoji,
-		})
+	case eTypeAddEmoji:
+		server.addEmoji(w, name, uuid, &img, &room)
+	case eTypeDelEmoji:
+		server.delEmoji(w, name, uuid, &room)
 
 	default:
 		sendJson(w, http.StatusBadRequest, message{
 			Error: "Unknown action type",
 		})
 	}
+}
+
+func (server Server) addEmoji(w http.ResponseWriter, name, uuid string, img *string, room *db.Room) {
+	ec, err := server.db.GetEmojiCount(uuid)
+	if err != nil {
+		sendJson(w, http.StatusBadRequest, message{
+			Error: "Internal server error",
+		})
+		return
+	}
+
+	if ec >= maxEmojiCount {
+		sendJson(w, http.StatusBadRequest, message{
+			Error: fmt.Errorf("Emoji count must not exceed %d", maxEmojiCount).Error(),
+		})
+		return
+	}
+
+	var exp = regexp.MustCompile(`[^a-zA-Z0-9-_]`)
+	if exp.MatchString(name) {
+		sendJson(w, http.StatusBadRequest, message{
+			Error: "Emoji name must contain only string characters and numbers",
+		})
+		return
+	}
+
+	if utf8.RuneCountInString(name) < minEmojiNameLength || utf8.RuneCountInString(name) > maxEmojiNameLength {
+		sendJson(w, http.StatusBadRequest, message{
+			Error: errEmojiNameLength.Error(),
+		})
+		return
+	}
+
+	for _, v := range room.Emoji {
+		if v.Name == name {
+			sendJson(w, http.StatusBadRequest, message{
+				Error: "Emoji with this name already exist in the room",
+			})
+			return
+		}
+	}
+
+	imgPath := filepath.Join(filepath.Join("/media", server.imageServer.EmojiImgPath), room.UUID[:32], fmt.Sprintf("%s.png", getRandomUUID()[32:]))
+	image := newImage(img)
+
+	err = image.createImage(filepath.Join(server.imageServer.UplPath, imgPath), "png")
+	if err != nil {
+		log.Println(err)
+		sendJson(w, http.StatusBadRequest, message{
+			Error: "Internal server error",
+		})
+		return
+	}
+
+	emoji := append(room.Emoji, db.Emoji{
+		Name: name,
+		Path: imgPath,
+	})
+
+	if err = server.db.UpdateRoomValue(uuid, "emoji", emoji); err != nil {
+		log.Println(err)
+		sendJson(w, http.StatusBadRequest, message{
+			Error: "Room with this room_id was not be found",
+		})
+		return
+	}
+
+	// Update sotrage for this room(uuid) and after send all users new emoji list
+}
+
+func (server Server) delEmoji(w http.ResponseWriter, name, uuid string, room *db.Room) {
+	if exp.MatchString(name) {
+		sendJson(w, http.StatusBadRequest, message{
+			Error: "Emoji name must contain only string characters and numbers",
+		})
+		return
+	}
+
+	if utf8.RuneCountInString(name) < minEmojiNameLength || utf8.RuneCountInString(name) > maxEmojiNameLength {
+		sendJson(w, http.StatusBadRequest, message{
+			Error: errEmojiNameLength.Error(),
+		})
+		return
+	}
+
+	emoji := room.Emoji[:0]
+	emjIdx := -1
+
+	for i, v := range room.Emoji {
+		if v.Name == name {
+			emjIdx = i
+			err := os.Remove(filepath.Join(server.imageServer.UplPath, v.Path))
+			if err != nil {
+				log.Println(err)
+				sendJson(w, http.StatusBadRequest, message{
+					Error: "Internal server error",
+				})
+				return
+			}
+		}
+	}
+
+	if emjIdx == -1 {
+		sendJson(w, http.StatusBadRequest, message{
+			Error: "Emoji with this name was not be found",
+		})
+		return
+	}
+
+	emoji = append(room.Emoji[:emjIdx], room.Emoji[emjIdx+1:]...)
+
+	if err := server.db.UpdateRoomValue(uuid, "emoji", emoji); err != nil {
+		log.Println(err)
+		sendJson(w, http.StatusBadRequest, message{
+			Error: "Room with this room_id was not be found",
+		})
+		return
+	}
+
+	// Update sotrage for this room(uuid) and after send all users new emoji list
 }
 
 func (server Server) roomInnerHandler(w http.ResponseWriter, r *http.Request) {

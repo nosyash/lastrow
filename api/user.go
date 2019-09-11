@@ -43,22 +43,22 @@ func (server Server) userHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch userReq.Action {
-	case userUpdateImg:
+	case eTypeUserUpdateImg:
 		server.updateProfileImage(w, userUUID, &userReq.Body.Image.Img)
 		if storage.Size() > 0 {
 			storage.UpdateUser(userUUID)
 		}
-	case userDeleteImg:
+	case eTypeUserDeleteImg:
 		server.deleteProfileImage(w, userUUID)
 		if storage.Size() > 0 {
 			storage.UpdateUser(userUUID)
 		}
-	case userUpdatePer:
+	case eTypeUserUpdatePer:
 		server.updatePersonalInfo(w, userUUID, userReq.Body.Name, userReq.Body.Color)
 		if storage.Size() > 0 {
 			storage.UpdateUser(userUUID)
 		}
-	case userUpdatePswd:
+	case eTypeUserUpdatePswd:
 		server.updatePassword(w, userUUID, userReq.Body.CurPasswd, userReq.Body.NewPasswd)
 	default:
 		sendJson(w, http.StatusBadRequest, message{

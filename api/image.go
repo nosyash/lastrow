@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/base64"
+	"image/gif"
 	"image/jpeg"
 	"image/png"
 	"os"
@@ -45,7 +46,7 @@ func (i image) createImage(path, iType string) error {
 	if err != nil {
 		return err
 	}
-	// Еще же гифки будут
+
 	switch iType {
 	case "jpg", "jpeg":
 		img, err := jpeg.Decode(reader)
@@ -56,6 +57,13 @@ func (i image) createImage(path, iType string) error {
 		jpeg.Encode(f, img, &jpeg.Options{
 			Quality: 100,
 		})
+	case "gif":
+		img, err := gif.Decode(reader)
+		if err != nil {
+			return err
+		}
+
+		gif.Encode(f, img, &gif.Options{})
 	case "png":
 		img, err := png.Decode(reader)
 		if err != nil {

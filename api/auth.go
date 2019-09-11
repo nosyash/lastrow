@@ -35,11 +35,11 @@ func (server Server) authHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch authReq.Action {
-	case accountRegistration:
+	case eTypeAccountRegistration:
 		server.register(w, authReq.Body.Uname, authReq.Body.Passwd, authReq.Body.Email, authReq.Body.Name)
-	case accountLogin:
+	case eTypeAccountLogin:
 		server.login(w, authReq.Body.Uname, authReq.Body.Passwd)
-	case accountLogout:
+	case eTypeAccountLogout:
 		sessionID, err := r.Cookie("session_id")
 		if err == nil && sessionID.Value != "" {
 			server.logout(w, sessionID.Value)

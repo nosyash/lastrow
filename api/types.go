@@ -59,29 +59,29 @@ type roomView struct {
 }
 
 const (
-	accountRegistration = "register"
-	accountLogin        = "login"
-	accountLogout       = "logout"
-	accountUpdate       = "update"
+	eTypeAccountRegistration = "register"
+	eTypeAccountLogin        = "login"
+	eTypeAccountLogout       = "logout"
+	eTypeAccountUpdate       = "update"
 )
 
 const (
-	roomCreate = "room_create"
-	roomUpdate = "room_update"
-	roomDelete = "room_delete"
+	eTypeRoomCreate = "room_create"
+	eTypeRoomUpdate = "room_update"
+	eTypeRoomDelete = "room_delete"
 )
 
 const (
-	updateTitle = "update_title"
-	addEmoji    = "add_emoji"
-	delEmoji    = "del_emoji"
+	eTypeUpdateTitle = "update_title"
+	eTypeAddEmoji    = "add_emoji"
+	eTypeDelEmoji    = "del_emoji"
 )
 
 const (
-	userUpdateImg  = "user_update_img"
-	userDeleteImg  = "user_delete_img"
-	userUpdatePer  = "user_update_per"
-	userUpdatePswd = "user_update_pswd"
+	eTypeUserUpdateImg  = "user_update_img"
+	eTypeUserDeleteImg  = "user_delete_img"
+	eTypeUserUpdatePer  = "user_update_per"
+	eTypeUserUpdatePswd = "user_update_pswd"
 )
 
 const (
