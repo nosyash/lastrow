@@ -8,6 +8,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// GetAllRooms return all rooms
 func (db Database) GetAllRooms() ([]Room, error) {
 	var rooms []Room
 
@@ -15,6 +16,7 @@ func (db Database) GetAllRooms() ([]Room, error) {
 	return rooms, err
 }
 
+// GetRoom return a room object
 func (db Database) GetRoom(key, value string) (Room, error) {
 	var room Room
 
@@ -22,9 +24,10 @@ func (db Database) GetRoom(key, value string) (Room, error) {
 	return room, err
 }
 
+// CreateNewRoom create a new room
 func (db Database) CreateNewRoom(title, path, userUUID, roomUUID string) error {
 	if db.RoomIsExists("path", path) {
-		return errors.New("Room with this path is already in use")
+		return errors.New("Room with this path is already exists")
 	}
 
 	newRoom := Room{
@@ -65,6 +68,7 @@ func (db Database) GetEmojiCount(uuid string) (int, error) {
 	return len(room.Emoji), nil
 }
 
+// UpdateRoomValue update specified key in a room
 func (db Database) UpdateRoomValue(uuid, key string, value interface{}) error {
 	return db.rc.Update(bson.M{"uuid": uuid}, bson.M{"$set": bson.M{key: value}})
 }

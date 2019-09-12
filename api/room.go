@@ -101,15 +101,15 @@ func (server Server) createRoom(w http.ResponseWriter, title, path, userUUID str
 func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest) {
 	name := strings.TrimSpace(req.Body.Data.Name)
 	img := req.Body.Data.Img
-	uuid := req.RoomUUID
+	id := req.RoomID
 
-	if !server.db.RoomIsExists("uuid", uuid) {
+	if !server.db.RoomIsExists("uuid", id) {
 		sendJson(w, http.StatusBadRequest, message{
 			Error: "Room with this UUID was not be found",
 		})
 		return
 	}
-	room, err := server.db.GetRoom("uuid", uuid)
+	room, err := server.db.GetRoom("uuid", id)
 	if err != nil {
 		log.Println(err)
 		sendJson(w, http.StatusBadRequest, message{
@@ -120,9 +120,9 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest) {
 
 	switch req.Body.UpdateType {
 	case eTypeAddEmoji:
-		server.addEmoji(w, name, uuid, &img, &room)
+		server.addEmoji(w, name, id, &img, &room)
 	case eTypeDelEmoji:
-		server.delEmoji(w, name, uuid, &room)
+		server.delEmoji(w, name, id, &room)
 
 	default:
 		sendJson(w, http.StatusBadRequest, message{
@@ -259,7 +259,7 @@ func (server Server) roomInnerHandler(w http.ResponseWriter, r *http.Request) {
 
 		rv := roomView{
 			Title: room.Title,
-			UUID:  room.UUID,
+			ID:    room.UUID,
 			Emoji: room.Emoji,
 		}
 

@@ -15,9 +15,9 @@ type authRequest struct {
 }
 
 type roomRequest struct {
-	Action   string   `json:"action"`
-	Body     roomBody `json:"body"`
-	RoomUUID string   `json:"room_uuid"`
+	Action string   `json:"action"`
+	Body   roomBody `json:"body"`
+	RoomID string   `json:"room_id"`
 }
 
 type userRequest struct {
@@ -54,7 +54,7 @@ type authBody struct {
 
 type roomView struct {
 	Title string     `json:"title,omitempty"`
-	UUID  string     `json:"uuid,omitempty"`
+	ID    string     `json:"ID,omitempty"`
 	Emoji []db.Emoji `json:"emoji,omitempty"`
 }
 
