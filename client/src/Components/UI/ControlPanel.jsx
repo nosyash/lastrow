@@ -1,15 +1,13 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import * as types from '../../constants/ActionTypes';
-import { PROFILE_SETTINGS, PLAYLIST, ADD_MEDIA, SETTINGS } from '../../constants';
+import { PROFILE_SETTINGS, PLAYLIST, SETTINGS } from '../../constants';
 
 function ControlPanel(props) {
   function handleClick(id) {
     switch (id) {
       case 'showPlaylist':
         return props.togglePopup(PLAYLIST);
-      case 'addToPlaylist':
-        return props.togglePopup(ADD_MEDIA);
 
       default:
         break;
@@ -41,16 +39,8 @@ const RenderPlaylister = ({ onClick, logged, upNext }) => (
       dataId="showPlaylist"
       onClick={onClick}
       classes="control-svg show-playlist-icon"
-      text="Show Playlist"
+      text="Playlist"
     />
-    {logged && (
-      <RenderItem
-        dataId="addToPlaylist"
-        onClick={onClick}
-        classes="control-svg add-to-playlist-icon"
-        text="Add To Playlist"
-      />
-    )}
     <div style={{ visibility: upNext ? '' : 'hidden' }} className="item">
       <div className="up-nexts-sign">Up next: </div>
       <a

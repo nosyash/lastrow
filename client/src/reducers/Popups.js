@@ -1,6 +1,5 @@
 import * as types from '../constants/ActionTypes';
 import {
-  ADD_MEDIA,
   COLOR_PICKER,
   GUEST_AUTH,
   IMAGE_PICKER,
@@ -13,7 +12,6 @@ import {
 
 const initialState = {
   list: [],
-  [ADD_MEDIA]: false,
   [COLOR_PICKER]: false,
   [GUEST_AUTH]: false,
   [IMAGE_PICKER]: false,

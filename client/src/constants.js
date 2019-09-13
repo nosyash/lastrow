@@ -56,7 +56,6 @@ export const CLOSED = 3;
 export const isEdge = window.navigator.userAgent.indexOf('Edge') > -1;
 
 // popups
-export const ADD_MEDIA = 'addMedia';
 export const COLOR_PICKER = 'colorPicker';
 export const GUEST_AUTH = 'guestAuth';
 export const IMAGE_PICKER = 'imagePicker';

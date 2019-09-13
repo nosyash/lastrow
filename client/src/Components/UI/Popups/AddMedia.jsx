@@ -5,7 +5,6 @@ import Form from '../Form';
 import * as api from '../../../constants/apiActions';
 import * as types from '../../../constants/ActionTypes';
 import { webSocketSend } from '../../../actions';
-import { ADD_MEDIA } from '../../../constants';
 // import * as types from '../../constants/ActionTypes';
 
 class AddMedia extends Component {

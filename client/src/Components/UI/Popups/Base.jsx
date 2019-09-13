@@ -50,7 +50,6 @@ function Popups({ popups, removePopup }) {
   return (
     <div className="popups_container">
       {p.profileSettings && wrapPopup(<ProfileSettings />, 'profileSettings')}
-      {p.addMedia && wrapPopup(<AddMedia />, 'addMedia')}
       {p.colorPicker && wrapPopup(<ColorPicker />, 'colorPicker')}
       {p.guestAuth && wrapPopup(<GuestAuth />, 'guestAuth')}
       {p.imagePicker && wrapPopup(<ImagePicker />, 'imagePicker')}
