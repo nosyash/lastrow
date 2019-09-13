@@ -21,7 +21,7 @@ type roomsHub struct {
 
 type hub struct {
 	hub        map[string]*websocket.Conn
-	broadcast  chan *packet
+	broadcast  chan []byte
 	register   chan *user
 	unregister chan *websocket.Conn
 	cache      *cache.Cache
@@ -63,20 +63,19 @@ type syncer struct {
 }
 
 type data struct {
-	Message  string         `json:"message,omitempty"`
-	Error    string         `json:"error,omitempty"`
-	Color    string         `json:"color,omitempty"`
-	Image    string         `json:"image,omitempty"`
-	Name     string         `json:"name,omitempty"`
-	Guest    bool           `json:"guest,omitempty"`
-	Title    string         `json:"title,omitempty"`
-	Duration int            `json:"duration,omitempty"`
-	URL      string         `json:"url,omitempty"`
-	ID       string         `json:"__id,omitempty"`
-	Users    []*cache.User  `json:"users,omitempty"`
-	Playlist []*cache.Video `json:"videos,omitempty"`
-	Ticker   *elapsedTime   `json:"ticker,omitempty"`
-	FeedBack feedback       `json:"feedback,omitempty"`
+	Message  string        `json:"message,omitempty"`
+	Error    string        `json:"error,omitempty"`
+	Color    string        `json:"color,omitempty"`
+	Image    string        `json:"image,omitempty"`
+	Name     string        `json:"name,omitempty"`
+	Guest    bool          `json:"guest,omitempty"`
+	Title    string        `json:"title,omitempty"`
+	Duration int           `json:"duration,omitempty"`
+	URL      string        `json:"url,omitempty"`
+	ID       string        `json:"__id,omitempty"`
+	Users    []*cache.User `json:"users,omitempty"`
+	Ticker   *elapsedTime  `json:"ticker,omitempty"`
+	FeedBack *feedback     `json:"feedback,omitempty"`
 }
 
 type elapsedTime struct {
@@ -89,6 +88,24 @@ type feedback struct {
 	Message string `json:"message,omitempty"`
 	Error   string `json:"error,omitempty"`
 	URL     string `json:"url,omitempty"`
+}
+
+type playlist struct {
+	Action string `json:"action"`
+	Body   plBody `json:"body"`
+}
+
+type plBody struct {
+	Event plEvent `json:"event"`
+}
+
+type plEvent struct {
+	Type string `json:"type"`
+	Data plData `json:"data"`
+}
+
+type plData struct {
+	Playlist []*cache.Video `json:"videos"`
 }
 
 const (

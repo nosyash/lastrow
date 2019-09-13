@@ -14,22 +14,10 @@ func readPacket(conn *websocket.Conn) (*packet, error) {
 	return request, err
 }
 
-func sendPacket(conn *websocket.Conn, r *packet) error {
-	return writeJSON(conn, r)
-}
-
 func sendError(conn *websocket.Conn, errMsg error) error {
-	return writeJSON(conn, createPacket(errorEvent, errorEvent, data{
+	return writeMessage(conn, websocket.TextMessage, createPacket(errorEvent, errorEvent, data{
 		Error: errMsg.Error(),
 	}))
-}
-
-func writeJSON(conn *websocket.Conn, p *packet) error {
-	mb, err := json.Marshal(p)
-	if err != nil {
-		return err
-	}
-	return writeMessage(conn, websocket.TextMessage, mb)
 }
 
 func writeMessage(conn *websocket.Conn, messageType int, message []byte) error {
@@ -38,8 +26,8 @@ func writeMessage(conn *websocket.Conn, messageType int, message []byte) error {
 	return conn.WriteMessage(messageType, message)
 }
 
-func createPacket(action, eType string, d data) *packet {
-	return &packet{
+func createPacket(action, eType string, d data) []byte {
+	data, _ := json.Marshal(&packet{
 		Action: action,
 		Body: body{
 			Event: eventBody{
@@ -47,7 +35,8 @@ func createPacket(action, eType string, d data) *packet {
 				Data: d,
 			},
 		},
-	}
+	})
+	return data
 }
 
 func getHashOfString(str string) string {

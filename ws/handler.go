@@ -2,6 +2,7 @@ package ws
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -102,7 +103,7 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 		}
 
 		h.broadcast <- createPacket(playerEvent, eTypeFeedBack, data{
-			FeedBack: fb,
+			FeedBack: &fb,
 		})
 
 	case eTypePlDel:
@@ -145,9 +146,21 @@ func (h hub) updateUserList() {
 }
 
 func (h hub) updatePlaylist() {
-	h.broadcast <- createPacket(playlistEvent, eTypePlaylistUpd, data{
-		Playlist: h.cache.Playlist.GetAllPlaylist(),
-	})
+	pl := h.cache.Playlist.GetAllPlaylist()
+	packet := playlist{
+		Action: playlistEvent,
+		Body: plBody{
+			Event: plEvent{
+				Type: eTypePlaylistUpd,
+				Data: plData{
+					Playlist: pl,
+				},
+			},
+		},
+	}
+
+	data, _ := json.Marshal(&packet)
+	h.broadcast <- data
 }
 
 func (h *hub) syncElapsedTime() {
