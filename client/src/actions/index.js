@@ -10,48 +10,48 @@ import { SOCKET_ENDPOINT } from '../constants';
 import { toastOpts } from '../Conf';
 
 export const fetchSubs = url => dispatch => {
-  return http
-    .get(url)
-    .then(response => {
-      dispatch({ type: types.SET_SUBS, payload: { srt: parse(response.data) } });
-    })
-    .catch(error => {
-      throw error;
-    });
+    return http
+        .get(url)
+        .then(response => {
+            dispatch({ type: types.SET_SUBS, payload: { srt: parse(response.data) } });
+        })
+        .catch(error => {
+            throw error;
+        });
 };
 
 /** @type Socket */
 let socket = null;
 
 export const webSocketConnect = ({ roomID }) => {
-  const { uuid, name, guest } = store.getState().profile;
+    const { uuid, name, guest } = store.getState().profile;
 
-  if (!isConnectingSameRoom()) webSocketDisconnect();
+    if (!isConnectingSameRoom()) webSocketDisconnect();
 
-  socket = new Socket({ url: SOCKET_ENDPOINT, roomID, uuid, guest, name });
-  return socket.state();
+    socket = new Socket({ url: SOCKET_ENDPOINT, roomID, uuid, guest, name });
+    return socket.state();
 };
 
 const isConnectingSameRoom = roomID => (socket ? roomID === socket.roomID : false);
 
 export const webSocketSend = (data, messageTypeToGet = '', cb = () => null) => {
-  return socket.sendMessage(data, messageTypeToGet, cb);
+    return socket.sendMessage(data, messageTypeToGet, cb);
 };
 
 export const webSocketDisconnect = () => {
-  if (socket) socket.destroy();
+    if (socket) socket.destroy();
 };
 
 export const requestColorUpdate = color => async dispatch => {
-  // const { updateProfile } = this.props;
-  const res = await http.post(api.API_USER(), api.UPDATE_USER('', color));
+    // const { updateProfile } = this.props;
+    const res = await http.post(api.API_USER(), api.UPDATE_USER('', color));
 
-  if (!res.data) {
-    toast.error('There was an error updating your color...', toastOpts);
-    return;
-  }
-  toast.success('Color successfully changed', toastOpts);
+    if (!res.data) {
+        toast.error('There was an error updating your color...', toastOpts);
+        return;
+    }
+    toast.success('Color successfully changed', toastOpts);
 
-  dispatch({ type: types.UPDATE_PROFILE, payload: { ...res.data } });
-  return Promise.resolve();
+    dispatch({ type: types.UPDATE_PROFILE, payload: { ...res.data } });
+    return Promise.resolve();
 };

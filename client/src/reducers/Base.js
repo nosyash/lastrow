@@ -8,11 +8,11 @@ import Rooms from './Rooms';
 import Popups from './Popups';
 
 export default combineReducers({
-  MainStates,
-  Chat,
-  emojis,
-  Popups,
-  profile,
-  Media,
-  Rooms,
+    MainStates,
+    Chat,
+    emojis,
+    Popups,
+    profile,
+    Media,
+    Rooms,
 });

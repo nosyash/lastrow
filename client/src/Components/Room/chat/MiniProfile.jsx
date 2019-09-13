@@ -1,34 +1,34 @@
 import React from 'react';
 
 function getStyles(image, color) {
-  const backgroundImage = image ? `url(${image})` : '';
-  const backgroundColor = !image ? color : '';
-  return { backgroundColor, backgroundImage };
+    const backgroundImage = image ? `url(${image})` : '';
+    const backgroundColor = !image ? color : '';
+    return { backgroundColor, backgroundImage };
 }
 
 const MiniProfile = ({ currentProfile, hideProfile }) => {
-  const { name, image, color } = currentProfile;
-  const { backgroundColor, backgroundImage } = getStyles(image, color);
+    const { name, image, color } = currentProfile;
+    const { backgroundColor, backgroundImage } = getStyles(image, color);
 
-  return (
-    <div className="mini-profile">
-      <div style={{ backgroundColor, backgroundImage }} className="chat-avatar" />
-      {name && (
-        <span
-          onClick={hideProfile}
-          data-name={name}
-          style={{ color }}
-          className="chat-name reply-trigger"
-        >
-          {name}
-        </span>
-      )}
-      {!name && (
-        <div className="ml-auto mr-auto spinner-grow" role="status">
-          <span className="sr-only">Loading...</span>
-        </div>
-      )}
-      {/* <span
+    return (
+        <div className="mini-profile">
+            <div style={{ backgroundColor, backgroundImage }} className="chat-avatar" />
+            {name && (
+                <span
+                    onClick={hideProfile}
+                    data-name={name}
+                    style={{ color }}
+                    className="chat-name reply-trigger"
+                >
+                    {name}
+                </span>
+            )}
+            {!name && (
+                <div className="ml-auto mr-auto spinner-grow" role="status">
+                    <span className="sr-only">Loading...</span>
+                </div>
+            )}
+            {/* <span
         data-name={name}
         title="Reply"
         style={{ color }}
@@ -36,8 +36,8 @@ const MiniProfile = ({ currentProfile, hideProfile }) => {
       >
         <i className="fa fa-reply" />
       </span> */}
-    </div>
-  );
+        </div>
+    );
 };
 
 export default MiniProfile;
