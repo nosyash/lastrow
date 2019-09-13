@@ -33,8 +33,10 @@ class Playlist extends Component {
     return (
       <div className="popup-element playlist_container">
         {<AddMedia />}
-        {!playlist.length && <p>No items</p>}
-        {playlist.map((element, i) => this.renderElement(element, i))}
+        <div className="playlist_inner">
+          {!playlist.length && <p>No items</p>}
+          {playlist.map((element, i) => this.renderElement(element, i))}
+        </div>
       </div>
     );
   }

@@ -141,7 +141,8 @@ class Socket {
       }
       case 'update_playlist': {
         const videos = get(parsedData, 'body.event.data.videos');
-        return dispatch({ type: types.ADD_TO_PLAYLIST, payload: videos || [] });
+        const playlist = sortPlaylistByIndex(videos || []);
+        return dispatch({ type: types.ADD_TO_PLAYLIST, payload: playlist });
       }
       case 'ticker': {
         const payload = { actualTime: data.elapsed_time };
@@ -155,38 +156,6 @@ class Socket {
       default:
         break;
     }
-
-    // const data = this.getDataFromMessage(data_);
-    // if (!data) return;
-    // switch (data.type) {
-    //   case 'message': {
-    //     const payload = { ...data, roomID: this.roomID };
-    //     return dispatch({ type: types.ADD_MESSAGE, payload });
-    //   }
-
-    //   case 'user_list': {
-    //     return dispatch({ type: types.UPDATE_USERLIST, payload: data.users });
-    //   }
-
-    // case 'ticker': {
-    //   return dispatch({
-    //     type: types.UPDATE_MEDIA,
-    //     payload: { actualTime: data.elapsed_time },
-    //   });
-    // }
-
-    //   case 'playlist': {
-    //     const playlist = sortPlaylistByIndex(data.videos);
-    //     return dispatch({ type: types.ADD_TO_PLAYLIST, payload: playlist });
-    //   }
-
-    //   case 'added_to_playlist': {
-    //     return setAddMediaToSuccess();
-    //   }
-
-    //   default:
-    //     break;
-    // }
   };
 
   _handleError = () => {

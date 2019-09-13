@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { throttle } from 'lodash';
 import cn from 'classnames';
+import ls from 'local-storage';
 import { getCenteredRect } from '../../../utils/base';
 import * as types from '../../../constants/ActionTypes';
 import { POPUP_HEADER } from '../../../constants';
@@ -71,16 +72,18 @@ let clientX = null;
 let clientY = null;
 
 function Popup(props) {
-  const [width, setWidth] = useState(0);
-  const [top, setTop] = useState(0);
-  const [left, setLeft] = useState(0);
+  const [width, setWidth] = useState(getPosition('width') || 0);
+  const [top, setTop] = useState(getPosition('top') || 0);
+  const [left, setLeft] = useState(getPosition('left') || 0);
   const [moving, setMoving] = useState(false);
   const [show, setShow] = useState(false);
   const popupEl = useRef(null);
 
   useEffect(() => {
-    const { width: w, height: h } = popupEl.current.getBoundingClientRect();
-    setStates({ ...getCenteredRect(w, h) });
+    if (!getPosition('left')) {
+      const { width: w, height: h } = popupEl.current.getBoundingClientRect();
+      setStates({ ...getCenteredRect(w, h) });
+    }
     setShow(true);
   }, []);
 
@@ -133,9 +136,20 @@ function Popup(props) {
     setStates({ left: offsetX, top: offsetY });
   }
 
+  function savePosition() {
+    ls.set(`${props.name}Popup`, { width, top, left });
+  }
+
+  function getPosition(key) {
+    try {
+      return ls.get(`${props.name}Popup`)[key];
+    } catch (error) {}
+  }
+
   function handleMouseUp() {
     if (moving) {
       setMoving(false);
+      savePosition();
     }
   }
 

@@ -193,7 +193,7 @@ body {
   height: 100%;
   transform: translateX(0);
   // background: red;
-  z-index: 1999;
+  z-index: 10;
 
   &:hover {
     background: #404850
@@ -1659,7 +1659,12 @@ body {
   background: rgba(37, 39, 40, 0.9);
   // height: 100%;
   box-shadow: none;
+}
+
+.playlist_inner {
   overflow: auto;
+  max-height: 40vh;
+  padding-right: 10px;
 }
 
 .paylist-item {
