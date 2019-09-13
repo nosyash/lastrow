@@ -139,9 +139,9 @@ class Socket {
         const payload = { ...message, roomID: this.roomID };
         return dispatch({ type: types.ADD_MESSAGE, payload });
       }
-      case 'playlist': {
+      case 'update_playlist': {
         const videos = get(parsedData, 'body.event.data.videos');
-        return dispatch({ type: types.ADD_TO_PLAYLIST, payload: videos });
+        return dispatch({ type: types.ADD_TO_PLAYLIST, payload: videos || [] });
       }
       case 'ticker': {
         const payload = { actualTime: data.elapsed_time };
