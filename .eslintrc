@@ -1,10 +1,15 @@
 {
+  "settings": {
+    "react": {
+      "version": "detect",
+    }
+  },
   "extends": [
     // "airbnb",
     // "prettier",
     // "prettier/react"
-    "eslint:recommended",
-    "plugin:react/recommended"
+    "eslint:recommended", 
+    "plugin:react/recommended",
   ],
   "parser": "babel-eslint",
   "parserOptions": {
@@ -26,6 +31,9 @@
     "no-alert": 0,
     "nonblock-statement-body-position": "off",
     "curly": "off",
+    "react/jsx-max-props-per-line": [1, { "maximum": 3, "when": "multiline" }],
+    "react/jsx-closing-bracket-location": [1, "tag-aligned"],
+    "react/self-closing-comp": "warn",
     "indent": ["warn", 4],
     "react/jsx-indent": ["warn", 4],
     "no-await-in-loop": 0,
@@ -159,5 +167,6 @@
   },
   "plugins": [
     // "prettier"
+    "react"
   ]
 }

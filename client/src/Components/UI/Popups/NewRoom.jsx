@@ -8,56 +8,56 @@ import * as api from '../../../constants/apiActions';
 import * as types from '../../../constants/ActionTypes';
 
 class NewRoom extends Form {
-  state = {
-      signIn: true,
-      data: { title: '', path: '' },
-      errors: {},
-      visiblePass: false,
-  };
+    state = {
+        signIn: true,
+        data: { title: '', path: '' },
+        errors: {},
+        visiblePass: false,
+    };
 
-  schema = {
-      title: Joi.string()
-          .required()
-          .max(20)
-          .min(4)
-          .label('Title'),
-      path: Joi.string()
-          .required()
-          .max(15)
-          .min(4)
-          .label('Path'),
-  };
+    schema = {
+        title: Joi.string()
+            .required()
+            .max(20)
+            .min(4)
+            .label('Title'),
+        path: Joi.string()
+            .required()
+            .max(15)
+            .min(4)
+            .label('Path'),
+    };
 
-  handleSubmit = async e => {
-      const { title, path } = this.state.data;
-      const { id, history, removePopup } = this.props;
-      e.preventDefault();
-      const res = await http.post(api.API_ROOMS(), api.ROOM_CREATE(title, path));
-      if (!res.status) {
-          return;
-      }
-      removePopup(id);
-      history.push(`/r/${path}`);
-  };
+    handleSubmit = async e => {
+        const { title, path } = this.state.data;
+        const { id, history, removePopup } = this.props;
+        e.preventDefault();
+        const res = await http.post(api.API_ROOMS(), api.ROOM_CREATE(title, path));
+        if (!res.status) {
+            return;
+        }
+        removePopup(id);
+        history.push(`/r/${path}`);
+    };
 
-  handleClose = () => {
-      const { id, removePopup } = this.props;
-      removePopup(id);
-  };
+    handleClose = () => {
+        const { id, removePopup } = this.props;
+        removePopup(id);
+    };
 
-  render() {
-      const { onSubmit, id } = this.props;
-      return (
-          <RenderForm
-              onSubmit={onSubmit}
-              id={id}
-              onClose={this.handleClose}
-              handleSubmit={this.handleSubmit}
-              renderButton={this.renderButton}
-              renderInput={this.renderInput}
-          />
-      );
-  }
+    render() {
+        const { onSubmit, id } = this.props;
+        return (
+            <RenderForm
+                onSubmit={onSubmit}
+                id={id}
+                onClose={this.handleClose}
+                handleSubmit={this.handleSubmit}
+                renderButton={this.renderButton}
+                renderInput={this.renderInput}
+            />
+        );
+    }
 }
 
 const RenderForm = ({ handleSubmit, renderInput, renderButton }) => (

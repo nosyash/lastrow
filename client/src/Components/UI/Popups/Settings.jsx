@@ -28,7 +28,7 @@ function ProfileSettings(props) {
                 value={notify}
                 checked={notify}
                 onChange={onNotificationChange}
-            ></input>
+            />
             <label
                 className="option-label"
                 htmlFor="notification"
