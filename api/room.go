@@ -101,6 +101,7 @@ func (server Server) createRoom(w http.ResponseWriter, title, path, userUUID str
 func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest) {
 	name := strings.TrimSpace(req.Body.Data.Name)
 	img := req.Body.Data.Img
+	iType := req.Body.Data.Type
 	id := req.RoomID
 
 	if !server.db.RoomIsExists("uuid", id) {
@@ -120,7 +121,7 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest) {
 
 	switch req.Body.UpdateType {
 	case eTypeAddEmoji:
-		server.addEmoji(w, name, id, &img, &room)
+		server.addEmoji(w, name, id, iType, &img, &room)
 	case eTypeDelEmoji:
 		server.delEmoji(w, name, id, &room)
 
@@ -131,11 +132,11 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest) {
 	}
 }
 
-func (server Server) addEmoji(w http.ResponseWriter, name, uuid string, img *string, room *db.Room) {
+func (server Server) addEmoji(w http.ResponseWriter, name, uuid, iType string, img *string, room *db.Room) {
 	ec, err := server.db.GetEmojiCount(uuid)
 	if err != nil {
 		sendJson(w, http.StatusBadRequest, message{
-			Error: "Internal server error",
+			Error: err.Error(),
 		})
 		return
 	}
@@ -170,14 +171,13 @@ func (server Server) addEmoji(w http.ResponseWriter, name, uuid string, img *str
 		}
 	}
 
-	imgPath := filepath.Join(filepath.Join("/media", server.imageServer.EmojiImgPath), room.UUID[:32], fmt.Sprintf("%s.png", getRandomUUID()[32:]))
+	imgPath := filepath.Join(filepath.Join("/media", server.imageServer.EmojiImgPath), room.UUID[:32], fmt.Sprintf("%s.%s", getRandomUUID()[32:], iType))
 	image := newImage(img)
 
-	err = image.createImage(filepath.Join(server.imageServer.UplPath, imgPath), "png")
+	err = image.createImage(filepath.Join(server.imageServer.UplPath, imgPath), iType)
 	if err != nil {
-		log.Println(err)
 		sendJson(w, http.StatusBadRequest, message{
-			Error: "Internal server error",
+			Error: err.Error(),
 		})
 		return
 	}
@@ -190,7 +190,7 @@ func (server Server) addEmoji(w http.ResponseWriter, name, uuid string, img *str
 	if err = server.db.UpdateRoomValue(uuid, "emoji", emoji); err != nil {
 		log.Println(err)
 		sendJson(w, http.StatusBadRequest, message{
-			Error: "Room with this room_id was not be found",
+			Error: err.Error(),
 		})
 		return
 	}

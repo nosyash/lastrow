@@ -35,6 +35,7 @@ type userBody struct {
 
 type imageBody struct {
 	Img  string `json:"raw_img"`
+	Type string `json:"type"`
 	Name string `json:"name"`
 }
 
