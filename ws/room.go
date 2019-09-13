@@ -66,9 +66,9 @@ func (h hub) HandleActions() {
 		case message := <-h.broadcast:
 			h.send(message)
 		case <-h.cache.Users.UpdateUsers:
-			h.updateUserList()
+			go h.updateUserList()
 		case <-h.cache.Playlist.UpdatePlaylist:
-			h.updatePlaylist()
+			go h.updatePlaylist()
 			if h.syncer.sleep && h.cache.Playlist.Size() > 0 {
 				h.syncer.wakeUp <- struct{}{}
 			}
