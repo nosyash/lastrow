@@ -5,7 +5,17 @@ import cn from 'classnames';
 import ls from 'local-storage';
 import { getCenteredRect } from '../../../utils/base';
 import * as types from '../../../constants/ActionTypes';
-import { POPUP_HEADER } from '../../../constants';
+import {
+  POPUP_HEADER,
+  COLOR_PICKER,
+  GUEST_AUTH,
+  IMAGE_PICKER,
+  LOG_FORM,
+  NEW_ROOM,
+  PLAYLIST,
+  PROFILE_SETTINGS,
+  SETTINGS,
+} from '../../../constants';
 import AddMedia from './AddMedia';
 import ColorPicker from './ColorPicker';
 import GuestAuth from './GuestAuth';
@@ -103,13 +113,13 @@ function Popup(props) {
   }
 
   function addEvents() {
-    popupEl.current.addEventListener('mousedown', handleMouseDown);
+    // popupEl.current.addEventListener('mousedown', handleMouseDown);
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
   }
 
   function removeEvents() {
-    popupEl.current.removeEventListener('mousedown', handleMouseDown);
+    // popupEl.current.removeEventListener('mousedown', handleMouseDown);
     document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseup', handleMouseUp);
   }
@@ -120,7 +130,7 @@ function Popup(props) {
     const { target, clientX: clientX_, clientY: clientY_ } = e;
     clientX = clientX_ - left_;
     clientY = clientY_ - top_;
-    if (target.matches(POPUP_HEADER)) {
+    if (target.closest(POPUP_HEADER)) {
       setMoving(true);
     }
   }
@@ -153,6 +163,29 @@ function Popup(props) {
     }
   }
 
+  function getTitle() {
+    switch (name) {
+      case COLOR_PICKER:
+        return 'Color picker';
+      case GUEST_AUTH:
+        return 'Guest authorization';
+      case IMAGE_PICKER:
+        return 'Image picker';
+      case LOG_FORM:
+        return 'Sign in';
+      case NEW_ROOM:
+        return 'New room';
+      case PLAYLIST:
+        return 'Playlist';
+      case PROFILE_SETTINGS:
+        return 'Profile settings';
+      case SETTINGS:
+        return 'Settings';
+      default:
+        return '';
+    }
+  }
+
   const { removePopup, popupElement, name } = props;
   const visibility = show ? 'visible' : 'hidden';
   return (
@@ -166,7 +199,8 @@ function Popup(props) {
       }}
       className={cn(['popup', name])}
     >
-      <div data-id={0} className="popup-header">
+      <div data-id={0} onMouseDown={handleMouseDown} className="popup-header">
+        <h3 className="popup-title">{getTitle()}</h3>
         <div className="header-controls controls-container">
           <span onClick={() => removePopup()} className="control">
             <i className="fas fa-times" />

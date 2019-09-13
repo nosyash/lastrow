@@ -176,7 +176,6 @@ const RenderForm = props => {
   const hasChanges = Object.entries(data).length !== 0;
   return (
     <div className="popup-element profile-settings_container">
-      <h1 className="title">Profile</h1>
       <div
         onClick={handleImageChange}
         style={{ backgroundImage }}

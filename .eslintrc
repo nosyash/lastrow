@@ -1,8 +1,10 @@
 {
   "extends": [
-    "airbnb",
-    "prettier",
-    "prettier/react"
+    // "airbnb",
+    // "prettier",
+    // "prettier/react"
+    "eslint:recommended",
+    "plugin:react/recommended"
   ],
   "parser": "babel-eslint",
   "parserOptions": {
@@ -22,6 +24,10 @@
   "rules": {
     "no-debugger": 0,
     "no-alert": 0,
+    "nonblock-statement-body-position": "off",
+    "curly": "off",
+    "indent": ["warn", 4],
+    "react/jsx-indent": ["warn", 4],
     "no-await-in-loop": 0,
     "no-return-assign": [
       "error",
@@ -91,11 +97,11 @@
     "react/prop-types": 0,
     "react/no-unescaped-entities": 0,
     "no-absolute-path": 0,
-    "jsx-a11y/accessible-emoji": 0,
-    "jsx-a11y/no-autofocus": 0,
-    "jsx-a11y/click-events-have-key-events": 0,
-    "jsx-a11y/no-static-element-interactions": 0,
-    "jsx-a11y/label-has-associated-control": 0,
+    // "jsx-a11y/accessible-emoji": 0,
+    // "jsx-a11y/no-autofocus": 0,
+    // "jsx-a11y/click-events-have-key-events": 0,
+    // "jsx-a11y/no-static-element-interactions": 0,
+    // "jsx-a11y/label-has-associated-control": 0,
     "react/require-default-props": 0,
     // "no-use-before-define": ["error", { "functions": true, "classes": true }],
     "no-use-before-define": 0,
@@ -132,26 +138,26 @@
         "allowTemplateLiterals": true
       }
     ],
-    "prettier/prettier": [
-      "error",
-      {
-        "trailingComma": "es5",
-        "singleQuote": true,
-        "printWidth": 90
-      }
-    ],
+    // "prettier/prettier": [
+    //   "error",
+    //   {
+    //     "trailingComma": "es5",
+    //     "singleQuote": true,
+    //     "printWidth": 90
+    //   }
+    // ],
     "no-case-declarations":"warn",
-    "jsx-a11y/href-no-hash": "off",
-    "jsx-a11y/anchor-is-valid": [
-      "warn",
-      {
-        "aspects": [
-          "invalidHref"
-        ]
-      }
-    ]
+    // "jsx-a11y/href-no-hash": "off",
+    // "jsx-a11y/anchor-is-valid": [
+    //   "warn",
+    //   {
+    //     "aspects": [
+    //       "invalidHref"
+    //     ]
+    //   }
+    // ]
   },
   "plugins": [
-    "prettier"
+    // "prettier"
   ]
 }

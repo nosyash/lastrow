@@ -19,7 +19,6 @@ function ProfileSettings(props) {
 
   return (
     <div className="popup-element settings_container">
-      <h1 className="title">Settings</h1>
       <input
         name="notification"
         id="notification"
