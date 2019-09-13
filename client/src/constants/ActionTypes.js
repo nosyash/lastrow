@@ -29,6 +29,7 @@ export const SET_CURRENT_SUBS = 'SET_CURRENT_SUBS';
 export const FETCH_SUBS = 'FETCH_SUBS';
 export const ADD_TO_PLAYLIST = 'ADD_TO_PLAYLIST';
 export const TOGGLE_SYNC = 'TOGGLE_SYNC';
+export const SET_ADD_MEDIA_PENDING = 'SET_ADD_MEDIA_PENDING';
 
 export const SET_PLAY = 'SET_PLAY';
 export const SET_PAUSE = 'SET_PAUSE';

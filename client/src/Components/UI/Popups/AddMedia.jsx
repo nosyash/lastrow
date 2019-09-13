@@ -30,16 +30,24 @@ class AddMedia extends Form {
   );
 
   handleSubmit = e => {
-    const { uuid, removePopup } = this.props;
+    const { uuid, setToPending, setToDone, removePopup } = this.props;
     console.log('submited');
     e.preventDefault();
 
     const { link } = this.state.data;
-    webSocketSend(api.SEND_MEDIA_TO_PLAYLIST({ url: link, uuid }));
-    removePopup(ADD_MEDIA);
+
+    const message = api.SEND_MEDIA_TO_PLAYLIST({ url: link, uuid });
+    webSocketSend(message, 'success', onSuccess);
+    function onSuccess(result, error) {
+      if (error) console.warn('error while adding to playlist:', error);
+      if (result) removePopup('addMedia');
+      setToDone();
+    }
+    setToPending();
   };
 
   render() {
+    const { addMediaPending } = this.props;
     return (
       <div className="popup-element add-media_container">
         <form onSubmit={this.handleSubmit}>
@@ -49,7 +57,7 @@ class AddMedia extends Form {
             autoFocus: true,
             placeholder: 'Link',
           })}
-          {this.renderButton('Add')}
+          {this.renderButton('Add', { disabled: addMediaPending })}
         </form>
       </div>
     );
@@ -59,10 +67,14 @@ class AddMedia extends Form {
 const mapStateToProps = state => ({
   playlist: state.Media.playlist,
   uuid: state.profile.uuid,
+  addMediaPending: state.Media.addMediaPending,
 });
 
 const mapDispatchToProps = {
   removePopup: payload => ({ type: types.REMOVE_POPUP, payload }),
+  setAddMediaPending: payload => ({ type: types.SET_ADD_MEDIA_PENDING, payload }),
+  setToPending: () => ({ type: types.SET_ADD_MEDIA_PENDING, payload: true }),
+  setToDone: () => ({ type: types.SET_ADD_MEDIA_PENDING, payload: false }),
 };
 
 export default connect(

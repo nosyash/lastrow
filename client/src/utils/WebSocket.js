@@ -48,14 +48,38 @@ class Socket {
     });
   };
 
-  sendMessage = data => {
-    this.instance.send(data);
+  sendMessage = (dataToSend, messageTypeToGet, cb) => {
+    let timeout = null;
+
+    const onMessageLocal = ({ data: receivedData }) => {
+      const dataFormated = this.getDataFromMessage(receivedData);
+      if (dataFormated.type !== messageTypeToGet) return;
+
+      this._removeEvent('message', onMessageLocal);
+      clearTimeout(timeout);
+
+      return cb(true, null);
+    };
+
+    if (messageTypeToGet) {
+      this.instance.addEventListener('message', onMessageLocal);
+      timeout = setTimeout(() => {
+        this._removeEvent('message', onMessageLocal);
+        return cb(null, true);
+      }, 15000);
+    }
+
+    this.instance.send(dataToSend);
   };
 
   destroy = () => {
     this._unsubscribeEvents();
     this.instance.close();
     this._resetStates();
+  };
+
+  _removeEvent = (event, callback) => {
+    this.instance.removeEventListener(event, callback);
   };
 
   _getReadyState = readyState => {
@@ -100,14 +124,18 @@ class Socket {
     dispatch({ type: types.SET_SOCKET_CONNECTED, payload: true });
   }
 
-  _handleMessage = ({ data: data_ }) => {
-    const error = api.GET_ERROR(data_);
+  getDataFromMessage = data => {
+    const error = api.GET_ERROR(data);
     if (error) {
       console.log(error);
       return;
-      // return this._resetStates();
     }
-    const data = api.GET_WS_DATA(data_);
+    return api.GET_WS_DATA(data);
+  };
+
+  _handleMessage = ({ data: data_ }) => {
+    const data = this.getDataFromMessage(data_);
+    if (!data) return;
     switch (data.type) {
       case 'message': {
         const payload = { ...data, roomID: this.roomID };
@@ -128,6 +156,10 @@ class Socket {
       case 'playlist': {
         const playlist = sortPlaylistByIndex(data.videos);
         return dispatch({ type: types.ADD_TO_PLAYLIST, payload: playlist });
+      }
+
+      case 'added_to_playlist': {
+        return setAddMediaToSuccess();
       }
 
       default:
@@ -166,5 +198,10 @@ class Socket {
   //   }, WEBSOCKET_TIMEOUT);
   // };
 }
+
+const setAddMediaToSuccess = () => {
+  dispatch({ type: types.REMOVE_POPUP, payload: 'addMedia' });
+  dispatch({ type: types.SET_ADD_MEDIA_PENDING, payload: false });
+};
 
 export default Socket;
