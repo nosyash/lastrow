@@ -44,7 +44,8 @@ export const webSocketDisconnect = () => {
 
 export const requestColorUpdate = color => async dispatch => {
     // const { updateProfile } = this.props;
-    const res = await http.post(api.API_USER(), api.UPDATE_USER('', color));
+    const { name } = store.getState().profile;
+    const res = await http.post(api.API_USER(), api.UPDATE_USER(name, color));
 
     if (!res.data) {
         toast.error('There was an error updating your color...', toastOpts);

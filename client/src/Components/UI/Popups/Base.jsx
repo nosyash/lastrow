@@ -60,18 +60,18 @@ function Popups({ popups, removePopup }) {
     const p = popups;
     return (
         <div className="popups_container">
-            {p.profileSettings && wrapPopup(<ProfileSettings />, 'profileSettings')}
-            {p.colorPicker && wrapPopup(<ColorPicker />, 'colorPicker')}
-            {p.guestAuth && wrapPopup(<GuestAuth />, 'guestAuth')}
-            {p.imagePicker && wrapPopup(<ImagePicker />, 'imagePicker')}
-            {p.logForm && wrapPopup(<LogForm />, 'logForm')}
-            {p.newRoom && wrapPopup(<NewRoom />, 'newRoom')}
-            {p.playlist && wrapPopup(<Playlist />, 'playlist')}
-            {p.settings && wrapPopup(<Settings />, 'settings')}
+            {p.profileSettings && wrapper(<ProfileSettings />, 'profileSettings')}
+            {p.colorPicker && wrapper(<ColorPicker />, 'colorPicker')}
+            {p.guestAuth && wrapper(<GuestAuth />, 'guestAuth')}
+            {p.imagePicker && wrapper(<ImagePicker />, 'imagePicker')}
+            {p.logForm && wrapper(<LogForm />, 'logForm')}
+            {p.newRoom && wrapper(<NewRoom />, 'newRoom')}
+            {p.playlist && wrapper(<Playlist />, 'playlist')}
+            {p.settings && wrapper(<Settings />, 'settings')}
         </div>
     );
 
-    function wrapPopup(popup, name) {
+    function wrapper(popup, name) {
         return (
             <Popup removePopup={() => removePopup(name)} popupElement={popup} name={name} />
         );
@@ -95,6 +95,7 @@ function Popup(props) {
             setStates({ ...getCenteredRect(w, h) });
         }
         setShow(true);
+        document.addEventListener('mouseup', handleMouseUp);
     }, []);
 
     useEffect(() => {
@@ -113,15 +114,11 @@ function Popup(props) {
     }
 
     function addEvents() {
-    // popupEl.current.addEventListener('mousedown', handleMouseDown);
         document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
     }
 
     function removeEvents() {
-    // popupEl.current.removeEventListener('mousedown', handleMouseDown);
         document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
     }
 
     function handleMouseDown(e) {
@@ -157,10 +154,8 @@ function Popup(props) {
     }
 
     function handleMouseUp() {
-        if (moving) {
-            setMoving(false);
-            savePosition();
-        }
+        setMoving(false);
+        savePosition();
     }
 
     function getTitle() {

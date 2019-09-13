@@ -5,7 +5,7 @@ import ChatContainer from './chat/ChatContainer';
 import VideoContainer from './video/VideoContainer';
 import getEmojiList from '../../utils/InitEmojis';
 import * as types from '../../constants/ActionTypes';
-import { roomExist } from '../../utils/apiRequests';
+import { requestRoom } from '../../utils/apiRequests';
 import Divider from './Divider';
 import { webSocketConnect, webSocketDisconnect } from '../../actions';
 import notifications from '../../utils/notifications';
@@ -33,93 +33,93 @@ class RoomBase extends Component {
         this.timer = null;
     }
 
-  state = {
-      exists: false,
-  };
+    state = {
+        exists: false,
+    };
 
-  componentDidMount() {
-      const { clearPopups, clearUsers } = this.props;
-      clearPopups();
-      clearUsers();
-      this.init();
+    componentDidMount() {
+        const { clearPopups, clearUsers } = this.props;
+        clearPopups();
+        clearUsers();
+        this.init();
+    }
 
-      notifications.setCurrentTitle(document.title);
-  }
+    componentWillUnmount() {
+        webSocketDisconnect();
+    }
 
-  componentWillUnmount() {
-      webSocketDisconnect();
-  }
+    init = async () => {
+        const { match, history } = this.props;
+        const { id: roomID } = match.params;
 
-  init = async () => {
-      const { match, history } = this.props;
-      const { id: roomID } = match.params;
+        // Check for room
+        const room = await requestRoom(roomID);
+        if (!room)
+            return history.push('/');
+        
+        document.title = room.title;
+        notifications.setCurrentTitle(document.title);
+        this.setState({ exists: true }, () => this.initStore(this.initWebsocket));
+    };
 
-      // Check for room
-      const exists = await roomExist(roomID);
-      if (!exists) {
-          return history.push('/');
-      }
-      this.setState({ exists: true }, () => this.initStore(this.initWebsocket));
-  };
+    initWebsocket = () => {
+        const { match } = this.props;
+        const { id: roomID } = match.params;
+        webSocketConnect({ roomID });
+    };
 
-  initWebsocket = () => {
-      const { match } = this.props;
-      const { id: roomID } = match.params;
-      webSocketConnect({ roomID });
-  };
+    initStore = callback => {
+        const { updateMainStates } = this.props;
+        const { match, profile } = this.props;
+        const { id: roomID } = match.params;
 
-  initStore = callback => {
-      const { updateMainStates } = this.props;
-      const { match, profile } = this.props;
-      const { id: roomID } = match.params;
+        let { cinemaMode } = localStorage;
+        if (cinemaMode) cinemaMode = JSON.parse(cinemaMode);
+        updateMainStates({ cinemaMode, roomID });
 
-      let { cinemaMode } = localStorage;
-      if (cinemaMode) cinemaMode = JSON.parse(cinemaMode);
-      updateMainStates({ cinemaMode, roomID });
+        this.initEmojis();
 
-      this.initEmojis();
+        if (!profile.logged) {
+            return this.handleNicknamePopup();
+        }
 
-      if (!profile.logged) {
-          return this.handleNicknamePopup();
-      }
+        if (callback) callback();
+    };
 
-      if (callback) callback();
-  };
+    handleNicknamePopup = () => {
+        const { togglePopup } = this.props;
+        togglePopup(GUEST_AUTH);
+    };
 
-  handleNicknamePopup = () => {
-      const { togglePopup } = this.props;
-      togglePopup(GUEST_AUTH);
-  };
+    // TODO: Move to GuestAuth component
+    handleGuestAuth = name => {
+        const { removePopup, updateProfile } = this.props;
+        removePopup(PROFILE_SETTINGS);
+        updateProfile({ name });
+    };
 
-  // TODO: Move to GuestAuth component
-  handleGuestAuth = name => {
-      const { removePopup, updateProfile } = this.props;
-      removePopup(PROFILE_SETTINGS);
-      updateProfile({ name });
-  };
+    initEmojis = () => {
+        const { addEmojis } = this.props;
 
-  initEmojis = () => {
-      const { addEmojis } = this.props;
+        const emojiList = getEmojiList();
+        addEmojis(emojiList);
+    };
 
-      const emojiList = getEmojiList();
-      addEmojis(emojiList);
-  };
-
-  render() {
-      const { cinemaMode, connected } = this.props;
-      const { exists } = this.state;
-      return (
-          exists && (
-              <RenderRoom
-                  connected={connected}
-                  cinemaMode={cinemaMode}
-                  divider={this.divider}
-                  video={this.video}
-                  chat={this.chat}
-              />
-          )
-      );
-  }
+    render() {
+        const { cinemaMode, connected } = this.props;
+        const { exists } = this.state;
+        return (
+            exists && (
+                <RenderRoom
+                    connected={connected}
+                    cinemaMode={cinemaMode}
+                    divider={this.divider}
+                    video={this.video}
+                    chat={this.chat}
+                />
+            )
+        );
+    }
 }
 
 const RenderRoom = ({ connected, divider, video, chat }) => (

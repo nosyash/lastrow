@@ -12,6 +12,8 @@ function RoomListBase(props) {
     const [connected, setConnected] = useState(false);
 
     useEffect(() => {
+        document.title = 'Backrow'
+
         props.clearPopups();
         getRoomList();
 
