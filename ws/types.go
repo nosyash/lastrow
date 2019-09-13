@@ -96,6 +96,7 @@ const (
 	guestRegisterEvent = "guest_register"
 	userEvent          = "user_event"
 	playerEvent        = "player_event"
+	playlistEvent      = "playlist_event"
 	chatEvent          = "chat_event"
 	errorEvent         = "error"
 )
@@ -105,7 +106,7 @@ const (
 	eTypePlAdd       = "playlist_add"
 	eTypePlDel       = "playlist_del"
 	eTypeUpdUserList = "update_users"
-	eTypePlaylist    = "playlist"
+	eTypePlaylistUpd = "update_playlist"
 	eTypeFeedBack    = "feedback"
 	eTypeTicker      = "ticker"
 )
