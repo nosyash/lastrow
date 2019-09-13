@@ -99,7 +99,7 @@ func (h hub) add(user *user) {
 	playlist := h.cache.Playlist.GetAllPlaylist()
 
 	if playlist != nil {
-		writeJSON(user.Conn, createPacket(playerEvent, eTypePlaylist, data{
+		writeJSON(user.Conn, createPacket(playerEvent, eTypePlaylistUpd, data{
 			Playlist: playlist,
 		}))
 	}

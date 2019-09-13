@@ -88,7 +88,7 @@ type elapsedTime struct {
 type feedback struct {
 	Message string `json:"message,omitempty"`
 	Error   string `json:"error,omitempty"`
-	URL     string `json:"url"`
+	URL     string `json:"url,omitempty"`
 }
 
 const (
