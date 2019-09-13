@@ -18,7 +18,7 @@ func New(id string) *Cache {
 			db.Connect(os.Getenv("DB_ENDPOINT")),
 		},
 		playlist{
-			make(map[string]*Video),
+			make([]*Video, 0),
 			make(chan string),
 			make(chan string),
 			make(chan error),
@@ -31,7 +31,7 @@ func New(id string) *Cache {
 }
 
 // HandleCacheEvents handle cache event one at time
-func (cache Cache) HandleCacheEvents() {
+func (cache *Cache) HandleCacheEvents() {
 	for {
 		select {
 		case user := <-cache.Users.AddUser:

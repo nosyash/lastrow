@@ -50,14 +50,14 @@ func (pl *playlist) addVideo(vURL string) {
 
 		ID := getRandomUUID()
 
-		pl.playlist[ID] = &Video{
+		pl.playlist = append(pl.playlist, &Video{
 			Title:    title,
 			Duration: duration,
 			URL:      vURL,
 			ID:       ID,
 			Direct:   true,
 			Index:    len(pl.playlist),
-		}
+		})
 		pl.AddFeedBack <- nil
 		pl.UpdatePlaylist <- struct{}{}
 	case "":
@@ -86,14 +86,14 @@ func (pl *playlist) addVideo(vURL string) {
 
 			ID := getRandomUUID()
 
-			pl.playlist[ID] = &Video{
+			pl.playlist = append(pl.playlist, &Video{
 				Title:    title,
 				Duration: duration,
 				URL:      vURL,
 				ID:       ID,
 				Direct:   false,
 				Index:    len(pl.playlist),
-			}
+			})
 			pl.AddFeedBack <- nil
 			pl.UpdatePlaylist <- struct{}{}
 		} else {
@@ -105,41 +105,21 @@ func (pl *playlist) addVideo(vURL string) {
 }
 
 func (pl *playlist) delVideo(id string) {
-	_, ok := pl.playlist[id]
-	if ok {
-		size := len(pl.playlist)
-		rIdx := pl.playlist[id].Index
+	for i, v := range pl.playlist {
+		if v.ID == id {
+			pl.playlist = append(pl.playlist[:i], pl.playlist[i+1:]...)
 
-		delete(pl.playlist, id)
-		if size > 1 {
-			pl.seek(size, rIdx)
-		}
-
-		pl.DelFeedBack <- nil
-		pl.UpdatePlaylist <- struct{}{}
-
-	} else {
-		pl.DelFeedBack <- ErrVideoNotFound
-	}
-}
-
-func (pl *playlist) seek(size, rIndx int) {
-	for _, v := range pl.playlist {
-		if v.Index > rIndx {
-			v.Index--
+			pl.DelFeedBack <- nil
+			pl.UpdatePlaylist <- struct{}{}
+			return
 		}
 	}
+	pl.DelFeedBack <- ErrVideoNotFound
 }
 
 // GetAllPlaylist return all videos in playlist
 func (pl playlist) GetAllPlaylist() []*Video {
-	var list []*Video
-
-	for _, v := range pl.playlist {
-		list = append(list, v)
-	}
-
-	return list
+	return pl.playlist
 }
 
 // Size return playlist size
@@ -149,20 +129,10 @@ func (pl playlist) Size() int {
 
 // TakeHeadElement return head element in playlist
 func (pl playlist) TakeHeadElement() *Video {
-	for _, v := range pl.playlist {
-		if v.Index == 0 {
-			return v
-		}
-	}
-	return nil
+	return pl.playlist[0]
 }
 
 // GetCurrentTitle return title of head element in playlist
 func (pl playlist) GetCurrentTitle() string {
-	for _, v := range pl.playlist {
-		if v.Index == 0 {
-			return v.Title
-		}
-	}
-	return ""
+	return pl.playlist[0].Title
 }

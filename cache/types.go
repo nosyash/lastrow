@@ -33,7 +33,7 @@ type User struct {
 }
 
 type playlist struct {
-	playlist       map[string]*Video
+	playlist       []*Video
 	AddVideo       chan string
 	DelVideo       chan string
 	AddFeedBack    chan error

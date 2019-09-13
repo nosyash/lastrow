@@ -76,7 +76,7 @@ type data struct {
 	Users    []*cache.User  `json:"users,omitempty"`
 	Playlist []*cache.Video `json:"videos,omitempty"`
 	Ticker   *elapsedTime   `json:"ticker,omitempty"`
-	FeedBack feedback       `json:"feedback,omitempty"`
+	FeedBack *feedback      `json:"feedback,omitempty"`
 }
 
 type elapsedTime struct {

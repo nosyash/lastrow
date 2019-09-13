@@ -102,7 +102,7 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 		}
 
 		h.broadcast <- createPacket(playerEvent, eTypeFeedBack, data{
-			FeedBack: fb,
+			FeedBack: &fb,
 		})
 
 	case eTypePlDel:
