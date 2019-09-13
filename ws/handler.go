@@ -145,7 +145,7 @@ func (h hub) updateUserList() {
 }
 
 func (h hub) updatePlaylist() {
-	h.broadcast <- createPacket(playerEvent, eTypePlaylist, data{
+	h.broadcast <- createPacket(playlistEvent, eTypePlaylistUpd, data{
 		Playlist: h.cache.Playlist.GetAllPlaylist(),
 	})
 }
