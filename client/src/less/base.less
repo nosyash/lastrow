@@ -1,11 +1,13 @@
 @import url('https://fonts.googleapis.com/css?family=Quicksand:300,400,500,700');
 @import url('https://fonts.googleapis.com/css?family=Montserrat:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i&subset=cyrillic,cyrillic-ext,latin-ext');
 @import url('https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i,800,800i&subset=cyrillic,cyrillic-ext,latin-ext');
+@import url('https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i&display=swap&subset=cyrillic,cyrillic-ext,latin-ext');
+@import url('https://fonts.googleapis.com/css?family=Comfortaa:300,400,500,600,700&display=swap&subset=cyrillic,cyrillic-ext,greek,latin-ext,vietnamese');
 
 body {
   margin: 0;
   padding: 0;
-  font-family: Montserrat, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  font-family: 'Comfortaa', Montserrat, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -397,6 +399,7 @@ body {
 
 .chat-avatar {
   border-radius: 7px;
+  transition: 0.5s background-image;
   overflow: hidden;
   width: 42px;
   height: 42px;
@@ -414,7 +417,7 @@ body {
   display: inline-block;
   cursor: pointer;
   .hover();
-  transition: 0.1s;
+  transition: 0.1s opacity;
 }
 
 .chat-name {
@@ -427,6 +430,8 @@ body {
   font-weight: 700;
   cursor: pointer;
   user-select: none;
+
+  transition: 0.5s;
 
   &:hover {
     opacity: 0.8;
@@ -447,7 +452,7 @@ body {
 .chat-message_body {
   font-size: 15px;
   font-weight: 400;
-  font-family: Open Sans;
+  font-family: 'Open Sans';
   padding: 0 1px;
 
   p {
@@ -471,6 +476,7 @@ body {
   background: @darkSecond;
   resize: none;
   width: 100%;
+  font-family: 'Open Sans';
   outline: none;
   color: @body;
   margin-top: auto;
@@ -875,7 +881,7 @@ body {
 // Form
 .form-group {
   position: relative;
-  font-family: Montserrat;
+  // font-family: Montserrat;
 }
 
 .form-control {
@@ -986,10 +992,10 @@ body {
 }
 
 .profile-avatar_mini {
+  transition: 0.5s;
   width: 100px;
   height: 100px;
   margin: 0 auto;
-  transition: 0.1s;
   cursor: pointer;
 
   &:hover {
@@ -1252,7 +1258,7 @@ body {
 }
 
 .video-time {
-  font-family: Montserrat;
+  // font-family: Montserrat;
   font-style: normal;
   font-weight: 600;
   font-size: 12px;
@@ -1470,8 +1476,8 @@ body {
 }
 
 .popup-header {
-  padding: 4px 15px;
-  align-items: baseline;
+  padding: 10px 15px;
+  align-items: center;
   font-size: 0.8em;
   margin: 0;
   width: 100%;
@@ -1491,12 +1497,12 @@ body {
 
 .popup-title {
   margin-bottom: 0;
-  font-weight: 600;
+  font-weight: bold;
   font-size: 1.3em;
   margin-right: auto;
   width: 100%;
   text-align: center;
-  margin-left: 5px;
+  margin-left: 10px;
 }
 
 .popup {
@@ -1552,6 +1558,10 @@ body {
 
   .name-contaner {
     text-align: center;
+
+    .title {
+      transition: 0.5s;
+    }
   }
 
   .name-contaner .control {
