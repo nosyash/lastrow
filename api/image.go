@@ -3,10 +3,16 @@ package api
 import (
 	"bytes"
 	"encoding/base64"
+	"errors"
+	"image/gif"
 	"image/jpeg"
 	"image/png"
 	"os"
 	"path/filepath"
+)
+
+var (
+	errImgFileExt = errors.New("Unknown image file extension")
 )
 
 type image struct {
@@ -39,30 +45,40 @@ func (i image) createImage(path, iType string) error {
 	reader := bytes.NewReader(encRawImg)
 	os.MkdirAll(path, os.ModePerm)
 
-	f, err := os.OpenFile(filepath.Join(path, name), os.O_WRONLY|os.O_CREATE, 0777)
-	defer f.Close()
+	var file *os.File
 
-	if err != nil {
-		return err
-	}
-	// Еще же гифки будут
 	switch iType {
 	case "jpg", "jpeg":
 		img, err := jpeg.Decode(reader)
 		if err != nil {
 			return err
 		}
+		file, err = os.OpenFile(filepath.Join(path, name), os.O_WRONLY|os.O_CREATE, 0777)
 
-		jpeg.Encode(f, img, &jpeg.Options{
+		jpeg.Encode(file, img, &jpeg.Options{
 			Quality: 100,
 		})
+		file.Close()
+	case "gif":
+		img, err := gif.DecodeAll(reader)
+		if err != nil {
+			return err
+		}
+		file, err = os.OpenFile(filepath.Join(path, name), os.O_WRONLY|os.O_CREATE, 0777)
+
+		gif.EncodeAll(file, img)
+		file.Close()
 	case "png":
 		img, err := png.Decode(reader)
 		if err != nil {
 			return err
 		}
+		file, err = os.OpenFile(filepath.Join(path, name), os.O_WRONLY|os.O_CREATE, 0777)
 
-		png.Encode(f, img)
+		png.Encode(file, img)
+		file.Close()
+	default:
+		return errImgFileExt
 	}
 
 	return nil

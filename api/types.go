@@ -15,9 +15,9 @@ type authRequest struct {
 }
 
 type roomRequest struct {
-	Action   string   `json:"action"`
-	Body     roomBody `json:"body"`
-	RoomUUID string   `json:"room_uuid"`
+	Action string   `json:"action"`
+	Body   roomBody `json:"body"`
+	RoomID string   `json:"room_id"`
 }
 
 type userRequest struct {
@@ -35,6 +35,7 @@ type userBody struct {
 
 type imageBody struct {
 	Img  string `json:"raw_img"`
+	Type string `json:"type"`
 	Name string `json:"name"`
 }
 
@@ -54,34 +55,34 @@ type authBody struct {
 
 type roomView struct {
 	Title string     `json:"title,omitempty"`
-	UUID  string     `json:"uuid,omitempty"`
+	ID    string     `json:"ID,omitempty"`
 	Emoji []db.Emoji `json:"emoji,omitempty"`
 }
 
 const (
-	accountRegistration = "register"
-	accountLogin        = "login"
-	accountLogout       = "logout"
-	accountUpdate       = "update"
+	eTypeAccountRegistration = "register"
+	eTypeAccountLogin        = "login"
+	eTypeAccountLogout       = "logout"
+	eTypeAccountUpdate       = "update"
 )
 
 const (
-	roomCreate = "room_create"
-	roomUpdate = "room_update"
-	roomDelete = "room_delete"
+	eTypeRoomCreate = "room_create"
+	eTypeRoomUpdate = "room_update"
+	eTypeRoomDelete = "room_delete"
 )
 
 const (
-	updateTitle = "update_title"
-	addEmoji    = "add_emoji"
-	delEmoji    = "del_emoji"
+	eTypeUpdateTitle = "update_title"
+	eTypeAddEmoji    = "add_emoji"
+	eTypeDelEmoji    = "del_emoji"
 )
 
 const (
-	userUpdateImg  = "user_update_img"
-	userDeleteImg  = "user_delete_img"
-	userUpdatePer  = "user_update_per"
-	userUpdatePswd = "user_update_pswd"
+	eTypeUserUpdateImg  = "user_update_img"
+	eTypeUserDeleteImg  = "user_delete_img"
+	eTypeUserUpdatePer  = "user_update_per"
+	eTypeUserUpdatePswd = "user_update_pswd"
 )
 
 const (
