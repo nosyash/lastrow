@@ -2,6 +2,7 @@ package ws
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -29,7 +30,7 @@ var (
 func NewRoomHub(id string) *hub {
 	return &hub{
 		make(map[string]*websocket.Conn),
-		make(chan *packet),
+		make(chan []byte),
 		make(chan *user),
 		make(chan *websocket.Conn),
 		cache.New(id),
@@ -96,12 +97,23 @@ func (h hub) add(user *user) {
 
 	h.hub[user.UUID] = user.Conn
 
-	playlist := h.cache.Playlist.GetAllPlaylist()
+	pl := h.cache.Playlist.GetAllPlaylist()
 
-	if playlist != nil {
-		writeJSON(user.Conn, createPacket(playerEvent, eTypePlaylistUpd, data{
-			Playlist: playlist,
-		}))
+	if pl != nil {
+		packet := playlist{
+			Action: playlistEvent,
+			Body: plBody{
+				Event: plEvent{
+					Type: eTypePlaylistUpd,
+					Data: plData{
+						Playlist: pl,
+					},
+				},
+			},
+		}
+
+		data, _ := json.Marshal(&packet)
+		writeMessage(user.Conn, websocket.TextMessage, data)
 	}
 }
 
@@ -179,9 +191,9 @@ func (h *hub) read(conn *websocket.Conn) {
 	}
 }
 
-func (h hub) send(msg *packet) {
+func (h hub) send(msg []byte) {
 	for _, conn := range h.hub {
-		if err := sendPacket(conn, msg); err != nil {
+		if err := writeMessage(conn, websocket.TextMessage, msg); err != nil {
 			h.unregister <- conn
 			conn.Close()
 		}
