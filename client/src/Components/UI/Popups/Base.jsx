@@ -6,15 +6,15 @@ import ls from 'local-storage';
 import { getCenteredRect } from '../../../utils/base';
 import * as types from '../../../constants/ActionTypes';
 import {
-  POPUP_HEADER,
-  COLOR_PICKER,
-  GUEST_AUTH,
-  IMAGE_PICKER,
-  LOG_FORM,
-  NEW_ROOM,
-  PLAYLIST,
-  PROFILE_SETTINGS,
-  SETTINGS,
+    POPUP_HEADER,
+    COLOR_PICKER,
+    GUEST_AUTH,
+    IMAGE_PICKER,
+    LOG_FORM,
+    NEW_ROOM,
+    PLAYLIST,
+    PROFILE_SETTINGS,
+    SETTINGS,
 } from '../../../constants';
 import AddMedia from './AddMedia';
 import ColorPicker from './ColorPicker';
@@ -27,200 +27,200 @@ import ProfileSettings from './ProfileSettings';
 import Settings from './Settings';
 
 function Popups({ popups, removePopup }) {
-  const handleResizeTh = throttle(handleResize, 16);
-  useEffect(() => {
-    addEvents();
+    const handleResizeTh = throttle(handleResize, 16);
+    useEffect(() => {
+        addEvents();
 
-    return () => {
-      removeEvents();
-    };
-  }, []);
+        return () => {
+            removeEvents();
+        };
+    }, []);
 
-  function addEvents() {
-    document.addEventListener('keydown', handleKey);
-    window.addEventListener('resize', handleResizeTh);
-  }
-
-  function removeEvents() {
-    document.removeEventListener('keydown', handleKey);
-    window.removeEventListener('resize', handleResizeTh);
-  }
-
-  function handleResize() {}
-
-  function handleKey(e) {
-    const { keyCode } = e;
-    const lastPopup = popups[popups.length - 1];
-    if (keyCode !== 27) return;
-    if (lastPopup) {
-      if (lastPopup.id === 'profile-settings') return;
-      removePopup(lastPopup.id);
+    function addEvents() {
+        document.addEventListener('keydown', handleKey);
+        window.addEventListener('resize', handleResizeTh);
     }
-  }
-  const p = popups;
-  return (
-    <div className="popups_container">
-      {p.profileSettings && wrapPopup(<ProfileSettings />, 'profileSettings')}
-      {p.colorPicker && wrapPopup(<ColorPicker />, 'colorPicker')}
-      {p.guestAuth && wrapPopup(<GuestAuth />, 'guestAuth')}
-      {p.imagePicker && wrapPopup(<ImagePicker />, 'imagePicker')}
-      {p.logForm && wrapPopup(<LogForm />, 'logForm')}
-      {p.newRoom && wrapPopup(<NewRoom />, 'newRoom')}
-      {p.playlist && wrapPopup(<Playlist />, 'playlist')}
-      {p.settings && wrapPopup(<Settings />, 'settings')}
-    </div>
-  );
 
-  function wrapPopup(popup, name) {
+    function removeEvents() {
+        document.removeEventListener('keydown', handleKey);
+        window.removeEventListener('resize', handleResizeTh);
+    }
+
+    function handleResize() {}
+
+    function handleKey(e) {
+        const { keyCode } = e;
+        const lastPopup = popups[popups.length - 1];
+        if (keyCode !== 27) return;
+        if (lastPopup) {
+            if (lastPopup.id === 'profile-settings') return;
+            removePopup(lastPopup.id);
+        }
+    }
+    const p = popups;
     return (
-      <Popup removePopup={() => removePopup(name)} popupElement={popup} name={name} />
+        <div className="popups_container">
+            {p.profileSettings && wrapPopup(<ProfileSettings />, 'profileSettings')}
+            {p.colorPicker && wrapPopup(<ColorPicker />, 'colorPicker')}
+            {p.guestAuth && wrapPopup(<GuestAuth />, 'guestAuth')}
+            {p.imagePicker && wrapPopup(<ImagePicker />, 'imagePicker')}
+            {p.logForm && wrapPopup(<LogForm />, 'logForm')}
+            {p.newRoom && wrapPopup(<NewRoom />, 'newRoom')}
+            {p.playlist && wrapPopup(<Playlist />, 'playlist')}
+            {p.settings && wrapPopup(<Settings />, 'settings')}
+        </div>
     );
-  }
+
+    function wrapPopup(popup, name) {
+        return (
+            <Popup removePopup={() => removePopup(name)} popupElement={popup} name={name} />
+        );
+    }
 }
 
 let clientX = null;
 let clientY = null;
 
 function Popup(props) {
-  const [width, setWidth] = useState(getPosition('width') || 0);
-  const [top, setTop] = useState(getPosition('top') || 0);
-  const [left, setLeft] = useState(getPosition('left') || 0);
-  const [moving, setMoving] = useState(false);
-  const [show, setShow] = useState(false);
-  const popupEl = useRef(null);
+    const [width, setWidth] = useState(getPosition('width') || 0);
+    const [top, setTop] = useState(getPosition('top') || 0);
+    const [left, setLeft] = useState(getPosition('left') || 0);
+    const [moving, setMoving] = useState(false);
+    const [show, setShow] = useState(false);
+    const popupEl = useRef(null);
 
-  useEffect(() => {
-    if (!getPosition('left')) {
-      const { width: w, height: h } = popupEl.current.getBoundingClientRect();
-      setStates({ ...getCenteredRect(w, h) });
+    useEffect(() => {
+        if (!getPosition('left')) {
+            const { width: w, height: h } = popupEl.current.getBoundingClientRect();
+            setStates({ ...getCenteredRect(w, h) });
+        }
+        setShow(true);
+    }, []);
+
+    useEffect(() => {
+        removeEvents();
+        addEvents();
+        return () => {
+            removeEvents();
+        };
+    }, [width, top, left, moving]);
+
+    function setStates(states) {
+        if (states.width) setWidth(states.width);
+        if (states.top) setTop(states.top);
+        if (states.left) setLeft(states.left);
+        if (states.moving) setMoving(states.moving);
     }
-    setShow(true);
-  }, []);
 
-  useEffect(() => {
-    removeEvents();
-    addEvents();
-    return () => {
-      removeEvents();
-    };
-  }, [width, top, left, moving]);
-
-  function setStates(states) {
-    if (states.width) setWidth(states.width);
-    if (states.top) setTop(states.top);
-    if (states.left) setLeft(states.left);
-    if (states.moving) setMoving(states.moving);
-  }
-
-  function addEvents() {
+    function addEvents() {
     // popupEl.current.addEventListener('mousedown', handleMouseDown);
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  }
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    }
 
-  function removeEvents() {
+    function removeEvents() {
     // popupEl.current.removeEventListener('mousedown', handleMouseDown);
-    document.removeEventListener('mousemove', handleMouseMove);
-    document.removeEventListener('mouseup', handleMouseUp);
-  }
-
-  function handleMouseDown(e) {
-    if (moving) return;
-    const { left: left_, top: top_ } = popupEl.current.getBoundingClientRect();
-    const { target, clientX: clientX_, clientY: clientY_ } = e;
-    clientX = clientX_ - left_;
-    clientY = clientY_ - top_;
-    if (target.closest(POPUP_HEADER)) {
-      setMoving(true);
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
     }
-  }
 
-  function handleMouseMove(e) {
-    if (!moving) return;
-
-    const { clientX: clientX_, clientY: clientY_ } = e;
-
-    const { left: left_, top: top_ } = popupEl.current.getBoundingClientRect();
-    const offsetX = left_ + (clientX_ - (left_ + clientX));
-    const offsetY = top_ + (clientY_ - (top_ + clientY));
-    setStates({ left: offsetX, top: offsetY });
-  }
-
-  function savePosition() {
-    ls.set(`${props.name}Popup`, { width, top, left });
-  }
-
-  function getPosition(key) {
-    try {
-      return ls.get(`${props.name}Popup`)[key];
-    } catch (error) {}
-  }
-
-  function handleMouseUp() {
-    if (moving) {
-      setMoving(false);
-      savePosition();
+    function handleMouseDown(e) {
+        if (moving) return;
+        const { left: left_, top: top_ } = popupEl.current.getBoundingClientRect();
+        const { target, clientX: clientX_, clientY: clientY_ } = e;
+        clientX = clientX_ - left_;
+        clientY = clientY_ - top_;
+        if (target.closest(POPUP_HEADER)) {
+            setMoving(true);
+        }
     }
-  }
 
-  function getTitle() {
-    switch (name) {
-      case COLOR_PICKER:
-        return 'Color picker';
-      case GUEST_AUTH:
-        return 'Guest authorization';
-      case IMAGE_PICKER:
-        return 'Image picker';
-      case LOG_FORM:
-        return 'Sign in';
-      case NEW_ROOM:
-        return 'New room';
-      case PLAYLIST:
-        return 'Playlist';
-      case PROFILE_SETTINGS:
-        return 'Profile settings';
-      case SETTINGS:
-        return 'Settings';
-      default:
-        return '';
+    function handleMouseMove(e) {
+        if (!moving) return;
+
+        const { clientX: clientX_, clientY: clientY_ } = e;
+
+        const { left: left_, top: top_ } = popupEl.current.getBoundingClientRect();
+        const offsetX = left_ + (clientX_ - (left_ + clientX));
+        const offsetY = top_ + (clientY_ - (top_ + clientY));
+        setStates({ left: offsetX, top: offsetY });
     }
-  }
 
-  const { removePopup, popupElement, name } = props;
-  const visibility = show ? 'visible' : 'hidden';
-  return (
-    <div
-      ref={popupEl}
-      style={{
-        width: width || 'auto',
-        top: top || 'auto',
-        left: left || 'auto',
-        visibility,
-      }}
-      className={cn(['popup', name])}
-    >
-      <div data-id={0} onMouseDown={handleMouseDown} className="popup-header">
-        <h3 className="popup-title">{getTitle()}</h3>
-        <div className="header-controls controls-container">
-          <span onClick={() => removePopup()} className="control">
-            <i className="fas fa-times" />
-          </span>
+    function savePosition() {
+        ls.set(`${props.name}Popup`, { width, top, left });
+    }
+
+    function getPosition(key) {
+        try {
+            return ls.get(`${props.name}Popup`)[key];
+        } catch (error) {}
+    }
+
+    function handleMouseUp() {
+        if (moving) {
+            setMoving(false);
+            savePosition();
+        }
+    }
+
+    function getTitle() {
+        switch (name) {
+        case COLOR_PICKER:
+            return 'Color picker';
+        case GUEST_AUTH:
+            return 'Guest authorization';
+        case IMAGE_PICKER:
+            return 'Image picker';
+        case LOG_FORM:
+            return 'Sign in';
+        case NEW_ROOM:
+            return 'New room';
+        case PLAYLIST:
+            return 'Playlist';
+        case PROFILE_SETTINGS:
+            return 'Profile settings';
+        case SETTINGS:
+            return 'Settings';
+        default:
+            return '';
+        }
+    }
+
+    const { removePopup, popupElement, name } = props;
+    const visibility = show ? 'visible' : 'hidden';
+    return (
+        <div
+            ref={popupEl}
+            style={{
+                width: width || 'auto',
+                top: top || 'auto',
+                left: left || 'auto',
+                visibility,
+            }}
+            className={cn(['popup', name])}
+        >
+            <div data-id={0} onMouseDown={handleMouseDown} className="popup-header">
+                <h3 className="popup-title">{getTitle()}</h3>
+                <div className="header-controls controls-container">
+                    <span onClick={() => removePopup()} className="control">
+                        <i className="fas fa-times" />
+                    </span>
+                </div>
+            </div>
+            {popupElement}
         </div>
-      </div>
-      {popupElement}
-    </div>
-  );
+    );
 }
 
 const mapStateToProps = state => ({
-  popups: state.Popups,
+    popups: state.Popups,
 });
 
 const mapDispatchToProps = {
-  removePopup: payload => ({ type: types.REMOVE_POPUP, payload }),
+    removePopup: payload => ({ type: types.REMOVE_POPUP, payload }),
 };
 
 export default connect(
-  mapStateToProps,
-  mapDispatchToProps
+    mapStateToProps,
+    mapDispatchToProps
 )(Popups);

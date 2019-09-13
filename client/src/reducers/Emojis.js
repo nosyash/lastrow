@@ -1,13 +1,13 @@
 import { ADD_EMOJIS } from '../constants/ActionTypes';
 
 const initialState = {
-  list: [],
+    list: [],
 };
 
 const Emojis = (state = initialState, action) => {
-  if (action.type === ADD_EMOJIS) return { list: action.payload };
+    if (action.type === ADD_EMOJIS) return { list: action.payload };
 
-  return state;
+    return state;
 };
 
 export default Emojis;
