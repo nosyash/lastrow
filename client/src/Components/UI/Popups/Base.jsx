@@ -95,6 +95,7 @@ function Popup(props) {
             setStates({ ...getCenteredRect(w, h) });
         }
         setShow(true);
+        document.addEventListener('mouseup', handleMouseUp);
     }, []);
 
     useEffect(() => {
@@ -113,15 +114,11 @@ function Popup(props) {
     }
 
     function addEvents() {
-    // popupEl.current.addEventListener('mousedown', handleMouseDown);
         document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
     }
 
     function removeEvents() {
-    // popupEl.current.removeEventListener('mousedown', handleMouseDown);
         document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
     }
 
     function handleMouseDown(e) {
@@ -157,10 +154,8 @@ function Popup(props) {
     }
 
     function handleMouseUp() {
-        if (moving) {
-            setMoving(false);
-            savePosition();
-        }
+        setMoving(false);
+        savePosition();
     }
 
     function getTitle() {
