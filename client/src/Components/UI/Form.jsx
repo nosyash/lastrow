@@ -70,15 +70,22 @@ class Form extends Component {
     );
   };
 
-  renderButton = label => (
-    <button type="submit" disabled={this.validate()} className="button button-submit">
-      {label}
-    </button>
-  );
+  renderButton = (label, opts = {}) => {
+    const { disabled } = opts;
+    return (
+      <button
+        type="submit"
+        disabled={this.validate() || disabled}
+        className="button button-submit"
+      >
+        {label}
+      </button>
+    );
+  };
 
   renderInput = opts => {
     const { data, errors, visiblePass } = this.state;
-    const { name, renderEye, autoFocus = false } = opts;
+    const { name, renderEye, autoFocus = false, classes = '' } = opts;
     let { type = 'text' } = opts;
     if (type === 'password' && visiblePass) {
       type = 'text';
@@ -95,6 +102,7 @@ class Form extends Component {
         autoFocus={autoFocus}
         type={type}
         name={name}
+        classes={classes}
         placeholder={placeholder}
         value={data[name]}
         onChange={this.handleChange}

@@ -1,3 +1,4 @@
+import { get } from 'lodash';
 import * as api from '../constants/apiActions';
 import * as types from '../constants/ActionTypes';
 import { store } from '../store';
@@ -48,14 +49,38 @@ class Socket {
     });
   };
 
-  sendMessage = data => {
-    this.instance.send(data);
+  sendMessage = (dataToSend, messageTypeToGet, cb) => {
+    let timeout = null;
+
+    const onMessageLocal = ({ data: receivedData }) => {
+      const data = JSON.parse(receivedData);
+      if (get(data, 'body.event.type') !== messageTypeToGet) return;
+
+      this._removeEvent('message', onMessageLocal);
+      clearTimeout(timeout);
+
+      return cb(true, null);
+    };
+
+    if (messageTypeToGet) {
+      this.instance.addEventListener('message', onMessageLocal);
+      timeout = setTimeout(() => {
+        this._removeEvent('message', onMessageLocal);
+        return cb(null, true);
+      }, 15000);
+    }
+
+    this.instance.send(dataToSend);
   };
 
   destroy = () => {
     this._unsubscribeEvents();
     this.instance.close();
     this._resetStates();
+  };
+
+  _removeEvent = (event, callback) => {
+    this.instance.removeEventListener(event, callback);
   };
 
   _getReadyState = readyState => {
@@ -100,39 +125,68 @@ class Socket {
     dispatch({ type: types.SET_SOCKET_CONNECTED, payload: true });
   }
 
-  _handleMessage = ({ data: data_ }) => {
-    const error = api.GET_ERROR(data_);
-    if (error) {
-      console.log(error);
-      return;
-      // return this._resetStates();
-    }
-    const data = api.GET_WS_DATA(data_);
-    switch (data.type) {
+  _handleMessage = ({ data }) => {
+    const parsedData = JSON.parse(data);
+    const eventType = get(parsedData, 'body.event.type');
+
+    switch (eventType) {
+      case 'update_users': {
+        const users = get(parsedData, 'body.event.data.users');
+        return dispatch({ type: types.UPDATE_USERLIST, payload: users });
+      }
       case 'message': {
-        const payload = { ...data, roomID: this.roomID };
+        const message = get(parsedData, 'body.event.data');
+        const payload = { ...message, roomID: this.roomID };
         return dispatch({ type: types.ADD_MESSAGE, payload });
       }
-
-      case 'user_list': {
-        return dispatch({ type: types.UPDATE_USERLIST, payload: data.users });
-      }
-
-      case 'ticker': {
-        return dispatch({
-          type: types.UPDATE_MEDIA,
-          payload: { actualTime: data.elapsed_time },
-        });
-      }
-
       case 'playlist': {
-        const playlist = sortPlaylistByIndex(data.videos);
-        return dispatch({ type: types.ADD_TO_PLAYLIST, payload: playlist });
+        const videos = get(parsedData, 'body.event.data.videos');
+        return dispatch({ type: types.ADD_TO_PLAYLIST, payload: videos });
       }
-
+      case 'ticker': {
+        const payload = { actualTime: data.elapsed_time };
+        return dispatch({ type: types.UPDATE_MEDIA, payload });
+      }
+      case 'feedback': {
+        const message = get(parsedData, 'body.event.data.feedback.message');
+        if (message === 'success') return setAddMediaToSuccess();
+        break;
+      }
       default:
         break;
     }
+
+    // const data = this.getDataFromMessage(data_);
+    // if (!data) return;
+    // switch (data.type) {
+    //   case 'message': {
+    //     const payload = { ...data, roomID: this.roomID };
+    //     return dispatch({ type: types.ADD_MESSAGE, payload });
+    //   }
+
+    //   case 'user_list': {
+    //     return dispatch({ type: types.UPDATE_USERLIST, payload: data.users });
+    //   }
+
+    // case 'ticker': {
+    //   return dispatch({
+    //     type: types.UPDATE_MEDIA,
+    //     payload: { actualTime: data.elapsed_time },
+    //   });
+    // }
+
+    //   case 'playlist': {
+    //     const playlist = sortPlaylistByIndex(data.videos);
+    //     return dispatch({ type: types.ADD_TO_PLAYLIST, payload: playlist });
+    //   }
+
+    //   case 'added_to_playlist': {
+    //     return setAddMediaToSuccess();
+    //   }
+
+    //   default:
+    //     break;
+    // }
   };
 
   _handleError = () => {
@@ -166,5 +220,10 @@ class Socket {
   //   }, WEBSOCKET_TIMEOUT);
   // };
 }
+
+const setAddMediaToSuccess = () => {
+  dispatch({ type: types.REMOVE_POPUP, payload: 'addMedia' });
+  dispatch({ type: types.SET_ADD_MEDIA_PENDING, payload: false });
+};
 
 export default Socket;

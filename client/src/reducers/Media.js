@@ -1,26 +1,28 @@
 import * as types from '../constants/ActionTypes';
 
+const subsInitialState = {
+  url: 'https://stream.bona.cafe/uzzu/ep15.srt',
+  text: [],
+  srt: '',
+  start: 0,
+  end: 0,
+};
+
 const InitialState = {
-  url: '',
-  subs: {
-    url: 'https://stream.bona.cafe/uzzu/ep15.srt',
-    text: [],
-    srt: '',
-    start: 0,
-    end: 0,
-  },
-  showSubs: false,
-  playlist: [],
-  duration: 0,
-  forceSync: true,
-  currentTime: 0,
+  addMediaPending: false,
   actualTime: 0,
-  playing: true,
-  playbackRate: 0,
-  height: 0,
+  currentTime: 0,
+  duration: 0,
   width: 0,
-  volume: 50,
+  height: 0,
   muted: false,
+  playbackRate: 0,
+  playing: true,
+  playlist: [],
+  showSubs: false,
+  subs: subsInitialState,
+  url: '',
+  volume: 50,
 };
 
 const Player = (state = InitialState, action) => {
@@ -36,6 +38,8 @@ const Player = (state = InitialState, action) => {
     case types.TOGGLE_SYNC: {
       return { ...state, forceSync: !state.forceSync };
     }
+    case types.SET_ADD_MEDIA_PENDING:
+      return { ...state, addMediaPending: action.payload };
 
     case types.SET_PLAY:
       return { ...state, playing: true };

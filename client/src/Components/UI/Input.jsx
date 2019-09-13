@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/label-has-for */
 import React, { useEffect, useRef } from 'react';
 
-const Input = ({ name, error, icon, element, autoFocus, ...rest }) => {
+const Input = ({ name, error, icon, element, classes, autoFocus, ...rest }) => {
   const inputEl = useRef(null);
   useEffect(() => {
     if (autoFocus) {
@@ -18,7 +18,7 @@ const Input = ({ name, error, icon, element, autoFocus, ...rest }) => {
         ref={inputEl}
         name={name}
         id={name}
-        className="form-control form-input"
+        className={`form-control form-input ${classes}`}
       />
       {error && <div className="alert alert-danger mt-1">{error}</div>}
       {element}

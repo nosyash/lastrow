@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { formatTime } from '../../../utils/base';
 import { webSocketSend } from '../../../actions';
 import * as api from '../../../constants/apiActions';
+import AddMedia from './AddMedia';
 
 class Playlist extends Component {
   state = {};
@@ -31,6 +32,7 @@ class Playlist extends Component {
     const { playlist } = this.props;
     return (
       <div className="popup-element playlist_container">
+        {<AddMedia />}
         {!playlist.length && <p>No items</p>}
         {playlist.map((element, i) => this.renderElement(element, i))}
       </div>
