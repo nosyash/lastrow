@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Joi from 'joi-browser';
 import Form from '../Form';
@@ -8,11 +8,13 @@ import { webSocketSend } from '../../../actions';
 import { ADD_MEDIA } from '../../../constants';
 // import * as types from '../../constants/ActionTypes';
 
-class AddMedia extends Form {
+class AddMedia extends Component {
   state = {
     data: { link: '' },
     errors: {},
   };
+
+  inputEl = React.createRef();
 
   schema = {
     link: Joi.string()
@@ -20,6 +22,13 @@ class AddMedia extends Form {
       .min(1)
       .label('Link'),
   };
+
+  componentDidMount() {
+    // TODO: For some reason it's not working right away
+    setTimeout(() => {
+      this.inputEl.current.focus();
+    }, 100);
+  }
 
   renderMediaElement = (element, i) => (
     <div key={i} className="paylist-item">
@@ -30,8 +39,7 @@ class AddMedia extends Form {
   );
 
   handleSubmit = e => {
-    const { uuid, setToPending, setToDone, removePopup } = this.props;
-    console.log('submited');
+    const { uuid, setToPending, setToDone } = this.props;
     e.preventDefault();
 
     const { link } = this.state.data;
@@ -40,7 +48,7 @@ class AddMedia extends Form {
     webSocketSend(message, 'success', onSuccess);
     function onSuccess(result, error) {
       if (error) console.warn('error while adding to playlist:', error);
-      if (result) removePopup('addMedia');
+      // if (result) removePopup('addMedia');
       setToDone();
     }
     setToPending();
@@ -49,15 +57,23 @@ class AddMedia extends Form {
   render() {
     const { addMediaPending } = this.props;
     return (
-      <div className="popup-element add-media_container">
+      <div className="add-media_container">
         <form onSubmit={this.handleSubmit}>
-          {this.renderInput({
-            name: 'link',
-            icon: 'link',
-            autoFocus: true,
-            placeholder: 'Link',
-          })}
-          {this.renderButton('Add', { disabled: addMediaPending })}
+          {/* <span className="icon">
+            <i className="fas fa-link" />
+          </span> */}
+          <input
+            id="add-media-input"
+            ref={this.inputEl}
+            className="form-control form-input add-media-input"
+          />
+          <button
+            type="submit"
+            disabled={addMediaPending}
+            className="button button-submit add-media-button"
+          >
+            Add
+          </button>
         </form>
       </div>
     );

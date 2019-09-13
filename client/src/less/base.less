@@ -849,7 +849,7 @@ body {
   top: 8px;
 }
 
-.form-group .icon {
+.add-media_container .icon {
   position: absolute;
   left: 8px;
   text-align: center;
@@ -875,7 +875,7 @@ body {
 }
 
 .form-control {
-  padding: 0 45px;
+  // padding: 0 45px;
   background: @darkSecond;
   outline: none;
   color: @body;
@@ -898,7 +898,7 @@ body {
 }
 
 .button {
-  margin-top: 10px;
+  // margin-top: 10px;
   background: #3E6683;
   border-radius: 4px;
   width: 100%;
@@ -1691,9 +1691,25 @@ body {
 
 // Add media
 .add-media_container {
-  background: rgba(37, 39, 40, 0.9);
+  // background: rgba(37, 39, 40, 0.9);
 }
 
 .add-media_container form {
   margin-top: 0;
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 20px;
+}
+
+.add-media-button {
+  display: inline-block;
+  width: 50px;
+  height: 35px;
+  margin-left: 5px;
+}
+
+.add-media-input {
+  // width: unset;
+  display: inline-block;
+  height: 35px;
 }

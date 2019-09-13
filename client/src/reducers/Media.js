@@ -9,19 +9,6 @@ const subsInitialState = {
 };
 
 const InitialState = {
-  url: '',
-  subs: {
-    url: 'https://stream.bona.cafe/uzzu/ep15.srt',
-    text: [],
-    srt: '',
-    start: 0,
-    end: 0,
-  },
-  showSubs: false,
-  playlist: [],
-  duration: 0,
-  forceSync: true,
-  currentTime: 0,
   addMediaPending: false,
   actualTime: 0,
   currentTime: 0,
@@ -48,14 +35,11 @@ const Player = (state = InitialState, action) => {
       return { ...state, playlist: action.payload };
     }
 
-<<<<<<< HEAD
     case types.TOGGLE_SYNC: {
       return { ...state, forceSync: !state.forceSync };
     }
-=======
     case types.SET_ADD_MEDIA_PENDING:
       return { state, addMediaPending: action.payload };
->>>>>>> origin/remote
 
     case types.SET_PLAY:
       return { ...state, playing: true };
