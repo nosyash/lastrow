@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom';
 
 export default function RoomItem({ title, movie, users, link }) {
     return (
-        <Link to={link} className="custom-table_item custom-table-link">
-            <span>{title}</span>
-            <span>{users}</span>
-            <span>{movie}</span>
+        <Link title={movie} to={link} className="custom-table_item custom-table-link">
+            {[title, users, movie].map(item => 
+                <span key={item} title={item}>{item}</span>
+            )}
         </Link>
     );
 }
