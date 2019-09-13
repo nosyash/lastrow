@@ -39,7 +39,7 @@ const Player = (state = InitialState, action) => {
       return { ...state, forceSync: !state.forceSync };
     }
     case types.SET_ADD_MEDIA_PENDING:
-      return { state, addMediaPending: action.payload };
+      return { ...state, addMediaPending: action.payload };
 
     case types.SET_PLAY:
       return { ...state, playing: true };

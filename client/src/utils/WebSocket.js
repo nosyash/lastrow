@@ -1,3 +1,4 @@
+import { get } from 'lodash';
 import * as api from '../constants/apiActions';
 import * as types from '../constants/ActionTypes';
 import { store } from '../store';
@@ -52,8 +53,8 @@ class Socket {
     let timeout = null;
 
     const onMessageLocal = ({ data: receivedData }) => {
-      const dataFormated = this.getDataFromMessage(receivedData);
-      if (dataFormated.type !== messageTypeToGet) return;
+      const data = JSON.parse(receivedData);
+      if (get(data, 'body.event.type') !== messageTypeToGet) return;
 
       this._removeEvent('message', onMessageLocal);
       clearTimeout(timeout);
@@ -124,47 +125,68 @@ class Socket {
     dispatch({ type: types.SET_SOCKET_CONNECTED, payload: true });
   }
 
-  getDataFromMessage = data => {
-    const error = api.GET_ERROR(data);
-    if (error) {
-      console.log(error);
-      return;
-    }
-    return api.GET_WS_DATA(data);
-  };
+  _handleMessage = ({ data }) => {
+    const parsedData = JSON.parse(data);
+    const eventType = get(parsedData, 'body.event.type');
 
-  _handleMessage = ({ data: data_ }) => {
-    const data = this.getDataFromMessage(data_);
-    if (!data) return;
-    switch (data.type) {
+    switch (eventType) {
+      case 'update_users': {
+        const users = get(parsedData, 'body.event.data.users');
+        return dispatch({ type: types.UPDATE_USERLIST, payload: users });
+      }
       case 'message': {
-        const payload = { ...data, roomID: this.roomID };
+        const message = get(parsedData, 'body.event.data');
+        const payload = { ...message, roomID: this.roomID };
         return dispatch({ type: types.ADD_MESSAGE, payload });
       }
-
-      case 'user_list': {
-        return dispatch({ type: types.UPDATE_USERLIST, payload: data.users });
-      }
-
-      case 'ticker': {
-        return dispatch({
-          type: types.UPDATE_MEDIA,
-          payload: { actualTime: data.elapsed_time },
-        });
-      }
-
       case 'playlist': {
-        const playlist = sortPlaylistByIndex(data.videos);
-        return dispatch({ type: types.ADD_TO_PLAYLIST, payload: playlist });
+        const videos = get(parsedData, 'body.event.data.videos');
+        return dispatch({ type: types.ADD_TO_PLAYLIST, payload: videos });
       }
-
-      case 'added_to_playlist': {
-        return setAddMediaToSuccess();
+      case 'ticker': {
+        const payload = { actualTime: data.elapsed_time };
+        return dispatch({ type: types.UPDATE_MEDIA, payload });
       }
-
+      case 'feedback': {
+        const message = get(parsedData, 'body.event.data.feedback.message');
+        if (message === 'success') return setAddMediaToSuccess();
+        break;
+      }
       default:
         break;
     }
+
+    // const data = this.getDataFromMessage(data_);
+    // if (!data) return;
+    // switch (data.type) {
+    //   case 'message': {
+    //     const payload = { ...data, roomID: this.roomID };
+    //     return dispatch({ type: types.ADD_MESSAGE, payload });
+    //   }
+
+    //   case 'user_list': {
+    //     return dispatch({ type: types.UPDATE_USERLIST, payload: data.users });
+    //   }
+
+    // case 'ticker': {
+    //   return dispatch({
+    //     type: types.UPDATE_MEDIA,
+    //     payload: { actualTime: data.elapsed_time },
+    //   });
+    // }
+
+    //   case 'playlist': {
+    //     const playlist = sortPlaylistByIndex(data.videos);
+    //     return dispatch({ type: types.ADD_TO_PLAYLIST, payload: playlist });
+    //   }
+
+    //   case 'added_to_playlist': {
+    //     return setAddMediaToSuccess();
+    //   }
+
+    //   default:
+    //     break;
+    // }
   };
 
   _handleError = () => {

@@ -107,29 +107,6 @@ export const SEND_MESSAGE = (message, user_uuid) =>
 //   ]
 // }
 
-export const GET_WS_DATA = json => {
-  const obj = JSON.parse(json);
-  if (obj.users) {
-    return { type: 'user_list', users: obj.users };
-  }
-
-  if (obj.ticker) {
-    return { type: 'ticker', ...obj.ticker };
-  }
-
-  if (obj.videos) {
-    return { type: 'playlist', videos: obj.videos };
-  }
-
-  if (obj.message) {
-    return { type: '' };
-  }
-  const { event } = obj.body;
-  if (!event) return { type: '' };
-  const { type } = event;
-  return { type, ...event.data };
-};
-
 export const GET_ERROR = json => {
   const obj = JSON.parse(json);
   if (obj.error) return obj.error;

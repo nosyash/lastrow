@@ -11,6 +11,7 @@ import { ADD_MEDIA } from '../../../constants';
 class AddMedia extends Component {
   state = {
     data: { link: '' },
+    inputValue: '',
     errors: {},
   };
 
@@ -42,9 +43,9 @@ class AddMedia extends Component {
     const { uuid, setToPending, setToDone } = this.props;
     e.preventDefault();
 
-    const { link } = this.state.data;
+    const { inputValue } = this.state;
 
-    const message = api.SEND_MEDIA_TO_PLAYLIST({ url: link, uuid });
+    const message = api.SEND_MEDIA_TO_PLAYLIST({ url: inputValue, uuid });
     webSocketSend(message, 'success', onSuccess);
     function onSuccess(result, error) {
       if (error) console.warn('error while adding to playlist:', error);
@@ -65,6 +66,8 @@ class AddMedia extends Component {
           <input
             id="add-media-input"
             ref={this.inputEl}
+            value={this.state.inputValue}
+            onChange={({ target }) => this.setState({ inputValue: target.value })}
             className="form-control form-input add-media-input"
           />
           <button
