@@ -10,11 +10,11 @@ export const getProfile = async () => {
     return res;
 };
 
-export const roomExist = async id => {
+export const requestRoom = async id => {
     roomInstance.interceptors.response.use(
-        () => Promise.resolve(true),
+        (response) => Promise.resolve(response),
         err => Promise.resolve(false)
     );
-    const res = await roomInstance.get(api.API_ROOM(id));
-    return res;
+    const { data } = await roomInstance.get(api.API_ROOM(id));
+    return data;
 };
