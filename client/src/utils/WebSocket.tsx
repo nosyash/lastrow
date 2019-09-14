@@ -89,10 +89,15 @@ class Socket implements SocketInterface {
             const data = JSON.parse(receivedData);
             if (get(data, 'body.event.type') !== messageTypeToGet) return;
 
+            const { message, error } = get(data, 'body.event.data.feedback');
+
             this.removeEvent('message', onMessageLocal);
             clearTimeout(timeout);
 
-            return cb(true, null);
+            if (message && message === 'success')
+                return cb(true, null);
+            else
+                return cb(null, error)
         };
 
         if (messageTypeToGet) {
