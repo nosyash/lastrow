@@ -91,7 +91,7 @@ const RenderList = ({ rooms, connected, getRoomList, history }) => (
 );
 
 const mapStateToProps = state => ({
-    rooms: state.Rooms.list,
+    rooms: state.rooms.list,
     guest: state.profile.guest,
 });
 

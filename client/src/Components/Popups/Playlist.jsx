@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { formatTime } from '../../utils/base';
+import { formatTime } from '../../utils';
 import { webSocketSend } from '../../actions';
 import * as api from '../../constants/apiActions';
 import AddMedia from './AddMedia';
@@ -44,7 +44,7 @@ class Playlist extends Component {
 }
 
 const mapStateToProps = state => ({
-    playlist: state.Media.playlist,
+    playlist: state.media.playlist,
     uuid: state.profile.uuid,
 });
 

@@ -2,7 +2,7 @@ import { get } from 'lodash';
 import * as api from '../constants/apiActions';
 import * as types from '../constants/ActionTypes';
 import { store } from '../store';
-import { sortPlaylistByIndex } from './base';
+import { sortPlaylistByIndex } from '.';
 import { toast } from 'react-toastify';
 import { toastOpts } from '../Conf';
 

@@ -151,11 +151,11 @@ class ProgressBar extends Component {
 }
 
 const mapStateToProps = state => ({
-    media: state.Media,
-    subs: state.Media.subs,
-    playing: state.Media.playing,
-    MainStates: state.MainStates,
-    cinemaMode: state.MainStates.cinemaMode,
+    media: state.media,
+    subs: state.media.subs,
+    playing: state.media.playing,
+    mainStates: state.mainStates,
+    cinemaMode: state.mainStates.cinemaMode,
 });
 
 export default connect(mapStateToProps)(ProgressBar);

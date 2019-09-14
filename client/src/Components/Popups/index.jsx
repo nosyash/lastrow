@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { throttle } from 'lodash';
 import cn from 'classnames';
 import ls from 'local-storage';
-import { getCenteredRect } from '../../utils/base';
+import { getCenteredRect } from '../../utils';
 import * as types from '../../constants/ActionTypes';
 import {
     POPUP_HEADER,
@@ -208,7 +208,7 @@ function Popup(props) {
 }
 
 const mapStateToProps = state => ({
-    popups: state.Popups,
+    popups: state.popups,
 });
 
 const mapDispatchToProps = {

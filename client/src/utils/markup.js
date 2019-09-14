@@ -32,7 +32,7 @@ function handleEmotes(body = '') {
 }
 
 export default function parseMarkup({ body, name }) {
-    const { users } = store.getState().Chat.users;
+    const { users } = store.getState().chat.users;
     const { list: emojiList } = store.getState().emojis;
 
     let tempBody = body;

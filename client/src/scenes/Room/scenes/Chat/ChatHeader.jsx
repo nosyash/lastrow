@@ -63,6 +63,6 @@ function UserIcon({ id, onClick, name, color, guest }) {
     );
 }
 
-const mapStateToProps = state => ({ userList: state.Chat.users });
+const mapStateToProps = state => ({ userList: state.chat.users });
 
 export default connect(mapStateToProps)(ChatHeader);

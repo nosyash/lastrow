@@ -22,9 +22,9 @@ class ChatInner extends Component {
 }
 
 const mapStateToProps = state => ({
-    messages: state.Chat,
-    list: state.Chat.list,
-    roomID: state.MainStates.roomID,
+    messages: state.chat,
+    list: state.chat.list,
+    roomID: state.mainStates.roomID,
 });
 
 export default connect(mapStateToProps)(ChatInner);

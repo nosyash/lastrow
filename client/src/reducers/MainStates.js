@@ -6,7 +6,7 @@ const initialState = {
     chatWidth: parseInt(localStorage.chatWidth) || 300,
 };
 
-const MainStates = (state = initialState, action) => {
+const mainStates = (state = initialState, action) => {
     if (action.type === types.UPDATE_MAIN_STATES) {
         return { ...state, ...action.payload };
     }
@@ -23,4 +23,4 @@ const MainStates = (state = initialState, action) => {
     return state;
 };
 
-export default MainStates;
+export default mainStates;

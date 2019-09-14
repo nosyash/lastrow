@@ -81,9 +81,9 @@ render() {
 }
 
 const mapStateToProps = state => ({
-    playlist: state.Media.playlist,
+    playlist: state.media.playlist,
     uuid: state.profile.uuid,
-    addMediaPending: state.Media.addMediaPending,
+    addMediaPending: state.media.addMediaPending,
 });
 
 const mapDispatchToProps = {

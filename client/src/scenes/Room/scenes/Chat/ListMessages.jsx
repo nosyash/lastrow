@@ -109,10 +109,10 @@ function ListMessages(props) {
 }
 
 const mapStateToProps = state => ({
-    roomsMessages: state.Chat.roomsMessages,
-    users: state.Chat.users,
+    roomsMessages: state.chat.roomsMessages,
+    users: state.chat.users,
     selfName: state.profile.name,
-    roomID: state.MainStates.roomID,
+    roomID: state.mainStates.roomID,
 });
 
 export default connect(mapStateToProps)(ListMessages);

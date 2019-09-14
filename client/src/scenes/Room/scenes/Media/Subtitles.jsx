@@ -77,8 +77,8 @@ const RenderSub = ({ text }) => {
 };
 
 const mapStateToProps = state => ({
-    media: state.Media,
-    subs: state.Media.subs,
+    media: state.media,
+    subs: state.media.subs,
 });
 
 const mapDispatchToProps = {

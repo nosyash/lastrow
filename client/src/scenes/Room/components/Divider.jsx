@@ -87,7 +87,7 @@ class Divider extends Component {
 
 export default connect(
     state => ({
-        chatWidth: state.MainStates.chatWidth,
+        chatWidth: state.mainStates.chatWidth,
     }),
     { setChatWidth: payload => ({ type: types.SET_CHAT_WIDTH, payload }) }
 )(Divider);

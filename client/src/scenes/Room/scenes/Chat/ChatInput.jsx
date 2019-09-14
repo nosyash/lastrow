@@ -6,7 +6,7 @@ import * as keys from '../../../../constants/keys';
 import { MAX_MESSAGE_LENGTH } from '../../../../constants';
 import * as api from '../../../../constants/apiActions';
 import { webSocketSend } from '../../../../actions';
-import { reverse, mod } from '../../../../utils/base';
+import { reverse, mod } from '../../../../utils';
 
 const KEY_A = 97;
 const KEY_Z = 122;
@@ -231,9 +231,9 @@ function EmoteMenu({ list, onClick }) {
 
 const mapStateToProps = state => ({
     profile: state.profile,
-    history: state.Chat.history,
-    roomID: state.MainStates.roomID,
-    socketState: state.Chat.connected,
+    history: state.chat.history,
+    roomID: state.mainStates.roomID,
+    socketState: state.chat.connected,
     emotesList: state.emojis.list,
 });
 

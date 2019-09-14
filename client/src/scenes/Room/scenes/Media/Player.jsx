@@ -4,7 +4,7 @@ import ReactPlayer from 'react-player';
 import cn from 'classnames';
 import { throttle } from 'lodash';
 import * as types from '../../../../constants/ActionTypes';
-import { formatTime, requestFullscreen } from '../../../../utils/base';
+import { formatTime, requestFullscreen } from '../../../../utils';
 import { PLAYER_MINIMIZE_TIMEOUT, MAX_VIDEO_SYNC_OFFSET } from '../../../../constants';
 
 import ProgressBar from './ProgressBar';
@@ -274,12 +274,12 @@ function Player(props) {
 }
 
 const mapStateToProps = state => ({
-    media: state.Media,
-    playlist: state.Media.playlist,
-    subs: state.Media.subs,
-    playing: state.Media.playing,
-    cinemaMode: state.MainStates.cinemaMode,
-    forceSync: state.Media.forceSync,
+    media: state.media,
+    playlist: state.media.playlist,
+    subs: state.media.subs,
+    playing: state.media.playing,
+    cinemaMode: state.mainStates.cinemaMode,
+    forceSync: state.media.forceSync,
 });
 
 const mapDispatchToProps = {

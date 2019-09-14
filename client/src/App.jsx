@@ -8,7 +8,7 @@ import RoomListBase from './scenes/Home/index';
 import Popups from './Components/Popups';
 import * as types from './constants/ActionTypes';
 import { getProfile } from './utils/apiRequests';
-import { getRandom } from './utils/base';
+import { getRandom } from './utils';
 
 function App(props) {
     const [loaded, setLoaded] = useState(false);

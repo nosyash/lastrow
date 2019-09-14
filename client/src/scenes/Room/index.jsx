@@ -132,13 +132,13 @@ const RenderRoom = ({ connected, divider, video, chat }) => (
 );
 
 const mapStateToProps = state => ({
-    MainStates: state.MainStates,
-    connected: state.Chat.connected,
-    currentRoomID: state.Chat.currentRoomID,
-    cinemaMode: state.MainStates.cinemaMode,
-    roomID: state.MainStates.roomID,
+    mainStates: state.mainStates,
+    connected: state.chat.connected,
+    currentRoomID: state.chat.currentRoomID,
+    cinemaMode: state.mainStates.cinemaMode,
+    roomID: state.mainStates.roomID,
     emojiList: state.emojis.list,
-    userList: state.Chat.users,
+    userList: state.chat.users,
     profile: state.profile,
 });
 

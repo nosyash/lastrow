@@ -36,9 +36,9 @@ const mapDispatchToProps = {
 };
 
 const mapStateToProps = state => ({
-    cinemaMode: state.MainStates.cinemaMode,
-    chatWidth: state.MainStates.chatWidth,
-    wsConnected: state.Chat.connected,
+    cinemaMode: state.mainStates.cinemaMode,
+    chatWidth: state.mainStates.chatWidth,
+    wsConnected: state.chat.connected,
 });
 
 export default connect(

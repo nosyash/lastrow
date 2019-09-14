@@ -105,7 +105,7 @@ const RenderProfile = ({ profile, onProfileSettings, onSettings }) => {
 
 const mapStateToProps = state => ({
     profile: state.profile,
-    playlist: state.Media.playlist,
+    playlist: state.media.playlist,
 });
 
 const mapDispatchToProps = {

@@ -1,5 +1,5 @@
 import ls from 'local-storage';
-import { notify } from './base';
+import { notify } from '.';
 
 class Notification {
     constructor() {
