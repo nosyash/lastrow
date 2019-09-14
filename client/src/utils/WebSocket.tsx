@@ -169,7 +169,7 @@ class Socket implements SocketInterface {
 
         switch (messageType) {
             case 'update_users': {
-                const data = get(parsedData as UpdateUsers, 'body.event.data') as UpdateUsersData;
+                const data = get(parsedData, 'body.event.data') as UpdateUsersData;
                 return dispatch({ type: types.UPDATE_USERLIST, payload: data.users });
             }
             case 'message': {
