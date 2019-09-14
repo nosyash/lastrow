@@ -4,6 +4,7 @@
         // TODO: Declare type for everyting and set it to true
         "noImplicitAny": false,
         "isolatedModules": false,
+        "skipLibCheck": true,
         "removeComments": true,
         "esModuleInterop": true,
         "moduleResolution": "node",
