@@ -179,7 +179,7 @@ class Socket implements SocketInterface {
             }
             case 'ticker': {
                 const { ticker } = get(parsedData, 'body.event.data') as TickerData;
-                return dispatch({ type: types.UPDATE_MEDIA, payload: ticker.elapsed_time });
+                return dispatch({ type: types.UPDATE_MEDIA, payload: { actualTime: ticker.elapsed_time } });
             }
             case 'feedback': {
                 const { feedback } = get(parsedData, 'body.event.data') as FeedbackData;
