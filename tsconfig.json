@@ -1,0 +1,14 @@
+{
+    "compileOnSave": false,
+    "compilerOptions": {
+        // TODO: Declare type for everyting and set it to true
+        "noImplicitAny": false,
+        "isolatedModules": false,
+        "removeComments": true,
+        "esModuleInterop": true,
+        "moduleResolution": "node",
+        "module": "es6",
+        "sourceMap": true,
+        "jsx": "react"
+    },
+}
