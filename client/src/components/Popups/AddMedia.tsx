@@ -55,11 +55,13 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
         const { inputValue } = this.state;
 
         const message = api.SEND_MEDIA_TO_PLAYLIST({ url: inputValue, uuid });
-        webSocketSend(message, 'success', onSuccess as any);
+        webSocketSend(message, 'feedback', onSuccess as any);
+        const self = this;
         function onSuccess(result: any, error: any) {
-            if (error) console.warn('error while adding to playlist:', error);
+            if (error)
+                console.warn('error while adding to playlist:', error);
             if (result)
-                this.setState({ inputValue: '' });
+                self.setState({ inputValue: '' });
             setToDone();
         }
         setToPending();
@@ -79,7 +81,7 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
                     />
                     <button
                         type="submit"
-                        disabled={addMediaPending}
+                        disabled={addMediaPending || !this.state.inputValue.length}
                         className="button button-submit add-media-button"
                     >
                         Add

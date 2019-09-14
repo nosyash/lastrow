@@ -89,10 +89,15 @@ class Socket implements SocketInterface {
             const data = JSON.parse(receivedData);
             if (get(data, 'body.event.type') !== messageTypeToGet) return;
 
+            const { message, error } = get(data, 'body.event.data.feedback');
+
             this.removeEvent('message', onMessageLocal);
             clearTimeout(timeout);
 
-            return cb(true, null);
+            if (message && message === 'success')
+                return cb(true, null);
+            else
+                return cb(null, error)
         };
 
         if (messageTypeToGet) {
@@ -174,12 +179,12 @@ class Socket implements SocketInterface {
             }
             case 'update_playlist': {
                 const data = get(parsedData, 'body.event.data') as UpdatePlaylistData;
-                const playlist = sortPlaylistByIndex(data.videos || []);
+                const playlist = data.videos || [];
                 return dispatch({ type: types.ADD_TO_PLAYLIST, payload: playlist });
             }
             case 'ticker': {
                 const { ticker } = get(parsedData, 'body.event.data') as TickerData;
-                return dispatch({ type: types.UPDATE_MEDIA, payload: ticker.elapsed_time });
+                return dispatch({ type: types.UPDATE_MEDIA, payload: { actualTime: ticker.elapsed_time } });
             }
             case 'feedback': {
                 const { feedback } = get(parsedData, 'body.event.data') as FeedbackData;
