@@ -6,7 +6,7 @@ import '../../node_modules/bootstrap/dist/css/bootstrap.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import 'react-toastify/dist/ReactToastify.css';
 
-import './less/main.less'
+import './styles/main.less'
 import * as serviceWorker from './serviceWorker';
 import App from './App';
 

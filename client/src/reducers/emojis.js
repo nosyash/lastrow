@@ -1,4 +1,4 @@
-import { ADD_EMOJIS } from '../constants/ActionTypes';
+import { ADD_EMOJIS } from '../constants/actionTypes';
 
 const initialState = {
     list: [],

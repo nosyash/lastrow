@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import cn from 'classnames';
-import * as types from '../../../../../constants/ActionTypes';
+import * as types from '../../../../../constants/actionTypes';
 import * as keys from '../../../../../constants/keys';
 import { MAX_MESSAGE_LENGTH } from '../../../../../constants';
 import * as api from '../../../../../constants/apiActions';

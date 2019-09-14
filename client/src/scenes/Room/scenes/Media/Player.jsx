@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import ReactPlayer from 'react-player';
 import cn from 'classnames';
 import { throttle } from 'lodash';
-import * as types from '../../../../constants/ActionTypes';
+import * as types from '../../../../constants/actionTypes';
 import { formatTime, requestFullscreen } from '../../../../utils';
 import { PLAYER_MINIMIZE_TIMEOUT, MAX_VIDEO_SYNC_OFFSET } from '../../../../constants';
 

@@ -1,6 +1,6 @@
 import { get } from 'lodash';
 import * as api from '../constants/apiActions';
-import * as types from '../constants/ActionTypes';
+import * as types from '../constants/actionTypes';
 import { store } from '../store';
 import { sortPlaylistByIndex } from '.';
 import { toast } from 'react-toastify';

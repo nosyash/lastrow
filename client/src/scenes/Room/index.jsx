@@ -4,7 +4,7 @@ import cn from 'classnames';
 import ChatContainer from './scenes/Chat/index';
 import VideoContainer from './scenes/Media/index';
 import getEmojiList from '../../utils/InitEmojis';
-import * as types from '../../constants/ActionTypes';
+import * as types from '../../constants/actionTypes';
 import { requestRoom } from '../../utils/apiRequests';
 import Divider from './components/Divider';
 import { webSocketConnect, webSocketDisconnect } from '../../actions';

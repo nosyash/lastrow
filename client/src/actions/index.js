@@ -2,7 +2,7 @@ import { parse } from 'subtitle';
 import { toast } from 'react-toastify';
 import http from '../utils/httpServices';
 import * as api from '../constants/apiActions';
-import * as types from '../constants/ActionTypes';
+import * as types from '../constants/actionTypes';
 
 import Socket from '../utils/WebSocket';
 import { store } from '../store';

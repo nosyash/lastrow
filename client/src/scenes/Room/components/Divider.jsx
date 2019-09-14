@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import cn from 'classnames';
-import * as types from '../../../constants/ActionTypes';
+import * as types from '../../../constants/actionTypes';
 import { MIN_CHAT_WIDTH, MAX_CHAT_WIDTH } from '../../../constants';
 
 class Divider extends Component {

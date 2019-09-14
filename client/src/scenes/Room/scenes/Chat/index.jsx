@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import cn from 'classnames';
 import ChatInner from './ChatInner';
-import { UPDATE_MAIN_STATES } from '../../../../constants/ActionTypes';
+import { UPDATE_MAIN_STATES } from '../../../../constants/actionTypes';
 import ControlPanel from '../../../../components/ControlPanel';
 
 function ChatContainer(props) {

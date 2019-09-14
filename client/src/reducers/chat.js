@@ -1,6 +1,6 @@
 import ls from 'local-storage';
 import { MAX_MESSAGES, MAX_HISTORY } from '../constants';
-import * as types from '../constants/ActionTypes';
+import * as types from '../constants/actionTypes';
 
 const initialState = {
     roomsMessages: [],

@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import Form from '../Form';
 import http from '../../utils/httpServices';
 import * as api from '../../constants/apiActions';
-import * as types from '../../constants/ActionTypes';
+import * as types from '../../constants/actionTypes';
 
 class NewRoom extends Form {
     state = {
