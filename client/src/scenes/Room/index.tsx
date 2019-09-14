@@ -9,11 +9,10 @@ import { requestRoom } from '../../utils/apiRequests';
 import Divider from './components/Divider';
 import { webSocketConnect, webSocketDisconnect } from '../../actions';
 import notifications from '../../utils/notifications';
-import { GUEST_AUTH, PROFILE_SETTINGS } from '../../constants';
+import { GUEST_AUTH, PROFILE_SETTINGS, PLAYLIST } from '../../constants';
 import { Emoji } from '../../reducers/emojis';
 
-// We authorize before render room,
-// so we could easier initialize WebSocket...
+// Authorize before render room
 function RoomBaseWrapper(props) {
     const { addPopup } = props;
     const { logged, guest } = props.profile;
@@ -38,7 +37,6 @@ interface RoomBaseProps {
     addEmojis: (emojis: Emoji[]) => void;
     removePopup: (popup: string) => void;
     togglePopup: (popup: string) => void;
-
 }
 
 class RoomBase extends Component<RoomBaseProps, any> {
@@ -46,7 +44,7 @@ class RoomBase extends Component<RoomBaseProps, any> {
     video: React.RefObject<any>;
     divider: React.RefObject<any>;
     timer: NodeJS.Timeout;
-    constructor(props) {
+    constructor(props: RoomBaseProps) {
         super(props);
         this.chat = React.createRef();
         this.video = React.createRef();
@@ -60,6 +58,7 @@ class RoomBase extends Component<RoomBaseProps, any> {
 
     componentDidMount() {
         const { clearPopups, clearUsers } = this.props;
+        document.addEventListener('keydown', this.handleKeyDown)
         clearPopups();
         clearUsers();
         this.init();
@@ -67,6 +66,30 @@ class RoomBase extends Component<RoomBaseProps, any> {
 
     componentWillUnmount() {
         webSocketDisconnect();
+    }
+
+    handleKeyDown = ({ altKey, code, keyCode, ctrlKey }: KeyboardEvent) => {
+        const { togglePopup } = this.props;
+        if (altKey) {
+            switch (code) {
+                case 'KeyP': return togglePopup(PLAYLIST)
+                case 'KeyF': return // TODO: handleFullScreen
+                // TODO: markup hotkeys
+                default: return;
+            }
+        }
+
+        if (!ctrlKey)
+            return this.focusInput();
+    }
+
+    focusInput() {
+        const input = document.getElementById('chat-input');
+        const { activeElement } = document;
+        const activeElementTag = activeElement.tagName.toLowerCase();
+        if (activeElementTag !== 'input' && activeElementTag !== 'textarea')
+            if (input) input.focus();
+
     }
 
     init = async () => {
@@ -113,7 +136,7 @@ class RoomBase extends Component<RoomBaseProps, any> {
     };
 
     // TODO: Move to GuestAuth component
-    handleGuestAuth = name => {
+    handleGuestAuth = (name: string) => {
         const { removePopup, updateProfile } = this.props;
         removePopup(PROFILE_SETTINGS);
         updateProfile({ name });

@@ -34,7 +34,9 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
     componentDidMount() {
         // TODO: For some reason it's not working right away
         setTimeout(() => {
-            (this.inputEl.current as HTMLInputElement).focus();
+            const element = (this.inputEl.current as HTMLInputElement);
+            if (element)
+                element.focus();
         }, 100);
     }
 

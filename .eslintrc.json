@@ -1,15 +1,15 @@
 {
-    // "settings": {
-    //   "react": {
-    //     "version": "detect",
-    //   }
-    // },
+    "settings": {
+      "react": {
+        "version": "detect",
+      }
+    },
     "extends": [
       // "airbnb",
       // "prettier",
       // "prettier/react"
-    //   "eslint:recommended", 
-    //   "plugin:react/recommended",
+      "eslint:recommended", 
+      "plugin:react/recommended",
       "plugin:@typescript-eslint/recommended"
     ],
     "parser": "@typescript-eslint/parser",
@@ -173,7 +173,7 @@
     },
     "plugins": [
       // "prettier"
-    //   "react",
+      "react",
       "@typescript-eslint"
     ]
   }

@@ -182,6 +182,7 @@ function ChatInput(props) {
                 placeholder="Write something..."
                 onChange={handleInputChange}
                 className="chat-input"
+                id="chat-input"
             />
             <div className="emote-search">
                 {emoteQuery.map((emote, index) => (
