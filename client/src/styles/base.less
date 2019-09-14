@@ -335,7 +335,6 @@ body {
   padding: 10px;
   padding-right: 30px;
   width: calc(100% + 20px);
-  padding-bottom: 25px;
   position: relative;
 
   height: 100%;
@@ -345,6 +344,10 @@ body {
   &.scroll-smooth {
     // scroll-behavior: smooth;
   }
+}
+
+.chat-message:last-child {
+  padding-bottom: 25px;
 }
 
 .chat-messages__scroll-to-bottom {
@@ -443,10 +446,12 @@ body {
   flex-direction: row;
   align-items: center;
   margin-bottom: 6px;
+  border-top: 1px solid #343434;
+  padding-top: 12px;
 }
 
 .chat-message:not(:first-of-type) .chat-message_header {
-  margin-top: 20px;
+  margin-top: 8px;
 }
 
 .chat-message_body {

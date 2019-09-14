@@ -79,7 +79,7 @@ class RoomBase extends Component<RoomBaseProps, any> {
             }
         }
 
-        if (!ctrlKey)
+        if (!ctrlKey && !code.includes('Arrow'))
             return this.focusInput();
     }
 
