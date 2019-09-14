@@ -69,11 +69,17 @@ class RoomBase extends Component<RoomBaseProps, any> {
         document.removeEventListener('keydown', this.handleKeyDown)
     }
 
-    handleKeyDown = ({ altKey, code, keyCode, ctrlKey }: KeyboardEvent) => {
+    handleKeyDown = (e: KeyboardEvent) => {
+        const { altKey, code, keyCode, ctrlKey } = e;
         const { togglePopup } = this.props;
         if (altKey) {
+
             switch (code) {
-                case 'KeyP': return togglePopup(PLAYLIST)
+                case 'KeyP': {
+                    // TODO: Move prevent default somewhere
+                    e.preventDefault();
+                    return togglePopup(PLAYLIST)
+                }
                 case 'KeyF': return // TODO: handleFullScreen
                 // TODO: markup hotkeys
                 default: return;
@@ -83,6 +89,7 @@ class RoomBase extends Component<RoomBaseProps, any> {
         if (!ctrlKey && !code.includes('Arrow'))
             return this.focusInput();
     }
+
 
     focusInput() {
         const input = document.getElementById('chat-input');
