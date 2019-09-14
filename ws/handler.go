@@ -102,9 +102,9 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 			fb.URL = req.Body.Event.Data.URL
 		}
 
-		h.broadcast <- createPacket(playerEvent, eTypeFeedBack, data{
+		writeMessage(conn, websocket.TextMessage, createPacket(playerEvent, eTypeFeedBack, data{
 			FeedBack: &fb,
-		})
+		}))
 
 	case eTypePlDel:
 		ID := req.Body.Event.Data.ID
