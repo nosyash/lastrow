@@ -24,6 +24,7 @@ func main() {
 	uplPath = getEnvOrDefault("UPLOADS_PATH", "./")
 	profImgPath = getEnvOrDefault("PROFILE_IMG_PATH", "profiles")
 	emojiPath = getEnvOrDefault("EMOJI_IMG_PATH", "emoji")
+	// hmacKey = getEnvOrDefault("HMACSHA512_KEY", "")
 
 	// FIX THAT!
 	// For db package

@@ -48,13 +48,11 @@ func (pl *playlist) addVideo(vURL string) {
 			return
 		}
 
-		ID := getRandomUUID()
-
 		pl.playlist = append(pl.playlist, &Video{
 			Title:    title,
 			Duration: duration,
 			URL:      vURL,
-			ID:       ID,
+			ID:       getRandomUUID(),
 			Direct:   true,
 		})
 		pl.AddFeedBack <- nil
@@ -83,13 +81,11 @@ func (pl *playlist) addVideo(vURL string) {
 				return
 			}
 
-			ID := getRandomUUID()
-
 			pl.playlist = append(pl.playlist, &Video{
 				Title:    title,
 				Duration: duration,
 				URL:      vURL,
-				ID:       ID,
+				ID:       getRandomUUID(),
 				Direct:   false,
 			})
 			pl.AddFeedBack <- nil
