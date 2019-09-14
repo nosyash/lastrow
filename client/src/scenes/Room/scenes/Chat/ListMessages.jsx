@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, Fragment } from 'react';
 import cn from 'classnames';
 import { connect } from 'react-redux';
-import Message from './Message';
+import Message from './components/Message';
 import { isEdge } from '../../../../constants';
 
 let event = () => null;

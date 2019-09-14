@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import cn from 'classnames';
-import * as types from '../../../../constants/ActionTypes';
-import * as keys from '../../../../constants/keys';
-import { MAX_MESSAGE_LENGTH } from '../../../../constants';
-import * as api from '../../../../constants/apiActions';
-import { webSocketSend } from '../../../../actions';
-import { reverse, mod } from '../../../../utils';
+import * as types from '../../../../../constants/ActionTypes';
+import * as keys from '../../../../../constants/keys';
+import { MAX_MESSAGE_LENGTH } from '../../../../../constants';
+import * as api from '../../../../../constants/apiActions';
+import { webSocketSend } from '../../../../../actions';
+import { reverse, mod } from '../../../../../utils';
 
 const KEY_A = 97;
 const KEY_Z = 122;

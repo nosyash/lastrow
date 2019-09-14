@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { throttle } from 'lodash';
-import { SEEK_SEL } from '../../../../constants';
+import { SEEK_SEL } from '../../../../../constants';
 
 class ProgressBar extends Component {
     constructor(props) {

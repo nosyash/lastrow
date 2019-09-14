@@ -7,8 +7,8 @@ import * as types from '../../../../constants/ActionTypes';
 import { formatTime, requestFullscreen } from '../../../../utils';
 import { PLAYER_MINIMIZE_TIMEOUT, MAX_VIDEO_SYNC_OFFSET } from '../../../../constants';
 
-import ProgressBar from './ProgressBar';
-import Subtitles from './Subtitles';
+import ProgressBar from './components/ProgressBar';
+import Subtitles from './components/Subtitles';
 import { fetchSubs } from '../../../../actions';
 import { playerConf } from '../../../../Conf';
 

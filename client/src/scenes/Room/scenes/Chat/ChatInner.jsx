@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import ChatInput from './ChatInput';
+import ChatInput from './components/ChatInput';
 import ListMessages from './ListMessages';
-import ChatHeader from './ChatHeader';
+import ChatHeader from './components/ChatHeader';
 
 class ChatInner extends Component {
     constructor() {

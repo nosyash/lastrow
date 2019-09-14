@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
-import MiniProfile from './MiniProfile';
+import MiniProfile from '../../../components/MiniProfile';
+
+
+
+
 
 function ChatHeader({ userList }) {
     const [showProfile, setShowProfile] = useState(false);
