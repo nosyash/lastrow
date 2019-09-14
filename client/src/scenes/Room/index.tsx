@@ -66,6 +66,7 @@ class RoomBase extends Component<RoomBaseProps, any> {
 
     componentWillUnmount() {
         webSocketDisconnect();
+        document.removeEventListener('keydown', this.handleKeyDown)
     }
 
     handleKeyDown = ({ altKey, code, keyCode, ctrlKey }: KeyboardEvent) => {
