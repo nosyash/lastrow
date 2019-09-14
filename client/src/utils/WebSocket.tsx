@@ -174,7 +174,7 @@ class Socket implements SocketInterface {
             }
             case 'update_playlist': {
                 const data = get(parsedData, 'body.event.data') as UpdatePlaylistData;
-                const playlist = sortPlaylistByIndex(data.videos || []);
+                const playlist = data.videos || [];
                 return dispatch({ type: types.ADD_TO_PLAYLIST, payload: playlist });
             }
             case 'ticker': {
