@@ -6,7 +6,7 @@ import http from '../../utils/httpServices';
 import * as types from '../../constants/ActionTypes';
 import * as api from '../../constants/apiActions';
 import { API_FETCH_TIMEOUT } from '../../constants';
-import LogForm from '../../Components/Popups/LogForm';
+import LogForm from '../../components/Popups/LogForm';
 
 
 

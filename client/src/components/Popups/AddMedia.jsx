@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Joi from 'joi-browser';
-import Form from '../Form';
 import * as api from '../../constants/apiActions';
 import * as types from '../../constants/ActionTypes';
 import { webSocketSend } from '../../actions';
@@ -9,9 +8,7 @@ import { webSocketSend } from '../../actions';
 
 class AddMedia extends Component {
 state = {
-    data: { link: '' },
     inputValue: '',
-    errors: {},
 };
 
 inputEl = React.createRef();

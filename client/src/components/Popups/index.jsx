@@ -16,7 +16,6 @@ import {
     PROFILE_SETTINGS,
     SETTINGS,
 } from '../../constants';
-import AddMedia from './AddMedia';
 import ColorPicker from './ColorPicker';
 import GuestAuth from './GuestAuth';
 import ImagePicker from './ImagePicker';

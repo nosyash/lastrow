@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import ls from 'local-storage';
 import RoomBase from './scenes/Room';
 import RoomListBase from './scenes/Home/index';
-import Popups from './Components/Popups';
+import Popups from './components/Popups';
 import * as types from './constants/ActionTypes';
 import { getProfile } from './utils/apiRequests';
 import { getRandom } from './utils';

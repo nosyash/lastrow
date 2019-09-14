@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import cn from 'classnames';
 import ChatInner from './ChatInner';
 import { UPDATE_MAIN_STATES } from '../../../../constants/ActionTypes';
-import ControlPanel from '../../../../Components/ControlPanel';
+import ControlPanel from '../../../../components/ControlPanel';
 
 function ChatContainer(props) {
     const { chat, cinemaMode, chatWidth } = props;
