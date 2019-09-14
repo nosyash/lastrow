@@ -3,14 +3,14 @@ import { connect } from 'react-redux';
 import ReactPlayer from 'react-player';
 import cn from 'classnames';
 import { throttle } from 'lodash';
-import * as types from '../../../constants/ActionTypes';
-import { formatTime, requestFullscreen } from '../../../utils/base';
-import { PLAYER_MINIMIZE_TIMEOUT, MAX_VIDEO_SYNC_OFFSET } from '../../../constants';
+import * as types from '../../../../constants/ActionTypes';
+import { formatTime, requestFullscreen } from '../../../../utils/base';
+import { PLAYER_MINIMIZE_TIMEOUT, MAX_VIDEO_SYNC_OFFSET } from '../../../../constants';
 
 import ProgressBar from './ProgressBar';
 import Subtitles from './Subtitles';
-import { fetchSubs } from '../../../actions';
-import { playerConf } from '../../../Conf';
+import { fetchSubs } from '../../../../actions';
+import { playerConf } from '../../../../Conf';
 
 let minimizeTimer = null;
 let videoEl = null;

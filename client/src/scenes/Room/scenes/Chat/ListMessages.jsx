@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, Fragment } from 'react';
 import cn from 'classnames';
 import { connect } from 'react-redux';
 import Message from './Message';
-import { isEdge } from '../../../constants';
+import { isEdge } from '../../../../constants';
 
 let event = () => null;
 function ListMessages(props) {

@@ -1,8 +1,8 @@
 import React from 'react';
 import { ChromePicker } from 'react-color';
 import { connect } from 'react-redux';
-import * as types from '../../../constants/ActionTypes';
-import { requestColorUpdate } from '../../../actions';
+import * as types from '../../constants/ActionTypes';
+import { requestColorUpdate } from '../../actions';
 
 class ColorPicker extends React.Component {
   state = {

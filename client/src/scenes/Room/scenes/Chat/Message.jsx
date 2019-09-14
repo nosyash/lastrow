@@ -1,9 +1,9 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
-import safelySetInnerHTML from '../../../utils/safelySetInnerHTML ';
-import parseMarkup from '../../../utils/markup';
-import playSound from '../../../utils/HandleSounds';
-import notifications from '../../../utils/notifications';
+import safelySetInnerHTML from '../../../../utils/safelySetInnerHTML ';
+import parseMarkup from '../../../../utils/markup';
+import playSound from '../../../../utils/HandleSounds';
+import notifications from '../../../../utils/notifications';
 import MiniProfile from './MiniProfile';
 
 class Message extends PureComponent {

@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import cn from 'classnames';
 import ChatInner from './ChatInner';
-import { UPDATE_MAIN_STATES } from '../../../constants/ActionTypes';
-import ControlPanel from '../../UI/ControlPanel';
+import { UPDATE_MAIN_STATES } from '../../../../constants/ActionTypes';
+import ControlPanel from '../../../../Components/ControlPanel';
 
 function ChatContainer(props) {
     const { chat, cinemaMode, chatWidth } = props;

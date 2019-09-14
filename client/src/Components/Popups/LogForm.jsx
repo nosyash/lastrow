@@ -3,11 +3,11 @@ import Joi from 'joi-browser';
 import { toast } from 'react-toastify';
 import { connect } from 'react-redux';
 import Form from '../Form';
-import http from '../../../utils/httpServices';
-import { toastOpts } from '../../../Conf';
-import * as types from '../../../constants/ActionTypes';
-import * as api from '../../../constants/apiActions';
-import { NEW_ROOM, PROFILE_SETTINGS } from '../../../constants';
+import http from '../../utils/httpServices';
+import { toastOpts } from '../../Conf';
+import * as types from '../../constants/ActionTypes';
+import * as api from '../../constants/apiActions';
+import { NEW_ROOM, PROFILE_SETTINGS } from '../../constants';
 
 class LogForm extends Form {
   state = {

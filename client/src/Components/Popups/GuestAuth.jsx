@@ -1,9 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import Joi from 'joi-browser';
-import * as types from '../../../constants/ActionTypes';
+import * as types from '../../constants/ActionTypes';
 import Form from '../Form';
-import { GUEST_AUTH } from '../../../constants';
+import { GUEST_AUTH } from '../../constants';
 
 class GuestAuth extends Form {
   state = {

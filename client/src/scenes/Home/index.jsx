@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
-import RoomItem from './RoomItem';
+import RoomItem from './components/RoomItem';
 import http from '../../utils/httpServices';
 
 import * as types from '../../constants/ActionTypes';
 import * as api from '../../constants/apiActions';
 import { API_FETCH_TIMEOUT } from '../../constants';
-import LogForm from '../UI/Popups/LogForm';
+import LogForm from '../../Components/Popups/LogForm';
+
+
 
 function RoomListBase(props) {
     const [connected, setConnected] = useState(false);

@@ -8,7 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import './less/main.less'
 import * as serviceWorker from './serviceWorker';
-import App from './Components/App';
+import App from './App';
 
 import { store } from './store';
 

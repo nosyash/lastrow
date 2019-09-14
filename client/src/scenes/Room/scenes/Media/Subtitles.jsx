@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
-import * as types from '../../../constants/ActionTypes';
-import SubtitlesHandler from '../../../utils/subtitles';
+import * as types from '../../../../constants/ActionTypes';
+import SubtitlesHandler from '../../../../utils/subtitles';
 
 let timer = null;
 let pauseTimer = null;

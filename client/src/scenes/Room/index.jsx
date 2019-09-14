@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import cn from 'classnames';
-import ChatContainer from './chat/ChatContainer';
-import VideoContainer from './video/VideoContainer';
+import ChatContainer from './scenes/Chat/index';
+import VideoContainer from './scenes/Media/index';
 import getEmojiList from '../../utils/InitEmojis';
 import * as types from '../../constants/ActionTypes';
 import { requestRoom } from '../../utils/apiRequests';
-import Divider from './Divider';
+import Divider from './components/Divider';
 import { webSocketConnect, webSocketDisconnect } from '../../actions';
 import notifications from '../../utils/notifications';
 import { GUEST_AUTH, PROFILE_SETTINGS } from '../../constants';

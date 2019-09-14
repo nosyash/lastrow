@@ -3,11 +3,11 @@ import { connect } from 'react-redux';
 import Joi from 'joi-browser';
 import { toast } from 'react-toastify';
 import Form from '../Form';
-import * as api from '../../../constants/apiActions';
-import * as types from '../../../constants/ActionTypes';
-import http from '../../../utils/httpServices';
-import { toastOpts } from '../../../Conf';
-import { IMAGE_PICKER, COLOR_PICKER } from '../../../constants';
+import * as api from '../../constants/apiActions';
+import * as types from '../../constants/ActionTypes';
+import http from '../../utils/httpServices';
+import { toastOpts } from '../../Conf';
+import { IMAGE_PICKER, COLOR_PICKER } from '../../constants';
 
 // TODO: Extremely poorly made. Refactor!
 class ProfileSettings extends Form {

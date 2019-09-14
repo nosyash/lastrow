@@ -4,12 +4,12 @@ import { toast } from 'react-toastify';
 import { connect } from 'react-redux';
 import Slider from '@material-ui/lab/Slider';
 
-import getCroppedImg from '../../../utils/cropImage';
-import * as types from '../../../constants/ActionTypes';
-import httpServices from '../../../utils/httpServices';
-import * as api from '../../../constants/apiActions';
-import { toastOpts } from '../../../Conf';
-import { IMAGE_PICKER } from '../../../constants';
+import getCroppedImg from '../../utils/cropImage';
+import * as types from '../../constants/ActionTypes';
+import httpServices from '../../utils/httpServices';
+import * as api from '../../constants/apiActions';
+import { toastOpts } from '../../Conf';
+import { IMAGE_PICKER } from '../../constants';
 
 class ImagePicker extends Component {
     constructor() {

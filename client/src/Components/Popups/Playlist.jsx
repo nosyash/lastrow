@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { formatTime } from '../../../utils/base';
-import { webSocketSend } from '../../../actions';
-import * as api from '../../../constants/apiActions';
+import { formatTime } from '../../utils/base';
+import { webSocketSend } from '../../actions';
+import * as api from '../../constants/apiActions';
 import AddMedia from './AddMedia';
 
 class Playlist extends Component {
@@ -23,7 +23,7 @@ class Playlist extends Component {
                 onClick={() => this.handleDelete(element)}
                 className="control playlist-item__remove-icon"
             >
-                <i className="fa fa-times"></i>
+                <i className="fa fa-times" />
             </span>
         </div>
     );

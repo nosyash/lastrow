@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import { throttle } from 'lodash';
 import cn from 'classnames';
 import ls from 'local-storage';
-import { getCenteredRect } from '../../../utils/base';
-import * as types from '../../../constants/ActionTypes';
+import { getCenteredRect } from '../../utils/base';
+import * as types from '../../constants/ActionTypes';
 import {
     POPUP_HEADER,
     COLOR_PICKER,
@@ -15,7 +15,7 @@ import {
     PLAYLIST,
     PROFILE_SETTINGS,
     SETTINGS,
-} from '../../../constants';
+} from '../../constants';
 import AddMedia from './AddMedia';
 import ColorPicker from './ColorPicker';
 import GuestAuth from './GuestAuth';

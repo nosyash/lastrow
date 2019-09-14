@@ -3,12 +3,12 @@ import { Route, Switch, BrowserRouter } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { connect } from 'react-redux';
 import ls from 'local-storage';
-import RoomBase from './Room/Base';
-import RoomListBase from './RoomList/Base';
-import Popups from './UI/Popups/Base';
-import * as types from '../constants/ActionTypes';
-import { getProfile } from '../utils/apiRequests';
-import { getRandom } from '../utils/base';
+import RoomBase from './scenes/Room';
+import RoomListBase from './scenes/Home/index';
+import Popups from './Components/Popups';
+import * as types from './constants/ActionTypes';
+import { getProfile } from './utils/apiRequests';
+import { getRandom } from './utils/base';
 
 function App(props) {
     const [loaded, setLoaded] = useState(false);

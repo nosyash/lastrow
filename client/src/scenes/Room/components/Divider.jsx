@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import cn from 'classnames';
-import * as types from '../../constants/ActionTypes';
-import { MIN_CHAT_WIDTH, MAX_CHAT_WIDTH } from '../../constants';
+import * as types from '../../../constants/ActionTypes';
+import { MIN_CHAT_WIDTH, MAX_CHAT_WIDTH } from '../../../constants';
 
 class Divider extends Component {
     constructor() {
@@ -78,7 +78,7 @@ class Divider extends Component {
                   onMouseDown={this.handleMouseDown}
                   className={cn('custom-divider', { 'custom-divider_moving': moving })}
               >
-                  {moving && <div className="custom-divider__background"></div>}
+                  {moving && <div className="custom-divider__background" />}
               </div>
           </React.Fragment>
       );

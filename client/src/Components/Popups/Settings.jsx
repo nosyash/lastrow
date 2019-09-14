@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import ls from 'local-storage';
-import * as types from '../../../constants/ActionTypes';
+import * as types from '../../constants/ActionTypes';
 
 // TODO: Extremely poorly made. Refactor!
 
