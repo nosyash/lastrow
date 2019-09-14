@@ -7,7 +7,7 @@ import * as types from '../constants/actionTypes';
 import Socket from '../utils/WebSocket';
 import { store } from '../store';
 import { SOCKET_ENDPOINT } from '../constants';
-import { toastOpts } from '../Conf';
+import { toastOpts } from '../conf';
 
 export const fetchSubs = url => dispatch => {
     return http

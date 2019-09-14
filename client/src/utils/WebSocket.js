@@ -4,7 +4,7 @@ import * as types from '../constants/actionTypes';
 import { store } from '../store';
 import { sortPlaylistByIndex } from '.';
 import { toast } from 'react-toastify';
-import { toastOpts } from '../Conf';
+import { toastOpts } from '../conf';
 
 const { dispatch } = store;
 

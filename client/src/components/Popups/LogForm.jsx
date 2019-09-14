@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { connect } from 'react-redux';
 import Form from '../Form';
 import http from '../../utils/httpServices';
-import { toastOpts } from '../../Conf';
+import { toastOpts } from '../../conf';
 import * as types from '../../constants/actionTypes';
 import * as api from '../../constants/apiActions';
 import { NEW_ROOM, PROFILE_SETTINGS } from '../../constants';

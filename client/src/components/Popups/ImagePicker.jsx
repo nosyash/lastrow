@@ -8,7 +8,7 @@ import getCroppedImg from '../../utils/cropImage';
 import * as types from '../../constants/actionTypes';
 import httpServices from '../../utils/httpServices';
 import * as api from '../../constants/apiActions';
-import { toastOpts } from '../../Conf';
+import { toastOpts } from '../../conf';
 import { IMAGE_PICKER } from '../../constants';
 
 class ImagePicker extends Component {

@@ -10,7 +10,7 @@ import { PLAYER_MINIMIZE_TIMEOUT, MAX_VIDEO_SYNC_OFFSET } from '../../../../cons
 import ProgressBar from './components/ProgressBar';
 import Subtitles from './components/Subtitles';
 import { fetchSubs } from '../../../../actions';
-import { playerConf } from '../../../../Conf';
+import { playerConf } from '../../../../conf';
 
 let minimizeTimer = null;
 let videoEl = null;

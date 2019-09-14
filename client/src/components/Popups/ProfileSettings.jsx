@@ -6,7 +6,7 @@ import Form from '../Form';
 import * as api from '../../constants/apiActions';
 import * as types from '../../constants/actionTypes';
 import http from '../../utils/httpServices';
-import { toastOpts } from '../../Conf';
+import { toastOpts } from '../../conf';
 import { IMAGE_PICKER, COLOR_PICKER } from '../../constants';
 
 // TODO: Extremely poorly made. Refactor!
