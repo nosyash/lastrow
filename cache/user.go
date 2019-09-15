@@ -24,7 +24,9 @@ func (u *Users) addGuest(user *User) {
 // DelUser delete a user from the cache
 func (u *Users) delUser(uuid string) {
 	delete(u.users, uuid)
-	u.UpdateUsers <- struct{}{}
+	if len(u.users) > 0 {
+		u.UpdateUsers <- struct{}{}
+	}
 }
 
 // GetUser return user object by UUID

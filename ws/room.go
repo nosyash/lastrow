@@ -14,7 +14,7 @@ import (
 
 const (
 	// Timeout in seconds, when cache for this room will be closed
-	closeDeadlineTimeout = 120
+	closeDeadlineTimeout = 10
 )
 
 var (
