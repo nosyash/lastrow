@@ -20,10 +20,10 @@ function handleEmotes(body = '') {
         const emoteName = args[1];
         const emoteFounded = emoteList.find(emote => emote.name === emoteName);
         if (!emoteFounded) return match;
-        const { url, url2x } = emoteFounded;
+        const { path } = emoteFounded;
         let string = '';
         // string += args[0];
-        string += `<img className="emote" src="${url}" srcSet="${url} 1x, ${url2x} 2x" title=":`;
+        string += `<img className="emote" src="${path}" srcSet="${path} 1x, ${path} 2x" title=":`;
         string += args[1];
         string += `:">`;
         // string += args[2];

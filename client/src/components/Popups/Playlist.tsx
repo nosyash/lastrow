@@ -44,10 +44,10 @@ function PlaylistElement({ element, onDelete }) {
     const handleDelete = () => {
         if (!deleted) {
             onDelete();
-            // setDeleted(true);
+            setDeleted(true);
         }
     }
-    // if (deleted) return null;
+    if (deleted) return null;
     return (
         <div className="paylist-item">
             <a className="control" target="_blank" rel="noopener noreferrer" href={element.url}>

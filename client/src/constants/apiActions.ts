@@ -93,22 +93,6 @@ export const SEND_MESSAGE = (message: string, user_uuid: string) =>
         user_uuid,
     } as Message);
 
-// "__id": "00558ab4060d4a8391c2f38757930ef6f9ae8f7dc030e3a28d5e052d7703dc82",
-// "duration": 2359,
-// "elapsed_time": 0
-
-// {
-//   "videos": [
-//     {
-//       "title": "[V LIVE] [UZZU TAPE (우쭈테잎)] EP. 16 경복궁 야간기행, 시간의 다리를 건너다!",
-//       "duration": 2359,
-//       "url": "https://stream.bona.cafe/uzzu/ep15.mp4",
-//       "index": 0,
-//       "__id": "00558ab4060d4a8391c2f38757930ef6f9ae8f7dc030e3a28d5e052d7703dc82"
-//     }
-//   ]
-// }
-
 export const GET_ERROR = (string: string) => {
     const obj = JSON.parse(string);
     if (obj.error) return obj.error;
@@ -147,3 +131,48 @@ export const DELETE_VIDEO_FROM_PLAYLIST = ({ __id, uuid }: { __id: string, uuid:
 
     return JSON.stringify(request);
 };
+
+export interface AddEmoteRequest {
+    name: string;
+    type: 'png' | 'gif';
+    base64: string;
+    roomId?: string;
+}
+
+const getEmoteName = (name: string) =>
+    name
+        .substr(0, 15)
+        .replace(/\.\w+$/, '')
+        .replace(/[^a-z0-9_]/gi, '') || 'emote' + Math.round(Math.random() * 10000)
+
+export const ADD_EMOTE = ({ name, type, base64, roomId }: AddEmoteRequest) => {
+    const request = {
+        action: "room_update",
+        body: {
+            type: "add_emoji",
+            data: {
+                name: getEmoteName(name),
+                type,
+                raw_img: base64.replace(/^data:.+;base64,/, ''),
+            }
+        },
+        room_id: roomId,
+
+    }
+    return JSON.stringify(request);
+}
+
+export const REMOVE_EMOTE = ({ name, type, roomId }) => {
+    const request = {
+        action: "room_update",
+        body: {
+            type: "del_emoji",
+            data: {
+                name,
+                type,
+            }
+        },
+        room_id: roomId,
+    }
+    return JSON.stringify(request);
+}

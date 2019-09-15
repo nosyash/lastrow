@@ -5,9 +5,8 @@ import ChatContainer from './scenes/Chat/index';
 import VideoContainer from './scenes/Media/index';
 import getEmojiList from '../../utils/InitEmojis';
 import * as types from '../../constants/actionTypes';
-import { requestRoom } from '../../utils/apiRequests';
 import Divider from './components/Divider';
-import { webSocketConnect, webSocketDisconnect } from '../../actions';
+import { webSocketConnect, webSocketDisconnect, requestRoom } from '../../actions';
 import notifications from '../../utils/notifications';
 import { GUEST_AUTH, PROFILE_SETTINGS, PLAYLIST } from '../../constants';
 import { Emoji } from '../../reducers/emojis';
@@ -37,6 +36,7 @@ interface RoomBaseProps {
     addEmojis: (emojis: Emoji[]) => void;
     removePopup: (popup: string) => void;
     togglePopup: (popup: string) => void;
+    getRoom: () => Promise<any>;
 }
 
 class RoomBase extends Component<RoomBaseProps, any> {
@@ -101,15 +101,14 @@ class RoomBase extends Component<RoomBaseProps, any> {
     }
 
     init = async () => {
-        const { match, history } = this.props;
+        const { match, history, updateMainStates, getRoom } = this.props;
         const { id: roomID } = match.params;
 
         // Check for room
-        const room = await requestRoom(roomID);
-        if (!room)
+        updateMainStates({ roomID })
+        const res = await getRoom();
+        if (!res)
             return history.push('/');
-
-        document.title = room.title;
         notifications.setCurrentTitle(document.title);
         this.setState({ exists: true }, () => this.initStore(this.initWebsocket));
     };
@@ -129,8 +128,6 @@ class RoomBase extends Component<RoomBaseProps, any> {
         if (cinemaMode) cinemaMode = JSON.parse(cinemaMode);
         updateMainStates({ cinemaMode, roomID });
 
-        this.initEmojis();
-
         if (!profile.logged) {
             return this.handleNicknamePopup();
         }
@@ -148,13 +145,6 @@ class RoomBase extends Component<RoomBaseProps, any> {
         const { removePopup, updateProfile } = this.props;
         removePopup(PROFILE_SETTINGS);
         updateProfile({ name });
-    };
-
-    initEmojis = () => {
-        const { addEmojis } = this.props;
-
-        const emojiList = getEmojiList();
-        addEmojis(emojiList);
     };
 
     render() {
@@ -214,6 +204,7 @@ const mapDispatchToProps = {
     addPopup: payload => ({ type: types.ADD_POPUP, payload }),
     clearPopups: () => ({ type: types.CLEAR_POPUPS }),
     updateProfile: payload => ({ type: types.UPDATE_PROFILE, payload }),
+    getRoom: payload => requestRoom()
 };
 
 export default connect(
