@@ -175,3 +175,21 @@ export const REMOVE_EMOTE = ({ name, type, roomId }) => {
     }
     return JSON.stringify(request);
 }
+
+
+
+export const RENAME_EMOTE = ({ name, newname, roomId }) => {
+    const request = {
+        action: "room_update",
+        body: {
+            type: "change_emoji_name",
+            data: {
+                name,
+                new_name: newname
+            }
+        },
+        room_id: roomId
+    }
+
+    return JSON.stringify(request);
+}

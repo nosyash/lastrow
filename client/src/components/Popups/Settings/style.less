@@ -130,10 +130,18 @@
         overflow: auto;
 
         .emote-settings-item {
+            position: relative;
             width: 100%;
             display: flex;
             flex-direction: row;
             margin-top: 10px;
+
+            .icon {
+                position: absolute;
+                right: 7px;
+                margin-top: 2px;
+                color: rgb(0, 187, 100);
+            }
         }
     }
 
@@ -154,6 +162,7 @@
         text-align: center;
         border-radius: 4px;
         transition: 0.1s background;
+
 
         &:focus {
             background: hsla(202, 1%, 25%, 1);
