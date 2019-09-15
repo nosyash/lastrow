@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, CSSProperties, ReactElement } from 'react';
 import { connect } from 'react-redux';
 import { throttle } from 'lodash';
 import cn from 'classnames';
@@ -23,7 +23,13 @@ import LogForm from './LogForm';
 import NewRoom from './NewRoom';
 import Playlist from './Playlist';
 import ProfileSettings from './ProfileSettings';
-import Settings from './Settings';
+import Settings from './Settings/index';
+
+interface WrapperProps {
+    popup: ReactElement;
+    name: string;
+    opts?: { fixed?: boolean; esc?: boolean; };
+}
 
 function Popups({ popups, removePopup }) {
     const handleResizeTh = throttle(handleResize, 16);
@@ -59,20 +65,27 @@ function Popups({ popups, removePopup }) {
     const p = popups;
     return (
         <div className="popups_container">
-            {p.profileSettings && wrapper(<ProfileSettings />, 'profileSettings')}
-            {p.colorPicker && wrapper(<ColorPicker />, 'colorPicker')}
-            {p.guestAuth && wrapper(<GuestAuth />, 'guestAuth')}
-            {p.imagePicker && wrapper(<ImagePicker />, 'imagePicker')}
-            {p.logForm && wrapper(<LogForm />, 'logForm')}
-            {p.newRoom && wrapper(<NewRoom />, 'newRoom')}
-            {p.playlist && wrapper(<Playlist />, 'playlist')}
-            {p.settings && wrapper(<Settings />, 'settings')}
+            {p.profileSettings && wrapper({ popup: <ProfileSettings />, name: PROFILE_SETTINGS })}
+            {p.colorPicker && wrapper({ popup: <ColorPicker />, name: COLOR_PICKER })}
+            {p.guestAuth && wrapper({ popup: <GuestAuth />, name: GUEST_AUTH })}
+            {p.imagePicker && wrapper({ popup: <ImagePicker />, name: IMAGE_PICKER })}
+            {p.logForm && wrapper({ popup: <LogForm />, name: LOG_FORM })}
+            {p.newRoom && wrapper({ popup: <NewRoom />, name: NEW_ROOM })}
+            {p.playlist && wrapper({ popup: <Playlist />, name: PLAYLIST })}
+            {p.settings && wrapper({ popup: <Settings />, name: SETTINGS, opts: { fixed: true, esc: true } })}
         </div>
     );
 
-    function wrapper(popup, name) {
+    function wrapper({ popup, name, opts = {} }: WrapperProps) {
+        const { fixed, esc } = opts;
         return (
-            <Popup removePopup={() => removePopup(name)} popupElement={popup} name={name} />
+            <Popup
+                fixed={fixed}
+                esc={esc}
+                removePopup={() => removePopup(name)}
+                popupElement={popup}
+                name={name}
+            />
         );
     }
 }
@@ -94,6 +107,12 @@ function Popup(props) {
             setStates({ ...getCenteredRect(w, h) });
         }
         setShow(true);
+
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        }
     }, []);
 
     useEffect(() => {
@@ -109,6 +128,11 @@ function Popup(props) {
         if (states.top) setTop(states.top);
         if (states.left) setLeft(states.left);
         if (states.moving) setMoving(states.moving);
+    }
+
+    function handleKeyDown({ code }) {
+        if (!props.esc) return;
+        if (code === 'Escape') props.removePopup()
     }
 
     function addEvents() {
@@ -183,17 +207,22 @@ function Popup(props) {
         }
     }
 
+    function getStyles() {
+        if (props.fixed) return {};
+        const visibility = show ? 'visible' : 'hidden';
+        return {
+            width: width || 'auto',
+            top: top || 'auto',
+            left: left || 'auto',
+            visibility,
+        } as CSSProperties;
+    }
+
     const { removePopup, popupElement, name } = props;
-    const visibility = show ? 'visible' : 'hidden';
     return (
         <div
             ref={popupEl}
-            style={{
-                width: width || 'auto',
-                top: top || 'auto',
-                left: left || 'auto',
-                visibility,
-            }}
+            style={{ ...getStyles() }}
             className={cn(['popup', name])}
         >
             <div data-id={0} onMouseDown={handleMouseDown} className="popup-header">
