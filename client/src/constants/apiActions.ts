@@ -37,7 +37,7 @@ export const UPDATE_IMAGE = (raw_img: string) =>
         action: 'user_update_img',
         body: {
             image: {
-                type: '.jpg',
+                type: 'jpg',
                 raw_img,
             },
         },
