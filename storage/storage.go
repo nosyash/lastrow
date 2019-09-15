@@ -59,7 +59,7 @@ func GetUsersCount(roomPath string) int {
 func GetCurrentVideoTitle(roomPath string) string {
 	if c, ok := storage.cs[roomPath]; ok {
 		if c.Playlist.Size() == 0 {
-			return "nothing to play"
+			return "-"
 		}
 		if title := c.Playlist.GetCurrentTitle(); title != "" {
 			return title
@@ -67,5 +67,5 @@ func GetCurrentVideoTitle(roomPath string) string {
 
 		return "Custom media"
 	}
-	return "no cache"
+	return "-"
 }
