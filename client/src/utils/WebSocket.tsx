@@ -17,6 +17,7 @@ import {
 } from './types';
 import { User } from './types';
 import { Store } from 'redux';
+import { Emoji } from '../reducers/emojis';
 
 const { dispatch } = store as Store;
 
@@ -186,6 +187,10 @@ class Socket implements SocketInterface {
                 const { ticker } = get(parsedData, 'body.event.data') as TickerData;
                 return dispatch({ type: types.UPDATE_MEDIA, payload: { actualTime: ticker.elapsed_time } });
             }
+            case 'emoji_update': {
+                const emoji = get(parsedData, 'body.event.data.emoji') as Emoji[];
+                return dispatch({ type: types.ADD_EMOJIS, payload: emoji || [] });
+            }
             case 'feedback': {
                 const { feedback } = get(parsedData, 'body.event.data') as FeedbackData;
                 if (feedback.message === 'success')
@@ -195,6 +200,7 @@ class Socket implements SocketInterface {
                     toast.warn(feedback.error, toastOpts);
                 }
             }
+
             default:
                 break;
         }
