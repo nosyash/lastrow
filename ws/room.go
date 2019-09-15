@@ -87,6 +87,7 @@ func (h hub) HandleActions() {
 func (h hub) add(user *user) {
 	for uuid := range h.hub {
 		if uuid == user.UUID {
+			sendError(user.Conn, errors.New("Your already connected to this room"))
 			user.Conn.Close()
 			return
 		}
