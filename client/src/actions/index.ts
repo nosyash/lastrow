@@ -3,6 +3,8 @@ import { toast } from 'react-toastify';
 import http from '../utils/httpServices';
 import * as api from '../constants/apiActions';
 import * as types from '../constants/actionTypes';
+import Axios from 'axios';
+import { get } from 'lodash';
 
 import Socket, { SocketInterface } from '../utils/WebSocket';
 import { store } from '../store';
@@ -55,4 +57,41 @@ export const requestColorUpdate = (color: string) => async (dispatch: any) => {
 
     dispatch({ type: types.UPDATE_PROFILE, payload: { ...res.data } });
     return Promise.resolve();
+};
+
+export const requestAddEmote = (params: api.AddEmoteRequest) => async (dispatch: any) => {
+    const { ID } = store.getState().mainStates;
+    const res = await http.post(api.API_ROOMS(), api.ADD_EMOTE({ ...params, roomId: ID }));
+
+    if (!res.data)
+        return toast.error('There was an error loading emote...', toastOpts);
+    toast.success('Emote successfully upload', toastOpts);
+
+    return Promise.resolve();
+};
+
+export const requestRoom = () => async (dispatch: any) => {
+    const { roomID } = store.getState().mainStates;
+    const { data } = await http.get(api.API_ROOM(roomID), { validateStatus: () => true });
+
+    if (!data)
+        return Promise.resolve(false);
+    store.dispatch({ type: types.UPDATE_MAIN_STATES, payload: { ID: data.ID } })
+    store.dispatch({ type: types.ADD_EMOJIS, payload: data.emoji || [] })
+
+    document.title = data.title;
+
+    return Promise.resolve(data);
+};
+
+
+
+const roomInstance = Axios.create();
+export const requestRoomWithOmitError = async (id: string) => {
+    roomInstance.interceptors.response.use(
+        (response) => Promise.resolve(response),
+        err => Promise.resolve(false)
+    );
+    const { data } = await roomInstance.get(api.API_ROOM(id));
+    return data;
 };

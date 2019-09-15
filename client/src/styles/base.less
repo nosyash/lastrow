@@ -390,6 +390,13 @@ body {
   filter: grayscale(1);
 }
 
+.emote {
+  max-width: 32px;
+  max-height: 32px;
+  height: auto;
+  width: auto;
+}
+
 .chat-message.highlight {
   background: #334656;
   border-radius: 4px;
@@ -556,7 +563,7 @@ body {
 }
 
 .emote-menu__scroll {
-  overflow-y: scroll;
+  overflow-y: auto;
   height: 100%;
   max-height: 200px;
   padding: 4px;
@@ -1677,6 +1684,7 @@ body {
   max-width: 600px;
   min-width: 400px;
   max-height: 70vh;
+  z-index: 9;
   // min-height: 200px;
 }
 

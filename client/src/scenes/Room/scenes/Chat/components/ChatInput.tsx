@@ -194,7 +194,7 @@ function ChatInput(props) {
                             { 'emote-search__emote_selected': currentEmote === index },
                         ])}
                     >
-                        <img src={emote.url} alt={emote.name} title={emote.name} className="emote" />
+                        <img src={emote.path} alt={emote.name} title={emote.name} className="emote" />
                         <span>:{emote.name}:</span>
                     </span>
                 ))}
@@ -222,7 +222,7 @@ function EmoteMenu({ list, onClick }) {
                         onClick={() => onClick(emote.name)}
                         className="emote-menu__emote"
                     >
-                        <img src={emote.url} alt={emote.name} title={emote.name} className="emote" />
+                        <img src={emote.path} alt={emote.name} title={emote.name} className="emote" />
                     </span>
                 ))}
             </div>

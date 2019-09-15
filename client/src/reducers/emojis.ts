@@ -3,8 +3,7 @@ import { Reducer } from 'redux'
 
 export interface Emoji {
     name: string;
-    url: string;
-    url2x: string;
+    path: string;
 }
 
 const initialState = {
