@@ -130,11 +130,34 @@
         overflow: auto;
 
         .emote-settings-item {
+            position: relative;
             width: 100%;
             display: flex;
             flex-direction: row;
             margin-top: 10px;
+
+            .icon {
+                text-align: center;
+                font-size: 1em;
+                margin: 0 10px;
+                cursor: pointer;
+
+                &:hover {
+                    opacity: 0.7;
+                }
+            }
+
+            .emotes-settings__icon_rename {
+                margin-top: 6px;
+                color: rgb(0, 187, 100);
+            }
+
+            .emotes-settings__icon_delete {
+                color: #ff005e;
+                margin-top: 7px;
+            }
         }
+
     }
 
     .emote-settings-item_image {
@@ -142,6 +165,10 @@
     }
 
     .emote-settings-item_alias {
+        margin: auto;
+    }
+
+    .emote-settings-item_right {
         margin: auto;
     }
 
@@ -154,6 +181,7 @@
         text-align: center;
         border-radius: 4px;
         transition: 0.1s background;
+
 
         &:focus {
             background: hsla(202, 1%, 25%, 1);

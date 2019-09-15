@@ -161,17 +161,34 @@ export const ADD_EMOTE = ({ name, type, base64, roomId }: AddEmoteRequest) => {
     return JSON.stringify(request);
 }
 
-export const REMOVE_EMOTE = ({ name, type, roomId }) => {
+export const REMOVE_EMOTE = ({ name, roomId }) => {
     const request = {
         action: "room_update",
         body: {
             type: "del_emoji",
             data: {
                 name,
-                type,
             }
         },
         room_id: roomId,
     }
+    return JSON.stringify(request);
+}
+
+
+
+export const RENAME_EMOTE = ({ name, newname, roomId }) => {
+    const request = {
+        action: "room_update",
+        body: {
+            type: "change_emoji_name",
+            data: {
+                name,
+                new_name: newname
+            }
+        },
+        room_id: roomId
+    }
+
     return JSON.stringify(request);
 }
