@@ -25,8 +25,8 @@ function ControlPanel(props: any) {
             {logged && (
                 <RenderProfile
                     logged={logged}
-                    onProfileSettings={() => props.addPopup(PROFILE_SETTINGS)}
-                    // onSettings={() => props.addPopup(SETTINGS)}
+                    onProfileSettings={() => props.togglePopup(PROFILE_SETTINGS)}
+                    onSettings={() => props.togglePopup(SETTINGS)}
                     profile={profile}
                 />
             )}
