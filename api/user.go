@@ -44,7 +44,7 @@ func (server Server) userHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch userReq.Action {
 	case eTypeUserUpdateImg:
-		server.updateProfileImage(w, userUUID, &userReq.Body.Image.Img, userReq.Body.Image.Type)
+		server.updateProfileImage(w, userUUID, &userReq.Body.Image.Img)
 		if storage.Size() > 0 {
 			storage.UpdateUser(userUUID)
 		}
@@ -75,7 +75,7 @@ func (server Server) getUser(w http.ResponseWriter, userUUID string) {
 	w.Write(userAsByte)
 }
 
-func (server Server) updateProfileImage(w http.ResponseWriter, userUUID string, b64Img *string, iType string) {
+func (server Server) updateProfileImage(w http.ResponseWriter, userUUID string, b64Img *string) {
 	oldPath, err := server.db.GetUserImage(userUUID)
 	if err != nil {
 		sendJson(w, http.StatusBadRequest, message{
@@ -86,13 +86,13 @@ func (server Server) updateProfileImage(w http.ResponseWriter, userUUID string, 
 
 	rndUUID := getRandomUUID()
 
-	imgPath := filepath.Join(filepath.Join("/media", server.imageServer.ProfImgPath), rndUUID[:32], fmt.Sprintf("%s.%s", rndUUID[32:], iType))
+	imgPath := filepath.Join(filepath.Join("/media", server.imageServer.ProfImgPath), rndUUID[:32], fmt.Sprintf("%s.%s", rndUUID[32:], "jpg"))
 
 	image := newImage(b64Img)
 	if oldPath == "" {
-		err = image.createImage(filepath.Join(server.imageServer.UplPath, imgPath), iType)
+		err = image.createImage(filepath.Join(server.imageServer.UplPath, imgPath), "jpg")
 	} else {
-		err = image.replaceImage(filepath.Join(server.imageServer.UplPath, oldPath), filepath.Join(server.imageServer.UplPath, imgPath), iType)
+		err = image.replaceImage(filepath.Join(server.imageServer.UplPath, oldPath), filepath.Join(server.imageServer.UplPath, imgPath), "jpg")
 		if err != nil {
 			server.db.UpdateUserValue(userUUID, "image", "")
 		}
