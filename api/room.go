@@ -100,6 +100,7 @@ func (server Server) createRoom(w http.ResponseWriter, title, path, userUUID str
 
 func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest) {
 	name := strings.TrimSpace(req.Body.Data.Name)
+	newName := strings.TrimSpace(req.Body.Data.NewName)
 	img := req.Body.Data.Img
 	iType := req.Body.Data.Type
 	id := req.RoomID
@@ -124,6 +125,8 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest) {
 		server.addEmoji(w, name, id, iType, &img, &room)
 	case eTypeDelEmoji:
 		server.delEmoji(w, name, id, &room)
+	case eTypeChangeEmojnam:
+		server.changeEmojiName(w, name, newName, id, &room)
 
 	default:
 		sendJson(w, http.StatusBadRequest, message{
@@ -241,6 +244,36 @@ func (server Server) delEmoji(w http.ResponseWriter, name, uuid string, room *db
 	}
 
 	// Update sotrage for this room(uuid) and after send all users new emoji list
+}
+
+func (server Server) changeEmojiName(w http.ResponseWriter, name, newName, uuid string, room *db.Room) {
+	if exp.MatchString(newName) {
+		sendJson(w, http.StatusBadRequest, message{
+			Error: "Emoji name must contain only string characters and numbers",
+		})
+		return
+	}
+
+	if utf8.RuneCountInString(newName) < minEmojiNameLength || utf8.RuneCountInString(newName) > maxEmojiNameLength {
+		sendJson(w, http.StatusBadRequest, message{
+			Error: errEmojiNameLength.Error(),
+		})
+		return
+	}
+
+	for i, v := range room.Emoji {
+		if v.Name == name {
+			room.Emoji[i].Name = newName
+		}
+	}
+
+	if err := server.db.UpdateRoomValue(uuid, "emoji", room.Emoji); err != nil {
+		log.Println(err)
+		sendJson(w, http.StatusBadRequest, message{
+			Error: "Room with this room_id was not be found",
+		})
+		return
+	}
 }
 
 func (server Server) roomInnerHandler(w http.ResponseWriter, r *http.Request) {

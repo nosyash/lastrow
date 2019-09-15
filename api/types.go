@@ -34,9 +34,10 @@ type userBody struct {
 }
 
 type imageBody struct {
-	Img  string `json:"raw_img"`
-	Type string `json:"type"`
-	Name string `json:"name"`
+	Img     string `json:"raw_img"`
+	Type    string `json:"type"`
+	Name    string `json:"name"`
+	NewName string `json:"new_name,omitempty"`
 }
 
 type roomBody struct {
@@ -73,9 +74,10 @@ const (
 )
 
 const (
-	eTypeUpdateTitle = "update_title"
-	eTypeAddEmoji    = "add_emoji"
-	eTypeDelEmoji    = "del_emoji"
+	eTypeUpdateTitle   = "update_title"
+	eTypeAddEmoji      = "add_emoji"
+	eTypeDelEmoji      = "del_emoji"
+	eTypeChangeEmojnam = "change_emoji_name"
 )
 
 const (
