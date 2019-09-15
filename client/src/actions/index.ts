@@ -61,13 +61,10 @@ export const requestColorUpdate = (color: string) => async (dispatch: any) => {
 
 export const requestAddEmote = (params: api.AddEmoteRequest) => async (dispatch: any) => {
     const { ID } = store.getState().mainStates;
-    const res = await http.post(api.API_ROOMS(), api.ADD_EMOTE({ ...params, roomId: ID }));
-
-    if (!res.data)
-        return toast.error('There was an error loading emote...', toastOpts);
-    toast.success('Emote successfully upload', toastOpts);
-
-    return Promise.resolve();
+    http.post(api.API_ROOMS(), api.ADD_EMOTE({ ...params, roomId: ID }))
+        .then(() => toast.success('Emote successfully upload', toastOpts))
+        .then(() => requestRoom()(store.dispatch))
+        .catch(() => toast.error('There was an error loading emote...', toastOpts))
 };
 
 export const requestRoom = () => async (dispatch: any) => {
@@ -76,15 +73,14 @@ export const requestRoom = () => async (dispatch: any) => {
 
     if (!data)
         return Promise.resolve(false);
+
     store.dispatch({ type: types.UPDATE_MAIN_STATES, payload: { ID: data.ID } })
-    store.dispatch({ type: types.ADD_EMOJIS, payload: data.emoji || [] })
+    store.dispatch({ type: types.ADD_EMOJIS, payload: data.emoji ? data.emoji.reverse() : [] })
 
     document.title = data.title;
 
     return Promise.resolve(data);
 };
-
-
 
 const roomInstance = Axios.create();
 export const requestRoomWithOmitError = async (id: string) => {

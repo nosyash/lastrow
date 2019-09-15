@@ -139,13 +139,19 @@ export interface AddEmoteRequest {
     roomId?: string;
 }
 
+const getEmoteName = (name: string) =>
+    name
+        .substr(0, 15)
+        .replace(/\.\w+$/, '')
+        .replace(/[^a-z0-9_]/gi, '') || 'emote' + Math.round(Math.random() * 10000)
+
 export const ADD_EMOTE = ({ name, type, base64, roomId }: AddEmoteRequest) => {
     const request = {
         action: "room_update",
         body: {
             type: "add_emoji",
             data: {
-                name,
+                name: getEmoteName(name),
                 type,
                 raw_img: base64.replace(/^data:.+;base64,/, ''),
             }

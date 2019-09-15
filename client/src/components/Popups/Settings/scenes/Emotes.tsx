@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState, ChangeEvent, useEffect } from 'react';
 import { connect } from 'react-redux';
 import * as types from '../../../../constants/actionTypes';
 import * as api from '../../../../constants/apiActions';
@@ -19,6 +19,9 @@ interface EmotesProps {
 
 function Emotes(props: EmotesProps) {
     const [emotes, setEmotes] = useState(props.emotes);
+    useEffect(() => {
+        setEmotes(props.emotes)
+    }, [props.emotes])
     function handleAddEmoji({ name, type, base64 }) {
 
         const request = {
@@ -30,6 +33,7 @@ function Emotes(props: EmotesProps) {
         props.addEmote(request)
     }
 
+
     function handleSearch(value: string) {
         const emotesFounded = props.emotes.filter(emote => emote.name.includes(value))
         setEmotes(emotesFounded);
@@ -37,7 +41,9 @@ function Emotes(props: EmotesProps) {
 
     function handleFile({ target }: ChangeEvent) {
         const file = (target as HTMLInputElement).files[0];
+        if (!file) return;
         const { name, type, size } = file;
+
         if (size / 1024 > 256) return sizeWarn();
 
 
