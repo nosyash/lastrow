@@ -7,7 +7,7 @@ import SettingsMenu from './components/SettingsMenu'
 import SettingsScenes from './scenes/index'
 import './style.less'
 
-const items = [
+const _items = [
     {
         title: 'User Settings',
         children: [
@@ -27,10 +27,19 @@ const items = [
 
 interface ProfileSettings {
     updateProfile: (payload: any) => void;
+    roomID: string;
 }
 
 function ProfileSettings(props: ProfileSettings) {
     const [active, setActive] = useState('Account')
+    const [items, setItems] = useState(_items);
+
+    useEffect(() => {
+        if (!props.roomID)
+            setItems([_items[0]])
+        else
+            setItems(_items)
+    }, [props.roomID])
 
     return (
         <div className="popup-element settings-container">
@@ -41,7 +50,10 @@ function ProfileSettings(props: ProfileSettings) {
 }
 
 
-const mapStateToProps = state => ({ profile: state.profile, });
+const mapStateToProps = state => ({
+    profile: state.profile,
+    roomID: state.mainStates.roomID,
+});
 const mapDispatchToProps = {
     updateProfile: (payload: any) => ({ type: types.UPDATE_PROFILE, payload }),
 };

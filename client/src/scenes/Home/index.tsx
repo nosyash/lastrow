@@ -17,6 +17,7 @@ function RoomListBase(props) {
         document.title = 'Backrow'
 
         props.clearPopups();
+        props.updateMainStates({ roomID: '', ID: '' })
         getRoomList();
 
         if (props.guest) {
@@ -100,6 +101,7 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = {
     UpdateRoomList: payload => ({ type: types.UPDATE_ROOMLIST, payload }),
     updateProfile: payload => ({ type: types.UPDATE_PROFILE, payload }),
+    updateMainStates: payload => ({ type: types.UPDATE_MAIN_STATES, payload }),
     clearPopups: () => ({ type: types.CLEAR_POPUPS }),
 };
 
