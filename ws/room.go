@@ -35,6 +35,7 @@ func NewRoomHub(id string) *hub {
 		make(chan *websocket.Conn),
 		cache.New(id),
 		make(chan struct{}),
+		make(chan struct{}),
 		syncer{
 			false,
 			make(chan struct{}),
@@ -52,7 +53,7 @@ func NewRoomHub(id string) *hub {
 func (h hub) HandleActions() {
 	go h.cache.HandleCacheEvents()
 	go h.syncElapsedTime()
-	go storage.Add(h.cache)
+	go storage.Add(h.cache, h.closeStorage)
 
 	for {
 		select {
@@ -137,8 +138,8 @@ func (h hub) remove(conn *websocket.Conn) {
 		if len(h.hub) == 0 {
 
 			if h.cache.Playlist.Size() == 0 {
+				h.closeStorage <- struct{}{}
 				h.syncer.close <- struct{}{}
-				h.cache.Close <- struct{}{}
 				closeRoom <- h.id
 				return
 			}
@@ -160,9 +161,9 @@ func (h hub) remove(conn *websocket.Conn) {
 						cancel()
 						break loop
 					case <-ctx.Done():
+						h.closeStorage <- struct{}{}
 						h.syncer.close <- struct{}{}
 						cancel()
-						h.cache.Close <- struct{}{}
 						closeRoom <- h.id
 						break loop
 					}

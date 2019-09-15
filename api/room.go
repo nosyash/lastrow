@@ -266,6 +266,15 @@ func (server Server) changeEmojiName(w http.ResponseWriter, name, newName, uuid 
 		return
 	}
 
+	for _, v := range room.Emoji {
+		if v.Name == newName {
+			sendJson(w, http.StatusBadRequest, message{
+				Error: "Emoji with this name already exist in the room",
+			})
+			return
+		}
+	}
+
 	fIdx := -1
 
 	for i, v := range room.Emoji {

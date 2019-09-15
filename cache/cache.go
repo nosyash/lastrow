@@ -44,6 +44,8 @@ func (cache *Cache) HandleCacheEvents() {
 			cache.Playlist.addVideo(url)
 		case id := <-cache.Playlist.DelVideo:
 			cache.Playlist.delVideo(id)
+		case <-cache.Close:
+			return
 		}
 	}
 }

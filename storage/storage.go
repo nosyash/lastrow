@@ -17,11 +17,18 @@ func init() {
 }
 
 // Add a cache to storage and wait for closing
-func Add(cache *cache.Cache) {
+func Add(cache *cache.Cache, close <-chan struct{}) {
 	storage.cs[cache.ID] = cache
 
-	<-cache.Close
-	delete(storage.cs, cache.ID)
+	for {
+		select {
+		case <-close:
+			cache.Close <- struct{}{}
+			delete(storage.cs, cache.ID)
+			println("ass we can!")
+			return
+		}
+	}
 }
 
 // Size return storage size
