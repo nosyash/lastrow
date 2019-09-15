@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { set, get as lsGet } from 'local-storage';
-import * as types from '../../constants/actionTypes';
+import * as types from '../../../constants/actionTypes';
+import './style.less'
 
 // TODO: Extremely poorly made. Refactor!
 
@@ -19,23 +20,6 @@ function ProfileSettings(props) {
 
     return (
         <div className="popup-element settings_container">
-            <input
-                name="notification"
-                id="notification"
-                title="Get desktop notifications when quoted"
-                className="option-checkbox"
-                type="checkbox"
-                value={notify}
-                checked={notify}
-                onChange={onNotificationChange}
-            />
-            <label
-                className="option-label"
-                htmlFor="notification"
-                title="Get desktop notifications when quoted"
-            >
-                Desktop notifications
-            </label>
         </div>
     );
 }

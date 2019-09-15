@@ -109,7 +109,6 @@ function Popup(props) {
         setShow(true);
 
         document.addEventListener('keydown', handleKeyDown);
-
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
         }
