@@ -126,8 +126,13 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest) {
 	case eTypeDelEmoji:
 		server.delEmoji(w, name, id, &room)
 	case eTypeChangeEmojnam:
+		if name == newName {
+			sendJson(w, http.StatusBadRequest, message{
+				Error: "Names are the same",
+			})
+			return
+		}
 		server.changeEmojiName(w, name, newName, id, &room)
-
 	default:
 		sendJson(w, http.StatusBadRequest, message{
 			Error: "Unknown action type",
@@ -261,10 +266,20 @@ func (server Server) changeEmojiName(w http.ResponseWriter, name, newName, uuid 
 		return
 	}
 
+	fIdx := -1
+
 	for i, v := range room.Emoji {
 		if v.Name == name {
 			room.Emoji[i].Name = newName
+			fIdx = i
 		}
+	}
+
+	if fIdx == -1 {
+		sendJson(w, http.StatusBadRequest, message{
+			Error: "Emoji with this name was not be found",
+		})
+		return
 	}
 
 	if err := server.db.UpdateRoomValue(uuid, "emoji", room.Emoji); err != nil {
@@ -274,6 +289,8 @@ func (server Server) changeEmojiName(w http.ResponseWriter, name, newName, uuid 
 		})
 		return
 	}
+
+	// Update sotrage for this room(uuid) and after send all users new emoji list
 }
 
 func (server Server) roomInnerHandler(w http.ResponseWriter, r *http.Request) {
