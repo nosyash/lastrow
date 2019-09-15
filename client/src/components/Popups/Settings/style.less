@@ -4,8 +4,13 @@
     top: 0;
     left: 0;
     right: 0;
+    z-index: 9;
     background: #252728;
     backdrop-filter: none;
+
+    .popup-title {
+        font-size: 2em;
+    }
 
     .popup-element {
         background: transparent;
@@ -21,10 +26,19 @@
         }
     }
 
+    .settings-menu {
+        width: 200px;
+        margin-right: 10px;
+    }
+
     .settings-menu__title {
         font-weight: bold;
         font-size: 17px;
         margin: 10px 0 2px;
+    }
+
+    .settings-menu__title:first-child {
+        margin-top: 0;
     }
 
     .settings-menu__subitem {
@@ -46,4 +60,53 @@
     .settings-menu__subitem_active {
         background: hsla(200, 4%, 25%, 1);
     }
+
+    .settings-scenes {
+        width: 100%;
+    }
+}
+
+
+.profile-settings_container {
+    padding: 15px;
+    border-radius: 5px;
+    max-width: 500px;
+    display: flex;
+    flex-direction: row;
+    background: #303030;
+    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
+
+    .name-contaner {
+        margin: 0 10px;
+
+        .title {
+            transition: 0.5s;
+        }
+    }
+
+    .profile-controls {
+        margin: 0 12px;
+    }
+
+    .name-contaner .control {
+        vertical-align: super;
+        margin-left: 5px;
+    }
+
+    .profile-avatar_mini {
+        transition: 0.5s;
+        width: 100px;
+        height: 100px;
+        // margin: 0 auto;
+        cursor: pointer;
+
+        &:hover {
+            opacity: 0.7;
+        }
+    }
+
+    .controls-container .button {
+        width: 150px;
+    }
+
 }

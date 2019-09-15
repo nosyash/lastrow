@@ -22,7 +22,6 @@ import ImagePicker from './ImagePicker';
 import LogForm from './LogForm';
 import NewRoom from './NewRoom';
 import Playlist from './Playlist';
-import ProfileSettings from './ProfileSettings';
 import Settings from './Settings/index';
 
 interface WrapperProps {
@@ -65,7 +64,6 @@ function Popups({ popups, removePopup }) {
     const p = popups;
     return (
         <div className="popups_container">
-            {p.profileSettings && wrapper({ popup: <ProfileSettings />, name: PROFILE_SETTINGS })}
             {p.colorPicker && wrapper({ popup: <ColorPicker />, name: COLOR_PICKER })}
             {p.guestAuth && wrapper({ popup: <GuestAuth />, name: GUEST_AUTH })}
             {p.imagePicker && wrapper({ popup: <ImagePicker />, name: IMAGE_PICKER })}

@@ -25,7 +25,6 @@ function ControlPanel(props: any) {
             {logged && (
                 <RenderProfile
                     logged={logged}
-                    onProfileSettings={() => props.togglePopup(PROFILE_SETTINGS)}
                     onSettings={() => props.togglePopup(SETTINGS)}
                     profile={profile}
                 />
@@ -78,7 +77,7 @@ const RenderItem = ({ classes, onClick, dataId, text }: any) => (
     </div>
 );
 
-const RenderProfile = ({ profile, onProfileSettings, onSettings }: any) => {
+const RenderProfile = ({ profile, onSettings }: any) => {
     const { name, image, color, guest } = profile;
     const backgroundColor = color;
     const backgroundImage = `url(${image})`;
@@ -91,9 +90,6 @@ const RenderProfile = ({ profile, onProfileSettings, onSettings }: any) => {
                 </span>
                 {!guest && (
                     <div className="controls-container">
-                        <span onClick={onProfileSettings} className="control">
-                            <i className="fas fa-users-cog" />
-                        </span>
                         <span onClick={onSettings} className="control">
                             <i className="fas fa-cog" />
                         </span>

@@ -1,9 +1,10 @@
 /* eslint-disable jsx-a11y/label-has-for */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { set, get as lsGet } from 'local-storage';
 import * as types from '../../../constants/actionTypes';
 import SettingsMenu from './components/SettingsMenu'
+import SettingsScenes from './scenes/index'
 import './style.less'
 
 const items = [
@@ -30,26 +31,18 @@ interface ProfileSettings {
 
 function ProfileSettings(props: ProfileSettings) {
     const [active, setActive] = useState('Account')
+
     return (
         <div className="popup-element settings-container">
             <SettingsMenu list={items} active={active} onClick={name => setActive(name)} />
-
+            <SettingsScenes active={active} />
         </div>
     );
 }
 
-const mapStateToProps = state => ({
-    profile: state.profile,
-});
 
+const mapStateToProps = state => ({ profile: state.profile, });
 const mapDispatchToProps = {
     updateProfile: (payload: any) => ({ type: types.UPDATE_PROFILE, payload }),
-    removePopup: (payload: any) => ({ type: types.REMOVE_POPUP, payload }),
-    addPopup: (payload: any) => ({ type: types.ADD_POPUP, payload }),
-    togglePopup: (payload: any) => ({ type: types.TOGGLE_POPUP, payload }),
 };
-
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(ProfileSettings);
+export default connect(mapStateToProps, mapDispatchToProps)(ProfileSettings);

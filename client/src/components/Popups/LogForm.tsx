@@ -7,7 +7,7 @@ import http from '../../utils/httpServices';
 import { toastOpts } from '../../conf';
 import * as types from '../../constants/actionTypes';
 import * as api from '../../constants/apiActions';
-import { NEW_ROOM, PROFILE_SETTINGS } from '../../constants';
+import { NEW_ROOM, PROFILE_SETTINGS, SETTINGS } from '../../constants';
 
 class LogForm extends Form {
     state = {
@@ -116,9 +116,9 @@ class LogForm extends Form {
         addPopup(NEW_ROOM);
     };
 
-    handleProfileSettings = () => {
+    handleSettings = () => {
         const { addPopup } = this.props as any;
-        addPopup(PROFILE_SETTINGS);
+        addPopup(SETTINGS);
     };
 
     render() {
@@ -141,7 +141,7 @@ class LogForm extends Form {
                 {logged && (
                     <RenderProfile
                         addPopup={addPopup}
-                        onProfileSettings={this.handleProfileSettings}
+                        onSettings={this.handleSettings}
                         handleRoomCreation={this.handleRoomCreation}
                         handleLogOut={this.handleLogOut}
                         profile={profile}
@@ -186,7 +186,7 @@ const RenderLoginForm = props => {
 
 const RenderProfile = props => {
     const { profile } = props;
-    const { handleLogOut, handleRoomCreation, onProfileSettings } = props;
+    const { handleLogOut, handleRoomCreation, onSettings } = props;
     const { image, color, name } = profile;
     const backgroundImage = `url(${image || ''})`;
     return (
@@ -200,10 +200,7 @@ const RenderProfile = props => {
                     <span onClick={handleRoomCreation} className="control sign-out">
                         Create Room
                     </span>
-                    <span onClick={onProfileSettings} className="control">
-                        <i className="fas fa-users-cog" />
-                    </span>
-                    <span className="control">
+                    <span onClick={onSettings} className="control">
                         <i className="fas fa-cog" />
                     </span>
                     <span onClick={handleLogOut} className="control sign-out">

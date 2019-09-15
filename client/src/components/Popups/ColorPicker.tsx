@@ -61,8 +61,12 @@ class ColorPicker extends React.Component<ColorPickerProps, ColorPickerState> {
     }
 }
 
+const mapStateToProps = state => ({
+    color: state.profile.color,
+});
+
 export default connect(
-    null,
+    mapStateToProps,
     {
         updateColor: payload => requestColorUpdate(payload),
         closePopup: () => ({ type: types.REMOVE_POPUP, payload: 'colorPicker' }),

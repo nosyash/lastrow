@@ -2,12 +2,12 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Joi from 'joi-browser';
 import { toast } from 'react-toastify';
-import Form from '../Form';
-import * as api from '../../constants/apiActions';
-import * as types from '../../constants/actionTypes';
-import http from '../../utils/httpServices';
-import { toastOpts } from '../../conf';
-import { IMAGE_PICKER, COLOR_PICKER } from '../../constants';
+import Form from '../../../Form';
+import * as api from '../../../../constants/apiActions';
+import * as types from '../../../../constants/actionTypes';
+import http from '../../../../utils/httpServices';
+import { toastOpts } from '../../../../conf';
+import { IMAGE_PICKER, COLOR_PICKER } from '../../../../constants';
 
 // TODO: Extremely poorly made. Refactor!
 
@@ -180,73 +180,75 @@ const RenderForm = props => {
     const backgroundImage = `url(${profile.image})`;
     const hasChanges = Object.entries(data).length !== 0;
     return (
-        <div className="popup-element profile-settings_container">
+        <div className="profile-settings_container">
             <div
                 onClick={handleImageChange}
                 style={{ backgroundImage }}
                 title="Change profile image"
                 className="profile-avatar profile-avatar_mini"
             />
-            <div className="name-contaner">
-                <span style={{ color: color || profile.color }} className="title">
-                    {profile.name}
-                </span>
-                <span
-                    title="Change name"
-                    onClick={() => onControlClick('name')}
-                    className="control"
-                >
-                    <i className="fa fa-edit" />
-                </span>
-                <span
-                    title="Change color"
-                    onClick={() => onControlClick('color')}
-                    className="control"
-                >
-                    <i className="fa fa-palette" />
-                </span>
-            </div>
-            <RenderControls onClick={onControlClick} />
-            <form onSubmit={handleSubmit}>
-                {name !== null &&
-                    renderInput({
-                        name: 'name',
-                        icon: 'user',
-                        autoFocus: true,
-                        placeholder: 'Name',
-                    })}
-                {password !== null &&
-                    renderInput({
-                        name: 'password',
-                        type: 'password',
-                        renderEye: true,
-                        icon: 'lock',
-                        autoFocus: true,
-                        placeholder: 'Current Password',
-                    })}
-                {passwordNew !== null &&
-                    renderInput({
-                        name: 'passwordNew',
-                        type: 'password',
-                        icon: 'lock',
-                        placeholder: 'New Password',
-                    })}
-                <div className="controls-container">
-                    {hasChanges && (
-                        <React.Fragment>
-                            {renderButton('Save changes')}
-
-                            <button
-                                onClick={() => (hasChanges ? onFormReset() : onClose())}
-                                type="button"
-                                className="button button-cancel"
-                            >
-                                Cancel
-                            </button>
-                        </React.Fragment>
-                    )}
+            <div>
+                <div className="name-contaner">
+                    <span style={{ color: color || profile.color }} className="title">
+                        {profile.name}
+                    </span>
+                    <span
+                        title="Change name"
+                        onClick={() => onControlClick('name')}
+                        className="control"
+                    >
+                        <i className="fa fa-edit" />
+                    </span>
+                    <span
+                        title="Change color"
+                        onClick={() => onControlClick('color')}
+                        className="control"
+                    >
+                        <i className="fa fa-palette" />
+                    </span>
                 </div>
-            </form>
+                <RenderControls onClick={onControlClick} />
+                <form onSubmit={handleSubmit}>
+                    {name !== null &&
+                        renderInput({
+                            name: 'name',
+                            icon: 'user',
+                            autoFocus: true,
+                            placeholder: 'Name',
+                        })}
+                    {password !== null &&
+                        renderInput({
+                            name: 'password',
+                            type: 'password',
+                            renderEye: true,
+                            icon: 'lock',
+                            autoFocus: true,
+                            placeholder: 'Current Password',
+                        })}
+                    {passwordNew !== null &&
+                        renderInput({
+                            name: 'passwordNew',
+                            type: 'password',
+                            icon: 'lock',
+                            placeholder: 'New Password',
+                        })}
+                    <div className="controls-container">
+                        {hasChanges && (
+                            <React.Fragment>
+                                {renderButton('Save changes')}
+
+                                <button
+                                    onClick={() => (hasChanges ? onFormReset() : onClose())}
+                                    type="button"
+                                    className="button button-cancel"
+                                >
+                                    Cancel
+                            </button>
+                            </React.Fragment>
+                        )}
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };
