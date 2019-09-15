@@ -137,12 +137,27 @@
             margin-top: 10px;
 
             .icon {
-                position: absolute;
-                right: 7px;
-                margin-top: 2px;
+                text-align: center;
+                font-size: 1em;
+                margin: 0 10px;
+                cursor: pointer;
+
+                &:hover {
+                    opacity: 0.7;
+                }
+            }
+
+            .emotes-settings__icon_rename {
+                margin-top: 5px;
                 color: rgb(0, 187, 100);
             }
+
+            .emotes-settings__icon_delete {
+                color: #ff005e;
+                margin-top: 6px;
+            }
         }
+
     }
 
     .emote-settings-item_image {
@@ -150,6 +165,10 @@
     }
 
     .emote-settings-item_alias {
+        margin: auto;
+    }
+
+    .emote-settings-item_right {
         margin: auto;
     }
 
