@@ -34,8 +34,10 @@ func NewRoomHub(id string) *hub {
 		make(chan *user),
 		make(chan *websocket.Conn),
 		cache.New(id),
+		make(chan struct{}),
 		syncer{
 			false,
+			make(chan struct{}),
 			make(chan struct{}),
 			make(chan struct{}),
 			make(chan struct{}),
@@ -73,6 +75,8 @@ func (h hub) HandleActions() {
 			if h.syncer.sleep && h.cache.Playlist.Size() > 0 {
 				h.syncer.wakeUp <- struct{}{}
 			}
+		case <-h.close:
+			return
 		}
 	}
 }
@@ -133,8 +137,9 @@ func (h hub) remove(conn *websocket.Conn) {
 		if len(h.hub) == 0 {
 
 			if h.cache.Playlist.Size() == 0 {
+				h.syncer.close <- struct{}{}
 				h.cache.Close <- struct{}{}
-				close <- h.id
+				closeRoom <- h.id
 				return
 			}
 
@@ -142,6 +147,9 @@ func (h hub) remove(conn *websocket.Conn) {
 				closeDeadline = true
 				ctx, cancel := context.WithTimeout(context.Background(), closeDeadlineTimeout*time.Second)
 
+				// FIX pause bug
+				// If simultaneously will be recv two package skip video and leave user
+				// skip maybe handle first, so line below never send to the pause channel
 				h.syncer.pause <- struct{}{}
 
 			loop:
@@ -152,9 +160,10 @@ func (h hub) remove(conn *websocket.Conn) {
 						cancel()
 						break loop
 					case <-ctx.Done():
+						h.syncer.close <- struct{}{}
 						cancel()
 						h.cache.Close <- struct{}{}
-						close <- h.id
+						closeRoom <- h.id
 						break loop
 					}
 				}

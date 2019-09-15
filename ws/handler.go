@@ -4,10 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
 )
+
+var delLock sync.Mutex
 
 const (
 	syncPeriod       = 3
@@ -110,10 +113,15 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 		ID := req.Body.Event.Data.ID
 		if ID != "" && len(ID) == 64 {
 
+			delLock.Lock()
+
 			if h.syncer.currentVideoID == ID {
 				h.syncer.skip <- struct{}{}
+				delLock.Unlock()
 				return
 			}
+
+			delLock.Unlock()
 
 			h.cache.Playlist.DelVideo <- ID
 
@@ -169,12 +177,24 @@ func (h *hub) syncElapsedTime() {
 	var elapsed int
 	var ticker = time.Tick(syncPeriod * time.Second)
 
+exit:
 	for {
+
 		if h.cache.Playlist.Size() == 0 {
 			h.syncer.sleep = true
-			<-h.syncer.wakeUp
-			h.syncer.sleep = false
+
+		wakeUp:
+			for {
+				select {
+				case <-h.syncer.wakeUp:
+					h.syncer.sleep = false
+					break wakeUp
+				case <-h.syncer.close:
+					break exit
+				}
+			}
 		}
+
 		video := h.cache.Playlist.TakeHeadElement()
 		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration+sleepBeforeStart)*time.Second))
 
@@ -202,14 +222,26 @@ func (h *hub) syncElapsedTime() {
 				cancel()
 				break loop
 			case <-h.syncer.pause:
-				<-h.syncer.resume
-				ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration-elapsed+sleepBeforeStart)*time.Second))
+			resume:
+				for {
+					select {
+					case <-h.syncer.resume:
+						ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration-elapsed+sleepBeforeStart)*time.Second))
+						break resume
+					case <-h.syncer.close:
+						cancel()
+						break exit
+					}
+				}
+			case <-h.syncer.close:
+				cancel()
+				break exit
 			}
 		}
 
-		h.cache.Playlist.DelVideo <- video.ID
-		<-h.cache.Playlist.DelFeedBack
 		h.syncer.currentVideoID = ""
 		elapsed = 0
+		h.cache.Playlist.DelVideo <- video.ID
+		<-h.cache.Playlist.DelFeedBack
 	}
 }

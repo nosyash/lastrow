@@ -20,7 +20,7 @@ var (
 // HandleWsConnection handle new websocker connection
 func HandleWsConnection(db *db.Database) {
 	Register = make(chan *websocket.Conn)
-	close = make(chan string)
+	closeRoom = make(chan string)
 
 	rh := &roomsHub{
 		make(map[string]*hub),
@@ -31,7 +31,8 @@ func HandleWsConnection(db *db.Database) {
 		select {
 		case conn := <-Register:
 			go rh.registerNewConn(conn)
-		case roomID := <-close:
+		case roomID := <-closeRoom:
+			rh.rhub[roomID].close <- struct{}{}
 			delete(rh.rhub, roomID)
 		}
 	}
