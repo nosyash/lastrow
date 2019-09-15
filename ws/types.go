@@ -1,8 +1,6 @@
 package ws
 
 import (
-	"sync"
-
 	"github.com/nosyash/backrow/cache"
 	"github.com/nosyash/backrow/db"
 
@@ -11,8 +9,7 @@ import (
 
 // Register a new connection in a room cache
 var Register chan *websocket.Conn
-var close chan string
-var lock sync.Mutex
+var closeRoom chan string
 
 type roomsHub struct {
 	rhub map[string]*hub
@@ -25,6 +22,7 @@ type hub struct {
 	register   chan *user
 	unregister chan *websocket.Conn
 	cache      *cache.Cache
+	close      chan struct{}
 	syncer     syncer
 	id         string
 }
@@ -59,6 +57,7 @@ type syncer struct {
 	skip           chan struct{}
 	pause          chan struct{}
 	resume         chan struct{}
+	close          chan struct{}
 	currentVideoID string
 }
 

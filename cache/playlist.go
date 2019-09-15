@@ -7,9 +7,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/nosyash/backrow/vapi"
-
 	"github.com/nosyash/backrow/ffprobe"
+	"github.com/nosyash/backrow/vapi"
 )
 
 var (
@@ -24,6 +23,9 @@ var (
 
 	// ErrUnsupportedHost return when video link has unsupported host
 	ErrUnsupportedHost = errors.New("Unsupported host")
+
+	// ErrLinkDoesNotMath return when regexp check return false, but host is supported
+	ErrLinkDoesNotMath = errors.New("Link does't match required format")
 )
 
 var (
@@ -38,44 +40,24 @@ func (pl *playlist) addVideo(vURL string) {
 		pl.AddFeedBack <- err
 		return
 	}
-	ext := filepath.Ext(pURL.String())
 
-	switch ext {
-	case ".mp4", ".m3u8", ".webm":
-		duration, title, err := ffprobe.GetMetaData(vURL)
-		if err != nil {
-			pl.AddFeedBack <- err
+	switch pURL.Hostname() {
+	case "www.youtube.com", "youtube.com", "youtu.be", "www.youtu.be":
+		if youtubeRegExp.MatchString(vURL) {
+			pl.addYoutube(pURL)
+		} else {
+			pl.AddFeedBack <- ErrLinkDoesNotMath
+		}
+	default:
+		ext := filepath.Ext(vURL)
+
+		if ext == "" {
+			pl.AddFeedBack <- ErrUnsupportedHost
 			return
 		}
 
-		pl.playlist = append(pl.playlist, &Video{
-			Title:    title,
-			Duration: duration,
-			URL:      vURL,
-			ID:       getRandomUUID(),
-			Direct:   true,
-		})
-		pl.AddFeedBack <- nil
-		pl.UpdatePlaylist <- struct{}{}
-	case "":
-		if youtubeRegExp.MatchString(vURL) {
-			var vID string
-
-			if pURL.Hostname() == "youtu.be" {
-				path := strings.Split(pURL.Path, "/")
-				if len(path) >= 2 {
-					vID = path[1]
-				}
-			} else {
-				vID = pURL.Query().Get("v")
-			}
-
-			if vID == "" {
-				pl.AddFeedBack <- ErrEmptyYoutubeVideoID
-				return
-			}
-
-			duration, title, err := vapi.GetVideoDetails(vID)
+		if ext == ".mp4" || ext == ".webm" || ext == ".m3u8" {
+			duration, title, err := ffprobe.GetMetaData(vURL)
 			if err != nil {
 				pl.AddFeedBack <- err
 				return
@@ -86,16 +68,51 @@ func (pl *playlist) addVideo(vURL string) {
 				Duration: duration,
 				URL:      vURL,
 				ID:       getRandomUUID(),
-				Direct:   false,
+				Direct:   true,
 			})
 			pl.AddFeedBack <- nil
 			pl.UpdatePlaylist <- struct{}{}
-		} else {
-			pl.AddFeedBack <- ErrUnsupportedHost
+
+			return
 		}
-	default:
+
 		pl.AddFeedBack <- ErrUnsupportedFormat
 	}
+}
+
+func (pl *playlist) addYoutube(url *url.URL) {
+	var vID string
+
+	if url.Hostname() == "youtu.be" {
+		path := strings.Split(url.Path, "/")
+		if len(path) >= 2 {
+			vID = path[1]
+		}
+	} else {
+		vID = url.Query().Get("v")
+	}
+
+	if vID == "" {
+		pl.AddFeedBack <- ErrEmptyYoutubeVideoID
+		return
+	}
+
+	duration, title, err := vapi.GetVideoDetails(vID)
+	if err != nil {
+		pl.AddFeedBack <- err
+		return
+	}
+
+	pl.playlist = append(pl.playlist, &Video{
+		Title:    title,
+		Duration: duration,
+		URL:      url.String(),
+		ID:       getRandomUUID(),
+		Direct:   false,
+	})
+
+	pl.AddFeedBack <- nil
+	pl.UpdatePlaylist <- struct{}{}
 }
 
 func (pl *playlist) delVideo(id string) {

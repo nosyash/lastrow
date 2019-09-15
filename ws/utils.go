@@ -4,9 +4,12 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"sync"
 
 	"github.com/gorilla/websocket"
 )
+
+var sendLocker sync.Mutex
 
 func readPacket(conn *websocket.Conn) (*packet, error) {
 	request := &packet{}
@@ -21,8 +24,8 @@ func sendError(conn *websocket.Conn, errMsg error) error {
 }
 
 func writeMessage(conn *websocket.Conn, messageType int, message []byte) error {
-	lock.Lock()
-	defer lock.Unlock()
+	sendLocker.Lock()
+	defer sendLocker.Unlock()
 	return conn.WriteMessage(messageType, message)
 }
 

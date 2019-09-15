@@ -14,7 +14,7 @@ import (
 
 var (
 	// ErrIncorrectVideoID return when youtube API return empty video details
-	ErrIncorrectVideoID = errors.New("Video ID is incorrect")
+	ErrIncorrectVideoID = errors.New("Couldn't find Youtube video by specified video ID")
 
 	// ErrAPIKeyIsEmpty return when os.Getenv() return empty Youtube API key
 	ErrAPIKeyIsEmpty = errors.New("Youtube API key was not specified")
