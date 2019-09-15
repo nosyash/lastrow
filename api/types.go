@@ -107,7 +107,7 @@ const (
 )
 
 const (
-	minEmojiNameLength = 4
+	minEmojiNameLength = 2
 	maxEmojiNameLength = 15
 )
 
