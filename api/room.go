@@ -179,6 +179,15 @@ func (server Server) addEmoji(w http.ResponseWriter, name, uuid, iType string, i
 		}
 	}
 
+	// Not support .jpg emoji
+	// fuck jpg emoji!!
+	if iType == "jpg " {
+		sendJson(w, http.StatusBadRequest, message{
+			Error: "Unsupported emoji file extension",
+		})
+		return
+	}
+
 	imgPath := filepath.Join(filepath.Join("/media", server.imageServer.EmojiImgPath), room.UUID[:32], fmt.Sprintf("%s.%s", getRandomUUID()[32:], iType))
 	image := newImage(img)
 
@@ -203,7 +212,9 @@ func (server Server) addEmoji(w http.ResponseWriter, name, uuid, iType string, i
 		return
 	}
 
-	// Update sotrage for this room(uuid) and after send all users new emoji list
+	if storage.Size() > 0 {
+		storage.UpdateEmojiList(room.Path)
+	}
 }
 
 func (server Server) delEmoji(w http.ResponseWriter, name, uuid string, room *db.Room) {
@@ -247,8 +258,9 @@ func (server Server) delEmoji(w http.ResponseWriter, name, uuid string, room *db
 		})
 		return
 	}
-
-	// Update sotrage for this room(uuid) and after send all users new emoji list
+	if storage.Size() > 0 {
+		storage.UpdateEmojiList(room.Path)
+	}
 }
 
 func (server Server) changeEmojiName(w http.ResponseWriter, name, newName, uuid string, room *db.Room) {
@@ -299,7 +311,9 @@ func (server Server) changeEmojiName(w http.ResponseWriter, name, newName, uuid 
 		return
 	}
 
-	// Update sotrage for this room(uuid) and after send all users new emoji list
+	if storage.Size() > 0 {
+		storage.UpdateEmojiList(room.Path)
+	}
 }
 
 func (server Server) roomInnerHandler(w http.ResponseWriter, r *http.Request) {

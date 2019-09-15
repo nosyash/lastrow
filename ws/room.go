@@ -71,6 +71,8 @@ func (h hub) HandleActions() {
 			h.send(message)
 		case <-h.cache.Users.UpdateUsers:
 			go h.updateUserList()
+		case path := <-h.cache.Room.UpdateEmojis:
+			go h.updateEmojis(path)
 		case <-h.cache.Playlist.UpdatePlaylist:
 			go h.updatePlaylist()
 			if h.syncer.sleep && h.cache.Playlist.Size() > 0 {

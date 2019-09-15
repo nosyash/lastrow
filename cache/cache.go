@@ -8,6 +8,7 @@ import (
 
 // New create new cache
 func New(id string) *Cache {
+	db := db.Connect(os.Getenv("DB_ENDPOINT"))
 	return &Cache{
 		Users{
 			make(map[string]*User),
@@ -15,7 +16,7 @@ func New(id string) *Cache {
 			make(chan *User),
 			make(chan string),
 			make(chan struct{}),
-			db.Connect(os.Getenv("DB_ENDPOINT")),
+			db,
 		},
 		playlist{
 			make([]*Video, 0),
@@ -24,6 +25,10 @@ func New(id string) *Cache {
 			make(chan error),
 			make(chan error),
 			make(chan struct{}),
+		},
+		room{
+			make(chan string),
+			db,
 		},
 		id,
 		make(chan struct{}),

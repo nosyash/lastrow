@@ -8,6 +8,7 @@ import (
 type Cache struct {
 	Users    Users
 	Playlist playlist
+	Room     room
 	ID       string
 	Close    chan struct{}
 }
@@ -22,6 +23,20 @@ type Users struct {
 	db          *db.Database
 }
 
+type playlist struct {
+	playlist       []*Video
+	AddVideo       chan string
+	DelVideo       chan string
+	AddFeedBack    chan error
+	DelFeedBack    chan error
+	UpdatePlaylist chan struct{}
+}
+
+type room struct {
+	UpdateEmojis chan string
+	db           *db.Database
+}
+
 // User is single user instance
 type User struct {
 	Name  string `json:"name"`
@@ -30,15 +45,6 @@ type User struct {
 	Guest bool   `json:"guest"`
 	UUID  string `json:"uuid,omitempty"`
 	ID    string `json:"__id"`
-}
-
-type playlist struct {
-	playlist       []*Video
-	AddVideo       chan string
-	DelVideo       chan string
-	AddFeedBack    chan error
-	DelFeedBack    chan error
-	UpdatePlaylist chan struct{}
 }
 
 // Video is instance of a video in playlist

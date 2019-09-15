@@ -45,21 +45,28 @@ func UpdateUser(userUUID string) {
 	}
 }
 
+// UpdateEmojiList in room
+func UpdateEmojiList(roomPath string) {
+	if c, ok := storage.cs[roomPath]; ok {
+		c.Room.UpdateEmojis <- roomPath
+	}
+}
+
 // GetUsersCount return users count in room by roomPath
 func GetUsersCount(roomPath string) int {
-	if _, ok := storage.cs[roomPath]; ok {
-		return storage.cs[roomPath].Users.UsersCount()
+	if c, ok := storage.cs[roomPath]; ok {
+		return c.Users.UsersCount()
 	}
 	return 0
 }
 
 // GetCurrentVideoTitle return current video title by roomPath
 func GetCurrentVideoTitle(roomPath string) string {
-	if _, ok := storage.cs[roomPath]; ok {
-		if storage.cs[roomPath].Playlist.Size() == 0 {
+	if c, ok := storage.cs[roomPath]; ok {
+		if c.Playlist.Size() == 0 {
 			return ""
 		}
-		if title := storage.cs[roomPath].Playlist.GetCurrentTitle(); title != "" {
+		if title := c.Playlist.GetCurrentTitle(); title != "" {
 			return title
 		}
 

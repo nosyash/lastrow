@@ -171,6 +171,15 @@ func (h hub) updatePlaylist() {
 	h.broadcast <- data
 }
 
+func (h hub) updateEmojis(path string) {
+	el := h.cache.Room.GetAllEmojis(path)
+	packet := createPacket(roomUpdateEvent, eTypeEmojiUpdate, data{
+		Emoji: el,
+	})
+
+	h.broadcast <- packet
+}
+
 func (h *hub) syncElapsedTime() {
 	var ep elapsedTime
 	var d data

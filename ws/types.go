@@ -75,6 +75,7 @@ type data struct {
 	ID       string        `json:"__id,omitempty"`
 	Users    []*cache.User `json:"users,omitempty"`
 	Ticker   *elapsedTime  `json:"ticker,omitempty"`
+	Emoji    []db.Emoji    `json:"emoji,omitempty"`
 	FeedBack *feedback     `json:"feedback,omitempty"`
 }
 
@@ -114,6 +115,7 @@ const (
 	userEvent          = "user_event"
 	playerEvent        = "player_event"
 	playlistEvent      = "playlist_event"
+	roomUpdateEvent    = "room_update"
 	chatEvent          = "chat_event"
 	errorEvent         = "error"
 )
@@ -124,6 +126,7 @@ const (
 	eTypePlDel       = "playlist_del"
 	eTypeUpdUserList = "update_users"
 	eTypePlaylistUpd = "update_playlist"
+	eTypeEmojiUpdate = "emoji_update"
 	eTypeFeedBack    = "feedback"
 	eTypeTicker      = "ticker"
 )
