@@ -9,6 +9,7 @@
 
     .popup-element {
         background: transparent;
+        flex-direction: row;
     }
 
     .popup-header {
@@ -18,5 +19,31 @@
         .controls-container .fa-times {
             font-size: 2em;
         }
+    }
+
+    .settings-menu__title {
+        font-weight: bold;
+        font-size: 17px;
+        margin: 10px 0 2px;
+    }
+
+    .settings-menu__subitem {
+        font-weight: normal;
+        font-size: 15px;
+        padding-left: 15px;
+
+        transition: 0.1s ease-out;
+        cursor: pointer;
+        margin: 2px 0;
+        padding: 3px 3px 1px 15px;
+        border-radius: 4px;
+
+        &:hover {
+            background: hsla(200, 4%, 25%, 1);
+        }
+    }
+
+    .settings-menu__subitem_active {
+        background: hsla(200, 4%, 25%, 1);
     }
 }
