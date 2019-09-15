@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { requestEmoteRename, requestEmoteDelete } from '../../../../actions';
 
 interface EmoteItemProps {
@@ -14,7 +14,8 @@ export default function EmoteItem({ alias, path }: EmoteItemProps) {
         setValue(target.value)
     }
 
-    function handleRename() {
+    function handleRename(e: FormEvent) {
+        e.preventDefault();
         requestEmoteRename({ name: alias, newname: value })
     }
 
@@ -26,7 +27,7 @@ export default function EmoteItem({ alias, path }: EmoteItemProps) {
     return (
         <div className="emote-settings-item">
             <img className="emote-settings-item_image emote" src={path} title={alias} />
-            <div className="emote-settings-item_right">
+            <form onSubmit={handleRename} className="emote-settings-item_right">
                 <span
                     style={{ visibility: renamed ? 'visible' : 'hidden' }}
                     onClick={handleRename}
@@ -42,7 +43,7 @@ export default function EmoteItem({ alias, path }: EmoteItemProps) {
                     <i className="fa fa-times" />
                 </span>
 
-            </div>
+            </form>
         </div>
     )
 };
