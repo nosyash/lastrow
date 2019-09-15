@@ -25,7 +25,6 @@ func Add(cache *cache.Cache, close <-chan struct{}) {
 		case <-close:
 			cache.Close <- struct{}{}
 			delete(storage.cs, cache.ID)
-			println("ass we can!")
 			return
 		}
 	}
