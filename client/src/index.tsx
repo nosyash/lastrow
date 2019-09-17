@@ -12,12 +12,22 @@ import App from './App';
 
 import { store } from './store';
 
-ReactDOM.render(
-    <Provider store={store} >
-        < App />
-    </Provider>,
-    document.getElementById('root')
-);
+const render = () => {
+    return ReactDOM.render(
+        <Provider store={store}>
+            < App />
+        </Provider>,
+        document.getElementById('root')
+    );
+};
+
+render();
+
+if ((module as any).hot) {
+    (module as any).hot.accept('./App', () => {
+        render();
+    });
+}
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
