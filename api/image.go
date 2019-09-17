@@ -12,7 +12,7 @@ import (
 )
 
 type image struct {
-	b64Image *string
+	image *string
 }
 
 func newImage(img *string) *image {
@@ -33,7 +33,7 @@ func (i image) replaceImage(oldPath, newPath, iType string) error {
 func (i image) createImage(path, iType string) error {
 	path, name := filepath.Split(path)
 
-	dec, err := base64.StdEncoding.DecodeString(*i.b64Image)
+	dec, err := base64.StdEncoding.DecodeString(*i.image)
 	if err != nil {
 		return err
 	}
@@ -51,7 +51,7 @@ func (i image) createImage(path, iType string) error {
 		}
 
 		if ic.Width != profileImgWidth && ic.Height != profileImgHeight {
-			return errors.New("Profile image size should be 400x400")
+			return errors.New("Profile image size should be 400x400 pixels")
 		}
 
 		img, err := jpeg.Decode(reader)
