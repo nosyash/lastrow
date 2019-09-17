@@ -11,10 +11,6 @@ import (
 	"path/filepath"
 )
 
-var (
-	errImgFileExt = errors.New("Unknown image file extension")
-)
-
 type image struct {
 	b64Image *string
 }
@@ -37,22 +33,32 @@ func (i image) replaceImage(oldPath, newPath, iType string) error {
 func (i image) createImage(path, iType string) error {
 	path, name := filepath.Split(path)
 
-	encRawImg, err := base64.StdEncoding.DecodeString(*i.b64Image)
+	dec, err := base64.StdEncoding.DecodeString(*i.b64Image)
 	if err != nil {
 		return err
 	}
 
-	reader := bytes.NewReader(encRawImg)
+	reader := bytes.NewReader(dec)
 	os.MkdirAll(path, os.ModePerm)
 
 	var file *os.File
 
 	switch iType {
 	case "jpg", "jpeg":
+		ic, err := jpeg.DecodeConfig(reader)
+		if err != nil {
+			return err
+		}
+
+		if ic.Width != profileImgWidth && ic.Height != profileImgHeight {
+			return errors.New("Profile image size should be 400x400")
+		}
+
 		img, err := jpeg.Decode(reader)
 		if err != nil {
 			return err
 		}
+
 		file, err = os.OpenFile(filepath.Join(path, name), os.O_WRONLY|os.O_CREATE, 0777)
 
 		jpeg.Encode(file, img, &jpeg.Options{
@@ -60,25 +66,57 @@ func (i image) createImage(path, iType string) error {
 		})
 		file.Close()
 	case "gif":
-		img, err := gif.DecodeAll(reader)
+		ic, err := gif.DecodeConfig(reader)
 		if err != nil {
 			return err
 		}
-		file, err = os.OpenFile(filepath.Join(path, name), os.O_WRONLY|os.O_CREATE, 0777)
 
-		gif.EncodeAll(file, img)
-		file.Close()
+		if len(dec) > 256*1024 {
+			return errors.New("Emoji should be no bigger than 256kb")
+		}
+
+		if ic.Width <= maxEmojiImgWidth && ic.Width >= minEmojiImgWidth && ic.Height <= maxEmojiImgHeight && ic.Height >= minEmojiImgHeight {
+			img, err := gif.DecodeAll(reader)
+			if err != nil {
+				return err
+			}
+			file, err = os.OpenFile(filepath.Join(path, name), os.O_WRONLY|os.O_CREATE, 0777)
+
+			gif.EncodeAll(file, img)
+			file.Close()
+
+			return nil
+		}
+
+		return errors.New("Emoji size should be no bigger than 128x128 and no less than 32x32")
+
 	case "png":
-		img, err := png.Decode(reader)
+		ic, err := png.DecodeConfig(reader)
 		if err != nil {
 			return err
 		}
-		file, err = os.OpenFile(filepath.Join(path, name), os.O_WRONLY|os.O_CREATE, 0777)
 
-		png.Encode(file, img)
-		file.Close()
+		if len(dec) > 256*1024 {
+			return errors.New("Emoji should be no bigger than 256kb")
+		}
+
+		if ic.Width <= maxEmojiImgWidth && ic.Width >= minEmojiImgWidth && ic.Height <= maxEmojiImgHeight && ic.Height >= minEmojiImgHeight {
+			img, err := png.Decode(reader)
+			if err != nil {
+				return err
+			}
+			file, err = os.OpenFile(filepath.Join(path, name), os.O_WRONLY|os.O_CREATE, 0777)
+
+			png.Encode(file, img)
+			file.Close()
+
+			return nil
+		}
+
+		return errors.New("Emoji size should be no bigger than 128x128 and no less than 32x32")
+
 	default:
-		return errImgFileExt
+		return errors.New("Unknown image file extension")
 	}
 
 	return nil

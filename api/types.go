@@ -115,3 +115,14 @@ const (
 	maxOwnersCount = 15
 	maxEmojiCount  = 100
 )
+
+const (
+	profileImgWidth  = 400
+	profileImgHeight = 400
+
+	maxEmojiImgWidth  = 128
+	maxEmojiImgHeight = 128
+
+	minEmojiImgWidth  = 32
+	minEmojiImgHeight = 32
+)

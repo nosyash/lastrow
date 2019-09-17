@@ -225,7 +225,7 @@ func (server Server) delEmoji(w http.ResponseWriter, name, uuid string, room *db
 		return
 	}
 
-	if utf8.RuneCountInString(name) < minEmojiNameLength || utf8.RuneCountInString(name) > maxEmojiNameLength {
+	if len(name) < minEmojiNameLength || len(name) > maxEmojiNameLength {
 		sendJson(w, http.StatusBadRequest, message{
 			Error: errEmojiNameLength.Error(),
 		})
