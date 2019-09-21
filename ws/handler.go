@@ -216,12 +216,14 @@ exit:
 			for {
 				select {
 				case <-h.syncer.skip:
+					h.syncer.isStreamOrFrame = false
 					h.syncer.currentVideoID = ""
 					h.cache.Playlist.DelVideo <- video.ID
 					<-h.cache.Playlist.DelFeedBack
 
 					continue
 				case <-h.syncer.close:
+					h.syncer.isStreamOrFrame = false
 					break exit
 				}
 			}
