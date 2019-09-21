@@ -205,9 +205,21 @@ exit:
 		}
 
 		video := h.cache.Playlist.TakeHeadElement()
-		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration+sleepBeforeStart)*time.Second))
 
 		h.syncer.currentVideoID = video.ID
+
+		// A live steam or iframe. Waiting for skip
+		if video.Iframe == true || video.LiveStream == true {
+			<-h.syncer.skip
+
+			h.syncer.currentVideoID = ""
+			h.cache.Playlist.DelVideo <- video.ID
+			<-h.cache.Playlist.DelFeedBack
+
+			continue
+		}
+
+		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration+sleepBeforeStart)*time.Second))
 
 		time.Sleep(sleepBeforeStart * time.Second)
 

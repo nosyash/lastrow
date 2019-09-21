@@ -27,7 +27,7 @@ var (
 )
 
 var (
-	exp = regexp.MustCompile(`[^a-zA-Z0-9-_]`)
+	onlyStrAndNum = regexp.MustCompile(`[^a-zA-Z0-9-_]`)
 )
 
 func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
@@ -68,7 +68,7 @@ func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (server Server) createRoom(w http.ResponseWriter, title, path, userUUID string) {
-	if path != "" && exp.MatchString(path) {
+	if path != "" && onlyStrAndNum.MatchString(path) {
 		sendJson(w, http.StatusBadRequest, message{
 			Error: "Room path must contain only string characters and numbers",
 		})
@@ -156,7 +156,7 @@ func (server Server) addEmoji(w http.ResponseWriter, name, uuid, iType string, i
 		return
 	}
 
-	if exp.MatchString(name) {
+	if onlyStrAndNum.MatchString(name) {
 		sendJson(w, http.StatusBadRequest, message{
 			Error: "Emoji name must contain only string characters and numbers",
 		})
@@ -218,7 +218,7 @@ func (server Server) addEmoji(w http.ResponseWriter, name, uuid, iType string, i
 }
 
 func (server Server) delEmoji(w http.ResponseWriter, name, uuid string, room *db.Room) {
-	if exp.MatchString(name) {
+	if onlyStrAndNum.MatchString(name) {
 		sendJson(w, http.StatusBadRequest, message{
 			Error: "Emoji name must contain only string characters and numbers",
 		})
@@ -264,7 +264,7 @@ func (server Server) delEmoji(w http.ResponseWriter, name, uuid string, room *db
 }
 
 func (server Server) changeEmojiName(w http.ResponseWriter, name, newName, uuid string, room *db.Room) {
-	if exp.MatchString(newName) {
+	if onlyStrAndNum.MatchString(newName) {
 		sendJson(w, http.StatusBadRequest, message{
 			Error: "Emoji name must contain only string characters and numbers",
 		})

@@ -103,12 +103,20 @@ func (pl *playlist) addYoutube(url *url.URL) {
 		return
 	}
 
+	var liveStream bool
+	// If duration is zero then a link is a live stream
+	if duration == 0 {
+		liveStream = true
+	}
+
 	pl.playlist = append(pl.playlist, &Video{
-		Title:    title,
-		Duration: duration,
-		URL:      url.String(),
-		ID:       getRandomUUID(),
-		Direct:   false,
+		Title:      title,
+		Duration:   duration,
+		URL:        url.String(),
+		ID:         getRandomUUID(),
+		Direct:     false,
+		Iframe:     false,
+		LiveStream: liveStream,
 	})
 
 	pl.AddFeedBack <- nil

@@ -49,9 +49,11 @@ type User struct {
 
 // Video is instance of a video in playlist
 type Video struct {
-	Title    string `json:"title"`
-	Duration int    `json:"duration"`
-	URL      string `json:"url"`
-	Direct   bool   `json:"direct"`
-	ID       string `json:"__id"`
+	Title      string `json:"title"`
+	Duration   int    `json:"duration"`
+	URL        string `json:"url"`
+	Direct     bool   `json:"direct"`
+	Iframe     bool   `json:"iframe"`
+	LiveStream bool   `json:"live_stream"`
+	ID         string `json:"__id"`
 }

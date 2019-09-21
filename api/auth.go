@@ -51,7 +51,7 @@ func (server Server) authHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (server Server) register(w http.ResponseWriter, uname, passwd, email, name string) {
-	if utf8.RuneCountInString(uname) < minUsernameLength || utf8.RuneCountInString(uname) > maxUsernameLength {
+	if len(uname) < minUsernameLength || len(uname) > maxUsernameLength {
 		sendJson(w, http.StatusBadRequest, message{
 			Error: errUnameLength.Error(),
 		})
@@ -65,7 +65,7 @@ func (server Server) register(w http.ResponseWriter, uname, passwd, email, name 
 		return
 	}
 
-	if exp.MatchString(uname) {
+	if onlyStrAndNum.MatchString(uname) {
 		sendJson(w, http.StatusBadRequest, message{
 			Error: "Username must contain only string characters and numbers",
 		})
@@ -87,6 +87,7 @@ func (server Server) register(w http.ResponseWriter, uname, passwd, email, name 
 		})
 		return
 	}
+
 	server.setUpAuthSession(w, userUUID)
 }
 
@@ -111,6 +112,7 @@ func (server Server) login(w http.ResponseWriter, uname, passwd string) {
 		})
 		return
 	}
+
 	server.setUpAuthSession(w, user.UUID)
 }
 
@@ -125,15 +127,14 @@ func (server Server) logout(w http.ResponseWriter, sessionID string) {
 }
 
 func (server Server) setUpAuthSession(w http.ResponseWriter, userUUID string) {
+	// TODO: Migrate to JWT
+
 	sessionID := getRandomUUID()
 	err := server.db.CreateSession(sessionID, userUUID)
 	if err != nil {
 		log.Printf("Couldn't create auth session: %v", err)
 		return
 	}
-
-	// TODO
-	// Set secure flag when TLS be available
 
 	http.SetCookie(w, &http.Cookie{
 		Name:    "session_id",

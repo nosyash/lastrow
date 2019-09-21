@@ -49,7 +49,7 @@ func (i image) createImage(path, iType string) error {
 		if err != nil {
 			return err
 		}
-
+		
 		if ic.Width != profileImgWidth && ic.Height != profileImgHeight {
 			return errors.New("Profile image size should be 400x400 pixels")
 		}
