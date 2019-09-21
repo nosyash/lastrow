@@ -53,13 +53,14 @@ type eventBody struct {
 }
 
 type syncer struct {
-	sleep          bool
-	wakeUp         chan struct{}
-	skip           chan struct{}
-	pause          chan struct{}
-	resume         chan struct{}
-	close          chan struct{}
-	currentVideoID string
+	isSleep         bool
+	isStreamOrFrame bool
+	wakeUp          chan struct{}
+	skip            chan struct{}
+	pause           chan struct{}
+	resume          chan struct{}
+	close           chan struct{}
+	currentVideoID  string
 }
 
 type data struct {

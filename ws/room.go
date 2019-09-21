@@ -38,6 +38,7 @@ func NewRoomHub(id string) *hub {
 		make(chan struct{}),
 		syncer{
 			false,
+			false,
 			make(chan struct{}),
 			make(chan struct{}),
 			make(chan struct{}),
@@ -75,7 +76,7 @@ func (h hub) HandleActions() {
 			go h.updateEmojis(path)
 		case <-h.cache.Playlist.UpdatePlaylist:
 			go h.updatePlaylist()
-			if h.syncer.sleep && h.cache.Playlist.Size() > 0 {
+			if h.syncer.isSleep && h.cache.Playlist.Size() > 0 {
 				h.syncer.wakeUp <- struct{}{}
 			}
 		case <-h.close:
@@ -154,13 +155,17 @@ func (h hub) remove(conn *websocket.Conn) {
 				// FIX pause bug
 				// If simultaneously will be recv two package skip video and leave user
 				// skip maybe handle first, so line below never send to the pause channel
-				h.syncer.pause <- struct{}{}
+				if !h.syncer.isStreamOrFrame {
+					h.syncer.pause <- struct{}{}
+				}
 
 			loop:
 				for {
 					select {
 					case <-cancelChan:
-						h.syncer.resume <- struct{}{}
+						if !h.syncer.isStreamOrFrame {
+							h.syncer.resume <- struct{}{}
+						}
 						cancel()
 						break loop
 					case <-ctx.Done():
