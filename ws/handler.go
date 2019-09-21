@@ -223,7 +223,6 @@ exit:
 
 					continue
 				case <-h.syncer.close:
-					h.syncer.isStreamOrFrame = false
 					break exit
 				}
 			}
