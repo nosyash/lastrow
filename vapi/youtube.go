@@ -35,7 +35,8 @@ type items struct {
 }
 
 type snippet struct {
-	Title string `json:"title"`
+	Title         string `json:"title"`
+	LiveBroadcast string `json:"liveBroadcastContent"`
 }
 
 type contentDetails struct {
@@ -43,21 +44,27 @@ type contentDetails struct {
 }
 
 // GetVideoDetails gettting and return video duration and title
-func GetVideoDetails(id string) (int, string, error) {
+func GetVideoDetails(id string) (int, string, bool, error) {
+	var live bool
 	res, err := getDetail(id)
+
 	if err != nil {
-		return 0, "", err
+		return 0, "", live, err
 	}
 
 	details, err := unmarshalDetails(res)
 	if err != nil {
-		return 0, "", err
+		return 0, "", live, err
+	}
+
+	if details.Items[0].Snippet.LiveBroadcast == "live" {
+		live = true
 	}
 
 	if len(details.Items) > 0 {
-		return iso8601ToInt(details.Items[0].ContentDetails.Duration), details.Items[0].Snippet.Title, nil
+		return iso8601ToInt(details.Items[0].ContentDetails.Duration), details.Items[0].Snippet.Title, live, nil
 	}
-	return 0, "", ErrIncorrectVideoID
+	return 0, "", live, ErrIncorrectVideoID
 }
 
 func getDetail(id string) ([]byte, error) {
@@ -114,6 +121,7 @@ func unmarshalDetails(rawDetails []byte) (*detailsItems, error) {
 
 func iso8601ToInt(duration string) int {
 	var hours, minutes, seconds int
+
 	exp := regexp.MustCompile(`\d+\w`)
 	find := exp.FindAllString(duration, -1)
 

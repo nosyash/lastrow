@@ -79,17 +79,10 @@ func (pl *playlist) addYoutube(url *url.URL) {
 		return
 	}
 
-	duration, title, err := vapi.GetVideoDetails(vID)
+	duration, title, live, err := vapi.GetVideoDetails(vID)
 	if err != nil {
 		pl.AddFeedBack <- err
 		return
-	}
-
-	var liveStream bool
-
-	// If duration is zero then a link is a live stream
-	if duration == 0 {
-		liveStream = true
 	}
 
 	pl.playlist = append(pl.playlist, &Video{
@@ -99,7 +92,7 @@ func (pl *playlist) addYoutube(url *url.URL) {
 		ID:         getRandomUUID(),
 		Direct:     false,
 		Iframe:     false,
-		LiveStream: liveStream,
+		LiveStream: live,
 	})
 
 	pl.AddFeedBack <- nil
