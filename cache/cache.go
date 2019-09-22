@@ -9,6 +9,7 @@ import (
 // New create new cache
 func New(id string) *Cache {
 	db := db.Connect(os.Getenv("DB_ENDPOINT"))
+
 	return &Cache{
 		Users{
 			make(map[string]*User),

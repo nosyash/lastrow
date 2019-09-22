@@ -68,6 +68,14 @@ func (db Database) GetEmojiCount(uuid string) (int, error) {
 	return len(room.Emoji), nil
 }
 
+// WhereUserOwner return founded room slice where UUID is owner
+func (db Database) WhereUserOwner(uuid string) ([]Room, error) {
+	var rooms []Room
+
+	err := db.rc.Find(bson.M{"owners": bson.M{"$elemMatch": bson.M{"uuid": uuid}}}).All(&rooms)
+	return rooms, err
+}
+
 // UpdateRoomValue update specified key in a room
 func (db Database) UpdateRoomValue(uuid, key string, value interface{}) error {
 	return db.rc.Update(bson.M{"uuid": uuid}, bson.M{"$set": bson.M{key: value}})

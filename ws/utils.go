@@ -17,9 +17,9 @@ func readPacket(conn *websocket.Conn) (*packet, error) {
 	return request, err
 }
 
-func sendError(conn *websocket.Conn, errMsg error) error {
+func sendError(conn *websocket.Conn, msg error) error {
 	return writeMessage(conn, websocket.TextMessage, createPacket(errorEvent, errorEvent, data{
-		Error: errMsg.Error(),
+		Error: msg.Error(),
 	}))
 }
 

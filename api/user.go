@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"unicode/utf8"
 
+	"github.com/nosyash/backrow/db"
+
 	"github.com/nosyash/backrow/storage"
 
 	"gopkg.in/mgo.v2"
@@ -68,8 +70,16 @@ func (server Server) userHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (server Server) getUser(w http.ResponseWriter, userUUID string) {
-	user, _ := server.db.GetUserProfile(userUUID)
-	userAsByte, _ := json.Marshal(user)
+	user, _ := server.db.GetUser(userUUID)
+
+	userView := db.UserView{
+		Name:  user.Name,
+		Color: user.Color,
+		Image: user.Image,
+		UUID:  user.UUID,
+	}
+
+	userAsByte, _ := json.Marshal(userView)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(userAsByte)

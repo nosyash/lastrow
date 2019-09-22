@@ -190,13 +190,13 @@ exit:
 	for {
 
 		if h.cache.Playlist.Size() == 0 {
-			h.syncer.sleep = true
+			h.syncer.isSleep = true
 
 		wakeUp:
 			for {
 				select {
 				case <-h.syncer.wakeUp:
-					h.syncer.sleep = false
+					h.syncer.isSleep = false
 					break wakeUp
 				case <-h.syncer.close:
 					break exit
@@ -205,9 +205,30 @@ exit:
 		}
 
 		video := h.cache.Playlist.TakeHeadElement()
-		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration+sleepBeforeStart)*time.Second))
 
 		h.syncer.currentVideoID = video.ID
+
+		// A live steam or iframe. Waiting for skip
+		if video.Iframe == true || video.LiveStream == true {
+			// If last user leave a room, no need to set on pause
+			h.syncer.isStreamOrFrame = true
+
+			for {
+				select {
+				case <-h.syncer.skip:
+					h.syncer.isStreamOrFrame = false
+					h.syncer.currentVideoID = ""
+					h.cache.Playlist.DelVideo <- video.ID
+					<-h.cache.Playlist.DelFeedBack
+
+					continue
+				case <-h.syncer.close:
+					break exit
+				}
+			}
+		}
+
+		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration+sleepBeforeStart)*time.Second))
 
 		time.Sleep(sleepBeforeStart * time.Second)
 
