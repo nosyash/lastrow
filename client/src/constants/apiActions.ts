@@ -15,12 +15,6 @@ export const ROOM_CREATE = (title: string, path: string) =>
         body: { title, path },
     } as Message);
 
-export const LOG_OUT = () =>
-    JSON.stringify({
-        action: 'logout',
-        body: { uname: '', passwd: '', email: '' },
-    } as Message);
-
 export const LOG_IN = (uname: string, passwd: string, email: string) =>
     JSON.stringify({
         action: 'login',
@@ -71,13 +65,13 @@ export const USER_REGISTER = (room_id: string, user_uuid?: string) =>
         jwt: getCookie('jwt'),
     } as WebSocketRegister);
 
-export const GUEST_REGISTER = (room_id: string, name: string, user_uuid?: string) =>
+export const GUEST_REGISTER = (room_id: string, user_uuid: string, name: string) =>
     JSON.stringify({
         action: 'guest_register',
         room_id,
         name,
-        jwt: getCookie('jwt'),
-    } as WebSocketGuestRegister);
+        user_uuid,
+    } as WebSocketGuestRegister, null, 4);
 
 export const SEND_MESSAGE = (message: string, user_uuid?: string) =>
     JSON.stringify({

@@ -7,7 +7,8 @@ export interface PasswordChange {
 
 export interface WebSocketRegister extends Message {
     room_id: string;
-    jwt: string;
+    jwt?: string;
+    user_uuid?: string;
 }
 
 export interface WebSocketGuestRegister extends WebSocketRegister {
