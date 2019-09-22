@@ -2,6 +2,7 @@ package cache
 
 import (
 	"errors"
+	"fmt"
 	"net/url"
 	"path/filepath"
 	"regexp"
@@ -110,6 +111,7 @@ func (pl *playlist) addIframe(ifurl string) {
 	tag.Next()
 
 	var key, value []byte
+	var attributes string
 	more := true
 
 	for more {
@@ -117,6 +119,12 @@ func (pl *playlist) addIframe(ifurl string) {
 
 		sKey := string(key)
 		sVal := string(value)
+
+		if sVal == "" {
+			attributes += fmt.Sprintf("%s ", sKey)
+		} else {
+			attributes += fmt.Sprintf("%s='%s' ", sKey, sVal)
+		}
 
 		if sKey == "src" {
 			pURL, err := url.Parse(strings.TrimSpace(sVal))
@@ -136,10 +144,9 @@ func (pl *playlist) addIframe(ifurl string) {
 			}
 		}
 	}
-
 	pl.playlist = append(pl.playlist, &Video{
 		Iframe: true,
-		URL:    ifurl,
+		URL:    fmt.Sprintf("<iframe %s></iframe>", attributes),
 		ID:     getRandomUUID(),
 	})
 
