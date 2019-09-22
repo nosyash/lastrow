@@ -181,12 +181,9 @@ func (h hub) updatePlaylist() {
 }
 
 func (h hub) updateEmojis(path string) {
-	el := h.cache.Room.GetAllEmojis(path)
-	packet := createPacket(roomUpdateEvent, eTypeEmojiUpdate, data{
-		Emoji: el,
+	h.broadcast <- createPacket(roomUpdateEvent, eTypeEmojiUpdate, data{
+		Emoji: h.cache.Room.GetAllEmojis(path),
 	})
-
-	h.broadcast <- packet
 }
 
 func (h *hub) syncElapsedTime() {
@@ -222,6 +219,7 @@ exit:
 			// If last user leave a room, no need to set on pause
 			h.syncer.isStreamOrFrame = true
 
+		next:
 			for {
 				select {
 				case <-h.syncer.skip:
@@ -230,11 +228,13 @@ exit:
 					h.cache.Playlist.DelVideo <- video.ID
 					<-h.cache.Playlist.DelFeedBack
 
-					continue
+					break next
 				case <-h.syncer.close:
 					break exit
 				}
 			}
+
+			continue
 		}
 
 		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration+sleepBeforeStart)*time.Second))

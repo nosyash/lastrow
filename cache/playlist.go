@@ -35,7 +35,7 @@ var (
 		`(?:youtube\.com/watch\?(?:.+&)?v=|youtu\.be/)` +
 		`([a-zA-Z0-9_-]+)`)
 
-	iframeRegExp = regexp.MustCompile(`<iframe(.+)</iframe>`)
+	iframeRegExp = regexp.MustCompile(`<iframe(.+)></iframe>`)
 )
 
 func (pl *playlist) addVideo(vURL string) {
