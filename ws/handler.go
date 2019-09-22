@@ -143,16 +143,17 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 }
 
 func (h hub) handleMessage(msg, uuid string) {
-	user, _ := h.cache.Users.GetUser(uuid)
-
-	h.broadcast <- createPacket(chatEvent, eTypeMsg, data{
-		Message: msg,
-		Name:    user.Name,
-		Color:   user.Color,
-		Image:   user.Image,
-		ID:      user.ID,
-		Guest:   user.Guest,
-	})
+	user, r := h.cache.Users.GetUser(uuid)
+	if r {
+		h.broadcast <- createPacket(chatEvent, eTypeMsg, data{
+			Message: msg,
+			Name:    user.Name,
+			Color:   user.Color,
+			Image:   user.Image,
+			ID:      user.ID,
+			Guest:   user.Guest,
+		})
+	}
 }
 
 func (h hub) updateUserList() {
