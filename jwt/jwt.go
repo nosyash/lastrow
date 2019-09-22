@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 // Header information in JWT
@@ -26,9 +27,10 @@ type Header struct {
 
 // Payload information in JWT about user
 type Payload struct {
-	Exp     int64
+	UUID    string
 	IsAdmin bool `json:"is_admin"`
 	Owner   []Owner
+	Exp     int64
 }
 
 // Owner describes information about where user is owner and what is him Permissions
@@ -54,7 +56,7 @@ var (
 
 // GenerateNewToken generate and return new JWT
 func GenerateNewToken(header Header, payload Payload, key string) (string, error) {
-	if len(key) != requiredKeySize {
+	if utf8.RuneCountInString(key) != requiredKeySize {
 		return "", ErrKeyLength
 	}
 
@@ -101,6 +103,29 @@ func ValidateToken(jwt, key string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+// UnmarshalPayload unmarshal payload from token and return it
+func UnmarshalPayload(token string) (*Payload, error) {
+	if token == "" {
+		return nil, ErrCorruptedToken
+	}
+
+	parts := strings.Split(token, ".")
+	if len(parts) != 3 {
+		return nil, ErrCorruptedToken
+	}
+
+	pDec := parts[1]
+	pEnc, err := base64.URLEncoding.DecodeString(pDec)
+	if err != nil {
+		return nil, err
+	}
+
+	var payload Payload
+
+	err = json.Unmarshal([]byte(pEnc), &payload)
+	return &payload, err
 }
 
 func calcHash(key string, value string) string {

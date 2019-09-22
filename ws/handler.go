@@ -40,36 +40,40 @@ func handleRegRequest(conn *websocket.Conn) (*user, string, error) {
 		return nil, "", err
 	}
 
-	room, uuid := req.RoomID, req.UserUUID
-	if room == "" || uuid == "" || len(req.UserUUID) != 64 {
-		return nil, "", ErrRegArgumentAreEmpty
-	}
+	room := req.RoomID
+	jwt := req.JWT
+	uuid := req.UUID
 
 	if req.Action == guestRegisterEvent {
-		return handleGuestRegister(conn, room, uuid, req.Name)
+		return handleGuestRegister(conn, room, req.Name, uuid)
 	}
 
 	if req.Action != userRegisterEvent {
 		return nil, "", ErrInvalidRegRequest
 	}
 
+	payload, err := extractPayload(jwt)
+	if err != nil {
+		return nil, "", err
+	}
+
 	return &user{
-			conn,
-			uuid,
-			"",
-			false,
+			Conn:    conn,
+			Payload: payload,
+			Name:    "",
+			Guest:   false,
 		},
 		room,
 		nil
 }
 
-func handleGuestRegister(conn *websocket.Conn, room, uuid, name string) (*user, string, error) {
-	if name != "" && len(name) > minGuestName && len(name) < maxGuestName {
+func handleGuestRegister(conn *websocket.Conn, room, name, uuid string) (*user, string, error) {
+	if name != "" && len(name) > minGuestName && len(name) < maxGuestName && len(uuid) == 64 {
 		return &user{
-				conn,
-				uuid,
-				name,
-				true,
+				Conn:  conn,
+				Name:  name,
+				Guest: true,
+				UUID:  uuid,
 			},
 			room,
 			nil
@@ -81,7 +85,11 @@ func (h hub) handleUserEvent(req *packet, conn *websocket.Conn) {
 	switch req.Body.Event.Type {
 	case eTypeMsg:
 		if req.Body.Event.Data.Message != "" {
-			h.handleMessage(req.Body.Event.Data.Message, req.UserUUID)
+			if req.Payload != nil {
+				h.handleMessage(req.Body.Event.Data.Message, req.Payload.UUID)
+			} else {
+				h.handleMessage(req.Body.Event.Data.Message, req.UUID)
+			}
 		}
 	default:
 		sendError(conn, ErrUnknowEventType)
@@ -89,6 +97,12 @@ func (h hub) handleUserEvent(req *packet, conn *websocket.Conn) {
 }
 
 func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
+	// Guest can't do this
+	if req.Payload == nil {
+		sendError(conn, errors.New("You don't have permissions for this action"))
+		return
+	}
+
 	switch req.Body.Event.Type {
 	case eTypePlAdd:
 		if req.Body.Event.Data.URL != "" {

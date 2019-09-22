@@ -82,7 +82,7 @@ func (h hub) HandleActions() {
 
 func (h hub) add(user *user) {
 	for uuid := range h.hub {
-		if uuid == user.UUID {
+		if uuid == user.Payload.UUID {
 			sendError(user.Conn, errors.New("Your already connected to this room"))
 			user.Conn.Close()
 			return
@@ -95,11 +95,12 @@ func (h hub) add(user *user) {
 			UUID:  user.UUID,
 			ID:    getHashOfString(user.UUID[:8]),
 		}
-	} else {
-		h.cache.Users.AddUser <- user.UUID
-	}
 
-	h.hub[user.UUID] = user.Conn
+		h.hub[user.UUID] = user.Conn
+	} else {
+		h.hub[user.Payload.UUID] = user.Conn
+		h.cache.Users.AddUser <- user.Payload.UUID
+	}
 
 	pl := h.cache.Playlist.GetAllPlaylist()
 
@@ -192,15 +193,13 @@ func (h *hub) read(conn *websocket.Conn) {
 			break
 		}
 
-		if req.UserUUID != "" && len(req.UserUUID) == 64 {
-			switch req.Action {
-			case userEvent:
-				go h.handleUserEvent(req, conn)
-			case playerEvent:
-				go h.handlePlayerEvent(req, conn)
-			default:
-				go sendError(conn, errors.New("Unknown action type"))
-			}
+		switch req.Action {
+		case userEvent:
+			go h.handleUserEvent(req, conn)
+		case playerEvent:
+			go h.handlePlayerEvent(req, conn)
+		default:
+			go sendError(conn, errors.New("Unknown action type"))
 		}
 	}
 }

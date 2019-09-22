@@ -12,7 +12,6 @@ type Database struct {
 	db *mgo.Session
 	rc *mgo.Collection
 	uc *mgo.Collection
-	sc *mgo.Collection
 }
 
 // Connect to the database and create collections if needed
@@ -23,13 +22,11 @@ func Connect(dbAddr string) *Database {
 	}
 	rc := session.DB("backrow").C("rooms")
 	uc := session.DB("backrow").C("users")
-	sc := session.DB("backrow").C("sessions")
 
 	return &Database{
 		session,
 		rc,
 		uc,
-		sc,
 	}
 }
 

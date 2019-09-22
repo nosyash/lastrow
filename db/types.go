@@ -48,11 +48,6 @@ type Emoji struct {
 	Path string `json:"path"`
 }
 
-type session struct {
-	ID   string `json:"session_id"`
-	UUID string `json:"uuid"`
-}
-
 const (
 	maxOwners = 15
 	maxEmoji  = 100

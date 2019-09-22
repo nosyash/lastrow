@@ -20,7 +20,7 @@ var (
 )
 
 func (server Server) userHandler(w http.ResponseWriter, r *http.Request) {
-	userUUID, err := server.getUserUUIDBySessionID(w, r)
+	payload, err := server.extractPayload(w, r)
 	if err != nil {
 		sendJson(w, http.StatusBadRequest, message{
 			Error: err.Error(),
@@ -29,7 +29,7 @@ func (server Server) userHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodGet {
-		server.getUser(w, userUUID)
+		server.getUser(w, payload.UUID)
 		return
 	}
 
@@ -46,22 +46,22 @@ func (server Server) userHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch userReq.Action {
 	case eTypeUserUpdateImg:
-		server.updateProfileImage(w, userUUID, &userReq.Body.Image.Img)
+		server.updateProfileImage(w, payload.UUID, &userReq.Body.Image.Img)
 		if storage.Size() > 0 {
-			storage.UpdateUser(userUUID)
+			storage.UpdateUser(payload.UUID)
 		}
 	case eTypeUserDeleteImg:
-		server.deleteProfileImage(w, userUUID)
+		server.deleteProfileImage(w, payload.UUID)
 		if storage.Size() > 0 {
-			storage.UpdateUser(userUUID)
+			storage.UpdateUser(payload.UUID)
 		}
 	case eTypeUserUpdatePer:
-		server.updatePersonalInfo(w, userUUID, userReq.Body.Name, userReq.Body.Color)
+		server.updatePersonalInfo(w, payload.UUID, userReq.Body.Name, userReq.Body.Color)
 		if storage.Size() > 0 {
-			storage.UpdateUser(userUUID)
+			storage.UpdateUser(payload.UUID)
 		}
 	case eTypeUserUpdatePswd:
-		server.updatePassword(w, userUUID, userReq.Body.CurPasswd, userReq.Body.NewPasswd)
+		server.updatePassword(w, payload.UUID, userReq.Body.CurPasswd, userReq.Body.NewPasswd)
 	default:
 		sendJson(w, http.StatusBadRequest, message{
 			Error: "Unknown /api/user action",

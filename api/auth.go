@@ -10,6 +10,7 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/nosyash/backrow/jwt"
 	"gopkg.in/mgo.v2"
 )
 
@@ -38,11 +39,6 @@ func (server Server) authHandler(w http.ResponseWriter, r *http.Request) {
 		server.register(w, authReq.Body.Uname, authReq.Body.Passwd, authReq.Body.Email, authReq.Body.Name)
 	case eTypeAccountLogin:
 		server.login(w, authReq.Body.Uname, authReq.Body.Passwd)
-	case eTypeAccountLogout:
-		sessionID, err := r.Cookie("session_id")
-		if err == nil && sessionID.Value != "" {
-			server.logout(w, sessionID.Value)
-		}
 	default:
 		sendJson(w, http.StatusBadRequest, message{
 			Error: "Unknown /api/auth action",
@@ -116,60 +112,59 @@ func (server Server) login(w http.ResponseWriter, uname, passwd string) {
 	server.setUpAuthSession(w, user.UUID)
 }
 
-func (server Server) logout(w http.ResponseWriter, sessionID string) {
-	err := server.db.DeleteSession(sessionID)
+func (server Server) setUpAuthSession(w http.ResponseWriter, uuid string) {
+	isAdmin, err := server.db.IsAdmin(uuid)
 	if err != nil {
+		log.Printf("Error while trying to get user admin status: %v", err)
 		sendJson(w, http.StatusBadRequest, message{
-			Error: errInvalidSessionID.Error(),
+			Error: errors.New("Couldn't create auth session").Error(),
 		})
 		return
 	}
-}
 
-func (server Server) setUpAuthSession(w http.ResponseWriter, uuid string) {
-
-	// isAdmin, err := server.db.IsAdmin(uuid)
-	// println(isAdmin, err)
-
-	// roomList, err := server.db.WhereUserOwner(userUUID)
-	// if err != nil {
-	// 	log.Printf("Error while trying to get the a room list where is user has owner permissions: %v", err)
-	// 	sendJson(w, http.StatusBadRequest, message{
-	// 		Error: errors.New("Couldn't create auth session").Error(),
-	// 	})
-	// 	return
-	// }
-
-	// var header jwt.Header
-	// var payload jwt.Payload
-	// var owner jwt.Owner
-
-	// header.Aig = "HS512"
-
-	sessionID := getRandomUUID()
-	err := server.db.CreateSession(sessionID, uuid)
+	roomList, err := server.db.WhereUserOwner(uuid)
 	if err != nil {
-		log.Printf("Couldn't create auth session: %v", err)
+		log.Printf("Error while trying to get the a room list where is user has owner permissions: %v", err)
+		sendJson(w, http.StatusBadRequest, message{
+			Error: errors.New("Couldn't create auth session").Error(),
+		})
+		return
+	}
+
+	var header jwt.Header
+	var payload jwt.Payload
+	var owner = make([]jwt.Owner, len(roomList))
+	var timeNow = time.Now().Add(1 * 365 * 24 * time.Hour)
+
+	for i, r := range roomList {
+		owner[i].RoomID = r.UUID
+		for _, r := range r.Owners {
+			if r.UUID == uuid {
+				owner[i].Permissions = r.Permissions
+			}
+		}
+	}
+
+	header.Aig = "HS512"
+
+	payload.UUID = uuid
+	payload.IsAdmin = isAdmin
+	payload.Owner = owner
+	payload.Exp = timeNow.UnixNano()
+
+	token, err := jwt.GenerateNewToken(header, payload, server.hmacKey)
+	if err != nil {
+		log.Printf("Error while trying to generate new JWT: %v", err)
+		sendJson(w, http.StatusBadRequest, message{
+			Error: errors.New("Couldn't create auth session").Error(),
+		})
 		return
 	}
 
 	http.SetCookie(w, &http.Cookie{
-		Name:    "session_id",
-		Value:   sessionID,
+		Name:    "jwt",
+		Value:   token,
 		Path:    "/",
-		Expires: time.Now().Add(5 * 365 * 24 * time.Hour),
+		Expires: timeNow,
 	})
-}
-
-func (server Server) getUserUUIDBySessionID(w http.ResponseWriter, r *http.Request) (string, error) {
-	sessionID, err := r.Cookie("session_id")
-	if err != nil || sessionID.Value == "" {
-		return "", errors.New("Couldn't get your session_id")
-	}
-
-	userUUID, err := server.db.GetSession(sessionID.Value)
-	if err != nil || userUUID == "" {
-		return "", errInvalidSessionID
-	}
-	return userUUID, nil
 }

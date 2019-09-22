@@ -24,10 +24,11 @@ type Server struct {
 	db          *db.Database
 	upg         websocket.Upgrader
 	imageServer ImageServer
+	hmacKey     string
 }
 
 // NewServer create and return a new instance of API Server
-func NewServer(address, uplPath, pofImgPath, emojiImgPath string, db *db.Database) *Server {
+func NewServer(address, uplPath, pofImgPath, emojiImgPath, hmacKey string, db *db.Database) *Server {
 	return &Server{
 		&http.Server{
 			Addr:         address,
@@ -51,6 +52,7 @@ func NewServer(address, uplPath, pofImgPath, emojiImgPath string, db *db.Databas
 			pofImgPath,
 			emojiImgPath,
 		},
+		hmacKey,
 	}
 }
 
