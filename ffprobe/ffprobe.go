@@ -75,8 +75,7 @@ func GetMetaData(url string) (int, string, error) {
 		return 0, "", err
 	case err = <-done:
 		if err != nil {
-			log.Printf("Error while trying to execute /bin/ffprobe: %v\nProbably wrong link", err)
-			return 0, "", errors.New("Internal error while trying to get metadata about this link")
+			return 0, "", errors.New("Could't get metadata about this file")
 		}
 	}
 

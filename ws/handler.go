@@ -214,7 +214,6 @@ exit:
 
 		h.syncer.currentVideoID = video.ID
 
-		// A live steam or iframe. Waiting for skip
 		if video.Iframe == true || video.LiveStream == true {
 			// If last user leave a room, no need to set on pause
 			h.syncer.isStreamOrFrame = true
