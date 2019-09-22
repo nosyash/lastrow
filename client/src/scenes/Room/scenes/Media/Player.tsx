@@ -162,8 +162,8 @@ function Player(props) {
                     onReady={handleReady}
                 />}
                 {iframe &&
-                    <iframe dangerouslySetInnerHTML={{ __html: url }} style={{ width: "100%" }} className="player-inner">
-                    </iframe>
+                    <div dangerouslySetInnerHTML={{ __html: url }} style={{ width: "100%" }} className="player-inner">
+                    </div>
                 }
                 {isDirectLink() && <div className="video-overlay" />}
             </React.Fragment>
