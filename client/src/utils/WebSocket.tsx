@@ -4,6 +4,7 @@ import * as types from '../constants/actionTypes';
 import { store } from '../store';
 import { sortPlaylistByIndex } from './index';
 import { toast } from 'react-toastify';
+import sanitizeIframe from '../utils/sanitizeIframe'
 import { toastOpts } from '../conf';
 import {
     UpdateUsers,
@@ -191,6 +192,10 @@ class Socket implements SocketInterface {
                 const emoji = get(parsedData, 'body.event.data.emoji') as Emoji[];
                 return dispatch({ type: types.ADD_EMOJIS, payload: emoji || [] });
             }
+            case 'error': {
+                const error = get(parsedData, 'body.event.data.error') as string;
+                return toast.error(error, toastOpts);
+            }
             case 'feedback': {
                 const { feedback } = get(parsedData, 'body.event.data') as FeedbackData;
                 if (feedback.message === 'success')
@@ -219,7 +224,7 @@ class Socket implements SocketInterface {
         clearTimeout(this.reconnectTimer);
         this.reconnectTimer = setTimeout(() => {
             this.initWebSocket();
-        }, 1000);
+        }, 3000);
     };
 
     private unsubscribeEvents = () => {
@@ -237,6 +242,14 @@ class Socket implements SocketInterface {
     //   }, WEBSOCKET_TIMEOUT);
     // };
 }
+
+function sanitizeHtml(html: string) {
+    // <iframe src="javascript:alert(0)"></iframe>
+    // document.cookie
+
+}
+
+window.test = sanitizeIframe
 
 function moveGuestsToTheEnd(users: User[]) {
     if (!users) return [];

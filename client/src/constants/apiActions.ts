@@ -2,6 +2,7 @@
 import { API_ENDPOINT } from '../constants';
 import { Message } from '../utils/types';
 import { PasswordChange, WebSocketRegister, WebSocketGuestRegister, SendMediaToPlaylist, DeleteMediaFromPlaylist } from './types';
+import { getCookie } from '../utils';
 
 export const API_AUTH = () => `${API_ENDPOINT}/auth`;
 export const API_ROOM = (roomID: string) => `${API_ENDPOINT}/r/${roomID}`;
@@ -63,22 +64,22 @@ export const UPDATE_PASSWORD = ({ cur_passwd, new_passwd }: PasswordChange) =>
 // ####################
 //      WebSocket
 // ####################
-export const USER_REGISTER = (room_id: string, user_uuid: string) =>
+export const USER_REGISTER = (room_id: string, user_uuid?: string) =>
     JSON.stringify({
         action: 'user_register',
         room_id,
-        user_uuid,
+        jwt: getCookie('jwt'),
     } as WebSocketRegister);
 
-export const GUEST_REGISTER = (room_id: string, user_uuid: string, name: string) =>
+export const GUEST_REGISTER = (room_id: string, name: string, user_uuid?: string) =>
     JSON.stringify({
         action: 'guest_register',
         room_id,
         name,
-        user_uuid,
+        jwt: getCookie('jwt'),
     } as WebSocketGuestRegister);
 
-export const SEND_MESSAGE = (message: string, user_uuid: string) =>
+export const SEND_MESSAGE = (message: string, user_uuid?: string) =>
     JSON.stringify({
         action: 'user_event',
         body: {
@@ -89,7 +90,7 @@ export const SEND_MESSAGE = (message: string, user_uuid: string) =>
                 },
             },
         },
-        user_uuid,
+        jwt: getCookie('jwt'),
     } as Message);
 
 export const GET_ERROR = (string: string) => {
@@ -97,7 +98,7 @@ export const GET_ERROR = (string: string) => {
     if (obj.error) return obj.error;
 };
 
-export const SEND_MEDIA_TO_PLAYLIST = ({ url, uuid }: { url: string, uuid: string }) => {
+export const SEND_MEDIA_TO_PLAYLIST = ({ url, uuid }: { url: string, uuid?: string }) => {
     const request = {
         action: 'player_event',
         body: {
@@ -108,13 +109,13 @@ export const SEND_MEDIA_TO_PLAYLIST = ({ url, uuid }: { url: string, uuid: strin
                 },
             },
         },
-        user_uuid: uuid,
+        jwt: getCookie('jwt'),
     } as SendMediaToPlaylist;
 
     return JSON.stringify(request);
 };
 
-export const DELETE_VIDEO_FROM_PLAYLIST = ({ __id, uuid }: { __id: string, uuid: string }) => {
+export const DELETE_VIDEO_FROM_PLAYLIST = ({ __id, uuid }: { __id: string, uuid?: string }) => {
     const request = {
         action: 'player_event',
         body: {
@@ -125,7 +126,7 @@ export const DELETE_VIDEO_FROM_PLAYLIST = ({ __id, uuid }: { __id: string, uuid:
                 },
             },
         },
-        user_uuid: uuid,
+        jwt: getCookie('jwt'),
     } as DeleteMediaFromPlaylist;
 
     return JSON.stringify(request);
