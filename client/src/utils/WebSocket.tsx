@@ -4,7 +4,6 @@ import * as types from '../constants/actionTypes';
 import { store } from '../store';
 import { sortPlaylistByIndex } from './index';
 import { toast } from 'react-toastify';
-import sanitizeIframe from '../utils/sanitizeIframe'
 import { toastOpts } from '../conf';
 import {
     UpdateUsers,
@@ -248,8 +247,6 @@ function sanitizeHtml(html: string) {
     // document.cookie
 
 }
-
-window.test = sanitizeIframe
 
 function moveGuestsToTheEnd(users: User[]) {
     if (!users) return [];
