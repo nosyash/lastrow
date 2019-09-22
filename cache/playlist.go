@@ -9,6 +9,7 @@ import (
 
 	"github.com/nosyash/backrow/ffprobe"
 	"github.com/nosyash/backrow/vapi"
+	"golang.org/x/net/html"
 )
 
 var (
@@ -32,12 +33,19 @@ var (
 	youtubeRegExp = regexp.MustCompile(`https?://(?:[^\.]+\.)?` +
 		`(?:youtube\.com/watch\?(?:.+&)?v=|youtu\.be/)` +
 		`([a-zA-Z0-9_-]+)`)
+
+	iframeRegExp = regexp.MustCompile(`<iframe(.+)</iframe>`)
 )
 
 func (pl *playlist) addVideo(vURL string) {
+	if iframeRegExp.MatchString(vURL) {
+		pl.addIframe(vURL)
+		return
+	}
+
 	pURL, err := url.Parse(strings.TrimSpace(vURL))
 	if err != nil {
-		pl.AddFeedBack <- err
+		pl.AddFeedBack <- ErrLinkDoesNotMath
 		return
 	}
 
@@ -123,6 +131,47 @@ func (pl *playlist) addYoutube(url *url.URL) {
 	pl.UpdatePlaylist <- struct{}{}
 }
 
+func (pl *playlist) addIframe(ifurl string) {
+	tag := html.NewTokenizer(strings.NewReader(ifurl))
+	tag.Next()
+
+	var key, value []byte
+	more := true
+
+	for more {
+		key, value, more = tag.TagAttr()
+
+		sKey := string(key)
+		sVal := string(value)
+
+		if sKey == "src" {
+			pURL, err := url.Parse(strings.TrimSpace(sVal))
+			if err != nil {
+				pl.AddFeedBack <- ErrLinkDoesNotMath
+				return
+			}
+
+			if pURL.Scheme == "https" || pURL.Scheme == "http" {
+				if filepath.Ext(sVal) != "" {
+					pl.AddFeedBack <- ErrLinkDoesNotMath
+					return
+				}
+			} else {
+				pl.AddFeedBack <- ErrLinkDoesNotMath
+				return
+			}
+		}
+	}
+
+	pl.playlist = append(pl.playlist, &Video{
+		Iframe: true,
+		URL:    ifurl,
+		ID:     getRandomUUID(),
+	})
+
+	pl.AddFeedBack <- nil
+	pl.UpdatePlaylist <- struct{}{}
+}
 func (pl *playlist) delVideo(id string) {
 	for i, v := range pl.playlist {
 		if v.ID == id {

@@ -105,13 +105,13 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
                         Add
                     </button>
                 </form>
-                {/* <a
+                { <a
                     href=""
                     onClick={this.onAddIframeClick}
                     className="add-iframe"
                 >
                     Add iframe code
-                </a> */}
+                </a>}
             </div>
         );
     }
