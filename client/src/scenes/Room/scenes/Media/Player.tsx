@@ -126,13 +126,20 @@ function Player(props) {
         return false;
     }
 
+    function isIframe() {
+        const current = getCurrentVideo();
+        if (current) return current.iframe;
+        return false;
+    }
+
     function RenderPlayer() {
         const { media } = props;
         const url = getCurrentUrl();
         const direct = isDirect();
+        const iframe = isIframe();
         return (
             <React.Fragment>
-                <ReactPlayer
+                {!iframe && <ReactPlayer
                     ref={playerRef}
                     className="player-inner"
                     width="100%"
@@ -153,7 +160,11 @@ function Player(props) {
                     // onPlay={handlePlay}
                     // onPause={handlePause}
                     onReady={handleReady}
-                />
+                />}
+                {iframe &&
+                    <iframe dangerouslySetInnerHTML={{ __html: url }} style={{ width: "100%" }} className="player-inner">
+                    </iframe>
+                }
                 {isDirectLink() && <div className="video-overlay" />}
             </React.Fragment>
         );
