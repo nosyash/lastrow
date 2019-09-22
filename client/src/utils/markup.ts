@@ -31,11 +31,24 @@ function handleEmotes(body = '') {
     });
 }
 
+
+
 export default function parseMarkup({ body, name }) {
     const { users } = store.getState().chat.users;
     const { list: emojiList } = store.getState().emojis;
 
-    let tempBody = body;
+    var entityMap = {
+        '<': '&lt;',
+        '>': '&gt;',
+    };
+
+    function escapeHtml(string) {
+        return String(string).replace(/[<>]/g, function fromEntityMap(s) {
+            return entityMap[s];
+        });
+    }
+
+    let tempBody = escapeHtml(body);
     const preformated = PREFORMATTED.test(tempBody);
     const hideHeader = ME.test(tempBody) || DO.test(tempBody) || TODO.test(tempBody);
     if (preformated) tempBody = tempBody.replace(PREFORMATTED, '<pre>$2</pre>');
