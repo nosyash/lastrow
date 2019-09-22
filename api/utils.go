@@ -47,7 +47,7 @@ func (server Server) extractPayload(w http.ResponseWriter, r *http.Request) (*jw
 	if err != nil && err != jwt.ErrKeyLength {
 		return nil, err
 	} else if err == jwt.ErrKeyLength {
-		return nil, errors.New("Internal error while trying to validate your JWT")
+		return nil, errors.New("Internal server error while trying to validate your JWT")
 	}
 
 	if !result {

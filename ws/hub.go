@@ -2,6 +2,7 @@ package ws
 
 import (
 	"errors"
+	"os"
 
 	"github.com/nosyash/backrow/db"
 
@@ -21,6 +22,7 @@ var (
 func HandleWsConnection(db *db.Database) {
 	Register = make(chan *websocket.Conn)
 	closeRoom = make(chan string)
+	hmacKey = os.Getenv("HS512_KEY")
 
 	rh := &roomsHub{
 		make(map[string]*hub),
