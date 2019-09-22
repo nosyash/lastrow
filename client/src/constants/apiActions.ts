@@ -71,7 +71,7 @@ export const GUEST_REGISTER = (room_id: string, user_uuid: string, name: string)
         room_id,
         name,
         user_uuid,
-    } as WebSocketGuestRegister, null, 4);
+    } as WebSocketGuestRegister);
 
 export const SEND_MESSAGE = (message: string, user_uuid?: string) =>
     JSON.stringify({
@@ -84,6 +84,7 @@ export const SEND_MESSAGE = (message: string, user_uuid?: string) =>
                 },
             },
         },
+        user_uuid,
         jwt: getCookie('jwt'),
     } as Message);
 

@@ -160,7 +160,6 @@ class Socket implements SocketInterface {
             this.instance.send(api.USER_REGISTER(this.roomID, this.uuid));
         } else {
             const request = api.GUEST_REGISTER(this.roomID, this.uuid, this.name);
-            console.log(request);
             this.instance.send(request);
         }
         dispatch({ type: types.SET_SOCKET_CONNECTED, payload: true });
