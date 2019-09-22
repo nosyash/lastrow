@@ -12,6 +12,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/nosyash/backrow/jwt"
+
 	"github.com/nosyash/backrow/db"
 	"github.com/nosyash/backrow/storage"
 
@@ -59,7 +61,7 @@ func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 	case eTypeRoomCreate:
 		server.createRoom(w, req.Body.Title, req.Body.Path, payload.UUID)
 	case eTypeRoomUpdate:
-		server.updateRoom(w, &req)
+		server.updateRoom(w, &req, payload)
 	default:
 		sendJson(w, http.StatusBadRequest, message{
 			Error: "Unknown /api/room action",
@@ -98,7 +100,26 @@ func (server Server) createRoom(w http.ResponseWriter, title, path, userUUID str
 	}
 }
 
-func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest) {
+func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest, payload *jwt.Payload) {
+	// for now, only owner can do this actions
+	if len(payload.Owner) > 0 {
+		for _, r := range payload.Owner {
+			if r.RoomID == req.RoomID {
+				if r.Permissions != 10 {
+					sendJson(w, http.StatusBadRequest, message{
+						Error: "You don't have permissions for this action",
+					})
+					return
+				}
+			}
+		}
+	} else {
+		sendJson(w, http.StatusBadRequest, message{
+			Error: "You don't have permissions for this action",
+		})
+		return
+	}
+
 	name := strings.TrimSpace(req.Body.Data.Name)
 	newName := strings.TrimSpace(req.Body.Data.NewName)
 	img := req.Body.Data.Img
