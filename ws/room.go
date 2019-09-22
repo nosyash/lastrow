@@ -84,10 +84,10 @@ func (h hub) add(user *user) {
 	for u := range h.hub {
 		var uuid string
 
-		if user.Payload == nil {
-			uuid = user.UUID
-		} else {
+		if user.Payload != nil {
 			uuid = user.Payload.UUID
+		} else {
+			uuid = user.UUID
 		}
 
 		if u == uuid {
