@@ -6,6 +6,10 @@ export default function VideoContainer({ videoRef }) {
     const fs = useRef(false);
     useEffect(() => {
         window.addEventListener('fullscreenchange', changeFullscreen)
+
+        return () => {
+            window.removeEventListener('fullscreenchange', changeFullscreen)
+        }
     }, [])
 
     function changeFullscreen() {
