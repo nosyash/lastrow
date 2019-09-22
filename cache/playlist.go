@@ -57,34 +57,7 @@ func (pl *playlist) addVideo(vURL string) {
 			pl.AddFeedBack <- ErrLinkDoesNotMath
 		}
 	default:
-		ext := filepath.Ext(vURL)
-
-		if ext == "" {
-			pl.AddFeedBack <- ErrUnsupportedHost
-			return
-		}
-
-		if ext == ".mp4" || ext == ".webm" || ext == ".m3u8" {
-			duration, title, err := ffprobe.GetMetaData(vURL)
-			if err != nil {
-				pl.AddFeedBack <- err
-				return
-			}
-
-			pl.playlist = append(pl.playlist, &Video{
-				Title:    title,
-				Duration: duration,
-				URL:      vURL,
-				ID:       getRandomUUID(),
-				Direct:   true,
-			})
-			pl.AddFeedBack <- nil
-			pl.UpdatePlaylist <- struct{}{}
-
-			return
-		}
-
-		pl.AddFeedBack <- ErrUnsupportedFormat
+		pl.addDirect(vURL)
 	}
 }
 
@@ -112,6 +85,7 @@ func (pl *playlist) addYoutube(url *url.URL) {
 	}
 
 	var liveStream bool
+
 	// If duration is zero then a link is a live stream
 	if duration == 0 {
 		liveStream = true
@@ -172,6 +146,39 @@ func (pl *playlist) addIframe(ifurl string) {
 	pl.AddFeedBack <- nil
 	pl.UpdatePlaylist <- struct{}{}
 }
+
+func (pl *playlist) addDirect(url string) {
+	ext := filepath.Ext(url)
+
+	if ext == "" {
+		pl.AddFeedBack <- ErrUnsupportedHost
+		return
+	}
+
+	if ext == ".mp4" || ext == ".webm" || ext == ".m3u8" {
+		duration, title, err := ffprobe.GetMetaData(url)
+		if err != nil {
+			pl.AddFeedBack <- err
+			return
+		}
+
+		pl.playlist = append(pl.playlist, &Video{
+			Title:    title,
+			Duration: duration,
+			URL:      url,
+			ID:       getRandomUUID(),
+			Direct:   true,
+		})
+
+		pl.AddFeedBack <- nil
+		pl.UpdatePlaylist <- struct{}{}
+
+		return
+	}
+
+	pl.AddFeedBack <- ErrUnsupportedFormat
+}
+
 func (pl *playlist) delVideo(id string) {
 	for i, v := range pl.playlist {
 		if v.ID == id {
