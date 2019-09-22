@@ -3,6 +3,7 @@ package ws
 import (
 	"github.com/nosyash/backrow/cache"
 	"github.com/nosyash/backrow/db"
+	"github.com/nosyash/backrow/jwt"
 
 	"github.com/gorilla/websocket"
 )
@@ -29,18 +30,21 @@ type hub struct {
 }
 
 type user struct {
-	Conn  *websocket.Conn
-	UUID  string
-	Name  string
-	Guest bool
+	Conn    *websocket.Conn
+	Payload *jwt.Payload
+	UUID    string
+	Name    string
+	Guest   bool
 }
 
 type packet struct {
-	Action   string `json:"action"`
-	Body     body   `json:"body"`
-	RoomID   string `json:"room_id,omitempty"`
-	UserUUID string `json:"user_uuid,omitempty"`
-	Name     string `json:"name,omitempty"`
+	Action  string       `json:"action"`
+	Body    body         `json:"body"`
+	RoomID  string       `json:"room_id,omitempty"`
+	UUID    string       `json:"user_uuid,omitempty"`
+	JWT     string       `json:"jwt,omitempty"`
+	Payload *jwt.Payload `json:"-"`
+	Name    string       `json:"name,omitempty"`
 }
 
 type body struct {

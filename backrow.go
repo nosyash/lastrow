@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	var apiAddr, uplPath, profImgPath, emojiPath, dbAddr string
+	var apiAddr, uplPath, profImgPath, emojiPath, dbAddr, hmacKey string
 
 	if err := godotenv.Load(); err != nil {
 		log.Printf("Error while trying to load .env file: %v\n", err)
@@ -24,10 +24,13 @@ func main() {
 	uplPath = getEnvOrDefault("UPLOADS_PATH", "./")
 	profImgPath = getEnvOrDefault("PROFILE_IMG_PATH", "profiles")
 	emojiPath = getEnvOrDefault("EMOJI_IMG_PATH", "emoji")
-	// hmacKey = getEnvOrDefault("HMACSHA512_KEY", "")
+	hmacKey = getEnvOrDefault("HS512_KEY", "")
 
-	// FIX THAT!
-	// For db package
+	if hmacKey == "" {
+		log.Println("Can't run API server. Environment var HS512_KEY is empty")
+		os.Exit(-1)
+	}
+
 	os.Setenv("DB_ENDPOINT", dbAddr)
 
 	if os.Getenv("YT_API_KEY") == "" {
@@ -37,7 +40,7 @@ func main() {
 	db := db.Connect(dbAddr)
 	defer db.Close()
 
-	apis := api.NewServer(apiAddr, uplPath, profImgPath, emojiPath, db)
+	apis := api.NewServer(apiAddr, uplPath, profImgPath, emojiPath, hmacKey, db)
 	if err := apis.RunServer(); err != http.ErrServerClosed {
 		log.Fatalf("Error while trying to run server: %v\n", err)
 	}

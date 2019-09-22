@@ -36,7 +36,7 @@ func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userUUID, err := server.getUserUUIDBySessionID(w, r)
+	payload, err := server.extractPayload(w, r)
 	if err != nil {
 		sendJson(w, http.StatusBadRequest, message{
 			Error: err.Error(),
@@ -57,7 +57,7 @@ func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch req.Action {
 	case eTypeRoomCreate:
-		server.createRoom(w, req.Body.Title, req.Body.Path, userUUID)
+		server.createRoom(w, req.Body.Title, req.Body.Path, payload.UUID)
 	case eTypeRoomUpdate:
 		server.updateRoom(w, &req)
 	default:
@@ -351,7 +351,7 @@ func (server Server) getAllRooms(w http.ResponseWriter) {
 	var about []db.AboutRoom
 	rooms, _ := server.db.GetAllRooms()
 
-	about = make([]db.AboutRoom, len(rooms), len(rooms))
+	about = make([]db.AboutRoom, len(rooms))
 
 	for i, r := range rooms {
 		about[i].Title = r.Title
