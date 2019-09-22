@@ -80,7 +80,7 @@ export const requestEmoteDelete = (params: { name: string }) => {
 
     http.post(api.API_ROOMS(), api.REMOVE_EMOTE({ ...params, roomId: ID }))
         .then(() => requestRoom()(store.dispatch))
-        .then(() => toast.success('Emote successfully removed', toastOpts))
+        .then(() => toast.success('Emote was removed', toastOpts))
 }
 
 export const requestRoom = () => async (dispatch: any) => {

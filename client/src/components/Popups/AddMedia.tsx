@@ -15,11 +15,13 @@ interface AddMediaProps {
 
 interface AddMediaStates {
     inputValue: string;
+    iframe: boolean;
 }
 
 class AddMedia extends Component<AddMediaProps, AddMediaStates> {
     state = {
         inputValue: '',
+        iframe: false,
     };
 
     inputEl = React.createRef();
@@ -67,18 +69,34 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
         setToPending();
     };
 
+    onAddIframeClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        this.setState({ inputValue: '', iframe: !this.state.iframe })
+    }
+
     render() {
         const { addMediaPending } = this.props;
+        const { iframe } = this.state;
         return (
             <div className="add-media_container">
                 <form onSubmit={this.handleSubmit}>
-                    <input
-                        id="add-media-input"
-                        ref={this.inputEl as any}
-                        value={this.state.inputValue}
-                        onChange={({ target }) => this.setState({ inputValue: target.value })}
-                        className="form-control form-input add-media-input"
-                    />
+                    {!iframe &&
+                        <input
+                            id="add-media-input"
+                            ref={this.inputEl as any}
+                            value={this.state.inputValue}
+                            onChange={({ target }) => this.setState({ inputValue: target.value })}
+                            className="form-control form-input add-media-input"
+                        />
+                    }
+                    {iframe &&
+                        <textarea
+                            value={this.state.inputValue}
+                            onChange={({ target }) => this.setState({ inputValue: target.value })}
+                            className="form-control form-input add-media-input"
+                        />
+                    }
+
                     <button
                         type="submit"
                         disabled={addMediaPending || !this.state.inputValue.length}
@@ -87,6 +105,13 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
                         Add
                     </button>
                 </form>
+                {/* <a
+                    href=""
+                    onClick={this.onAddIframeClick}
+                    className="add-iframe"
+                >
+                    Add iframe code
+                </a> */}
             </div>
         );
     }

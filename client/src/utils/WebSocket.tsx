@@ -171,7 +171,7 @@ class Socket implements SocketInterface {
         switch (messageType) {
             case 'update_users': {
                 const data = get(parsedData, 'body.event.data') as UpdateUsersData;
-                return dispatch({ type: types.UPDATE_USERLIST, payload: data.users });
+                return dispatch({ type: types.UPDATE_USERLIST, payload: moveGuestsToTheEnd(data.users) });
             }
             case 'message': {
                 const message = get(parsedData, 'body.event.data') as ChatMessage;
@@ -236,6 +236,14 @@ class Socket implements SocketInterface {
     //     if (!this.pending) this._webSocketReconnect();
     //   }, WEBSOCKET_TIMEOUT);
     // };
+}
+
+function moveGuestsToTheEnd(users: User[]) {
+    if (!users) return [];
+    const guests = users.filter(user => user.guest);
+    const notGuests = users.filter(user => !user.guest);
+
+    return [...notGuests, ...guests]
 }
 
 const setAddMediaToSuccess = () => {

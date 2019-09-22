@@ -1,5 +1,6 @@
 {
     "compileOnSave": false,
+    "module": "esnext",
     "compilerOptions": {
         // TODO: Declare type for everyting and set it to true
         "noImplicitAny": false,
@@ -8,7 +9,7 @@
         "removeComments": true,
         "esModuleInterop": true,
         "moduleResolution": "node",
-        "module": "es6",
+        "module": "esnext",
         "sourceMap": true,
         "jsx": "react"
     },

@@ -1,14 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Route, Switch, BrowserRouter } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
-import { connect } from 'react-redux';
+import { connect, Provider } from 'react-redux';
 import { get as lsGet } from 'local-storage';
-import RoomBase from './scenes/Room';
-import RoomListBase from './scenes/Home/index';
+// import RoomBase from './scenes/Room';
+// import RoomListBase from './scenes/Home/index';
+const RoomBase = lazy(() => import(/* webpackChunkName: "room" */ './scenes/Room/index'));
+const RoomList = lazy(() => import(/* webpackChunkName: "home-page" */ './scenes/Home/index'));
+
+
 import Popups from './components/Popups';
 import * as types from './constants/actionTypes';
 import { getProfile } from './utils/apiRequests';
 import { getRandom } from './utils';
+import { store } from './store';
+
+const RoomSuspended = (props) =>
+    <Suspense fallback={<div></div>}>
+        <RoomBase {...props} />
+    </Suspense>
+
+
+const RoomListSuspended = (props) =>
+    <Suspense fallback={<div></div>}>
+        <RoomList {...props} />
+    </Suspense>
+
+
 
 function App(props: any) {
     const [loaded, setLoaded] = useState(false);
@@ -44,8 +62,8 @@ function App(props: any) {
                     </div>
                     {/* <NavBar /> */}
                     <Switch>
-                        <Route path="/r/:id" component={RoomBase} />
-                        <Route exact path="/" component={RoomListBase} />
+                        <Route path="/r/:id" component={RoomSuspended} />
+                        <Route exact path="/" component={RoomListSuspended} />
                         <Route path="/" render={() => <h1>404</h1>} />
                     </Switch>
                 </React.Fragment>
