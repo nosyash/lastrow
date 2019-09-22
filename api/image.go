@@ -49,10 +49,13 @@ func (i image) createImage(path, iType string) error {
 		if err != nil {
 			return err
 		}
-		
+
 		if ic.Width != profileImgWidth && ic.Height != profileImgHeight {
-			return errors.New("Profile image size should be 400x400 pixels")
+			return errors.New("Profile image size should be 500x500 pixels")
 		}
+
+		// Because, DecodeConfig change reader buffer
+		reader.Reset(dec)
 
 		img, err := jpeg.Decode(reader)
 		if err != nil {
@@ -74,6 +77,9 @@ func (i image) createImage(path, iType string) error {
 		if len(dec) > 256*1024 {
 			return errors.New("Emoji should be no bigger than 256kb")
 		}
+
+		// Because, DecodeConfig change reader buffer
+		reader.Reset(dec)
 
 		if ic.Width <= maxEmojiImgWidth && ic.Width >= minEmojiImgWidth && ic.Height <= maxEmojiImgHeight && ic.Height >= minEmojiImgHeight {
 			img, err := gif.DecodeAll(reader)
@@ -99,6 +105,9 @@ func (i image) createImage(path, iType string) error {
 		if len(dec) > 256*1024 {
 			return errors.New("Emoji should be no bigger than 256kb")
 		}
+
+		// Because, DecodeConfig change reader buffer
+		reader.Reset(dec)
 
 		if ic.Width <= maxEmojiImgWidth && ic.Width >= minEmojiImgWidth && ic.Height <= maxEmojiImgHeight && ic.Height >= minEmojiImgHeight {
 			img, err := png.Decode(reader)

@@ -20,21 +20,22 @@ type Room struct {
 	Emoji  []Emoji `json:"emoji"`
 }
 
-type userProfile struct {
+type UserView struct {
 	Name  string `json:"name"`
 	Color string `json:"color"`
 	Image string `json:"image"`
 	UUID  string `json:"uuid"`
 }
 
-type user struct {
-	Name  string `json:"name"`
-	Color string `json:"color"`
-	Image string `json:"image"`
-	Uname string `json:"uname"`
-	Hash  string `json:"hash"`
-	Email string `json:"email"`
-	UUID  string `json:"uuid"`
+type User struct {
+	Name    string `json:"name"`
+	Color   string `json:"color"`
+	Image   string `json:"image"`
+	IsAdmin bool   `json:"admin"`
+	Uname   string `json:"uname"`
+	Hash    string `json:"hash"`
+	Email   string `json:"email"`
+	UUID    string `json:"uuid"`
 }
 
 type owner struct {

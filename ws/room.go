@@ -18,11 +18,6 @@ const (
 )
 
 var (
-	// ErrUnknownAction send when was received unknown action type
-	ErrUnknownAction = errors.New("Unknown action type")
-)
-
-var (
 	closeDeadline = false
 	cancelChan    = make(chan struct{})
 )
@@ -135,6 +130,7 @@ func (h hub) remove(conn *websocket.Conn) {
 			break
 		}
 	}
+
 	if uuid != "" {
 		delete(h.hub, uuid)
 		h.cache.Users.DelUser <- uuid
@@ -203,7 +199,7 @@ func (h *hub) read(conn *websocket.Conn) {
 			case playerEvent:
 				go h.handlePlayerEvent(req, conn)
 			default:
-				go sendError(conn, ErrUnknownAction)
+				go sendError(conn, errors.New("Unknown action type"))
 			}
 		}
 	}

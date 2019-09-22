@@ -2,7 +2,7 @@ package cache
 
 // AddUser read information about user from Database and add the user to the user cache
 func (u *Users) addUser(uuid string) {
-	userProfile, _ := u.db.GetUserProfile(uuid)
+	userProfile, _ := u.db.GetUser(uuid)
 
 	u.users[uuid] = &User{
 		Name:  userProfile.Name,
@@ -37,7 +37,7 @@ func (u Users) GetUser(uuid string) (*User, bool) {
 
 // UpdateUser update user in cache, image, nickname, color etc.
 func (u *Users) UpdateUser(uuid string) {
-	userProfile, _ := u.db.GetUserProfile(uuid)
+	userProfile, _ := u.db.GetUser(uuid)
 	user, _ := u.GetUser(uuid)
 
 	user.Name = userProfile.Name

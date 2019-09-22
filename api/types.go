@@ -117,8 +117,8 @@ const (
 )
 
 const (
-	profileImgWidth  = 400
-	profileImgHeight = 400
+	profileImgWidth  = 500
+	profileImgHeight = 500
 
 	maxEmojiImgWidth  = 128
 	maxEmojiImgHeight = 128

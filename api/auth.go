@@ -126,11 +126,28 @@ func (server Server) logout(w http.ResponseWriter, sessionID string) {
 	}
 }
 
-func (server Server) setUpAuthSession(w http.ResponseWriter, userUUID string) {
-	// TODO: Migrate to JWT
+func (server Server) setUpAuthSession(w http.ResponseWriter, uuid string) {
+
+	// isAdmin, err := server.db.IsAdmin(uuid)
+	// println(isAdmin, err)
+
+	// roomList, err := server.db.WhereUserOwner(userUUID)
+	// if err != nil {
+	// 	log.Printf("Error while trying to get the a room list where is user has owner permissions: %v", err)
+	// 	sendJson(w, http.StatusBadRequest, message{
+	// 		Error: errors.New("Couldn't create auth session").Error(),
+	// 	})
+	// 	return
+	// }
+
+	// var header jwt.Header
+	// var payload jwt.Payload
+	// var owner jwt.Owner
+
+	// header.Aig = "HS512"
 
 	sessionID := getRandomUUID()
-	err := server.db.CreateSession(sessionID, userUUID)
+	err := server.db.CreateSession(sessionID, uuid)
 	if err != nil {
 		log.Printf("Couldn't create auth session: %v", err)
 		return
