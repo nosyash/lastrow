@@ -38,7 +38,7 @@ function SubtitlesContainer(props) {
         if (videoEl.paused) {
             pauseTimer = setTimeout(() => {
                 subtitlesHandler.setCurrentTime(timeMs);
-                subtitlesHandler.updateTempSubtitiles();
+                subtitlesHandler.updateSubsChunk();
             }, 20);
             clearTimeout(pauseTimer);
         }
