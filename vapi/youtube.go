@@ -114,20 +114,21 @@ func unmarshalDetails(rawDetails []byte) (*detailsItems, error) {
 
 func iso8601ToInt(duration string) int {
 	var hours, minutes, seconds int
-	exp := regexp.MustCompile(`\d+`)
-
+	exp := regexp.MustCompile(`\d+\w`)
 	find := exp.FindAllString(duration, -1)
 
-	switch len(find) {
-	case 1:
-		seconds, _ = strconv.Atoi(find[0])
-	case 2:
-		minutes, _ = strconv.Atoi(find[0])
-		seconds, _ = strconv.Atoi(find[1])
-	case 3:
-		hours, _ = strconv.Atoi(find[0])
-		minutes, _ = strconv.Atoi(find[1])
-		seconds, _ = strconv.Atoi(find[2])
+	for _, v := range find {
+		n := regexp.MustCompile(`\d+`).FindAllString(v, -1)
+		dType := regexp.MustCompile(`\w$`).FindAllString(v, -1)
+
+		switch dType[0] {
+		case "H":
+			hours, _ = strconv.Atoi(n[0])
+		case "M":
+			minutes, _ = strconv.Atoi(n[0])
+		case "S":
+			seconds, _ = strconv.Atoi(n[0])
+		}
 	}
 
 	return seconds + (minutes * 60) + (hours * 3600)

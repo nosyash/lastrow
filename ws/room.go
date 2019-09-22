@@ -97,14 +97,14 @@ func (h hub) add(user *user) {
 		}
 	}
 	if user.Guest {
+		h.hub[user.UUID] = user.Conn
+
 		h.cache.Users.AddGuest <- &cache.User{
 			Name:  user.Name,
 			Guest: true,
 			UUID:  user.UUID,
 			ID:    getHashOfString(user.UUID[:8]),
 		}
-
-		h.hub[user.UUID] = user.Conn
 	} else {
 		h.hub[user.Payload.UUID] = user.Conn
 		h.cache.Users.AddUser <- user.Payload.UUID
