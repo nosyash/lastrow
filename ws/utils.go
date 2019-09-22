@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"os"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -13,7 +12,7 @@ import (
 )
 
 var sendLocker sync.Mutex
-var hmacKey = os.Getenv("HS512_KEY")
+var hmacKey string
 
 func readPacket(conn *websocket.Conn) (*packet, error) {
 	request := &packet{}
@@ -66,7 +65,7 @@ func extractPayload(token string) (*jwt.Payload, error) {
 	if err != nil && err != jwt.ErrKeyLength {
 		return nil, err
 	} else if err == jwt.ErrKeyLength {
-		return nil, errors.New("Internal error while trying to validate your JWT")
+		return nil, errors.New("Internal server error while trying to validate your JWT")
 	}
 
 	if !result {
