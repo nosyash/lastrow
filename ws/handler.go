@@ -97,12 +97,6 @@ func (h hub) handleUserEvent(req *packet, conn *websocket.Conn) {
 }
 
 func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
-	// Guest can't do this
-	if req.Payload == nil {
-		sendError(conn, errors.New("You don't have permissions for this action"))
-		return
-	}
-
 	switch req.Body.Event.Type {
 	case eTypePlAdd:
 		if req.Body.Event.Data.URL != "" {
