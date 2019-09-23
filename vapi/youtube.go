@@ -46,8 +46,8 @@ type contentDetails struct {
 // GetVideoDetails gettting and return video duration and title
 func GetVideoDetails(id string) (int, string, bool, error) {
 	var live bool
-	res, err := getDetail(id)
 
+	res, err := getDetail(id)
 	if err != nil {
 		return 0, "", live, err
 	}

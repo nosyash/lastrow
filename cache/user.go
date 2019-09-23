@@ -1,8 +1,14 @@
 package cache
 
+import "log"
+
 // AddUser read information about user from Database and add the user to the user cache
 func (u *Users) addUser(uuid string) {
-	userProfile, _ := u.db.GetUserByUUID(uuid)
+	userProfile, err := u.db.GetUserByUUID(uuid)
+	if err != nil {
+		log.Printf("u.db.GetUserByUUID(): %v", err)
+		return
+	}
 
 	u.users[uuid] = &User{
 		Name:  userProfile.Name,
@@ -37,14 +43,20 @@ func (u Users) GetUser(uuid string) (*User, bool) {
 
 // UpdateUser update user in cache, image, nickname, color etc.
 func (u *Users) UpdateUser(uuid string) {
-	userProfile, _ := u.db.GetUserByUUID(uuid)
-	user, _ := u.GetUser(uuid)
+	userProfile, err := u.db.GetUserByUUID(uuid)
+	if err != nil {
+		log.Printf("u.db.GetUserByUUID(): %v", err)
+	}
 
-	user.Name = userProfile.Name
-	user.Color = userProfile.Color
-	user.Image = userProfile.Image
+	user, ok := u.GetUser(uuid)
 
-	u.UpdateUsers <- struct{}{}
+	if ok {
+		user.Name = userProfile.Name
+		user.Color = userProfile.Color
+		user.Image = userProfile.Image
+
+		u.UpdateUsers <- struct{}{}
+	}
 }
 
 // UsersCount return count users for current room

@@ -32,7 +32,7 @@ func HandleWsConnection(db *db.Database) {
 	for {
 		select {
 		case conn := <-Register:
-			go rh.registerNewConn(conn)
+			rh.registerNewConn(conn)
 		case roomID := <-closeRoom:
 			rh.rhub[roomID].close <- struct{}{}
 			delete(rh.rhub, roomID)

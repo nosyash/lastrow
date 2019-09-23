@@ -225,6 +225,7 @@ func (h hub) send(msg []byte) {
 
 func (h hub) ping(conn *websocket.Conn) {
 	ticker := time.NewTicker(30 * time.Second)
+
 	defer func() {
 		ticker.Stop()
 		h.unregister <- conn

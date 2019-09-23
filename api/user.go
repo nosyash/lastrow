@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -25,8 +26,9 @@ var (
 func (server Server) userHandler(w http.ResponseWriter, r *http.Request) {
 	payload, err := server.extractPayload(w, r)
 	if err != nil {
+		log.Printf("server.extractPayload(): %v", err)
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: err.Error(),
+			Error: "Your JWT is invalid",
 		})
 		return
 	}
@@ -73,7 +75,18 @@ func (server Server) userHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (server Server) getUser(w http.ResponseWriter, userUUID string) {
-	user, _ := server.db.GetUserByUUID(userUUID)
+	user, err := server.db.GetUserByUUID(userUUID)
+	if err != nil {
+		if err != mgo.ErrNotFound {
+			log.Printf("server.db.GetUserByUUID(): %v", err)
+		}
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "Couldn't find user by specified UUID",
+		})
+		return
+	} else if err != nil {
+
+	}
 
 	userView := db.UserView{
 		Name:  user.Name,
@@ -91,6 +104,9 @@ func (server Server) getUser(w http.ResponseWriter, userUUID string) {
 func (server Server) updateProfileImage(w http.ResponseWriter, userUUID string, b64Img *string) {
 	oldPath, err := server.db.GetUserImage(userUUID)
 	if err != nil {
+		if err != mgo.ErrNotFound {
+			log.Printf("erver.db.GetUserImage(): %v", err)
+		}
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: err.Error(),
 		})
@@ -112,8 +128,9 @@ func (server Server) updateProfileImage(w http.ResponseWriter, userUUID string, 
 	}
 
 	if err != nil {
+		log.Printf("image.createImage(), image.replaceImage(): %v", err)
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: err.Error(),
+			Error: "Couldn't update profile image",
 		})
 		return
 	}
@@ -125,8 +142,11 @@ func (server Server) updateProfileImage(w http.ResponseWriter, userUUID string, 
 func (server Server) deleteProfileImage(w http.ResponseWriter, userUUID string) {
 	imgPath, err := server.db.GetUserImage(userUUID)
 	if err != nil {
+		if err != mgo.ErrNotFound {
+			log.Printf("server.db.GetUserImage(): %v", err)
+		}
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: err.Error(),
+			Error: "Couldn't delete profile image",
 		})
 		return
 	}
@@ -163,7 +183,10 @@ func (server Server) updatePassword(w http.ResponseWriter, userUUID, curPasswd, 
 	}
 
 	user, err := server.db.GetUserByUUID(userUUID)
-	if err == mgo.ErrNotFound {
+	if err != nil {
+		if err != mgo.ErrNotFound {
+			log.Printf("server.db.GetUserByUUID(): %v", err)
+		}
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Couldn't find user with specified UUID",
 		})
@@ -172,6 +195,7 @@ func (server Server) updatePassword(w http.ResponseWriter, userUUID, curPasswd, 
 
 	dHash, err := hex.DecodeString(user.Hash)
 	if err != nil {
+		log.Printf("hex.DecodeString(): %v", err)
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Internal server error while trying to update password",
 		})

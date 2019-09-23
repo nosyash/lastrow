@@ -143,8 +143,8 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 }
 
 func (h hub) handleMessage(msg, uuid string) {
-	user, r := h.cache.Users.GetUser(uuid)
-	if r {
+	user, ok := h.cache.Users.GetUser(uuid)
+	if ok {
 		h.broadcast <- createPacket(chatEvent, eTypeMsg, data{
 			Message: msg,
 			Name:    user.Name,
@@ -163,14 +163,13 @@ func (h hub) updateUserList() {
 }
 
 func (h hub) updatePlaylist() {
-	pl := h.cache.Playlist.GetAllPlaylist()
 	packet := playlist{
 		Action: playlistEvent,
 		Body: plBody{
 			Event: plEvent{
 				Type: eTypePlaylistUpd,
 				Data: plData{
-					Playlist: pl,
+					Playlist: h.cache.Playlist.GetAllPlaylist(),
 				},
 			},
 		},
