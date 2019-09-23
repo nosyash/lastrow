@@ -253,12 +253,16 @@ exit:
 				h.broadcast <- createPacket(playerEvent, eTypeTicker, d)
 
 				elapsed += syncPeriod
+				h.syncer.elapsed = elapsed
 			case <-ctx.Done():
 				cancel()
 				break loop
 			case <-h.syncer.skip:
 				cancel()
 				break loop
+			case e := <-h.syncer.resetElapsed:
+				elapsed = e
+				ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration-elapsed+sleepBeforeStart)*time.Second))
 			case <-h.syncer.pause:
 			resume:
 				for {

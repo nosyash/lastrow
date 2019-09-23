@@ -39,8 +39,10 @@ func NewRoomHub(id string) *hub {
 			make(chan struct{}),
 			make(chan struct{}),
 			make(chan struct{}),
+			make(chan int),
 			make(chan struct{}),
 			"",
+			0,
 		},
 		id,
 	}
@@ -155,15 +157,13 @@ func (h hub) remove(conn *websocket.Conn) {
 			}
 
 			go func() {
+				var elapsed int
+
 				closeDeadline = true
 				ctx, cancel := context.WithTimeout(context.Background(), closeDeadlineTimeout*time.Second)
 
-				// FIXME:
-				// Pause bug
-				// If simultaneously will be recv two package skip video and leave user
-				// skip maybe handle first, so line below never send to the pause channel
 				if !h.syncer.isStreamOrFrame {
-					h.syncer.pause <- struct{}{}
+					elapsed = h.syncer.elapsed
 				}
 
 			loop:
@@ -171,7 +171,7 @@ func (h hub) remove(conn *websocket.Conn) {
 					select {
 					case <-cancelChan:
 						if !h.syncer.isStreamOrFrame {
-							h.syncer.resume <- struct{}{}
+							h.syncer.resetElapsed <- elapsed
 						}
 						cancel()
 						break loop

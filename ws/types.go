@@ -63,8 +63,10 @@ type syncer struct {
 	skip            chan struct{}
 	pause           chan struct{}
 	resume          chan struct{}
+	resetElapsed    chan int
 	close           chan struct{}
 	currentVideoID  string
+	elapsed         int
 }
 
 type data struct {
