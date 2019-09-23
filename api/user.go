@@ -1,12 +1,15 @@
 package api
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
 	"unicode/utf8"
+
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/nosyash/backrow/db"
 
@@ -22,7 +25,7 @@ var (
 func (server Server) userHandler(w http.ResponseWriter, r *http.Request) {
 	payload, err := server.extractPayload(w, r)
 	if err != nil {
-		sendJson(w, http.StatusBadRequest, message{
+		sendJSON(w, http.StatusBadRequest, message{
 			Error: err.Error(),
 		})
 		return
@@ -38,7 +41,7 @@ func (server Server) userHandler(w http.ResponseWriter, r *http.Request) {
 	err = decoder.Decode(&userReq)
 
 	if err != nil {
-		sendJson(w, http.StatusBadRequest, message{
+		sendJSON(w, http.StatusBadRequest, message{
 			Error: err.Error(),
 		})
 		return
@@ -63,14 +66,14 @@ func (server Server) userHandler(w http.ResponseWriter, r *http.Request) {
 	case eTypeUserUpdatePswd:
 		server.updatePassword(w, payload.UUID, userReq.Body.CurPasswd, userReq.Body.NewPasswd)
 	default:
-		sendJson(w, http.StatusBadRequest, message{
+		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Unknown /api/user action",
 		})
 	}
 }
 
 func (server Server) getUser(w http.ResponseWriter, userUUID string) {
-	user, _ := server.db.GetUser(userUUID)
+	user, _ := server.db.GetUserByUUID(userUUID)
 
 	userView := db.UserView{
 		Name:  user.Name,
@@ -88,7 +91,7 @@ func (server Server) getUser(w http.ResponseWriter, userUUID string) {
 func (server Server) updateProfileImage(w http.ResponseWriter, userUUID string, b64Img *string) {
 	oldPath, err := server.db.GetUserImage(userUUID)
 	if err != nil {
-		sendJson(w, http.StatusBadRequest, message{
+		sendJSON(w, http.StatusBadRequest, message{
 			Error: err.Error(),
 		})
 		return
@@ -109,7 +112,7 @@ func (server Server) updateProfileImage(w http.ResponseWriter, userUUID string, 
 	}
 
 	if err != nil {
-		sendJson(w, http.StatusBadRequest, message{
+		sendJSON(w, http.StatusBadRequest, message{
 			Error: err.Error(),
 		})
 		return
@@ -122,7 +125,7 @@ func (server Server) updateProfileImage(w http.ResponseWriter, userUUID string, 
 func (server Server) deleteProfileImage(w http.ResponseWriter, userUUID string) {
 	imgPath, err := server.db.GetUserImage(userUUID)
 	if err != nil {
-		sendJson(w, http.StatusBadRequest, message{
+		sendJSON(w, http.StatusBadRequest, message{
 			Error: err.Error(),
 		})
 		return
@@ -141,8 +144,8 @@ func (server Server) updatePersonalInfo(w http.ResponseWriter, userUUID, name, c
 	}
 
 	if utf8.RuneCountInString(name) < minNameLength || utf8.RuneCountInString(name) > maxNameLength {
-		sendJson(w, http.StatusBadRequest, message{
-			Error: errNameLength.Error(),
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: fmt.Errorf("Name length must be no more than %d and no less %d", minNameLength, maxNameLength).Error(),
 		})
 		return
 	}
@@ -153,22 +156,39 @@ func (server Server) updatePersonalInfo(w http.ResponseWriter, userUUID, name, c
 
 func (server Server) updatePassword(w http.ResponseWriter, userUUID, curPasswd, newPasswd string) {
 	if utf8.RuneCountInString(newPasswd) < minPasswordLength || utf8.RuneCountInString(newPasswd) > maxPasswordLength {
-		sendJson(w, http.StatusBadRequest, message{
-			Error: errPasswdLength.Error(),
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: fmt.Errorf("Password length must be no more than %d characters and at least %d", maxPasswordLength, minPasswordLength).Error(),
 		})
 		return
 	}
 
-	_, err := server.db.FindUser("uuid", userUUID, getHashOfString(curPasswd))
+	user, err := server.db.GetUserByUUID(userUUID)
 	if err == mgo.ErrNotFound {
-		sendJson(w, http.StatusBadRequest, message{
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "Couldn't find user with specified UUID",
+		})
+		return
+	}
+
+	hash, err := hex.DecodeString(user.Hash)
+	if err != nil {
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "Internal server error while trying to update password",
+		})
+		return
+	}
+
+	if err = bcrypt.CompareHashAndPassword(hash, []byte(curPasswd)); err != nil {
+		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Current password is invalid",
 		})
 		return
 	}
 
-	server.db.UpdateUserValue(userUUID, "hash", getHashOfString(newPasswd))
-	sendJson(w, http.StatusOK, message{
+	nHash, err := bcrypt.GenerateFromPassword([]byte(newPasswd), bcrypt.DefaultCost)
+
+	server.db.UpdateUserValue(userUUID, "hash", hex.EncodeToString(nHash[:]))
+	sendJSON(w, http.StatusOK, message{
 		Message: "Your password has been successfully changed",
 	})
 }

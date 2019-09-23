@@ -58,7 +58,7 @@ func GetMetaData(url string) (int, string, error) {
 		return 0, "", ErrBinNotFound
 	} else if err != nil {
 		log.Printf("Error while trying to execute /bin/ffprobe: %v", err)
-		return 0, "", err
+		return 0, "", errors.New("Couldn't get metadata about this file")
 	}
 
 	done := make(chan error, 1)
@@ -75,7 +75,7 @@ func GetMetaData(url string) (int, string, error) {
 		return 0, "", err
 	case err = <-done:
 		if err != nil {
-			return 0, "", errors.New("Could't get metadata about this file")
+			return 0, "", errors.New("Couldn't get metadata about this file")
 		}
 	}
 

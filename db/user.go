@@ -31,16 +31,16 @@ func (db Database) CreateNewUser(name, uname, hash, email, uuid string) (bool, e
 	return true, nil
 }
 
-// FindUser find user by some key, most likely it's a email or username, with specially hash
-func (db Database) FindUser(key, value, hash string) (*User, error) {
+// GetUserByUname find user by username and return it
+func (db Database) GetUserByUname(value string) (*User, error) {
 	var user User
 
-	err := db.uc.Find(bson.M{key: value, "hash": hash}).One(&user)
+	err := db.uc.Find(bson.M{"uname": value}).One(&user)
 	return &user, err
 }
 
-// GetUser find user by uuid and return user object
-func (db Database) GetUser(uuid string) (*User, error) {
+// GetUserByUUID find user by uuid and return user object
+func (db Database) GetUserByUUID(uuid string) (*User, error) {
 	var user User
 
 	err := db.uc.Find(bson.M{"uuid": uuid}).One(&user)

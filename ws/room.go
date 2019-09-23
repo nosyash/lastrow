@@ -18,6 +18,7 @@ const (
 )
 
 var (
+	// Indicating whether to cancel the context or not
 	closeDeadline = false
 	cancelChan    = make(chan struct{})
 )
@@ -91,23 +92,23 @@ func (h hub) add(user *user) {
 		}
 
 		if u == uuid {
-			sendError(user.Conn, errors.New("Your already connected to this room"))
+			sendError(user.Conn, errors.New("You already connected to this room"))
 			user.Conn.Close()
 			return
 		}
 	}
 	if user.Guest {
-		h.hub[user.UUID] = user.Conn
-
 		h.cache.Users.AddGuest <- &cache.User{
 			Name:  user.Name,
 			Guest: true,
 			UUID:  user.UUID,
 			ID:    getHashOfString(user.UUID[:8]),
 		}
+
+		h.hub[user.UUID] = user.Conn
 	} else {
-		h.hub[user.Payload.UUID] = user.Conn
 		h.cache.Users.AddUser <- user.Payload.UUID
+		h.hub[user.Payload.UUID] = user.Conn
 	}
 
 	pl := h.cache.Playlist.GetAllPlaylist()
@@ -157,7 +158,8 @@ func (h hub) remove(conn *websocket.Conn) {
 				closeDeadline = true
 				ctx, cancel := context.WithTimeout(context.Background(), closeDeadlineTimeout*time.Second)
 
-				// FIX pause bug
+				// FIXME:
+				// Pause bug
 				// If simultaneously will be recv two package skip video and leave user
 				// skip maybe handle first, so line below never send to the pause channel
 				if !h.syncer.isStreamOrFrame {

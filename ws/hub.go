@@ -60,7 +60,7 @@ func (rh *roomsHub) registerNewConn(conn *websocket.Conn) {
 	}
 
 	if !user.Guest {
-		_, err = rh.db.GetUser(user.Payload.UUID)
+		_, err = rh.db.GetUserByUUID(user.Payload.UUID)
 		if err == mgo.ErrNotFound {
 			sendError(conn, ErrInvalidUserID)
 			return
