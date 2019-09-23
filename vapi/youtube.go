@@ -57,13 +57,16 @@ func GetVideoDetails(id string) (int, string, bool, error) {
 		return 0, "", live, err
 	}
 
-	if details.Items[0].Snippet.LiveBroadcast == "live" {
-		live = true
+	if len(details.Items) > 0 {
+		if details.Items[0].Snippet.LiveBroadcast == "live" {
+			live = true
+		}
+
+		if len(details.Items) > 0 {
+			return iso8601ToInt(details.Items[0].ContentDetails.Duration), details.Items[0].Snippet.Title, live, nil
+		}
 	}
 
-	if len(details.Items) > 0 {
-		return iso8601ToInt(details.Items[0].ContentDetails.Duration), details.Items[0].Snippet.Title, live, nil
-	}
 	return 0, "", live, ErrIncorrectVideoID
 }
 
