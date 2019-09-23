@@ -41,10 +41,7 @@ func NewServer(address, uplPath, pofImgPath, emojiImgPath, hmacKey string, db *d
 			ReadBufferSize:  512,
 			WriteBufferSize: 512,
 			CheckOrigin: func(r *http.Request) bool {
-				if r.Host == address {
-					return true
-				}
-				return false
+				return true
 			},
 		},
 		ImageServer{
