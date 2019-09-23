@@ -170,7 +170,7 @@ func (server Server) updatePassword(w http.ResponseWriter, userUUID, curPasswd, 
 		return
 	}
 
-	hash, err := hex.DecodeString(user.Hash)
+	dHash, err := hex.DecodeString(user.Hash)
 	if err != nil {
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Internal server error while trying to update password",
@@ -178,7 +178,7 @@ func (server Server) updatePassword(w http.ResponseWriter, userUUID, curPasswd, 
 		return
 	}
 
-	if err = bcrypt.CompareHashAndPassword(hash, []byte(curPasswd)); err != nil {
+	if err = bcrypt.CompareHashAndPassword(dHash, []byte(curPasswd)); err != nil {
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Current password is invalid",
 		})
