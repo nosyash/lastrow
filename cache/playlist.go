@@ -102,7 +102,7 @@ func (pl *playlist) addYoutube(url *url.URL) {
 }
 
 func (pl *playlist) addIframe(ifurl string) {
-	tag := html.NewTokenizer(strings.NewReader(ifurl))
+	tag := html.NewTokenizer(strings.NewReader(strings.TrimSpace(ifurl)))
 	tag.Next()
 
 	var key, value []byte
@@ -122,14 +122,13 @@ func (pl *playlist) addIframe(ifurl string) {
 				return
 			}
 
-			if pURL.Scheme == "" {
-				sVal = fmt.Sprintf("http:%s", sVal)
-			} else {
-				if !regexp.MustCompile(`https?`).MatchString(pURL.Scheme) {
-					pl.AddFeedBack <- ErrLinkDoesNotMath
-					return
-				}
+			if regexp.MustCompile(`https?`).MatchString(pURL.Scheme) || pURL.Scheme == "" {
+				attributes += fmt.Sprintf("%s='%s' ", sKey, sVal)
+				continue
 			}
+
+			pl.AddFeedBack <- ErrLinkDoesNotMath
+			return
 		}
 
 		if sVal == "" {
