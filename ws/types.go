@@ -59,6 +59,7 @@ type eventBody struct {
 type syncer struct {
 	isSleep         bool
 	isStreamOrFrame bool
+	isPause         bool
 	wakeUp          chan struct{}
 	skip            chan struct{}
 	pause           chan struct{}
@@ -131,6 +132,8 @@ const (
 	eTypeMsg         = "message"
 	eTypePlAdd       = "playlist_add"
 	eTypePlDel       = "playlist_del"
+	eTypePause       = "pause"
+	eTypeResume      = "resume"
 	eTypeUpdUserList = "update_users"
 	eTypePlaylistUpd = "update_playlist"
 	eTypeEmojiUpdate = "emoji_update"

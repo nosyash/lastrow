@@ -11,6 +11,8 @@ import (
 )
 
 var delLock sync.Mutex
+var pauseLock sync.Mutex
+var resumeLock sync.Mutex
 
 const (
 	syncPeriod       = 3
@@ -139,6 +141,34 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 		} else {
 			sendError(conn, ErrInvalidEventRequest)
 		}
+	case eTypePause:
+		pauseLock.Lock()
+
+		if !h.syncer.isPause && !h.syncer.isSleep {
+			h.syncer.pause <- struct{}{}
+
+			req.JWT = ""
+			b, _ := json.Marshal(&req)
+
+			h.broadcast <- b
+			h.syncer.isPause = true
+		}
+
+		pauseLock.Unlock()
+	case eTypeResume:
+		resumeLock.Lock()
+
+		if h.syncer.isPause && !h.syncer.isSleep {
+			h.syncer.resume <- struct{}{}
+
+			req.JWT = ""
+			b, _ := json.Marshal(&req)
+
+			h.broadcast <- b
+			h.syncer.isPause = false
+		}
+
+		resumeLock.Unlock()
 	}
 }
 

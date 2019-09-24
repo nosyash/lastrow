@@ -35,6 +35,7 @@ func NewRoomHub(id string) *hub {
 		syncer{
 			false,
 			false,
+			false,
 			make(chan struct{}),
 			make(chan struct{}),
 			make(chan struct{}),

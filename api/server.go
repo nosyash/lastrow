@@ -40,6 +40,9 @@ func NewServer(address, uplPath, pofImgPath, emojiImgPath, hmacKey string, db *d
 		websocket.Upgrader{
 			ReadBufferSize:  512,
 			WriteBufferSize: 512,
+			CheckOrigin: func(r *http.Request) bool {
+				return true
+			},
 		},
 		ImageServer{
 			uplPath,
