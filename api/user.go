@@ -89,10 +89,11 @@ func (server Server) getUser(w http.ResponseWriter, userUUID string) {
 	}
 
 	userView := db.UserView{
-		Name:  user.Name,
-		Color: user.Color,
-		Image: user.Image,
-		UUID:  user.UUID,
+		Username: user.Uname,
+		Name:     user.Name,
+		Color:    user.Color,
+		Image:    user.Image,
+		UUID:     user.UUID,
 	}
 
 	userAsByte, _ := json.Marshal(userView)
