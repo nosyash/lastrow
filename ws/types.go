@@ -83,6 +83,7 @@ type data struct {
 	RewindTime int           `json:"time,omitempty"`
 	URL        string        `json:"url,omitempty"`
 	ID         string        `json:"__id,omitempty"`
+	UserID     string        `json:"user_id,omitempty"`
 	Users      []*cache.User `json:"users,omitempty"`
 	Ticker     *elapsedTime  `json:"ticker,omitempty"`
 	Emoji      []db.Emoji    `json:"emoji,omitempty"`
@@ -131,15 +132,20 @@ const (
 )
 
 const (
-	eTypeMsg         = "message"
-	eTypePlAdd       = "playlist_add"
-	eTypePlDel       = "playlist_del"
-	eTypePause       = "pause"
-	eTypeResume      = "resume"
-	eTypeRewind      = "rewind"
+	eTypeMsg = "message"
+
+	eTypePlAdd  = "playlist_add"
+	eTypePlDel  = "playlist_del"
+	eTypePause  = "pause"
+	eTypeResume = "resume"
+	eTypeRewind = "rewind"
+
 	eTypeUpdUserList = "update_users"
 	eTypePlaylistUpd = "update_playlist"
 	eTypeEmojiUpdate = "emoji_update"
-	eTypeFeedBack    = "feedback"
-	eTypeTicker      = "ticker"
+
+	eTypeFeedBack = "feedback"
+	eTypeTicker   = "ticker"
+
+	eTypeKick = "kick"
 )

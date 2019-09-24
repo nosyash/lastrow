@@ -35,10 +35,21 @@ func (u *Users) delUser(uuid string) {
 	}
 }
 
-// GetUser return user object by UUID
-func (u Users) GetUser(uuid string) (*User, bool) {
+// GetUserByUUID return user object by UUID
+func (u Users) GetUserByUUID(uuid string) (*User, bool) {
 	user, ok := u.users[uuid]
 	return user, ok
+}
+
+// GetUserByID return user object by ID
+func (u Users) GetUserByID(id string) *User {
+	for _, user := range u.users {
+		if user.ID == id {
+			return user
+		}
+	}
+
+	return nil
 }
 
 // UpdateUser update user in cache, image, nickname, color etc.
@@ -48,7 +59,7 @@ func (u *Users) UpdateUser(uuid string) {
 		log.Printf("u.db.GetUserByUUID(): %v", err)
 	}
 
-	user, ok := u.GetUser(uuid)
+	user, ok := u.GetUserByUUID(uuid)
 
 	if ok {
 		user.Name = userProfile.Name

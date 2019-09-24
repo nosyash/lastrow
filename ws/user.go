@@ -6,32 +6,49 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func (h hub) handleUserEvent(req *packet, conn *websocket.Conn) {
-	switch req.Body.Event.Type {
+func (h hub) handleUserEvent(p *packet, conn *websocket.Conn) {
+	switch p.Body.Event.Type {
 	case eTypeMsg:
-		if req.Body.Event.Data.Message != "" {
-			if req.Payload != nil {
-				h.handleMessage(req.Body.Event.Data.Message, req.Payload.UUID)
-			} else {
-				h.handleMessage(req.Body.Event.Data.Message, req.UUID)
-			}
-		}
+		h.handleMessage(p)
+	case eTypeKick:
+		h.kickUser(p)
 	default:
 		sendError(conn, errors.New("Unknown event type"))
 	}
 }
 
-func (h hub) handleMessage(msg, uuid string) {
-	user, ok := h.cache.Users.GetUser(uuid)
+func (h hub) handleMessage(p *packet) {
+	if len(p.Body.Event.Data.Message) == 0 {
+		return
+	}
+
+	var uuid string
+
+	if p.Payload == nil {
+		uuid = p.UUID
+	} else {
+		uuid = p.Payload.UUID
+	}
+
+	user, ok := h.cache.Users.GetUserByUUID(uuid)
 	if ok {
 		h.broadcast <- createPacket(chatEvent, eTypeMsg, &data{
-			Message: msg,
+			Message: p.Body.Event.Data.Message,
 			Name:    user.Name,
 			Color:   user.Color,
 			Image:   user.Image,
 			ID:      user.ID,
 			Guest:   user.Guest,
 		})
+	}
+}
+
+func (h hub) kickUser(p *packet) {
+	if p.Body.Event.Data.UserID != "" {
+		user := h.cache.Users.GetUserByID(p.Body.Event.Data.UserID)
+		if user != nil {
+			h.hub[user.UUID].Close()
+		}
 	}
 }
 
