@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"sync"
 	"time"
 
@@ -220,7 +219,6 @@ exit:
 				for {
 					select {
 					case <-h.syncer.resume:
-						fmt.Println("resume:", h.syncer.rewindAfterPause)
 						if h.syncer.rewindAfterPause > 0 && h.syncer.rewindAfterPause < video.Duration {
 							elapsed = h.syncer.rewindAfterPause
 						}
