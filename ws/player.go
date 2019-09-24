@@ -100,21 +100,18 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 		resumeLock.Unlock()
 
 	case eTypeRewind:
-		rewindLock.Lock()
-
 		if !h.syncer.isSleep && !h.syncer.isStreamOrFrame {
 			if result := h.checkPermissions(conn, req.Payload); result {
 				if h.syncer.isPause {
+					rewindLock.Lock()
 					h.syncer.rewindAfterPause = req.Body.Event.Data.RewindTime
-
 					rewindLock.Unlock()
+
 					break
 				}
 				h.syncer.rewind <- req.Body.Event.Data.RewindTime
 			}
 		}
-
-		rewindLock.Unlock()
 	}
 }
 
