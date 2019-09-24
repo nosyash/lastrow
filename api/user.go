@@ -26,7 +26,7 @@ var (
 func (server Server) userHandler(w http.ResponseWriter, r *http.Request) {
 	payload, err := server.extractPayload(w, r)
 	if err != nil {
-		log.Printf("server.extractPayload(): %v", err)
+		log.Printf("user.go server.extractPayload(): %v", err)
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Your JWT is invalid",
 		})

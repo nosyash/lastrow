@@ -40,8 +40,9 @@ func NewRoomHub(id string) *hub {
 			make(chan struct{}),
 			make(chan struct{}),
 			make(chan struct{}),
-			make(chan int),
+			make(chan int, 1),
 			make(chan struct{}),
+			0,
 			"",
 			0,
 		},
@@ -172,7 +173,7 @@ func (h hub) remove(conn *websocket.Conn) {
 					select {
 					case <-cancelChan:
 						if !h.syncer.isStreamOrFrame {
-							h.syncer.resetElapsed <- elapsed
+							h.syncer.rewind <- elapsed
 						}
 						cancel()
 						break loop

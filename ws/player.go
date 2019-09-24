@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
@@ -16,6 +17,7 @@ var errNotHavePermissions = errors.New("You don't have permissions to do this ac
 var delLock sync.Mutex
 var pauseLock sync.Mutex
 var resumeLock sync.Mutex
+var rewindLock sync.Mutex
 
 const (
 	syncPeriod       = 3
@@ -74,8 +76,8 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 	case eTypePause:
 		pauseLock.Lock()
 
-		if result := h.checkPermissions(conn, req.Payload); result {
-			if !h.syncer.isPause && !h.syncer.isSleep {
+		if !h.syncer.isPause && !h.syncer.isSleep && !h.syncer.isStreamOrFrame {
+			if result := h.checkPermissions(conn, req.Payload); result {
 				h.syncer.pause <- struct{}{}
 
 				h.broadcast <- createPacket(playerEvent, eTypePause, nil)
@@ -87,8 +89,8 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 	case eTypeResume:
 		resumeLock.Lock()
 
-		if result := h.checkPermissions(conn, req.Payload); result {
-			if h.syncer.isPause && !h.syncer.isSleep {
+		if h.syncer.isPause && !h.syncer.isSleep && !h.syncer.isStreamOrFrame {
+			if result := h.checkPermissions(conn, req.Payload); result {
 				h.syncer.resume <- struct{}{}
 
 				h.broadcast <- createPacket(playerEvent, eTypeResume, nil)
@@ -97,6 +99,23 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 		}
 
 		resumeLock.Unlock()
+
+	case eTypeRewind:
+		rewindLock.Lock()
+
+		if !h.syncer.isSleep && !h.syncer.isStreamOrFrame {
+			if result := h.checkPermissions(conn, req.Payload); result {
+				if h.syncer.isPause {
+					h.syncer.rewindAfterPause = req.Body.Event.Data.RewindTime
+
+					rewindLock.Unlock()
+					break
+				}
+				h.syncer.rewind <- req.Body.Event.Data.RewindTime
+			}
+		}
+
+		rewindLock.Unlock()
 	}
 }
 
@@ -191,14 +210,20 @@ exit:
 			case <-h.syncer.skip:
 				cancel()
 				break loop
-			case e := <-h.syncer.resetElapsed:
-				elapsed = e
-				ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration-elapsed+sleepBeforeStart)*time.Second))
+			case e := <-h.syncer.rewind:
+				if e > 0 && e < video.Duration {
+					elapsed = e
+					ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration-elapsed+sleepBeforeStart)*time.Second))
+				}
 			case <-h.syncer.pause:
 			resume:
 				for {
 					select {
 					case <-h.syncer.resume:
+						fmt.Println("resume:", h.syncer.rewindAfterPause)
+						if h.syncer.rewindAfterPause > 0 && h.syncer.rewindAfterPause < video.Duration {
+							elapsed = h.syncer.rewindAfterPause
+						}
 						ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration-elapsed+sleepBeforeStart)*time.Second))
 						break resume
 					case <-h.syncer.close:

@@ -57,34 +57,36 @@ type eventBody struct {
 }
 
 type syncer struct {
-	isSleep         bool
-	isStreamOrFrame bool
-	isPause         bool
-	wakeUp          chan struct{}
-	skip            chan struct{}
-	pause           chan struct{}
-	resume          chan struct{}
-	resetElapsed    chan int
-	close           chan struct{}
-	currentVideoID  string
-	elapsed         int
+	isSleep          bool
+	isStreamOrFrame  bool
+	isPause          bool
+	wakeUp           chan struct{}
+	skip             chan struct{}
+	pause            chan struct{}
+	resume           chan struct{}
+	rewind           chan int
+	close            chan struct{}
+	rewindAfterPause int
+	currentVideoID   string
+	elapsed          int
 }
 
 type data struct {
-	Message  string        `json:"message,omitempty"`
-	Error    string        `json:"error,omitempty"`
-	Color    string        `json:"color,omitempty"`
-	Image    string        `json:"image,omitempty"`
-	Name     string        `json:"name,omitempty"`
-	Guest    bool          `json:"guest,omitempty"`
-	Title    string        `json:"title,omitempty"`
-	Duration int           `json:"duration,omitempty"`
-	URL      string        `json:"url,omitempty"`
-	ID       string        `json:"__id,omitempty"`
-	Users    []*cache.User `json:"users,omitempty"`
-	Ticker   *elapsedTime  `json:"ticker,omitempty"`
-	Emoji    []db.Emoji    `json:"emoji,omitempty"`
-	FeedBack *feedback     `json:"feedback,omitempty"`
+	Message    string        `json:"message,omitempty"`
+	Error      string        `json:"error,omitempty"`
+	Color      string        `json:"color,omitempty"`
+	Image      string        `json:"image,omitempty"`
+	Name       string        `json:"name,omitempty"`
+	Guest      bool          `json:"guest,omitempty"`
+	Title      string        `json:"title,omitempty"`
+	Duration   int           `json:"duration,omitempty"`
+	RewindTime int           `json:"time,omitempty"`
+	URL        string        `json:"url,omitempty"`
+	ID         string        `json:"__id,omitempty"`
+	Users      []*cache.User `json:"users,omitempty"`
+	Ticker     *elapsedTime  `json:"ticker,omitempty"`
+	Emoji      []db.Emoji    `json:"emoji,omitempty"`
+	FeedBack   *feedback     `json:"feedback,omitempty"`
 }
 
 type elapsedTime struct {
@@ -134,6 +136,7 @@ const (
 	eTypePlDel       = "playlist_del"
 	eTypePause       = "pause"
 	eTypeResume      = "resume"
+	eTypeRewind      = "rewind"
 	eTypeUpdUserList = "update_users"
 	eTypePlaylistUpd = "update_playlist"
 	eTypeEmojiUpdate = "emoji_update"

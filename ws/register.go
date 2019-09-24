@@ -35,7 +35,7 @@ func handleRegRequest(conn *websocket.Conn) (*user, string, error) {
 		return handleGuestRegister(conn, req.RoomID, req.Name, req.UUID)
 	}
 
-	if req.Action == userRegisterEvent && req.Payload != nil {
+	if req.Action == userRegisterEvent {
 		return &user{
 				Conn:    conn,
 				Payload: req.Payload,

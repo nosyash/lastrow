@@ -41,7 +41,7 @@ func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 
 	payload, err := server.extractPayload(w, r)
 	if err != nil {
-		log.Printf("server.extractPayload(): %v", err)
+		log.Printf("room.go server.extractPayload(): %v", err)
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Your JWT is incorrect",
 		})
