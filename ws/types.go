@@ -53,7 +53,7 @@ type body struct {
 
 type eventBody struct {
 	Type string `json:"type"`
-	Data data   `json:"data"`
+	Data *data  `json:"data,omitempty"`
 }
 
 type syncer struct {

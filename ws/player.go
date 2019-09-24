@@ -8,7 +8,10 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/nosyash/backrow/jwt"
 )
+
+var errNotHavePermissions = errors.New("You don't have permissions to do this action")
 
 var delLock sync.Mutex
 var pauseLock sync.Mutex
@@ -17,88 +20,15 @@ var resumeLock sync.Mutex
 const (
 	syncPeriod       = 3
 	sleepBeforeStart = 3
-
-	minGuestName = 1
-	maxGuestName = 20
 )
-
-var (
-	// ErrRegArgumentAreEmpty send when one or more required registration argument are empty
-	ErrRegArgumentAreEmpty = errors.New("One or more required registration arguments are empty")
-
-	// ErrInvalidRegRequest send when has received invalid registration request
-	ErrInvalidRegRequest = errors.New("Invalid registration request")
-
-	// ErrUnknowEventType send when has received unknown event type
-	ErrUnknowEventType = errors.New("Unknown event type")
-
-	// ErrInvalidEventRequest send when has received invalid event request
-	ErrInvalidEventRequest = errors.New("Invalid event request")
-)
-
-func handleRegRequest(conn *websocket.Conn) (*user, string, error) {
-	req, err := readPacket(conn)
-	if err != nil {
-		return nil, "", err
-	}
-
-	room := req.RoomID
-	jwt := req.JWT
-	uuid := req.UUID
-
-	if req.Action == guestRegisterEvent {
-		return handleGuestRegister(conn, room, req.Name, uuid)
-	}
-
-	if req.Action != userRegisterEvent {
-		return nil, "", ErrInvalidRegRequest
-	}
-
-	payload, err := extractPayload(jwt)
-	if err != nil {
-		return nil, "", err
-	}
-
-	return &user{
-			Conn:    conn,
-			Payload: payload,
-			Name:    "",
-			Guest:   false,
-		},
-		room,
-		nil
-}
-
-func handleGuestRegister(conn *websocket.Conn, room, name, uuid string) (*user, string, error) {
-	if name != "" && len(name) > minGuestName && len(name) < maxGuestName && len(uuid) == 64 {
-		return &user{
-				Conn:  conn,
-				Name:  name,
-				Guest: true,
-				UUID:  uuid,
-			},
-			room,
-			nil
-	}
-	return nil, "", nil
-}
-
-func (h hub) handleUserEvent(req *packet, conn *websocket.Conn) {
-	switch req.Body.Event.Type {
-	case eTypeMsg:
-		if req.Body.Event.Data.Message != "" {
-			if req.Payload != nil {
-				h.handleMessage(req.Body.Event.Data.Message, req.Payload.UUID)
-			} else {
-				h.handleMessage(req.Body.Event.Data.Message, req.UUID)
-			}
-		}
-	default:
-		sendError(conn, ErrUnknowEventType)
-	}
-}
 
 func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
+	// For now, only users can do this actions
+	if req.Payload == nil {
+		sendError(conn, errNotHavePermissions)
+		return
+	}
+
 	switch req.Body.Event.Type {
 	case eTypePlAdd:
 		if req.Body.Event.Data.URL != "" {
@@ -115,7 +45,7 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 			fb.URL = req.Body.Event.Data.URL
 		}
 
-		writeMessage(conn, websocket.TextMessage, createPacket(playerEvent, eTypeFeedBack, data{
+		writeMessage(conn, websocket.TextMessage, createPacket(playerEvent, eTypeFeedBack, &data{
 			FeedBack: &fb,
 		}))
 
@@ -144,52 +74,30 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 	case eTypePause:
 		pauseLock.Lock()
 
-		if !h.syncer.isPause && !h.syncer.isSleep {
-			h.syncer.pause <- struct{}{}
+		if result := h.checkPermissions(conn, req.Payload); result {
+			if !h.syncer.isPause && !h.syncer.isSleep {
+				h.syncer.pause <- struct{}{}
 
-			req.JWT = ""
-			b, _ := json.Marshal(&req)
-
-			h.broadcast <- b
-			h.syncer.isPause = true
+				h.broadcast <- createPacket(playerEvent, eTypePause, nil)
+				h.syncer.isPause = true
+			}
 		}
 
 		pauseLock.Unlock()
 	case eTypeResume:
 		resumeLock.Lock()
 
-		if h.syncer.isPause && !h.syncer.isSleep {
-			h.syncer.resume <- struct{}{}
+		if result := h.checkPermissions(conn, req.Payload); result {
+			if h.syncer.isPause && !h.syncer.isSleep {
+				h.syncer.resume <- struct{}{}
 
-			req.JWT = ""
-			b, _ := json.Marshal(&req)
-
-			h.broadcast <- b
-			h.syncer.isPause = false
+				h.broadcast <- createPacket(playerEvent, eTypeResume, nil)
+				h.syncer.isPause = false
+			}
 		}
 
 		resumeLock.Unlock()
 	}
-}
-
-func (h hub) handleMessage(msg, uuid string) {
-	user, ok := h.cache.Users.GetUser(uuid)
-	if ok {
-		h.broadcast <- createPacket(chatEvent, eTypeMsg, data{
-			Message: msg,
-			Name:    user.Name,
-			Color:   user.Color,
-			Image:   user.Image,
-			ID:      user.ID,
-			Guest:   user.Guest,
-		})
-	}
-}
-
-func (h hub) updateUserList() {
-	h.broadcast <- createPacket(userEvent, eTypeUpdUserList, data{
-		Users: h.cache.Users.GetAllUsers(),
-	})
 }
 
 func (h hub) updatePlaylist() {
@@ -207,12 +115,6 @@ func (h hub) updatePlaylist() {
 
 	data, _ := json.Marshal(&packet)
 	h.broadcast <- data
-}
-
-func (h hub) updateEmojis(path string) {
-	h.broadcast <- createPacket(roomUpdateEvent, eTypeEmojiUpdate, data{
-		Emoji: h.cache.Room.GetAllEmojis(path),
-	})
 }
 
 func (h *hub) syncElapsedTime() {
@@ -279,7 +181,7 @@ exit:
 
 				d.Ticker = &ep
 
-				h.broadcast <- createPacket(playerEvent, eTypeTicker, d)
+				h.broadcast <- createPacket(playerEvent, eTypeTicker, &d)
 
 				elapsed += syncPeriod
 				h.syncer.elapsed = elapsed
@@ -315,4 +217,8 @@ exit:
 		h.cache.Playlist.DelVideo <- video.ID
 		<-h.cache.Playlist.DelFeedBack
 	}
+}
+
+func (h hub) checkPermissions(conn *websocket.Conn, payload *jwt.Payload) bool {
+	return true
 }

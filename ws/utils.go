@@ -31,7 +31,7 @@ func readPacket(conn *websocket.Conn) (*packet, error) {
 }
 
 func sendError(conn *websocket.Conn, msg error) error {
-	return writeMessage(conn, websocket.TextMessage, createPacket(errorEvent, errorEvent, data{
+	return writeMessage(conn, websocket.TextMessage, createPacket(errorEvent, errorEvent, &data{
 		Error: msg.Error(),
 	}))
 }
@@ -42,7 +42,7 @@ func writeMessage(conn *websocket.Conn, messageType int, message []byte) error {
 	return conn.WriteMessage(messageType, message)
 }
 
-func createPacket(action, eType string, d data) []byte {
+func createPacket(action, eType string, d *data) []byte {
 	data, _ := json.Marshal(&packet{
 		Action: action,
 		Body: body{
