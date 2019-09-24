@@ -21,17 +21,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var (
-	errRoomTitleLength = fmt.Errorf("Title length must be no more than %d characters and at least %d", maxRoomTitleLength, minRoomTitleLength)
-
-	errRoomPathLength = fmt.Errorf("Path length must be no more than %d characters and at least %d", maxRoomPathLength, minRoomPathLength)
-
-	errEmojiNameLength = fmt.Errorf("Length emoji name must be no more than %d characters and at least %d", maxEmojiNameLength, minEmojiNameLength)
-)
-
-var (
-	onlyStrAndNum = regexp.MustCompile(`[^a-zA-Z0-9-_]`)
-)
+var onlyStrAndNum = regexp.MustCompile(`[^a-zA-Z0-9-_]`)
 
 func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
@@ -88,14 +78,14 @@ func (server Server) createRoom(w http.ResponseWriter, title, path, userUUID str
 
 	if utf8.RuneCountInString(title) < minRoomTitleLength || utf8.RuneCountInString(title) > maxRoomTitleLength {
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: errRoomTitleLength.Error(),
+			Error: fmt.Errorf("Title length must be no more than %d characters and at least %d", maxRoomTitleLength, minRoomTitleLength).Error(),
 		})
 		return
 	}
 
 	if utf8.RuneCountInString(path) < minRoomPathLength || utf8.RuneCountInString(path) > maxRoomPathLength {
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: errRoomPathLength.Error(),
+			Error: fmt.Errorf("Path length must be no more than %d characters and at least %d", maxRoomPathLength, minRoomPathLength).Error(),
 		})
 		return
 	}
@@ -108,6 +98,9 @@ func (server Server) createRoom(w http.ResponseWriter, title, path, userUUID str
 		})
 		return
 	}
+
+	// Sooo, we need update jwt for a user. Because, jwt have the information about where a user is owner
+	server.setUpAuthSession(w, userUUID)
 }
 
 func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest, payload *jwt.Payload) {
@@ -189,7 +182,7 @@ func (server Server) addEmoji(w http.ResponseWriter, name, uuid, iType string, i
 
 	if utf8.RuneCountInString(name) < minEmojiNameLength || utf8.RuneCountInString(name) > maxEmojiNameLength {
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: errEmojiNameLength.Error(),
+			Error: fmt.Errorf("Length emoji name must be no more than %d characters and at least %d", maxEmojiNameLength, minEmojiNameLength).Error(),
 		})
 		return
 	}
@@ -252,7 +245,7 @@ func (server Server) delEmoji(w http.ResponseWriter, name, uuid string, room *db
 
 	if len(name) < minEmojiNameLength || len(name) > maxEmojiNameLength {
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: errEmojiNameLength.Error(),
+			Error: fmt.Errorf("Length emoji name must be no more than %d characters and at least %d", maxEmojiNameLength, minEmojiNameLength).Error(),
 		})
 		return
 	}
@@ -300,7 +293,7 @@ func (server Server) changeEmojiName(w http.ResponseWriter, name, newName, uuid 
 
 	if utf8.RuneCountInString(newName) < minEmojiNameLength || utf8.RuneCountInString(newName) > maxEmojiNameLength {
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: errEmojiNameLength.Error(),
+			Error: fmt.Errorf("Length emoji name must be no more than %d characters and at least %d", maxEmojiNameLength, minEmojiNameLength).Error(),
 		})
 		return
 	}

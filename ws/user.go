@@ -1,6 +1,10 @@
 package ws
 
-import "github.com/gorilla/websocket"
+import (
+	"errors"
+
+	"github.com/gorilla/websocket"
+)
 
 func (h hub) handleUserEvent(req *packet, conn *websocket.Conn) {
 	switch req.Body.Event.Type {
@@ -13,7 +17,7 @@ func (h hub) handleUserEvent(req *packet, conn *websocket.Conn) {
 			}
 		}
 	default:
-		sendError(conn, ErrUnknowEventType)
+		sendError(conn, errors.New("Unknown event type"))
 	}
 }
 

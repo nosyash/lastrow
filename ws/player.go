@@ -70,7 +70,7 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 				sendError(conn, err)
 			}
 		} else {
-			sendError(conn, ErrInvalidEventRequest)
+			sendError(conn, errors.New("Video ID is empty"))
 		}
 	case eTypePause:
 		pauseLock.Lock()
