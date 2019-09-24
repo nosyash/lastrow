@@ -18,6 +18,7 @@ type roomsHub struct {
 }
 
 type hub struct {
+	db           *db.Database
 	hub          map[string]*websocket.Conn
 	broadcast    chan []byte
 	register     chan *user

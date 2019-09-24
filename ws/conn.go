@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/nosyash/backrow/cache"
+	"github.com/nosyash/backrow/db"
 	"github.com/nosyash/backrow/storage"
 
 	"github.com/gorilla/websocket"
@@ -23,8 +24,9 @@ var (
 	cancelChan    = make(chan struct{})
 )
 
-func NewRoomHub(id string) *hub {
+func NewRoomHub(id string, db *db.Database) *hub {
 	return &hub{
+		db,
 		make(map[string]*websocket.Conn),
 		make(chan []byte),
 		make(chan *user),

@@ -74,7 +74,7 @@ func (rh *roomsHub) registerNewConn(conn *websocket.Conn) {
 		}
 	}
 
-	hub := NewRoomHub(roomID)
+	hub := NewRoomHub(roomID, rh.db)
 	rh.rhub[roomID] = hub
 
 	go rh.rhub[roomID].HandleActions()
