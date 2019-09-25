@@ -13,6 +13,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/nosyash/backrow/jwt"
+	"gopkg.in/mgo.v2"
 
 	"github.com/nosyash/backrow/db"
 	"github.com/nosyash/backrow/storage"
@@ -20,17 +21,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var (
-	errRoomTitleLength = fmt.Errorf("Title length must be no more than %d characters and at least %d", maxRoomTitleLength, minRoomTitleLength)
-
-	errRoomPathLength = fmt.Errorf("Path length must be no more than %d characters and at least %d", maxRoomPathLength, minRoomPathLength)
-
-	errEmojiNameLength = fmt.Errorf("Length emoji name must be no more than %d characters and at least %d", maxEmojiNameLength, minEmojiNameLength)
-)
-
-var (
-	onlyStrAndNum = regexp.MustCompile(`[^a-zA-Z0-9-_]`)
-)
+var onlyStrAndNum = regexp.MustCompile(`[^a-zA-Z0-9-_]`)
 
 func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
@@ -40,8 +31,9 @@ func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 
 	payload, err := server.extractPayload(w, r)
 	if err != nil {
+		log.Printf("room.go server.extractPayload(): %v", err)
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: err.Error(),
+			Error: "Your JWT is incorrect",
 		})
 		return
 	}
@@ -61,6 +53,13 @@ func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 	case eTypeRoomCreate:
 		server.createRoom(w, req.Body.Title, req.Body.Path, payload.UUID)
 	case eTypeRoomUpdate:
+		if len(payload.Owner) == 0 {
+			sendJSON(w, http.StatusBadRequest, message{
+				Error: "You don't have permissions for this action",
+			})
+			return
+		}
+
 		server.updateRoom(w, &req, payload)
 	default:
 		sendJSON(w, http.StatusBadRequest, message{
@@ -79,45 +78,41 @@ func (server Server) createRoom(w http.ResponseWriter, title, path, userUUID str
 
 	if utf8.RuneCountInString(title) < minRoomTitleLength || utf8.RuneCountInString(title) > maxRoomTitleLength {
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: errRoomTitleLength.Error(),
+			Error: fmt.Errorf("Title length must be no more than %d characters and at least %d", maxRoomTitleLength, minRoomTitleLength).Error(),
 		})
 		return
 	}
 
 	if utf8.RuneCountInString(path) < minRoomPathLength || utf8.RuneCountInString(path) > maxRoomPathLength {
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: errRoomPathLength.Error(),
+			Error: fmt.Errorf("Path length must be no more than %d characters and at least %d", maxRoomPathLength, minRoomPathLength).Error(),
 		})
 		return
 	}
 
 	err := server.db.CreateNewRoom(title, path, userUUID, getRandomUUID())
 	if err != nil {
+		log.Printf("server.db.CreateNewRoom(): %v", err)
 		sendJSON(w, http.StatusOK, message{
-			Error: err.Error(),
+			Error: "Couldn't create new room",
 		})
 		return
 	}
+
+	// Sooo, we need update jwt for a user. Because, jwt have the information about where a user is owner
+	server.setUpAuthSession(w, userUUID)
 }
 
 func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest, payload *jwt.Payload) {
-	// for now, only owner can do this actions
-	if len(payload.Owner) > 0 {
-		for _, r := range payload.Owner {
-			if r.RoomID == req.RoomID {
-				if r.Permissions != 10 {
-					sendJSON(w, http.StatusBadRequest, message{
-						Error: "You don't have permissions for this action",
-					})
-					return
-				}
+	for _, r := range payload.Owner {
+		if r.RoomID == req.RoomID {
+			if r.Permissions != 10 {
+				sendJSON(w, http.StatusBadRequest, message{
+					Error: "You don't have permissions for this action",
+				})
+				return
 			}
 		}
-	} else {
-		sendJSON(w, http.StatusBadRequest, message{
-			Error: "You don't have permissions for this action",
-		})
-		return
 	}
 
 	name := strings.TrimSpace(req.Body.Data.Name)
@@ -134,7 +129,7 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest, payload
 	}
 	room, err := server.db.GetRoom("uuid", id)
 	if err != nil {
-		log.Println(err)
+		log.Printf("server.db.GetRoom(): %v", err)
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Internal server error",
 		})
@@ -156,7 +151,7 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest, payload
 		server.changeEmojiName(w, name, newName, id, &room)
 	default:
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: "Unknown action type",
+			Error: "Unknown /api/room action",
 		})
 	}
 }
@@ -164,8 +159,9 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest, payload
 func (server Server) addEmoji(w http.ResponseWriter, name, uuid, iType string, img *string, room *db.Room) {
 	ec, err := server.db.GetEmojiCount(uuid)
 	if err != nil {
+		log.Printf("server.db.GetEmojiCount(): %v", err)
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: err.Error(),
+			Error: "Couldn't add new emoji",
 		})
 		return
 	}
@@ -186,7 +182,7 @@ func (server Server) addEmoji(w http.ResponseWriter, name, uuid, iType string, i
 
 	if utf8.RuneCountInString(name) < minEmojiNameLength || utf8.RuneCountInString(name) > maxEmojiNameLength {
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: errEmojiNameLength.Error(),
+			Error: fmt.Errorf("Length emoji name must be no more than %d characters and at least %d", maxEmojiNameLength, minEmojiNameLength).Error(),
 		})
 		return
 	}
@@ -214,8 +210,9 @@ func (server Server) addEmoji(w http.ResponseWriter, name, uuid, iType string, i
 
 	err = image.createImage(filepath.Join(server.imageServer.UplPath, imgPath), iType)
 	if err != nil {
+		log.Printf("image.createImage(): %v", err)
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: err.Error(),
+			Error: "Error while trying to add emoji",
 		})
 		return
 	}
@@ -226,9 +223,9 @@ func (server Server) addEmoji(w http.ResponseWriter, name, uuid, iType string, i
 	})
 
 	if err = server.db.UpdateRoomValue(uuid, "emoji", emoji); err != nil {
-		log.Println(err)
+		log.Printf("server.db.UpdateRoomValue(): %v", err)
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: err.Error(),
+			Error: "Couldn't add new emoji",
 		})
 		return
 	}
@@ -248,7 +245,7 @@ func (server Server) delEmoji(w http.ResponseWriter, name, uuid string, room *db
 
 	if len(name) < minEmojiNameLength || len(name) > maxEmojiNameLength {
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: errEmojiNameLength.Error(),
+			Error: fmt.Errorf("Length emoji name must be no more than %d characters and at least %d", maxEmojiNameLength, minEmojiNameLength).Error(),
 		})
 		return
 	}
@@ -273,9 +270,11 @@ func (server Server) delEmoji(w http.ResponseWriter, name, uuid string, room *db
 	emoji = append(room.Emoji[:emjIdx], room.Emoji[emjIdx+1:]...)
 
 	if err := server.db.UpdateRoomValue(uuid, "emoji", emoji); err != nil {
-		log.Println(err)
+		if err != mgo.ErrNotFound {
+			log.Printf("server.db.UpdateRoomValue(): %v", err)
+		}
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: "Room with this room_id was not be found",
+			Error: "Couldn't delete emoji",
 		})
 		return
 	}
@@ -294,7 +293,7 @@ func (server Server) changeEmojiName(w http.ResponseWriter, name, newName, uuid 
 
 	if utf8.RuneCountInString(newName) < minEmojiNameLength || utf8.RuneCountInString(newName) > maxEmojiNameLength {
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: errEmojiNameLength.Error(),
+			Error: fmt.Errorf("Length emoji name must be no more than %d characters and at least %d", maxEmojiNameLength, minEmojiNameLength).Error(),
 		})
 		return
 	}
@@ -325,9 +324,11 @@ func (server Server) changeEmojiName(w http.ResponseWriter, name, newName, uuid 
 	}
 
 	if err := server.db.UpdateRoomValue(uuid, "emoji", room.Emoji); err != nil {
-		log.Println(err)
+		if err != mgo.ErrNotFound {
+			log.Printf("server.db.UpdateRoomValue(): %v", err)
+		}
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: "Room with this room_id was not be found",
+			Error: "Couldn't change emoji name",
 		})
 		return
 	}
@@ -370,7 +371,12 @@ func (server Server) roomInnerHandler(w http.ResponseWriter, r *http.Request) {
 
 func (server Server) getAllRooms(w http.ResponseWriter) {
 	var about []db.AboutRoom
-	rooms, _ := server.db.GetAllRooms()
+
+	rooms, err := server.db.GetAllRooms()
+	if err != nil {
+		log.Printf("server.db.GetAllRooms(): %v", err)
+		return
+	}
 
 	about = make([]db.AboutRoom, len(rooms))
 

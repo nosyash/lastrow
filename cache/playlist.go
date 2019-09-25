@@ -69,6 +69,8 @@ func (pl *playlist) addYoutube(url *url.URL) {
 		path := strings.Split(url.Path, "/")
 		if len(path) >= 2 {
 			vID = path[1]
+		} else {
+			return
 		}
 	} else {
 		vID = url.Query().Get("v")
@@ -100,7 +102,7 @@ func (pl *playlist) addYoutube(url *url.URL) {
 }
 
 func (pl *playlist) addIframe(ifurl string) {
-	tag := html.NewTokenizer(strings.NewReader(ifurl))
+	tag := html.NewTokenizer(strings.NewReader(strings.TrimSpace(ifurl)))
 	tag.Next()
 
 	var key, value []byte
@@ -113,12 +115,6 @@ func (pl *playlist) addIframe(ifurl string) {
 		sKey := string(key)
 		sVal := string(value)
 
-		if sVal == "" {
-			attributes += fmt.Sprintf("%s ", sKey)
-		} else {
-			attributes += fmt.Sprintf("%s='%s' ", sKey, sVal)
-		}
-
 		if sKey == "src" {
 			pURL, err := url.Parse(strings.TrimSpace(sVal))
 			if err != nil {
@@ -126,15 +122,19 @@ func (pl *playlist) addIframe(ifurl string) {
 				return
 			}
 
-			if pURL.Scheme == "https" || pURL.Scheme == "http" {
-				if filepath.Ext(sVal) != "" {
-					pl.AddFeedBack <- ErrLinkDoesNotMath
-					return
-				}
-			} else {
-				pl.AddFeedBack <- ErrLinkDoesNotMath
-				return
+			if regexp.MustCompile(`https?`).MatchString(pURL.Scheme) || pURL.Scheme == "" {
+				attributes += fmt.Sprintf("%s='%s' ", sKey, sVal)
+				continue
 			}
+
+			pl.AddFeedBack <- ErrLinkDoesNotMath
+			return
+		}
+
+		if sVal == "" {
+			attributes += fmt.Sprintf("%s ", sKey)
+		} else {
+			attributes += fmt.Sprintf("%s='%s' ", sKey, sVal)
 		}
 	}
 	pl.playlist = append(pl.playlist, &Video{
@@ -189,6 +189,7 @@ func (pl *playlist) delVideo(id string) {
 			return
 		}
 	}
+
 	pl.DelFeedBack <- ErrVideoNotFound
 }
 

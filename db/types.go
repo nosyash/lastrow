@@ -21,10 +21,11 @@ type Room struct {
 }
 
 type UserView struct {
-	Name  string `json:"name"`
-	Color string `json:"color"`
-	Image string `json:"image"`
-	UUID  string `json:"uuid"`
+	Name     string `json:"name"`
+	Username string `json:"username"`
+	Color    string `json:"color"`
+	Image    string `json:"image"`
+	UUID     string `json:"uuid"`
 }
 
 type User struct {

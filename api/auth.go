@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -63,13 +62,21 @@ func (server Server) register(w http.ResponseWriter, uname, passwd, email, name 
 	}
 
 	uuid := getRandomUUID()
+
 	hash, err := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
+	if err != nil {
+		log.Printf("bcrypt.GenerateFromPassword(): %v", err)
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "Couldn't create new account",
+		})
+		return
+	}
 
 	result, err := server.db.CreateNewUser(uname, uname, hex.EncodeToString(hash[:]), strings.TrimSpace(email), uuid)
-
 	if err != nil {
+		log.Printf("server.db.CreateNewUser(): %v", err)
 		sendJSON(w, http.StatusInternalServerError, message{
-			Error: err.Error(),
+			Error: "Couldn't create new account",
 		})
 		return
 	}
@@ -100,6 +107,7 @@ func (server Server) login(w http.ResponseWriter, uname, passwd string) {
 	}
 
 	if err != nil {
+		log.Printf("server.db.GetUserByUname(): %v", err)
 		sendJSON(w, http.StatusInternalServerError, message{
 			Error: "Internal server error while trying to login",
 		})
@@ -108,6 +116,7 @@ func (server Server) login(w http.ResponseWriter, uname, passwd string) {
 
 	dHash, err := hex.DecodeString(user.Hash)
 	if err != nil {
+		log.Printf("hex.DecodeString(): %v", err)
 		sendJSON(w, http.StatusInternalServerError, message{
 			Error: "Internal server error while trying to login",
 		})
@@ -127,18 +136,18 @@ func (server Server) login(w http.ResponseWriter, uname, passwd string) {
 func (server Server) setUpAuthSession(w http.ResponseWriter, uuid string) {
 	isAdmin, err := server.db.IsAdmin(uuid)
 	if err != nil {
-		log.Printf("Error while trying to get user admin status: %v", err)
+		log.Printf("server.db.IsAdmin(): %v", err)
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: errors.New("Couldn't create auth session").Error(),
+			Error: "Couldn't create auth session",
 		})
 		return
 	}
 
 	roomList, err := server.db.WhereUserOwner(uuid)
 	if err != nil {
-		log.Printf("Error while trying to get the a room list where is user has owner permissions: %v", err)
+		log.Printf("server.db.WhereUserOwner(): %v", err)
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: errors.New("Couldn't create auth session").Error(),
+			Error: "Couldn't create auth session",
 		})
 		return
 	}
@@ -166,9 +175,9 @@ func (server Server) setUpAuthSession(w http.ResponseWriter, uuid string) {
 
 	token, err := jwt.GenerateNewToken(header, payload, server.hmacKey)
 	if err != nil {
-		log.Printf("Error while trying to generate new JWT: %v", err)
+		log.Printf("jwt.GenerateNewToken(): %v", err)
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: errors.New("Couldn't create auth session").Error(),
+			Error: "Couldn't create auth session",
 		})
 		return
 	}
