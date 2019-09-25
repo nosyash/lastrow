@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import safelySetInnerHTML from '../../../../../utils/safelySetInnerHTML ';
-import parseMarkup from '../../../../../utils/markup';
+import parseBody from '../../../../../utils/markup';
 import playSound from '../../../../../utils/HandleSounds';
 import notifications from '../../../../../utils/notifications';
 import { Emoji } from '../../../../../reducers/emojis';
@@ -20,6 +20,7 @@ interface MessageProps {
 
 class Message extends PureComponent<MessageProps, any> {
     shown = false;
+    bodyMarked = '';
 
     getClassNames = classes => {
         const { online } = classes;
@@ -62,10 +63,12 @@ class Message extends PureComponent<MessageProps, any> {
         // this.handleSounds(highlight);
         this.handleNotification(highlight, { name, body, image });
 
+        // Markup cache
+        if (!this.bodyMarked) this.bodyMarked = parseBody(body, { postAuthorName: name });
         const renderMessageArgs = {
             ...this.getStyles(image, color),
             ...this.getClassNames({ online, highlight }),
-            ...parseMarkup({ body, name }),
+            bodyMarked: this.bodyMarked,
         };
         return <RenderMessage {...renderMessageArgs} {...this.props} />
     }
@@ -79,7 +82,7 @@ export default connect(mapStateToProps)(Message);
 
 const RenderMessage = props => {
     const { color, className, backgroundColor, backgroundImage } = props;
-    const { _ref, id, name, tempBody } = props;
+    const { _ref, id, name, bodyMarked } = props;
     const { renderHeader, hideHeader } = props;
     const { handleProfile, onAvatarClick } = props;
     return (
@@ -102,7 +105,9 @@ const RenderMessage = props => {
                     </span>
                 </div>
             )}
-            <div className="chat-message_body">{safelySetInnerHTML(tempBody)}</div>
+            <div className="chat-message_body">
+                <p className="chat-message_p" dangerouslySetInnerHTML={{ __html: bodyMarked }}></p>
+            </div>
         </div>
     );
 };

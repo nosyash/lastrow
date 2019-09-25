@@ -34,6 +34,7 @@
     "case-sensitive-paths-webpack-plugin": "2.2.0",
     "classnames": "^2.2.6",
     "css-loader": "1.0.0",
+    "dompurify": "^2.0.3",
     "dotenv": "6.0.0",
     "dotenv-expand": "4.2.0",
     "file-loader": "2.0.0",
