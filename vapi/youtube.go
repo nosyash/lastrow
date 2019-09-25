@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"regexp"
 	"strconv"
 	"time"
@@ -23,9 +23,31 @@ var (
 const (
 	// Youtube API v3 Details request URL
 	youtubeDetailsAPIURL = "https://www.googleapis.com/youtube/v3/videos"
+
+	// Youtube API v3 Playlist request URL
+	youtubePlaylistAPIURL = "https://www.googleapis.com/youtube/v3/playlistItems"
 )
 
-type detailsItems struct {
+type Youtube struct {
+	APIKEY string
+}
+
+type Video struct {
+	Duration      int
+	Title         string
+	LiveBroadcast bool
+}
+
+type PlaylistItems struct {
+	NextPageToken string `json:"nextPageToken"`
+	Items         []items
+}
+
+type pageInfo struct {
+	Total int `json:"totalResults"`
+}
+
+type videoDetails struct {
 	Items []items `json:"items"`
 }
 
@@ -41,45 +63,83 @@ type snippet struct {
 
 type contentDetails struct {
 	Duration string `json:"duration"`
+	VideoID  string `json:"videoId"`
+}
+
+// NewYoutubeClient create and return new instanse of YoutubeClient
+func NewYoutubeClient(apiKey string) *Youtube {
+	return &Youtube{APIKEY: apiKey}
 }
 
 // GetVideoDetails gettting and return video duration and title
-func GetVideoDetails(id string) (int, string, bool, error) {
+func (youtube Youtube) GetVideoDetails(id string) (int, string, bool, error) {
+	if youtube.APIKEY == "" {
+		return 0, "", false, ErrAPIKeyIsEmpty
+	}
+
 	var live bool
+	var urlQuery = fmt.Sprintf("id=%s&key=%s&part=snippet,contentDetails", id, youtube.APIKEY)
+	var vDetails videoDetails
 
-	res, err := getDetail(id)
+	res, err := youtube.customAPIRequest(urlQuery, youtubeDetailsAPIURL)
 	if err != nil {
-		return 0, "", live, err
+		return 0, "", false, err
 	}
 
-	details, err := unmarshalDetails(res)
+	err = json.Unmarshal(res, &vDetails)
 	if err != nil {
-		return 0, "", live, err
+		return 0, "", false, err
 	}
 
-	if len(details.Items) > 0 {
-		if details.Items[0].Snippet.LiveBroadcast == "live" {
+	if len(vDetails.Items) > 0 {
+		if vDetails.Items[0].Snippet.LiveBroadcast == "live" {
 			live = true
 		}
 
-		if len(details.Items) > 0 {
-			return iso8601ToInt(details.Items[0].ContentDetails.Duration), details.Items[0].Snippet.Title, live, nil
+		if len(vDetails.Items) > 0 {
+			return youtube.iso8601ToInt(vDetails.Items[0].ContentDetails.Duration), vDetails.Items[0].Snippet.Title, live, nil
 		}
 	}
 
 	return 0, "", live, ErrIncorrectVideoID
 }
 
-func getDetail(id string) ([]byte, error) {
-	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(15*time.Second))
-	req, err := http.NewRequest(http.MethodGet, youtubeDetailsAPIURL, nil)
-	youtubeAPIKey := os.Getenv("YT_API_KEY")
+// GetPlaylistDetails extract all video from playlist and return
+func (youtube Youtube) GetPlaylistDetails(id string) ([]*PlaylistItems, error) {
+	var playlist []*PlaylistItems
+	var urlQuery string
 
-	if youtubeAPIKey == "" {
-		cancel()
+	if youtube.APIKEY == "" {
 		return nil, ErrAPIKeyIsEmpty
 	}
 
+	for {
+		var plItems PlaylistItems
+		urlQuery = fmt.Sprintf("playlistId=%s&key=%s&part=snippet,contentDetails&maxResults=50&pageToken=%s", id, youtube.APIKEY, plItems.NextPageToken)
+
+		res, err := youtube.customAPIRequest(urlQuery, youtubePlaylistAPIURL)
+		if err != nil {
+			return nil, err
+		}
+
+		err = json.Unmarshal(res, &plItems)
+		if err != nil {
+			return nil, err
+		}
+
+		playlist = append(playlist, &plItems)
+
+		if plItems.NextPageToken == "" {
+			break
+		}
+	}
+
+	return playlist, nil
+}
+
+func (youtube Youtube) customAPIRequest(urlQuery, url string) ([]byte, error) {
+	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(15*time.Second))
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		cancel()
 		return nil, err
@@ -87,13 +147,7 @@ func getDetail(id string) ([]byte, error) {
 
 	defer cancel()
 
-	query := req.URL.Query()
-
-	query.Add("id", id)
-	query.Add("key", youtubeAPIKey)
-	query.Add("part", "snippet,contentDetails")
-
-	req.URL.RawQuery = query.Encode()
+	req.URL.RawQuery = urlQuery
 
 	res, err := http.DefaultClient.Do(req.WithContext(ctx))
 	if err != nil {
@@ -111,18 +165,7 @@ func getDetail(id string) ([]byte, error) {
 	return body, nil
 }
 
-func unmarshalDetails(rawDetails []byte) (*detailsItems, error) {
-	var details detailsItems
-
-	err := json.Unmarshal(rawDetails, &details)
-	if err != nil {
-		return nil, err
-	}
-
-	return &details, nil
-}
-
-func iso8601ToInt(duration string) int {
+func (youtube Youtube) iso8601ToInt(duration string) int {
 	var hours, minutes, seconds int
 
 	exp := regexp.MustCompile(`\d+\w`)

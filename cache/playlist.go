@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -35,6 +36,8 @@ var (
 		`(?:youtube\.com/watch\?(?:.+&)?v=|youtu\.be/)` +
 		`([a-zA-Z0-9_-]+)`)
 
+	youtubePlaylistExp = regexp.MustCompile(`https?:\/\/(www.)?youtube.com\/playlist\?list=([a-zA-Z0-9_-]+)`)
+
 	iframeRegExp = regexp.MustCompile(`<iframe(.+)></iframe>`)
 )
 
@@ -54,9 +57,12 @@ func (pl *playlist) addVideo(vURL string) {
 	case "www.youtube.com", "youtube.com", "youtu.be", "www.youtu.be":
 		if youtubeRegExp.MatchString(vURL) {
 			pl.addYoutube(pURL)
-		} else {
-			pl.AddFeedBack <- ErrLinkDoesNotMath
+			return
+		} else if youtubePlaylistExp.MatchString(vURL) {
+			pl.AddFeedBack <- errors.New("At the moment adding Youtube playlist not supported")
+			return
 		}
+		pl.AddFeedBack <- ErrLinkDoesNotMath
 	default:
 		pl.addDirect(vURL)
 	}
@@ -69,19 +75,13 @@ func (pl *playlist) addYoutube(url *url.URL) {
 		path := strings.Split(url.Path, "/")
 		if len(path) >= 2 {
 			vID = path[1]
-		} else {
-			return
 		}
 	} else {
 		vID = url.Query().Get("v")
 	}
 
-	if vID == "" {
-		pl.AddFeedBack <- ErrEmptyYoutubeVideoID
-		return
-	}
-
-	duration, title, live, err := vapi.GetVideoDetails(vID)
+	youtube := vapi.NewYoutubeClient(os.Getenv("YT_API_KEY"))
+	duration, title, live, err := youtube.GetVideoDetails(vID)
 	if err != nil {
 		pl.AddFeedBack <- err
 		return
@@ -99,6 +99,17 @@ func (pl *playlist) addYoutube(url *url.URL) {
 
 	pl.AddFeedBack <- nil
 	pl.UpdatePlaylist <- struct{}{}
+}
+
+func (pl *playlist) addYoutubePlaylist(url *url.URL) {
+	youtube := vapi.NewYoutubeClient(os.Getenv("YT_API_KEY"))
+	videos, err := youtube.GetPlaylistDetails(url.Query().Get("list"))
+	if err != nil {
+		pl.AddFeedBack <- err
+		return
+	}
+
+	fmt.Println(videos)
 }
 
 func (pl *playlist) addIframe(ifurl string) {
