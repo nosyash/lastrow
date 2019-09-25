@@ -52,7 +52,6 @@ function doReplace(_: string, match: string) {
     return `<em class="markup--do">${match}</em>`
 }
 function replyReplace(string: string, match: string) {
-    console.log(match)
     const userList = store.getState().chat.users;
     const user = userList.find(({ name }) => match.substr(1).includes(name))
     if (!user) return match;
