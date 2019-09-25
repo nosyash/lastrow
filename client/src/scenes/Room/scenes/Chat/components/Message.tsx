@@ -20,6 +20,7 @@ interface MessageProps {
 
 class Message extends PureComponent<MessageProps, any> {
     shown = false;
+    bodyMarked = '';
 
     getClassNames = classes => {
         const { online } = classes;
@@ -62,10 +63,12 @@ class Message extends PureComponent<MessageProps, any> {
         // this.handleSounds(highlight);
         this.handleNotification(highlight, { name, body, image });
 
+        // Markup cache
+        if (!this.bodyMarked) this.bodyMarked = parseBody(body, { postAuthorName: name });
         const renderMessageArgs = {
             ...this.getStyles(image, color),
             ...this.getClassNames({ online, highlight }),
-            bodyMarked: parseBody(body, { postAuthorName: name }),
+            bodyMarked: this.bodyMarked,
         };
         return <RenderMessage {...renderMessageArgs} {...this.props} />
     }
