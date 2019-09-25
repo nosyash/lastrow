@@ -26,7 +26,9 @@ const (
 func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 	// For now, only users can do this actions
 	if req.Payload == nil {
-		sendError(conn, errNotHavePermissions)
+		sendFeedBack(conn, &feedback{
+			Error: errNotHavePermissions.Error(),
+		})
 		return
 	}
 
@@ -46,9 +48,7 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 			fb.URL = req.Body.Event.Data.URL
 		}
 
-		writeMessage(conn, websocket.TextMessage, createPacket(playerEvent, eTypeFeedBack, &data{
-			FeedBack: &fb,
-		}))
+		sendFeedBack(conn, &fb)
 
 	case eTypePlDel:
 		ID := req.Body.Event.Data.ID
@@ -67,7 +67,9 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 			h.cache.Playlist.DelVideo <- ID
 
 			if err := <-h.cache.Playlist.DelFeedBack; err != nil {
-				sendError(conn, err)
+				sendFeedBack(conn, &feedback{
+					Error: err.Error(),
+				})
 			}
 		} else {
 			sendError(conn, errors.New("Video ID is empty"))
@@ -76,7 +78,7 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 		pauseLock.Lock()
 
 		if !h.syncer.isPause && !h.syncer.isSleep && !h.syncer.isStreamOrFrame {
-			if result := h.checkPermissions(conn, req.Payload); result {
+			if result := h.checkPermissions(conn, req.Payload, eTypePause); result {
 				h.syncer.pause <- struct{}{}
 
 				h.broadcast <- createPacket(playerEvent, eTypePause, nil)
@@ -89,7 +91,7 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 		resumeLock.Lock()
 
 		if h.syncer.isPause && !h.syncer.isSleep && !h.syncer.isStreamOrFrame {
-			if result := h.checkPermissions(conn, req.Payload); result {
+			if result := h.checkPermissions(conn, req.Payload, eTypeResume); result {
 				h.syncer.resume <- struct{}{}
 
 				h.broadcast <- createPacket(playerEvent, eTypeResume, nil)
@@ -101,7 +103,7 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 
 	case eTypeRewind:
 		if !h.syncer.isSleep && !h.syncer.isStreamOrFrame {
-			if result := h.checkPermissions(conn, req.Payload); result {
+			if result := h.checkPermissions(conn, req.Payload, eTypeRewind); result {
 				if h.syncer.isPause {
 					rewindLock.Lock()
 					h.syncer.rewindAfterPause = req.Body.Event.Data.RewindTime
@@ -239,6 +241,6 @@ exit:
 	}
 }
 
-func (h hub) checkPermissions(conn *websocket.Conn, payload *jwt.Payload) bool {
+func (h hub) checkPermissions(conn *websocket.Conn, payload *jwt.Payload, eType string) bool {
 	return true
 }

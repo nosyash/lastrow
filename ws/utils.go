@@ -36,6 +36,12 @@ func sendError(conn *websocket.Conn, msg error) error {
 	}))
 }
 
+func sendFeedBack(conn *websocket.Conn, fb *feedback) {
+	writeMessage(conn, websocket.TextMessage, createPacket(playerEvent, eTypeFeedBack, &data{
+		FeedBack: fb,
+	}))
+}
+
 func writeMessage(conn *websocket.Conn, messageType int, message []byte) error {
 	sendLocker.Lock()
 	defer sendLocker.Unlock()

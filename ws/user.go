@@ -11,7 +11,7 @@ func (h hub) handleUserEvent(p *packet, conn *websocket.Conn) {
 	case eTypeMsg:
 		h.handleMessage(p)
 	case eTypeKick:
-		h.kickUser(p)
+		h.kickUser(conn, p, eTypeKick)
 	default:
 		sendError(conn, errors.New("Unknown event type"))
 	}
@@ -43,11 +43,14 @@ func (h hub) handleMessage(p *packet) {
 	}
 }
 
-func (h hub) kickUser(p *packet) {
-	if p.Body.Event.Data.UserID != "" {
-		user := h.cache.Users.GetUserByID(p.Body.Event.Data.UserID)
-		if user != nil {
-			h.hub[user.UUID].Close()
+func (h hub) kickUser(conn *websocket.Conn, p *packet, eType string) {
+	if h.checkPermissions(conn, p.Payload, eType) {
+		if p.Body.Event.Data.UserID != "" {
+			user := h.cache.Users.GetUserByID(p.Body.Event.Data.UserID)
+			if user != nil {
+				// Just close socket. Remove user from list and from cache will be automatically
+				h.hub[user.UUID].Close()
+			}
 		}
 	}
 }

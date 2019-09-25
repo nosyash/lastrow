@@ -196,13 +196,15 @@ func (h hub) remove(conn *websocket.Conn) {
 
 func (h *hub) read(conn *websocket.Conn) {
 	defer func() {
-		conn.Close()
 		h.unregister <- conn
 	}()
 
 	for {
 		req, err := readPacket(conn)
 		if err != nil {
+			if websocket.IsCloseError(err) || websocket.IsUnexpectedCloseError(err) {
+				break
+			}
 			conn.Close()
 			break
 		}
@@ -221,7 +223,6 @@ func (h *hub) read(conn *websocket.Conn) {
 func (h hub) send(msg []byte) {
 	for _, conn := range h.hub {
 		if err := writeMessage(conn, websocket.TextMessage, msg); err != nil {
-			h.unregister <- conn
 			conn.Close()
 		}
 	}
@@ -232,7 +233,6 @@ func (h hub) ping(conn *websocket.Conn) {
 
 	defer func() {
 		ticker.Stop()
-		h.unregister <- conn
 		conn.Close()
 	}()
 

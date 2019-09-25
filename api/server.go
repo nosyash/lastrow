@@ -41,7 +41,10 @@ func NewServer(address, uplPath, pofImgPath, emojiImgPath, hmacKey string, db *d
 			ReadBufferSize:  512,
 			WriteBufferSize: 512,
 			CheckOrigin: func(r *http.Request) bool {
-				return true
+				if r.Host == address || r.Host == "cinema.bona.cafe" {
+					return true
+				}
+				return false
 			},
 		},
 		ImageServer{
@@ -104,7 +107,12 @@ func (server Server) acceptWebsocket(w http.ResponseWriter, r *http.Request) {
 
 func (server Server) logAndServe(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("%s -> %s %s %s\n", r.RemoteAddr, r.Method, r.URL, r.UserAgent())
-		handler.ServeHTTP(w, r)
+		if r.Host == "cinema.bona.cafe" {
+			log.Printf("%s -> %s %s %s\n", r.RemoteAddr, r.Method, r.URL, r.UserAgent())
+			handler.ServeHTTP(w, r)
+		}
+
+		// log.Printf("%s -> %s %s %s\n", r.RemoteAddr, r.Method, r.URL, r.UserAgent())
+		// handler.ServeHTTP(w, r)
 	})
 }
