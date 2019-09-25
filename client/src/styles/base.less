@@ -353,7 +353,7 @@ body {
 
 .chat-messages__scroll-to-bottom {
     position: absolute;
-    bottom: 100px;
+    bottom: 120px;
     left: 0;
     right: 0;
     margin: 0 auto;
@@ -501,13 +501,44 @@ body {
     margin-top: auto;
     border: none;
     display: flex;
-
+    flex-direction: column;
     position: relative;
 
     textarea {
         height: 100px;
         padding: 5px;
     }
+
+    &__topbar {
+        height: 24px;
+        display: flex;
+        flex-direction: row;
+
+        .emote-icon {
+            font-size: 1em;
+            margin: 0 3px;
+
+            .fa {
+                vertical-align: middle;
+            }
+        }
+
+        .chat-topbar__emote {
+            height: 15px;
+            padding: 0 3px;
+            border-radius: 2px;
+            cursor: pointer;
+
+            &:hover {
+                opacity: 0.8;
+            }
+        }
+    }
+
+    &__popular-emotes {
+        margin-left: auto;
+    }
+
 }
 
 .emote-search {
@@ -522,7 +553,7 @@ body {
     flex-direction: column;
     left: 0;
     right: 0;
-    bottom: 105px;
+    bottom: calc(100% + 10px);
 }
 
 .emote-search__emote span {
@@ -548,12 +579,12 @@ body {
 .emote-menu {
     position: absolute;
     overflow-x: auto;
-    background: #3b3b3b;
+    background: hsla(0, 0%, 23%, 1);
     z-index: 100000;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.15);
     left: 0;
     right: 0;
-    bottom: 120px;
+    bottom: 30px;
     flex-direction: row;
     display: flex;
     flex-wrap: wrap;
@@ -588,11 +619,6 @@ body {
 
 
 
-.emote-icon {
-    position: absolute;
-    top: -20px;
-    right: 3px;
-}
 
 .chat-header {
     background: @darkSecond;

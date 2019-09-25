@@ -58,7 +58,7 @@ function ListMessages(props) {
 
         const previousMessage = roomsMessages[i - 1];
         const sameAuthorMessage =
-    previousMessage && previousMessage.__id === currentMessage.__id;
+            previousMessage && previousMessage.__id === currentMessage.__id;
         if (sameAuthorMessage) {
             renderHeader = false;
         }
@@ -97,7 +97,7 @@ function ListMessages(props) {
                 {roomsMessages.map((message, index) => getSingleMessage(message, index))}
             </div>
             {!shouldScroll && (
-                <div 
+                <div
                     onClick={handleToBottomClick}
                     className="chat-messages__scroll-to-bottom"
                 >
