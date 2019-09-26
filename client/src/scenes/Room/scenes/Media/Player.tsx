@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import ReactPlayer from 'react-player';
 import cn from 'classnames';
 import { throttle } from 'lodash';
+import { get } from 'lodash';
 import * as types from '../../../../constants/actionTypes';
 import { formatTime, requestFullscreen } from '../../../../utils';
 import { PLAYER_MINIMIZE_TIMEOUT, MAX_VIDEO_SYNC_OFFSET } from '../../../../constants';
@@ -18,6 +19,7 @@ let videoEl = null;
 function Player(props) {
     const [minimized, setMinimized] = useState(false);
     const playerRef = useRef(null);
+    const currentVideoRef = useRef(null);
     let volume = 0.3;
 
     useEffect(() => {
@@ -31,11 +33,26 @@ function Player(props) {
 
     useEffect(() => {
         document.addEventListener('mousemove', handleMouseMove);
+
+        return () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+        }
     });
 
     useEffect(() => {
         checkDelay();
     }, [props.media.actualTime]);
+
+    useEffect(() => {
+        // Watch playlist and set video time to 0, if video has changed.
+        if (!playerRef) return;
+        const currentVideo = getCurrentVideo()
+        const currentVideoId = get(currentVideo, '__id')
+        const oldVideoId = get(currentVideoRef.current, '__id')
+
+        if (currentVideoId !== oldVideoId) playerRef.current.seekTo(0);
+        currentVideoRef.current = currentVideo;
+    }, [props.media.playlist])
 
     function resetRefs() {
         videoEl = null;
