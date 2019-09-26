@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/nosyash/backrow/cache"
 	"github.com/nosyash/backrow/jwt"
 )
 
@@ -135,114 +136,120 @@ func (h hub) updatePlaylist() {
 }
 
 func (h *hub) syncElapsedTime() {
+	for {
+		if h.cache.Playlist.Size() == 0 {
+			if r := h.waitUpdates(); r {
+				return
+			}
+
+			video := h.cache.Playlist.TakeHeadElement()
+			h.syncer.currentVideoID = video.ID
+
+			if video.Iframe || video.LiveStream {
+				if r := h.handleIframeOrStream(video.ID); r {
+					return
+				}
+
+				continue
+			}
+
+			if r := h.elapsedTicker(video); r {
+				return
+			}
+
+			h.syncer.currentVideoID = ""
+			h.cache.Playlist.DelVideo <- video.ID
+			<-h.cache.Playlist.DelFeedBack
+		}
+	}
+}
+
+func (h *hub) waitUpdates() bool {
+	h.syncer.isSleep = true
+
+	for {
+		select {
+		case <-h.syncer.wakeUp:
+			h.syncer.isSleep = false
+			return false
+		case <-h.syncer.close:
+			return true
+		}
+	}
+}
+
+func (h *hub) handleIframeOrStream(id string) bool {
+	for {
+		select {
+		case <-h.syncer.skip:
+			h.syncer.isStreamOrFrame = false
+			h.syncer.currentVideoID = ""
+			h.cache.Playlist.DelVideo <- id
+			<-h.cache.Playlist.DelFeedBack
+
+			return false
+		case <-h.syncer.close:
+			return true
+		}
+	}
+}
+
+func (h *hub) elapsedTicker(video *cache.Video) bool {
 	var ep elapsedTime
 	var d data
 	var elapsed int
 	var ticker = time.Tick(syncPeriod * time.Second)
 
-exit:
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(video.Duration+sleepBeforeStart)*time.Second)
+	defer cancel()
+
+	time.Sleep(sleepBeforeStart)
+
 	for {
+		select {
+		case <-ticker:
+			ep.ID = video.ID
+			ep.Duration = video.Duration
+			ep.ElapsedTime = elapsed
 
-		if h.cache.Playlist.Size() == 0 {
-			h.syncer.isSleep = true
+			d.Ticker = &ep
 
-		wakeUp:
-			for {
-				select {
-				case <-h.syncer.wakeUp:
-					h.syncer.isSleep = false
-					break wakeUp
-				case <-h.syncer.close:
-					break exit
-				}
-			}
-		}
+			h.broadcast <- createPacket(playerEvent, eTypeTicker, &d)
 
-		video := h.cache.Playlist.TakeHeadElement()
-
-		h.syncer.currentVideoID = video.ID
-
-		if video.Iframe == true || video.LiveStream == true {
-			// If last user leave a room, no need to set on pause
-			h.syncer.isStreamOrFrame = true
-
-		next:
-			for {
-				select {
-				case <-h.syncer.skip:
-					h.syncer.isStreamOrFrame = false
-					h.syncer.currentVideoID = ""
-					h.cache.Playlist.DelVideo <- video.ID
-					<-h.cache.Playlist.DelFeedBack
-
-					break next
-				case <-h.syncer.close:
-					break exit
-				}
-			}
-
-			continue
-		}
-
-		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration+sleepBeforeStart)*time.Second))
-
-		time.Sleep(sleepBeforeStart * time.Second)
-
-	loop:
-		for {
-			select {
-			case <-ticker:
-				ep.ID = video.ID
-				ep.Duration = video.Duration
-				ep.ElapsedTime = elapsed
-
-				d.Ticker = &ep
-
-				// FIXME:
-				if h.cache.Playlist.Size() == 0 {
-					cancel()
-					break loop
-				}
-				h.broadcast <- createPacket(playerEvent, eTypeTicker, &d)
-
-				elapsed += syncPeriod
-				h.syncer.elapsed = elapsed
-			case <-ctx.Done():
+			elapsed += syncPeriod
+			h.syncer.elapsed = elapsed
+		case <-h.syncer.pause:
+			if r := h.pauseTicker(); r {
 				cancel()
-				break loop
-			case <-h.syncer.skip:
-				cancel()
-				break loop
-			case e := <-h.syncer.rewind:
-				if e > 0 && e < video.Duration {
-					elapsed = e
-					ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration-elapsed+sleepBeforeStart)*time.Second))
-				}
-			case <-h.syncer.pause:
-			resume:
-				for {
-					select {
-					case <-h.syncer.resume:
-						if h.syncer.rewindAfterPause > 0 && h.syncer.rewindAfterPause < video.Duration {
-							elapsed = h.syncer.rewindAfterPause
-						}
-						ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration-elapsed+sleepBeforeStart)*time.Second))
-						break resume
-					case <-h.syncer.close:
-						cancel()
-						break exit
-					}
-				}
-			case <-h.syncer.close:
-				cancel()
-				break exit
+				return true
 			}
+			if h.syncer.rewindAfterPause > 0 && h.syncer.rewindAfterPause < video.Duration {
+				elapsed = h.syncer.rewindAfterPause
+			}
+			ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration-elapsed+sleepBeforeStart)*time.Second))
+		case e := <-h.syncer.rewind:
+			if e > 0 && e < video.Duration {
+				elapsed = e
+				ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration-elapsed+sleepBeforeStart)*time.Second))
+			}
+		case <-h.syncer.skip:
+			cancel()
+			return false
+		case <-ctx.Done():
+			cancel()
+			return false
 		}
+	}
+}
 
-		h.syncer.currentVideoID = ""
-		elapsed = 0
-		h.cache.Playlist.DelVideo <- video.ID
-		<-h.cache.Playlist.DelFeedBack
+func (h *hub) pauseTicker() bool {
+	for {
+		select {
+		case <-h.syncer.resume:
+			return false
+		case <-h.syncer.close:
+			return true
+		}
 	}
 }
 
