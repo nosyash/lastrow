@@ -238,6 +238,9 @@ func (h *hub) elapsedTicker(video *cache.Video) bool {
 		case <-ctx.Done():
 			cancel()
 			return false
+		case <-h.syncer.close:
+			cancel()
+			return true
 		}
 	}
 }
