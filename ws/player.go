@@ -198,6 +198,11 @@ exit:
 
 				d.Ticker = &ep
 
+				// FIXME:
+				if h.cache.Playlist.Size() == 0 {
+					cancel()
+					break loop
+				}
 				h.broadcast <- createPacket(playerEvent, eTypeTicker, &d)
 
 				elapsed += syncPeriod
