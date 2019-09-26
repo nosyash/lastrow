@@ -159,14 +159,8 @@ func (h *hub) syncElapsedTime() {
 		}
 
 		h.syncer.currentVideoID = ""
-
-		println("before delvideo")
 		h.cache.Playlist.DelVideo <- video.ID
-		println("after delvideo")
-
-		println("before delfeedback")
 		<-h.cache.Playlist.DelFeedBack
-		println("after delfeedback")
 	}
 }
 
