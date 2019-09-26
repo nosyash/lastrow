@@ -141,26 +141,32 @@ func (h *hub) syncElapsedTime() {
 			if r := h.waitUpdates(); r {
 				return
 			}
+		}
 
-			video := h.cache.Playlist.TakeHeadElement()
-			h.syncer.currentVideoID = video.ID
+		video := h.cache.Playlist.TakeHeadElement()
+		h.syncer.currentVideoID = video.ID
 
-			if video.Iframe || video.LiveStream {
-				if r := h.handleIframeOrStream(video.ID); r {
-					return
-				}
-
-				continue
-			}
-
-			if r := h.elapsedTicker(video); r {
+		if video.Iframe || video.LiveStream {
+			if r := h.handleIframeOrStream(video.ID); r {
 				return
 			}
 
-			h.syncer.currentVideoID = ""
-			h.cache.Playlist.DelVideo <- video.ID
-			<-h.cache.Playlist.DelFeedBack
+			continue
 		}
+
+		if r := h.elapsedTicker(video); r {
+			return
+		}
+
+		h.syncer.currentVideoID = ""
+
+		println("before delvideo")
+		h.cache.Playlist.DelVideo <- video.ID
+		println("after delvideo")
+
+		println("before delfeedback")
+		<-h.cache.Playlist.DelFeedBack
+		println("after delfeedback")
 	}
 }
 
