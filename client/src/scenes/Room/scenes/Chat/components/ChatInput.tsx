@@ -178,7 +178,6 @@ function ChatInput(props) {
     function handlePopularEmote(name: string) {
         const { emotesList } = props;
         const emoteObject = emotesList.find(emote => emote.name === name);
-        console.log(emoteObject);
         if (!emoteObject) return;
 
         const popularEmotes = ls('popularEmotes') as any;
