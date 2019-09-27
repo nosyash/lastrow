@@ -93,5 +93,5 @@ export function parseAndDispatchSubtitiles(data: string) {
         const parsed = parseSubtitles(data);
         store.dispatch({ type: types.SET_SUBS, payload: { parsed } })
         return store.dispatch({ type: types.SHOW_SUBS })
-    } catch (error) {}
+    } catch (error) { }
 }

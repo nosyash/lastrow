@@ -185,6 +185,11 @@ class Socket implements SocketInterface {
             }
             case 'update_playlist': {
                 const data = get(parsedData, 'body.event.data') as UpdatePlaylistData;
+                const subtitilesUrl = get(parsedData, 'body.event.data.videos[0].subs') as string;
+                if (subtitilesUrl) httpServices.get(subtitilesUrl)
+                    .then(response => parseAndDispatchSubtitiles(response.data))
+                    .catch(() => toast.error('Could not fetch subtitiles'))
+
                 const playlist = data.videos || [];
                 return dispatch({ type: types.ADD_TO_PLAYLIST, payload: playlist });
             }
@@ -198,10 +203,10 @@ class Socket implements SocketInterface {
             }
             // TODO: structure may be different
             case 'subtitles': {
-                const subtitilesUrl = get(parsedData, 'body.event.data.subtitles') as string;
+                const subtitilesUrl = get(parsedData, 'body.event.data.subs') as string;
                 httpServices.get(subtitilesUrl)
                     .then(response => parseAndDispatchSubtitiles(response.data))
-                    .catch(() => toast.error('Could not fetch subtitiles') )
+                    .catch(() => toast.error('Could not fetch subtitiles'))
             }
             case 'error': {
                 const error = get(parsedData, 'body.event.data.error') as string;

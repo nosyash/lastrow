@@ -73,7 +73,7 @@ function Player(props: PlayerProps) {
         document.dispatchEvent(new Event('mediachanged'));
 
         safelySeekTo(0);
-        waitForPrefetch();
+        // waitForPrefetch();
         props.hideSubs();
     }
 
@@ -137,6 +137,7 @@ function Player(props: PlayerProps) {
 
     function updateTime() {
         const [duration, currentTime] = safelyGetTimeAndDuration();
+        videoEl = playerRef.current.getInternalPlayer();
         props.updatePlayer({ duration, currentTime });
     }
 
@@ -241,7 +242,7 @@ function Player(props: PlayerProps) {
                     </div>
                 }
                 {isDirectLink() && <div className="video-overlay" />}
-                {<PreloadIframe nextVideo={nextVideo} />}
+                {/* {<PreloadIframe nextVideo={nextVideo} />} */}
             </React.Fragment>
         );
     }
@@ -429,7 +430,7 @@ const mapDispatchToProps = {
     setVolume: (payload: any) => ({ type: types.SET_VOLUME, payload }),
     toggleCinemaMode: () => ({ type: types.TOGGLE_CINEMAMODE }),
     toggleSync: () => ({ type: types.TOGGLE_SYNC }),
-    hideSubs: () => ({ type: types.HIDE_SUBS})
+    hideSubs: () => ({ type: types.HIDE_SUBS })
 } as any;
 
 export default connect(

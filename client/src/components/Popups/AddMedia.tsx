@@ -20,16 +20,20 @@ interface AddMediaProps {
 
 interface AddMediaStates {
     inputValue: string;
+    inputValueSubs: string;
     iframe: boolean;
     subtitles: boolean;
+    subtitlesName: string;
 }
 
 class AddMedia extends Component<AddMediaProps, AddMediaStates> {
-    subs64 = null as String | ArrayBuffer;
+    subs64: String | ArrayBuffer;
     state = {
         inputValue: '',
+        inputValueSubs: '',
         iframe: false,
         subtitles: false,
+        subtitlesName: '',
     };
 
     inputEl = React.createRef();
@@ -62,9 +66,11 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
         const { uuid, setToPending, setToDone } = this.props as any;
         e.preventDefault();
 
-        const { inputValue } = this.state;
+        const { inputValue, subtitles } = this.state;
 
-        const message = api.SEND_MEDIA_TO_PLAYLIST({ url: inputValue, uuid });
+        const subs = subtitles ? { subtitles: this.subs64, subs_type: "srt" } : {}
+        const data = { url: inputValue, uuid, subtitles: subs }
+        const message = api.SEND_MEDIA_TO_PLAYLIST(data);
         webSocketSend(message, 'feedback', onSuccess as any);
         const self = this;
         function onSuccess(result: any, error: any) {
@@ -88,17 +94,23 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
         this.setState({ subtitles: !this.state.subtitles })
     }
 
-    handleSubsFile({ target }: { target: HTMLInputElement }) {
+    handleSubsFile = ({ target }: { target: HTMLInputElement }) => {
+        this.setState({ subtitlesName: '' })
+        this.subs64 = '';
         const file = get(target, 'files[0]');
         if (!file) return;
         const { name, type, size } = file;
-        if (size / 1024 > MAXIMUM_SUBTITLES_SIZE) return this.sizeWarn();
+        console.log(type);
+        // TODO: Better type handling
+        if (type !== 'application/x-subrip') return toast.warn(`Only .srt supported for now`, toastOpts)
+        if (size / 1024 / 1024 > MAXIMUM_SUBTITLES_SIZE) return this.sizeWarn();
 
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = () => {
             const base64 = reader.result;
-            this.subs64 = base64;
+            this.subs64 = (base64 as string).replace(/data:.+base64,/, '');
+            this.setState({ subtitlesName: name })
         };
         reader.onerror = () => this.convertingErrorWarn();
     }
@@ -117,12 +129,18 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
         return (
             <div className="add-media_container">
                 <form onSubmit={this.handleSubmit}>
-                    {!iframe && this.urlInput()}
-                    {iframe && this.iframeInput()}
-                    {subtitles && this.subtitlesInput()}
-                    {this.submitButton()}
+                    <div>
+                        {this.urlInput()}
+                        {this.submitButton()}
+                    </div>
+                    <div>
+                        {subtitles && this.subtitlesInputUrl()}
+                        {subtitles && this.subtitlesInput()}
+                    </div>
+                    {/* {iframe && this.iframeInput()} */}
                 </form>
-                {this.iframeToggle()}
+                {/* {this.iframeToggle()} */}
+                {this.subtitlesToggle()}
             </div>
         );
     }
@@ -130,6 +148,7 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
     urlInput() {
         return (
             <input
+                placeholder="Paste video url or iframe code"
                 id="add-media-input"
                 ref={this.inputEl as any}
                 value={this.state.inputValue}
@@ -149,11 +168,23 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
         )
     }
 
+    subtitlesInputUrl() {
+        return (
+            <input
+                placeholder="Paste subtitles url"
+                value={this.state.inputValueSubs}
+                onChange={({ target }) => this.setState({ inputValueSubs: target.value })}
+                className="form-control form-input add-subtitles-input"
+            />
+        )
+    }
+
     subtitlesInput() {
+        const { subtitlesName } = this.state;
         return (
             <label className="button add-subs-button">
                 <input type="file" onChange={this.handleSubsFile} />
-                Add subtitles
+                {subtitlesName || 'Or pick from PC'}
             </label>
         )
     }
@@ -186,10 +217,10 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
         return (
             <a
                 href=""
-                onClick={this.onAddIframeClick}
+                onClick={this.onAddSubtitlesClick}
                 className="add-iframe"
             >
-                Add subtitles
+                Subtitles
             </a>
         )
     }

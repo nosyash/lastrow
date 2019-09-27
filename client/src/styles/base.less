@@ -1756,7 +1756,26 @@ body {
 .add-media_container form {
     margin-top: 0;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+
+    div {
+        display: flex;
+        flex-direction: row;
+        margin-top: 5px;
+    }
+
+    .add-subs-button {
+        // width: 100%;
+        // text-align: center;
+
+        display: inline-block;
+        width: 200px;
+        height: 35px;
+        margin-left: 5px;
+        font-size: 0.8em;
+        text-align: center;
+        line-height: 3;
+    }
 }
 
 .add-media-button {
@@ -1764,6 +1783,7 @@ body {
     width: 50px;
     height: 35px;
     margin-left: 5px;
+    line-height: 2.4;
 }
 
 .add-media-input {

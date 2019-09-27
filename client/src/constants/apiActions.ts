@@ -93,7 +93,24 @@ export const GET_ERROR = (string: string) => {
     if (obj.error) return obj.error;
 };
 
-export const SEND_MEDIA_TO_PLAYLIST = ({ url, uuid }: { url: string, uuid?: string }) => {
+// export const SEND_MEDIA_TO_PLAYLIST_WITH_SUBS = ({ url, uuid }) => {
+//     const request = {
+//         action: "player_event",
+//         body: {
+//             event: {
+//                 type: "playlist_add",
+//                 data: {
+//                     url: "https://up.bona.cafe/src/54/4ed8190abce24f2b4ce73df845ef1f4f6f031e.webm",
+//                     subtitles: "bonan_durek",
+//                     subs_type: "srt"
+//                 }
+//             }
+//         },
+//         jwt: getCookie('jwt'),
+//     }
+// }
+
+export const SEND_MEDIA_TO_PLAYLIST = ({ url, subtitles = {}, uuid }: { url: string, uuid?: string, subtitles?: any }) => {
     const request = {
         action: 'player_event',
         body: {
@@ -101,6 +118,7 @@ export const SEND_MEDIA_TO_PLAYLIST = ({ url, uuid }: { url: string, uuid?: stri
                 type: 'playlist_add',
                 data: {
                     url,
+                    ...subtitles,
                 },
             },
         },

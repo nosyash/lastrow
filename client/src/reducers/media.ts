@@ -10,7 +10,7 @@ export interface SubtitlesItem {
 export interface Subtitles {
     url?: string;
     parsed: SubtitlesItem[];
-    raw: string;
+    raw: any[];
 }
 
 export interface Media {
@@ -47,7 +47,7 @@ const InitialState = {
     subs: {
         url: 'https://stream.bona.cafe/uzzu/ep15.srt',
         parsed: [],
-        raw: '',
+        raw: [],
     },
     url: '',
     volume: 50,

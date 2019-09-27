@@ -29,7 +29,6 @@ function SubtitlesContainer(props: SubtitilesProps) {
 
     function initSubs(callback: () => void) {
         const { subs } = props;
-
         if (!subs.parsed) return;
         subtitlesHandler.setSubtitles(subs.parsed);
         callback();
@@ -43,7 +42,6 @@ function SubtitlesContainer(props: SubtitilesProps) {
 
         const { videoEl } = props;
         const timeMs = videoEl.currentTime * 1000;
-
         if (videoEl.paused) {
             pauseTimer = setTimeout(() => {
                 subtitlesHandler.setCurrentTime(timeMs);
@@ -51,16 +49,16 @@ function SubtitlesContainer(props: SubtitilesProps) {
             }, 20);
             clearTimeout(pauseTimer);
         }
+        // subtitlesHandler.setCurrentTime(timeMs);
         const newText = subtitlesHandler.getSubtitles(timeMs);
-
         if (JSON.stringify(currentText) !== JSON.stringify(newText)) {
             setCurrentSubs(newText);
         }
         timer = setTimeout(formatSubs, 16);
     }
 
-    const { parsed } = props.subs;
-    return <RenderSubs text={parsed} />;
+    const { raw } = props.subs;
+    return <RenderSubs text={raw} />;
 }
 
 // eslint-disable-next-line react/display-name
