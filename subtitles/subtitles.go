@@ -2,20 +2,27 @@ package subtitles
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
+	"strconv"
 	"time"
 )
+
+const maxFileSize = 10 * 1024 * 1024 // 15mb
+
+var errFileSize = fmt.Errorf("Subtitles must be less than or equal %dmb", (maxFileSize / (1024 * 1024)))
 
 // CreateFromBytes create temp subs. file from raw source any (actually not) and save to .srt
 // return url path to a .srt file
 func CreateFromBytes(sub []byte, subType, fname, uploadPath string) (string, error) {
 	var fpath string
+
+	if len(sub) > maxFileSize {
+		return "", errFileSize
+	}
 
 	switch subType {
 	case "srt":
@@ -48,6 +55,24 @@ func CreateFromBytes(sub []byte, subType, fname, uploadPath string) (string, err
 
 // CreateFromURL same as CreateFromBytes but before we need download .srt file
 func CreateFromURL(url, fname, uploadPath string) (string, error) {
+	// Before download file, we need to check file extension, after that to preload headers and check Content-Length.
+	// If Content-length more than maxFileSize then we don't need to download a file.
+	var ext = filepath.Ext(url)
+
+	if ext != ".srt" {
+		return "", fmt.Errorf("Received unsupported %s sub. format", ext)
+	}
+
+	response, err := http.Head(url)
+	if err != nil {
+		return "", err
+	}
+
+	length, _ := strconv.Atoi(response.Header.Get("Content-Length"))
+	if length > maxFileSize {
+		return "", errFileSize
+	}
+
 	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(15*time.Second))
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -69,10 +94,5 @@ func CreateFromURL(url, fname, uploadPath string) (string, error) {
 		return "", err
 	}
 
-	sType := strings.Split(filepath.Ext(url), ".")
-	if len(sType) == 0 {
-		return "", errors.New("Couldn't get subtitles format")
-	}
-
-	return CreateFromBytes(body, sType[1], fname, uploadPath)
+	return CreateFromBytes(body, ext, fname, uploadPath)
 }
