@@ -12,8 +12,10 @@ import ProgressBar from './components/ProgressBar';
 import Subtitles from './components/Subtitles';
 import { fetchSubs } from '../../../../actions';
 import { playerConf } from '../../../../conf';
+import { Video } from '../../../../utils/types';
 
 let minimizeTimer = null;
+let prefetchWatcher = null;
 let videoEl = null;
 
 function Player(props) {
@@ -35,31 +37,65 @@ function Player(props) {
         document.addEventListener('mousemove', handleMouseMove);
 
         return () => {
+            clearInterval(prefetchWatcher);
             document.removeEventListener('mousemove', handleMouseMove);
         }
     });
 
-    useEffect(() => {
-        checkDelay();
-    }, [props.media.actualTime]);
+    useEffect(() => { checkDelay() }, [props.media.actualTime]);
 
-    useEffect(() => {
-        // Watch playlist and set video time to 0, if video has changed.
-        if (!playerRef) return;
+    useEffect(() => { watchPlaylist() }, [props.media.playlist])
+
+    function watchPlaylist() {
+        const isVideoHasChanged = isVideoChanged();
+        if (isVideoHasChanged) safelySeekTo(0);
+        if (isVideoHasChanged) waitForPrefetch();
+    }
+
+    function isVideoChanged(): boolean {
         const currentVideo = getCurrentVideo()
+
         const currentVideoId = get(currentVideo, '__id')
         const oldVideoId = get(currentVideoRef.current, '__id')
 
-        if (currentVideoId !== oldVideoId) playerRef.current.seekTo(0);
         currentVideoRef.current = currentVideo;
-    }, [props.media.playlist])
+        return currentVideoId !== oldVideoId;
+    }
+
+    function waitForPrefetch() {
+        clearInterval(prefetchWatcher);
+        prefetchWatcher = setInterval(() => {
+            if (!playerRef) return;
+            const [duration, currentTime] = safelyGetTimeAndDuration();
+
+            if (duration > 0 && (duration - currentTime) < 10) {
+                clearInterval(prefetchWatcher);
+                prefetchNextMedia();
+            }
+        }, 5000)
+    }
+
+    function prefetchNextMedia() {
+        const nextVideo = getNextVideo();
+        if (!nextVideo || !nextVideo.direct) return;
+
+        let videoElement = document.createElement('video');
+        videoElement.src = nextVideo.url;
+        videoElement.preload = 'auto';
+        videoElement.height = 0;
+        videoElement.width = 0;
+        videoElement.onerror = () => videoElement = null;
+        // TODO: Test both
+        // videoElement.oncanplay = () => videoElement = null;
+        videoElement.oncanplaythrough = () => videoElement = null;
+    }
 
     function resetRefs() {
         videoEl = null;
     }
 
     function init() {
-        // TODO: fix it later
+        // TODO: fix time parser later
         try {
             const { updatePlayer } = props;
             // eslint-disable-next-line prefer-destructuring
@@ -72,9 +108,7 @@ function Player(props) {
 
     function handleSubs() {
         const subsUrl = get(props.media, 'subs.url');
-        if (subsUrl) {
-            props.getSubs(subsUrl);
-        }
+        if (subsUrl) props.getSubs(subsUrl);
     }
 
     function handleReady() {
@@ -83,21 +117,31 @@ function Player(props) {
     }
 
     function updateTime() {
-        const { updatePlayer } = props;
-        if (!playerRef) return;
-        videoEl = playerRef.current.getInternalPlayer();
-        const duration = playerRef.current.getDuration();
-        const currentTime = playerRef.current.getCurrentTime();
-        updatePlayer({ duration, currentTime });
+        const [duration, currentTime] = safelyGetTimeAndDuration();
+        props.updatePlayer({ duration, currentTime });
+    }
+
+    function safelyGetTimeAndDuration(): [number, number] {
+        try {
+            const duration = playerRef.current.getDuration() as number;
+            const currentTime = playerRef.current.getCurrentTime() as number;
+            return [duration, currentTime]
+        } catch (error) {
+            return [0, 0]
+        }
+    }
+
+    function safelySeekTo(n: number, type = 'seconds') {
+        try {
+            playerRef.current.seekTo(n, type);
+        } catch (error) { }
     }
 
     function checkDelay() {
         const { actualTime, currentTime } = props.media;
 
         const shouldSeek = Math.abs(actualTime - currentTime) > MAX_VIDEO_SYNC_OFFSET;
-        if (shouldSeek) {
-            playerRef.current.seekTo(actualTime);
-        }
+        if (shouldSeek) safelySeekTo(actualTime);
     }
 
     function handlePlaying({ playedSeconds }) {
@@ -109,11 +153,9 @@ function Player(props) {
         document.removeEventListener('mousemove', handleMouseMove);
         clearTimeout(minimizeTimer);
         if (target.closest('.video-player')) return;
-        if (!minimized) {
-            minimizeTimer = setTimeout(() => {
-                setMinimized(true);
-            }, PLAYER_MINIMIZE_TIMEOUT);
-        }
+        if (minimized) return;
+
+        minimizeTimer = setTimeout(() => setMinimized(true), PLAYER_MINIMIZE_TIMEOUT);
     }
 
     const handlePlay = () => {
@@ -125,8 +167,12 @@ function Player(props) {
         // document.dispatchEvent(e);
     };
 
-    function getCurrentVideo() {
+    function getCurrentVideo(): Video {
         return get(props.playlist, '[0]')
+    }
+
+    function getNextVideo(): Video {
+        return get(props.playlist, '[1]')
     }
 
     function getCurrentUrl() {
@@ -147,6 +193,7 @@ function Player(props) {
     function RenderPlayer() {
         const { media } = props;
         const url = getCurrentUrl();
+        const nextVideo = getNextVideo();
         const direct = isDirect();
         const iframe = isIframe();
         return (
@@ -160,7 +207,6 @@ function Player(props) {
                     onPause={handlePause}
                     config={playerConf}
                     autoPlay
-                    // WTF IS GOING ON HERE
                     controls={!direct}
                     loop={false}
                     progressInterval={50}
@@ -169,8 +215,6 @@ function Player(props) {
                     volume={media.volume}
                     url={url}
                     onProgress={handlePlaying}
-                    // onPlay={handlePlay}
-                    // onPause={handlePause}
                     onReady={handleReady}
                 />}
                 {iframe &&
@@ -178,12 +222,15 @@ function Player(props) {
                     </div>
                 }
                 {isDirectLink() && <div className="video-overlay" />}
+                {<PreloadIframe nextVideo={nextVideo} />}
             </React.Fragment>
         );
     }
 
     function renderPlayerGUI() {
         const { showSubs, forceSync } = props.media;
+        // TODO: Hide time for streams
+        // const { } = getCurrentVideo() || {};
         const playerClasses = cn('video-player', {
             'video-player_sync-on': forceSync,
             'video-player_sincin-off': !forceSync,
@@ -199,7 +246,7 @@ function Player(props) {
     }
 
     function handleProgressChange(percent) {
-        playerRef.current.seekTo(percent / 100, 'fraction');
+        safelySeekTo(percent / 100, 'fraction')
     }
 
     function renderVideoTop() {
@@ -293,6 +340,51 @@ function Player(props) {
                 {isDirectLink() && playerRef.current && renderPlayerGUI()}
             </div>
         </React.Fragment>
+    );
+}
+
+function PreloadIframe({ nextVideo }: { nextVideo: Video | null }) {
+    const [show, setShow] = useState(true);
+    const timer = useRef(null);
+
+    if (!show) return null;
+    if (!nextVideo) return null;
+    if (nextVideo.direct) return null;
+
+    // YouTube video doesn't have 'iframe' property,
+    // because this property refers to user-provided custom iframe code
+    if (nextVideo.iframe) return null;
+
+    const handleAutoClose = () => {
+        clearTimeout(timer.current);
+        timer.current = setTimeout(() => setShow(false), 7000);
+    }
+
+    useEffect(() => {
+        setShow(true);
+        handleAutoClose();
+
+        return () => { clearTimeout(timer.current) }
+    }, [nextVideo.url])
+    
+
+    return (
+        <ReactPlayer
+            className="preload-player"
+            width="0px"
+            height="0px"
+            // TODO: Maybe just set to display: none?
+            style={{ visibility: 'hidden' }}
+            config={playerConf}
+            autoPlay
+            controls={false}
+            loop={false}
+            progressInterval={10000}
+            muted={true}
+            playing={true}
+            volume={0}
+            url={nextVideo.url}
+        />
     );
 }
 
