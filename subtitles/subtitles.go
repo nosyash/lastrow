@@ -2,14 +2,12 @@ package subtitles
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -57,11 +55,11 @@ func CreateFromBytes(sub []byte, subType, fname, uploadPath string) (string, err
 
 // CreateFromURL same as CreateFromBytes but before we need download .srt file
 func CreateFromURL(url, fname, uploadPath string) (string, error) {
-	// Before download file, we need to check file extension after that.
-	// To preload headers and check Content-Length.
+	// Before download file, we need to check file extension, after that to preload headers and check Content-Length.
 	// If Content-length more than maxFileSize then we don't need to download a file.
+	var ext = filepath.Ext(url)
 
-	if ext := filepath.Ext(url); ext != ".srt" {
+	if ext != ".srt" {
 		return "", fmt.Errorf("Received unsupported %s sub. format", ext)
 	}
 
@@ -96,10 +94,5 @@ func CreateFromURL(url, fname, uploadPath string) (string, error) {
 		return "", err
 	}
 
-	sType := strings.Split(filepath.Ext(url), ".")
-	if len(sType) == 0 {
-		return "", errors.New("Couldn't get subtitles format")
-	}
-
-	return CreateFromBytes(body, sType[1], fname, uploadPath)
+	return CreateFromBytes(body, ext, fname, uploadPath)
 }
