@@ -116,13 +116,13 @@ func (server Server) updateProfileImage(w http.ResponseWriter, userUUID string, 
 
 	rndUUID := getRandomUUID()
 
-	imgPath := filepath.Join(filepath.Join("/media", server.imageServer.ProfImgPath), rndUUID[:32], fmt.Sprintf("%s.%s", rndUUID[32:], "jpg"))
+	imgPath := filepath.Join(filepath.Join("/media", server.uploadServer.ProfImgPath), rndUUID[:32], fmt.Sprintf("%s.%s", rndUUID[32:], "jpg"))
 
 	image := newImage(b64Img)
 	if oldPath == "" {
-		err = image.createImage(filepath.Join(server.imageServer.UplPath, imgPath), "jpg")
+		err = image.createImage(filepath.Join(server.uploadServer.UplPath, imgPath), "jpg")
 	} else {
-		err = image.replaceImage(filepath.Join(server.imageServer.UplPath, oldPath), filepath.Join(server.imageServer.UplPath, imgPath), "jpg")
+		err = image.replaceImage(filepath.Join(server.uploadServer.UplPath, oldPath), filepath.Join(server.uploadServer.UplPath, imgPath), "jpg")
 		if err != nil {
 			server.db.UpdateUserValue(userUUID, "image", "")
 		}
@@ -153,7 +153,7 @@ func (server Server) deleteProfileImage(w http.ResponseWriter, userUUID string) 
 	}
 
 	imgFolder, _ := filepath.Split(imgPath)
-	os.RemoveAll(filepath.Join(server.imageServer.UplPath, imgFolder))
+	os.RemoveAll(filepath.Join(server.uploadServer.UplPath, imgFolder))
 
 	server.db.UpdateUserValue(userUUID, "image", "")
 	server.getUser(w, userUUID)

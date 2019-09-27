@@ -205,10 +205,10 @@ func (server Server) addEmoji(w http.ResponseWriter, name, uuid, iType string, i
 		return
 	}
 
-	imgPath := filepath.Join(filepath.Join("/media", server.imageServer.EmojiImgPath), room.UUID[:32], fmt.Sprintf("%s.%s", getRandomUUID()[32:], iType))
+	imgPath := filepath.Join(filepath.Join("/media", server.uploadServer.EmojiImgPath), room.UUID[:32], fmt.Sprintf("%s.%s", getRandomUUID()[32:], iType))
 	image := newImage(img)
 
-	err = image.createImage(filepath.Join(server.imageServer.UplPath, imgPath), iType)
+	err = image.createImage(filepath.Join(server.uploadServer.UplPath, imgPath), iType)
 	if err != nil {
 		log.Printf("image.createImage(): %v", err)
 		sendJSON(w, http.StatusBadRequest, message{
@@ -256,7 +256,7 @@ func (server Server) delEmoji(w http.ResponseWriter, name, uuid string, room *db
 	for i, v := range room.Emoji {
 		if v.Name == name {
 			emjIdx = i
-			_ = os.Remove(filepath.Join(server.imageServer.UplPath, v.Path))
+			_ = os.Remove(filepath.Join(server.uploadServer.UplPath, v.Path))
 		}
 	}
 
