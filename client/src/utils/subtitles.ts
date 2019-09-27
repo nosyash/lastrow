@@ -1,3 +1,6 @@
+import { store } from "../store";
+import { parse as parseSubtitles } from "subtitle";
+import * as types from '../constants/actionTypes'
 const PREEMPTIVE_TIME = 30;
 const UPDATE_INTERVAL = 10;
 
@@ -63,7 +66,7 @@ export default class SubtitlesHandler {
         });
     };
 
-    public getSubtitles = timeMs => {
+    public getSubtitles = (timeMs: number) => {
         const difference = Math.abs(this.currentTime - timeMs);
         this.currentTime = timeMs;
         if (difference > 200)
@@ -83,4 +86,12 @@ export default class SubtitlesHandler {
     public destroy() {
         clearTimeout(this.timer);
     }
+}
+
+export function parseAndDispatchSubtitiles(data: string) {
+    try {
+        const parsed = parseSubtitles(data);
+        store.dispatch({ type: types.SET_SUBS, payload: { parsed } })
+        return store.dispatch({ type: types.SHOW_SUBS })
+    } catch (error) {}
 }

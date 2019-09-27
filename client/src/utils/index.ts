@@ -38,7 +38,7 @@ export function togglePointerEvent(element: HTMLElement) {
     element.style.pointerEvents = 'none';
 }
 
-export const formatTime = (num: string) => {
+export const formatTime = (num: any) => {
     const secNum = parseInt(num, 10);
     const hours = Math.floor(secNum / 3600);
     let hoursString = hours.toString();

@@ -1,13 +1,35 @@
 import * as types from '../constants/actionTypes';
 import { Video } from '../utils/types';
 
-const subsInitialState = {
-    url: 'https://stream.bona.cafe/uzzu/ep15.srt',
-    text: [] as any[],
-    srt: '',
-    start: 0,
-    end: 0,
-};
+export interface SubtitlesItem {
+    start: number;
+    end: number;
+    text: string;
+}
+
+export interface Subtitles {
+    url?: string;
+    parsed: SubtitlesItem[];
+    raw: string;
+}
+
+export interface Media {
+    addMediaPending: boolean;
+    actualTime: number;
+    currentTime: number;
+    duration: number;
+    width: number;
+    forceSync: boolean;
+    height: number;
+    muted: boolean;
+    playbackRate: number;
+    playing: boolean;
+    playlist: Video[],
+    showSubs: boolean;
+    subs: Subtitles,
+    url: string,
+    volume: number,
+}
 
 const InitialState = {
     addMediaPending: false,
@@ -22,12 +44,16 @@ const InitialState = {
     playing: true,
     playlist: [] as Video[],
     showSubs: false,
-    subs: subsInitialState,
+    subs: {
+        url: 'https://stream.bona.cafe/uzzu/ep15.srt',
+        parsed: [],
+        raw: '',
+    },
     url: '',
     volume: 50,
-};
+} as Media;
 
-const Player = (state = InitialState, action: any) => {
+const Player = (state = InitialState, action: any): Media => {
     switch (action.type) {
         case types.UPDATE_MEDIA: {
             return { ...state, ...action.payload };
@@ -73,8 +99,20 @@ const Player = (state = InitialState, action: any) => {
 
         case types.SET_CURRENT_SUBS: {
             const { subs } = state;
-            subs.text = action.payload;
+            subs.raw = action.payload;
             return { ...state, subs };
+        }
+
+        case types.SET_SUBS_URL: {
+            return { ...state, subs: { ...state.subs, url: action.payload } };
+        }
+
+        case types.SHOW_SUBS: {
+            return { ...state, showSubs: true };
+        }
+
+        case types.HIDE_SUBS: {
+            return { ...state, showSubs: false };
         }
 
         case types.RESET_MEDIA: {

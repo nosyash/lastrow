@@ -1,9 +1,14 @@
-import React, { Component, Props } from 'react';
+import React, { Component, Props, ChangeEvent } from 'react';
 import { connect } from 'react-redux';
 import Joi from 'joi-browser';
 import * as api from '../../constants/apiActions';
 import * as types from '../../constants/actionTypes';
 import { webSocketSend } from '../../actions';
+import { toastOpts } from '../../conf';
+import { toast } from 'react-toastify';
+import { MAXIMUM_SUBTITLES_SIZE } from '../../constants';
+import { get } from 'lodash';
+
 // import * as types from '../../constants/ActionTypes';
 
 interface AddMediaProps {
@@ -16,12 +21,15 @@ interface AddMediaProps {
 interface AddMediaStates {
     inputValue: string;
     iframe: boolean;
+    subtitles: boolean;
 }
 
 class AddMedia extends Component<AddMediaProps, AddMediaStates> {
+    subs64 = null as String | ArrayBuffer;
     state = {
         inputValue: '',
         iframe: false,
+        subtitles: false,
     };
 
     inputEl = React.createRef();
@@ -74,46 +82,116 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
         this.setState({ inputValue: '', iframe: !this.state.iframe })
     }
 
+    onAddSubtitlesClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        this.subs64 = null;
+        this.setState({ subtitles: !this.state.subtitles })
+    }
+
+    handleSubsFile({ target }: { target: HTMLInputElement }) {
+        const file = get(target, 'files[0]');
+        if (!file) return;
+        const { name, type, size } = file;
+        if (size / 1024 > MAXIMUM_SUBTITLES_SIZE) return this.sizeWarn();
+
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+            const base64 = reader.result;
+            this.subs64 = base64;
+        };
+        reader.onerror = () => this.convertingErrorWarn();
+    }
+
+    sizeWarn() {
+        toast.warn(`Subtitles should be no bigger than ${MAXIMUM_SUBTITLES_SIZE}MB`, toastOpts)
+    }
+
+    convertingErrorWarn() {
+        toast.error('An error occurred while reading the file.', toastOpts);
+    }
+
     render() {
         const { addMediaPending } = this.props;
-        const { iframe } = this.state;
+        const { iframe, subtitles } = this.state;
         return (
             <div className="add-media_container">
                 <form onSubmit={this.handleSubmit}>
-                    {!iframe &&
-                        <input
-                            id="add-media-input"
-                            ref={this.inputEl as any}
-                            value={this.state.inputValue}
-                            onChange={({ target }) => this.setState({ inputValue: target.value })}
-                            className="form-control form-input add-media-input"
-                        />
-                    }
-                    {iframe &&
-                        <textarea
-                            value={this.state.inputValue}
-                            onChange={({ target }) => this.setState({ inputValue: target.value })}
-                            className="form-control form-input add-media-input"
-                        />
-                    }
-
-                    <button
-                        type="submit"
-                        disabled={addMediaPending || !this.state.inputValue.length}
-                        className="button button-submit add-media-button"
-                    >
-                        Add
-                    </button>
+                    {!iframe && this.urlInput()}
+                    {iframe && this.iframeInput()}
+                    {subtitles && this.subtitlesInput()}
+                    {this.submitButton()}
                 </form>
-                { <a
-                    href=""
-                    onClick={this.onAddIframeClick}
-                    className="add-iframe"
-                >
-                    Add iframe code
-                </a>}
+                {this.iframeToggle()}
             </div>
         );
+    }
+
+    urlInput() {
+        return (
+            <input
+                id="add-media-input"
+                ref={this.inputEl as any}
+                value={this.state.inputValue}
+                onChange={({ target }) => this.setState({ inputValue: target.value })}
+                className="form-control form-input add-media-input"
+            />
+        )
+    }
+
+    iframeInput() {
+        return (
+            <textarea
+                value={this.state.inputValue}
+                onChange={({ target }) => this.setState({ inputValue: target.value })}
+                className="form-control form-input add-media-input"
+            />
+        )
+    }
+
+    subtitlesInput() {
+        return (
+            <label className="button add-subs-button">
+                <input type="file" onChange={this.handleSubsFile} />
+                Add subtitles
+            </label>
+        )
+    }
+
+    submitButton() {
+        return (
+            <button
+                type="submit"
+                disabled={this.props.addMediaPending || !this.state.inputValue.length}
+                className="button button-submit add-media-button"
+            >
+                Add
+            </button>
+        )
+    }
+
+    iframeToggle() {
+        return (
+            <a
+                href=""
+                onClick={this.onAddIframeClick}
+                className="add-iframe"
+            >
+                Add iframe code
+            </a>
+        )
+    }
+
+    subtitlesToggle() {
+        return (
+            <a
+                href=""
+                onClick={this.onAddIframeClick}
+                className="add-iframe"
+            >
+                Add subtitles
+            </a>
+        )
     }
 }
 
