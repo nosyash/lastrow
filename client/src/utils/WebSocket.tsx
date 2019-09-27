@@ -114,7 +114,7 @@ class Socket implements SocketInterface {
 
     public destroy = () => {
         this.unsubscribeEvents();
-        this.instance.close();
+        if (this.instance) this.instance.close();
         this.resetStates();
     };
 
@@ -229,6 +229,7 @@ class Socket implements SocketInterface {
     };
 
     private unsubscribeEvents = () => {
+        if (!this.instance) return;
         this.instance.onopen = () => null;
         this.instance.onmessage = () => null;
         this.instance.onerror = () => null;
