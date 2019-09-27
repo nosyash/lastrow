@@ -167,6 +167,7 @@ class Socket implements SocketInterface {
 
     private handleMessage = ({ data }: MessageEvent) => {
         const parsedData = JSON.parse(data) as Message;
+        // console.log(JSON.stringify(parsedData, null, 4));
         const messageType = get(parsedData, 'body.event.type') as MessageType;
 
         switch (messageType) {

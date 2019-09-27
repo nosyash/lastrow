@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import ReactPlayer from 'react-player';
 import cn from 'classnames';
 import { throttle } from 'lodash';
+import { get } from 'lodash';
 import * as types from '../../../../constants/actionTypes';
 import { formatTime, requestFullscreen } from '../../../../utils';
 import { PLAYER_MINIMIZE_TIMEOUT, MAX_VIDEO_SYNC_OFFSET } from '../../../../constants';
@@ -18,6 +19,7 @@ let videoEl = null;
 function Player(props) {
     const [minimized, setMinimized] = useState(false);
     const playerRef = useRef(null);
+    const currentVideoRef = useRef(null);
     let volume = 0.3;
 
     useEffect(() => {
@@ -31,11 +33,26 @@ function Player(props) {
 
     useEffect(() => {
         document.addEventListener('mousemove', handleMouseMove);
+
+        return () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+        }
     });
 
     useEffect(() => {
         checkDelay();
     }, [props.media.actualTime]);
+
+    useEffect(() => {
+        // Watch playlist and set video time to 0, if video has changed.
+        if (!playerRef) return;
+        const currentVideo = getCurrentVideo()
+        const currentVideoId = get(currentVideo, '__id')
+        const oldVideoId = get(currentVideoRef.current, '__id')
+
+        if (currentVideoId !== oldVideoId) playerRef.current.seekTo(0);
+        currentVideoRef.current = currentVideo;
+    }, [props.media.playlist])
 
     function resetRefs() {
         videoEl = null;
@@ -53,10 +70,11 @@ function Player(props) {
         } catch (error) { }
     }
 
-    async function handleSubs() {
-        const { media } = props;
-        if (!media || !media.subs.url) return;
-        props.getSubs(media.subs.url);
+    function handleSubs() {
+        const subsUrl = get(props.media, 'subs.url');
+        if (subsUrl) {
+            props.getSubs(subsUrl);
+        }
     }
 
     function handleReady() {
@@ -76,15 +94,14 @@ function Player(props) {
     function checkDelay() {
         const { actualTime, currentTime } = props.media;
 
-        if (Math.abs(actualTime - currentTime) > MAX_VIDEO_SYNC_OFFSET) {
+        const shouldSeek = Math.abs(actualTime - currentTime) > MAX_VIDEO_SYNC_OFFSET;
+        if (shouldSeek) {
             playerRef.current.seekTo(actualTime);
         }
     }
 
-    function handlePlaying(progress) {
-        const { updatePlayer } = props;
-        const { playedSeconds } = progress;
-        updatePlayer({ currentTime: playedSeconds });
+    function handlePlaying({ playedSeconds }) {
+        props.updatePlayer({ currentTime: playedSeconds });
         // handleMouseMove();
     }
 
@@ -103,33 +120,28 @@ function Player(props) {
         // const e = new Event('videoplay');
         // document.dispatchEvent(e);
     };
-
     const handlePause = () => {
         // const e = new Event('videopause');
         // document.dispatchEvent(e);
     };
 
     function getCurrentVideo() {
-        const { playlist } = props;
-        if (playlist.length) return playlist[0];
+        return get(props.playlist, '[0]')
     }
 
     function getCurrentUrl() {
-        const video = getCurrentVideo();
-        if (video) return video.url;
-        return '';
+        const currentVideo = getCurrentVideo();
+        return get(currentVideo, 'url') || '';
     }
 
     function isDirect() {
-        const current = getCurrentVideo();
-        if (current) return current.direct;
-        return false;
+        const currentVideo = getCurrentVideo();
+        return get(currentVideo, 'direct') || false;
     }
 
     function isIframe() {
-        const current = getCurrentVideo();
-        if (current) return current.iframe;
-        return false;
+        const currentVideo = getCurrentVideo();
+        return get(currentVideo, 'iframe') || false;
     }
 
     function RenderPlayer() {
