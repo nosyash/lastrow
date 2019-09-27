@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { connect } from 'react-redux';
+import React, { useState, useRef, useEffect, Dispatch } from 'react';
+import ReactRedux, { connect, MapStateToProps } from 'react-redux';
 import ReactPlayer from 'react-player';
 import cn from 'classnames';
-import { throttle } from 'lodash';
+import Redux from 'redux';
 import { get } from 'lodash';
 import * as types from '../../../../constants/actionTypes';
 import { formatTime, requestFullscreen } from '../../../../utils';
@@ -13,12 +13,29 @@ import Subtitles from './components/Subtitles';
 import { fetchSubs } from '../../../../actions';
 import { playerConf } from '../../../../conf';
 import { Video } from '../../../../utils/types';
+import { Media } from '../../../../reducers/media';
 
 let minimizeTimer = null;
 let prefetchWatcher = null;
 let videoEl = null;
 
-function Player(props) {
+interface PlayerProps {
+    media: Media;
+    playlist: Video[];
+    playing: boolean;
+    cinemaMode: boolean;
+    forceSync: boolean;
+    updatePlayer: (payload: any) => void;
+    resetMedia: () => void;
+    switchPlay: () => void;
+    switchMute: () => void;
+    setVolume: (payload: any) => void;
+    toggleCinemaMode: () => void;
+    toggleSync: () => void;
+    getSubs: (payload: any) => void;
+}
+
+function Player(props: PlayerProps) {
     const [minimized, setMinimized] = useState(false);
     const playerRef = useRef(null);
     const currentVideoRef = useRef(null);
@@ -394,26 +411,24 @@ function PreloadIframe({ nextVideo }: { nextVideo: Video | null }) {
     );
 }
 
-const mapStateToProps = state => ({
-    media: state.media,
+const mapStateToProps = (state: any): ReactRedux.MapStateToProps<any, any, any> => ({
+    media: state.media as Media,
     playlist: state.media.playlist,
-    subs: state.media.subs,
     playing: state.media.playing,
     cinemaMode: state.mainStates.cinemaMode,
     forceSync: state.media.forceSync,
-});
+} as any);
 
 const mapDispatchToProps = {
-    updatePlayer: payload => ({ type: types.UPDATE_MEDIA, payload }),
+    updatePlayer: (payload: any) => ({ type: types.UPDATE_MEDIA, payload }),
     resetMedia: () => ({ type: types.RESET_MEDIA }),
     switchPlay: () => ({ type: types.SWITCH_PLAY }),
     switchMute: () => ({ type: types.SWITCH_MUTE }),
-    setVolume: payload => ({ type: types.SET_VOLUME, payload }),
+    setVolume: (payload: any) => ({ type: types.SET_VOLUME, payload }),
     toggleCinemaMode: () => ({ type: types.TOGGLE_CINEMAMODE }),
-    updateSubs: payload => ({ type: types.SET_SUBS, payload }),
     toggleSync: () => ({ type: types.TOGGLE_SYNC }),
-    getSubs: payload => fetchSubs(payload),
-};
+    getSubs: (payload: any) => fetchSubs(payload),
+} as any;
 
 export default connect(
     mapStateToProps,

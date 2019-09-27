@@ -1,13 +1,35 @@
 import * as types from '../constants/actionTypes';
 import { Video } from '../utils/types';
 
-const subsInitialState = {
-    url: 'https://stream.bona.cafe/uzzu/ep15.srt',
-    text: [] as any[],
-    srt: '',
-    start: 0,
-    end: 0,
-};
+interface SubtitlesItem {
+    start: number;
+    end: number;
+    text: string;
+}
+
+export interface Subtitles {
+    url: string;
+    text: SubtitlesItem[];
+    srt: string;
+}
+
+export interface Media {
+    addMediaPending: boolean;
+    actualTime: number;
+    currentTime: number;
+    duration: number;
+    width: number;
+    forceSync: boolean;
+    height: number;
+    muted: boolean;
+    playbackRate: number;
+    playing: boolean;
+    playlist: Video[],
+    showSubs: boolean;
+    subs: Subtitles,
+    url: string,
+    volume: number,
+}
 
 const InitialState = {
     addMediaPending: false,
@@ -22,10 +44,14 @@ const InitialState = {
     playing: true,
     playlist: [] as Video[],
     showSubs: false,
-    subs: subsInitialState,
+    subs: {
+        url: 'https://stream.bona.cafe/uzzu/ep15.srt',
+        text: [],
+        srt: '',
+    },
     url: '',
     volume: 50,
-};
+} as Media;
 
 const Player = (state = InitialState, action: any) => {
     switch (action.type) {
