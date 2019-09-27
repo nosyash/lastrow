@@ -66,8 +66,12 @@ function Player(props: PlayerProps) {
     useEffect(() => { watchPlaylist() }, [props.media.playlist])
 
     function watchPlaylist() {
+        // TODO: watch media change on websocket level
         const isVideoHasChanged = isVideoChanged();
-        if (!isVideoHasChanged) return
+        if (!isVideoHasChanged) return;
+
+        document.dispatchEvent(new Event('mediachanged'));
+
         safelySeekTo(0);
         waitForPrefetch();
         props.hideSubs();
