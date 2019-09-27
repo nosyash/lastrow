@@ -1,16 +1,16 @@
 import * as types from '../constants/actionTypes';
 import { Video } from '../utils/types';
 
-interface SubtitlesItem {
+export interface SubtitlesItem {
     start: number;
     end: number;
     text: string;
 }
 
 export interface Subtitles {
-    url: string;
-    text: SubtitlesItem[];
-    srt: string;
+    url?: string;
+    parsed: SubtitlesItem[];
+    raw: string;
 }
 
 export interface Media {
@@ -46,14 +46,14 @@ const InitialState = {
     showSubs: false,
     subs: {
         url: 'https://stream.bona.cafe/uzzu/ep15.srt',
-        text: [],
-        srt: '',
+        parsed: [],
+        raw: '',
     },
     url: '',
     volume: 50,
 } as Media;
 
-const Player = (state = InitialState, action: any) => {
+const Player = (state = InitialState, action: any): Media => {
     switch (action.type) {
         case types.UPDATE_MEDIA: {
             return { ...state, ...action.payload };
@@ -99,8 +99,20 @@ const Player = (state = InitialState, action: any) => {
 
         case types.SET_CURRENT_SUBS: {
             const { subs } = state;
-            subs.text = action.payload;
+            subs.raw = action.payload;
             return { ...state, subs };
+        }
+
+        case types.SET_SUBS_URL: {
+            return { ...state, subs: { ...state.subs, url: action.payload } };
+        }
+
+        case types.SHOW_SUBS: {
+            return { ...state, showSubs: true };
+        }
+
+        case types.HIDE_SUBS: {
+            return { ...state, showSubs: false };
         }
 
         case types.RESET_MEDIA: {

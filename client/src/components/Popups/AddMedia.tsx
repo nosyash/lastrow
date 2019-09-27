@@ -21,12 +21,15 @@ interface AddMediaProps {
 interface AddMediaStates {
     inputValue: string;
     iframe: boolean;
+    subtitles: boolean;
 }
 
 class AddMedia extends Component<AddMediaProps, AddMediaStates> {
+    subs64 = null as String | ArrayBuffer;
     state = {
         inputValue: '',
         iframe: false,
+        subtitles: false,
     };
 
     inputEl = React.createRef();
@@ -79,6 +82,12 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
         this.setState({ inputValue: '', iframe: !this.state.iframe })
     }
 
+    onAddSubtitlesClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        this.subs64 = null;
+        this.setState({ subtitles: !this.state.subtitles })
+    }
+
     handleSubsFile({ target }: { target: HTMLInputElement }) {
         const file = get(target, 'files[0]');
         if (!file) return;
@@ -89,7 +98,7 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
         reader.readAsDataURL(file);
         reader.onload = () => {
             const base64 = reader.result;
-            console.log(base64);
+            this.subs64 = base64;
         };
         reader.onerror = () => this.convertingErrorWarn();
     }
@@ -104,13 +113,13 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
 
     render() {
         const { addMediaPending } = this.props;
-        const { iframe } = this.state;
+        const { iframe, subtitles } = this.state;
         return (
             <div className="add-media_container">
                 <form onSubmit={this.handleSubmit}>
                     {!iframe && this.urlInput()}
                     {iframe && this.iframeInput()}
-                    {this.subtitlesInput()}
+                    {subtitles && this.subtitlesInput()}
                     {this.submitButton()}
                 </form>
                 {this.iframeToggle()}
@@ -169,6 +178,18 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
                 className="add-iframe"
             >
                 Add iframe code
+            </a>
+        )
+    }
+
+    subtitlesToggle() {
+        return (
+            <a
+                href=""
+                onClick={this.onAddIframeClick}
+                className="add-iframe"
+            >
+                Add subtitles
             </a>
         )
     }

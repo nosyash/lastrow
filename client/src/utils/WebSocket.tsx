@@ -4,6 +4,7 @@ import * as types from '../constants/actionTypes';
 import { store } from '../store';
 import { sortPlaylistByIndex } from './index';
 import { toast } from 'react-toastify';
+import { parse as parseSubtitles } from 'subtitle';
 import { toastOpts } from '../conf';
 import {
     UpdateUsers,
@@ -18,6 +19,8 @@ import {
 import { User } from './types';
 import { Store } from 'redux';
 import { Emoji } from '../reducers/emojis';
+import httpServices from './httpServices';
+import { parseAndDispatchSubtitiles } from './subtitles';
 
 const { dispatch } = store as Store;
 
@@ -192,6 +195,13 @@ class Socket implements SocketInterface {
             case 'emoji_update': {
                 const emoji = get(parsedData, 'body.event.data.emoji') as Emoji[];
                 return dispatch({ type: types.ADD_EMOJIS, payload: emoji || [] });
+            }
+            // TODO: structure may be different
+            case 'subtitles': {
+                const subtitilesUrl = get(parsedData, 'body.event.data.subtitles') as string;
+                httpServices.get(subtitilesUrl)
+                    .then(response => parseAndDispatchSubtitiles(response.data))
+                    .catch(() => toast.error('Could not fetch subtitiles') )
             }
             case 'error': {
                 const error = get(parsedData, 'body.event.data.error') as string;

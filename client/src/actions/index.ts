@@ -1,28 +1,14 @@
-import { parse } from 'subtitle';
 import { toast } from 'react-toastify';
 import http from '../utils/httpServices';
 import * as api from '../constants/apiActions';
 import * as types from '../constants/actionTypes';
 import Axios from 'axios';
-import { get } from 'lodash';
 
 import Socket, { SocketInterface } from '../utils/WebSocket';
 import { store } from '../store';
 import { SOCKET_ENDPOINT } from '../constants';
 import { toastOpts } from '../conf';
 
-export const fetchSubs = (url: string) => (dispatch: any) => {
-    return http
-        .get(url)
-        .then(response => {
-            dispatch({ type: types.SET_SUBS, payload: { srt: parse(response.data) } });
-        })
-        .catch(error => {
-            throw error;
-        });
-};
-
-/** @type Socket */
 let socket = null as Socket;
 
 export const webSocketConnect = ({ roomID }: { roomID: any }) => {
@@ -34,7 +20,7 @@ export const webSocketConnect = ({ roomID }: { roomID: any }) => {
     return socket.state();
 };
 
-const isConnectingSameRoom = (roomID: string) => (socket ? roomID === socket.roomID : false);
+export const isConnectingSameRoom = (roomID: string) => (socket ? roomID === socket.roomID : false);
 
 export const webSocketSend = (data: string, messageTypeToGet?: string, cb?: () => void) => {
     return socket.sendMessage(data, messageTypeToGet, cb);

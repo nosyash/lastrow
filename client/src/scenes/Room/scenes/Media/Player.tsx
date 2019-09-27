@@ -10,7 +10,6 @@ import { PLAYER_MINIMIZE_TIMEOUT, MAX_VIDEO_SYNC_OFFSET } from '../../../../cons
 
 import ProgressBar from './components/ProgressBar';
 import Subtitles from './components/Subtitles';
-import { fetchSubs } from '../../../../actions';
 import { playerConf } from '../../../../conf';
 import { Video } from '../../../../utils/types';
 import { Media } from '../../../../reducers/media';
@@ -33,6 +32,7 @@ interface PlayerProps {
     toggleCinemaMode: () => void;
     toggleSync: () => void;
     getSubs: (payload: any) => void;
+    hideSubs: () => void;
 }
 
 function Player(props: PlayerProps) {
@@ -61,12 +61,16 @@ function Player(props: PlayerProps) {
 
     useEffect(() => { checkDelay() }, [props.media.actualTime]);
 
+    useEffect(() => { checkDelay() }, [props.media.actualTime]);
+
     useEffect(() => { watchPlaylist() }, [props.media.playlist])
 
     function watchPlaylist() {
         const isVideoHasChanged = isVideoChanged();
-        if (isVideoHasChanged) safelySeekTo(0);
-        if (isVideoHasChanged) waitForPrefetch();
+        if (!isVideoHasChanged) return
+        safelySeekTo(0);
+        waitForPrefetch();
+        props.hideSubs();
     }
 
     function isVideoChanged(): boolean {
@@ -119,13 +123,7 @@ function Player(props: PlayerProps) {
             volume = localStorage.volume;
             volume = JSON.parse(volume as any || 1);
             updatePlayer({ volume });
-            handleSubs();
         } catch (error) { }
-    }
-
-    function handleSubs() {
-        const subsUrl = get(props.media, 'subs.url');
-        if (subsUrl) props.getSubs(subsUrl);
     }
 
     function handleReady() {
@@ -427,7 +425,7 @@ const mapDispatchToProps = {
     setVolume: (payload: any) => ({ type: types.SET_VOLUME, payload }),
     toggleCinemaMode: () => ({ type: types.TOGGLE_CINEMAMODE }),
     toggleSync: () => ({ type: types.TOGGLE_SYNC }),
-    getSubs: (payload: any) => fetchSubs(payload),
+    hideSubs: () => ({ type: types.HIDE_SUBS})
 } as any;
 
 export default connect(
