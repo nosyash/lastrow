@@ -25,11 +25,12 @@ type Users struct {
 
 type playlist struct {
 	playlist       []*Video
-	AddVideo       chan string
+	AddVideo       chan *NewVideo
 	DelVideo       chan string
 	AddFeedBack    chan error
 	DelFeedBack    chan error
 	UpdatePlaylist chan struct{}
+	uploadPath     string
 }
 
 type room struct {
@@ -53,7 +54,16 @@ type Video struct {
 	Duration   int    `json:"duration"`
 	URL        string `json:"url"`
 	Direct     bool   `json:"direct"`
+	Subtitles  string `json:"subs,omitempty"`
 	Iframe     bool   `json:"iframe"`
 	LiveStream bool   `json:"live_stream"`
 	ID         string `json:"__id"`
+}
+
+// NewVideo a new video object. Has url and options subtitles
+type NewVideo struct {
+	URL           string
+	Subtitles     string
+	SubtitlesURL  string
+	SubtitlesType string
 }

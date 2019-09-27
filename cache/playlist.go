@@ -3,6 +3,7 @@ package cache
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -10,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/nosyash/backrow/ffprobe"
+	"github.com/nosyash/backrow/subtitles"
 	"github.com/nosyash/backrow/vapi"
 	"golang.org/x/net/html"
 )
@@ -41,13 +43,13 @@ var (
 	iframeRegExp = regexp.MustCompile(`<iframe(.+)></iframe>`)
 )
 
-func (pl *playlist) addVideo(vURL string) {
-	if iframeRegExp.MatchString(vURL) {
-		pl.addIframe(vURL)
+func (pl *playlist) addVideo(video *NewVideo) {
+	if iframeRegExp.MatchString(video.URL) {
+		pl.addIframe(video.URL)
 		return
 	}
 
-	pURL, err := url.Parse(strings.TrimSpace(vURL))
+	pURL, err := url.Parse(strings.TrimSpace(video.URL))
 	if err != nil {
 		pl.AddFeedBack <- ErrLinkDoesNotMath
 		return
@@ -55,16 +57,16 @@ func (pl *playlist) addVideo(vURL string) {
 
 	switch pURL.Hostname() {
 	case "www.youtube.com", "youtube.com", "youtu.be", "www.youtu.be":
-		if youtubeRegExp.MatchString(vURL) {
+		if youtubeRegExp.MatchString(video.URL) {
 			pl.addYoutube(pURL)
 			return
-		} else if youtubePlaylistExp.MatchString(vURL) {
+		} else if youtubePlaylistExp.MatchString(video.URL) {
 			pl.AddFeedBack <- errors.New("At the moment adding Youtube playlist not supported")
 			return
 		}
 		pl.AddFeedBack <- ErrLinkDoesNotMath
 	default:
-		pl.addDirect(vURL)
+		pl.addDirect(video)
 	}
 }
 
@@ -158,8 +160,8 @@ func (pl *playlist) addIframe(ifurl string) {
 	pl.UpdatePlaylist <- struct{}{}
 }
 
-func (pl *playlist) addDirect(url string) {
-	ext := filepath.Ext(url)
+func (pl *playlist) addDirect(video *NewVideo) {
+	ext := filepath.Ext(video.URL)
 
 	if ext == "" {
 		pl.AddFeedBack <- ErrUnsupportedHost
@@ -167,18 +169,31 @@ func (pl *playlist) addDirect(url string) {
 	}
 
 	if ext == ".mp4" || ext == ".webm" || ext == ".m3u8" {
-		duration, title, err := ffprobe.GetMetaData(url)
+		duration, title, err := ffprobe.GetMetaData(video.URL)
 		if err != nil {
 			pl.AddFeedBack <- err
 			return
 		}
 
+		var pathToSub string
+		var ID = getRandomUUID()
+
+		if video.Subtitles != "" {
+			pathToSub, err = subtitles.PrepareFromBase64(video.Subtitles, video.SubtitlesType, ID[:8], pl.uploadPath)
+			if err != nil {
+				// for now, just print
+				// but need feedback
+				log.Println(err)
+			}
+		}
+
 		pl.playlist = append(pl.playlist, &Video{
-			Title:    title,
-			Duration: duration,
-			URL:      url,
-			ID:       getRandomUUID(),
-			Direct:   true,
+			Title:     title,
+			Duration:  duration,
+			URL:       video.URL,
+			ID:        ID,
+			Subtitles: pathToSub,
+			Direct:    true,
 		})
 
 		pl.AddFeedBack <- nil
@@ -194,6 +209,11 @@ func (pl *playlist) delVideo(id string) {
 	for i, v := range pl.playlist {
 		if v.ID == id {
 			pl.playlist = append(pl.playlist[:i], pl.playlist[i+1:]...)
+
+			// also check subtitles
+			if v.Subtitles != "" {
+				os.Remove(filepath.Join(pl.uploadPath, v.Subtitles))
+			}
 
 			pl.DelFeedBack <- nil
 			pl.UpdatePlaylist <- struct{}{}

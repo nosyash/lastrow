@@ -106,7 +106,7 @@ func (server Server) updateProfileImage(w http.ResponseWriter, userUUID string, 
 	oldPath, err := server.db.GetUserImage(userUUID)
 	if err != nil {
 		if err != mgo.ErrNotFound {
-			log.Printf("erver.db.GetUserImage(): %v", err)
+			log.Printf("server.db.GetUserImage(): %v", err)
 		}
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: err.Error(),

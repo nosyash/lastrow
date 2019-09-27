@@ -35,11 +35,21 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 
 	switch req.Body.Event.Type {
 	case eTypePlAdd:
-		if req.Body.Event.Data.URL != "" {
-			h.cache.Playlist.AddVideo <- req.Body.Event.Data.URL
-		}
-
 		var fb feedback
+		var video cache.NewVideo
+
+		if req.Body.Event.Data.URL != "" {
+			video.URL = req.Body.Event.Data.URL
+			video.Subtitles = req.Body.Event.Data.Subtitles
+			video.SubtitlesURL = req.Body.Event.Data.SubtitlesURL
+			video.SubtitlesType = req.Body.Event.Data.SubtitlesType
+
+			h.cache.Playlist.AddVideo <- &video
+		} else {
+			fb.Error = errors.New("Video url is empty").Error()
+			sendFeedBack(conn, &fb)
+			return
+		}
 
 		if err := <-h.cache.Playlist.AddFeedBack; err != nil {
 			fb.Error = err.Error()
@@ -201,8 +211,6 @@ func (h *hub) elapsedTicker(video *cache.Video) bool {
 	var ticker = time.Tick(syncPeriod * time.Second)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(video.Duration+sleepBeforeStart)*time.Second)
-	defer cancel()
-
 	time.Sleep(sleepBeforeStart)
 
 	for {

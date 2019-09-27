@@ -9,6 +9,10 @@ import (
 // New create new cache
 func New(id string) *Cache {
 	db := db.Connect(os.Getenv("DB_ENDPOINT"))
+	uploadPath := os.Getenv("UPLOADS_PATH")
+	if uploadPath == "" {
+		uploadPath = "./"
+	}
 
 	return &Cache{
 		Users{
@@ -21,11 +25,12 @@ func New(id string) *Cache {
 		},
 		playlist{
 			make([]*Video, 0),
-			make(chan string),
+			make(chan *NewVideo),
 			make(chan string),
 			make(chan error),
 			make(chan error),
 			make(chan struct{}),
+			uploadPath,
 		},
 		room{
 			make(chan string),
@@ -46,8 +51,8 @@ func (cache *Cache) HandleCacheEvents() {
 			cache.Users.addGuest(guest)
 		case uuid := <-cache.Users.DelUser:
 			cache.Users.delUser(uuid)
-		case url := <-cache.Playlist.AddVideo:
-			cache.Playlist.addVideo(url)
+		case video := <-cache.Playlist.AddVideo:
+			cache.Playlist.addVideo(video)
 		case id := <-cache.Playlist.DelVideo:
 			cache.Playlist.delVideo(id)
 		case <-cache.Close:

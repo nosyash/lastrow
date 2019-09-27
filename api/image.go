@@ -39,7 +39,10 @@ func (i image) createImage(path, iType string) error {
 	}
 
 	reader := bytes.NewReader(dec)
-	os.MkdirAll(path, os.ModePerm)
+	err = os.MkdirAll(path, os.ModePerm)
+	if err != nil {
+		return err
+	}
 
 	var file *os.File
 
