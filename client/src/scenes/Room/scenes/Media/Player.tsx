@@ -343,7 +343,14 @@ function Player(props) {
     );
 }
 
+// Loads second video in playlist if it's a YouTube.
 function PreloadIframe({ nextVideo }: { nextVideo: Video | null }) {
+    // TODO: test it
+    // Video cache may be removed if main video is too long,
+    // so we could just always have this iframe on the backround.
+    // It's not going to preload the whole video anyway.
+    // But it could cause problems on initial main video load in case of slow connections
+
     const [show, setShow] = useState(true);
     const timer = useRef(null);
 
@@ -352,7 +359,7 @@ function PreloadIframe({ nextVideo }: { nextVideo: Video | null }) {
     if (nextVideo.direct) return null;
 
     // YouTube video doesn't have 'iframe' property,
-    // because this property refers to user-provided custom iframe code
+    // because this property refers to user-provided custom iframe
     if (nextVideo.iframe) return null;
 
     const handleAutoClose = () => {
@@ -366,7 +373,6 @@ function PreloadIframe({ nextVideo }: { nextVideo: Video | null }) {
 
         return () => { clearTimeout(timer.current) }
     }, [nextVideo.url])
-    
 
     return (
         <ReactPlayer
