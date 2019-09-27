@@ -29,6 +29,7 @@ func CreateFromBytes(sub []byte, subType, fname, uploadPath string) (string, err
 		if err != nil {
 			return "", err
 		}
+		defer file.Close()
 
 		n, err := file.Write(sub)
 		if err != nil {
