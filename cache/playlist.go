@@ -179,7 +179,7 @@ func (pl *playlist) addDirect(video *NewVideo) {
 		var ID = getRandomUUID()
 
 		if video.Subtitles != "" {
-			pathToSub, err = subtitles.PrepareFromBase64(video.Subtitles, video.SubtitlesType, ID[:8], pl.uploadPath)
+			pathToSub, err = subtitles.PrepareFromBase64(video.Subtitles, video.SubtitlesType, ID[:16], pl.uploadPath)
 			if err != nil {
 				// for now, just print
 				// but need feedback
