@@ -39,8 +39,6 @@ func CreateFromBytes(sub []byte, subType, fname, uploadPath string) (string, err
 		if n != len(sub) {
 			return "", fmt.Errorf("Failed to fully write values to file. Was recv %d but write to file only %d", len(sub), n)
 		}
-
-		file.Close()
 	default:
 		return "", fmt.Errorf("Received unsupported %s sub. format", subType)
 	}
