@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"log"
@@ -179,7 +180,23 @@ func (pl *playlist) addDirect(video *NewVideo) {
 		var ID = getRandomUUID()
 
 		if video.Subtitles != "" {
-			pathToSub, err = subtitles.PrepareFromBase64(video.Subtitles, video.SubtitlesType, ID[:16], pl.uploadPath)
+			dec, err := base64.StdEncoding.DecodeString(video.Subtitles)
+			if err != nil {
+				// for now, just print
+				// but need feedback
+				log.Println(err)
+			} else {
+				pathToSub, err = subtitles.CreateFromBytes(dec, video.SubtitlesType, ID[:16], pl.uploadPath)
+				if err != nil {
+					// for now, just print
+					// but need feedback
+					log.Println(err)
+				}
+			}
+		}
+
+		if video.SubtitlesURL != "" {
+			pathToSub, err = subtitles.CreateFromURL(video.SubtitlesURL, ID[:16], pl.uploadPath)
 			if err != nil {
 				// for now, just print
 				// but need feedback
