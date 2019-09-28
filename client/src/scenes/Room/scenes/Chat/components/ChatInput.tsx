@@ -8,6 +8,7 @@ import * as api from '../../../../../constants/apiActions';
 import { webSocketSend } from '../../../../../actions';
 import { reverse, mod } from '../../../../../utils';
 import ls from 'local-storage';
+import { Emoji } from '../../../../../reducers/emojis';
 
 const KEY_A = 97;
 const KEY_Z = 122;
@@ -191,15 +192,14 @@ function ChatInput(props) {
             popularEmotes.splice(0, 0, emoteObject)
             // return ls('popularEmotes', popularEmotes)
         } else {
-            const index = popularEmotes.indexOf(curEmote);
-            popularEmotes.splice(index, 1)
-            popularEmotes.splice(0, 0, emoteObject)
+            // const index = popularEmotes.indexOf(curEmote);
+            // popularEmotes.splice(index, 1)
+            // popularEmotes.splice(0, 0, emoteObject)
         }
 
         if (popularEmotes.length > 10) {
             popularEmotes.pop()
         }
-
         ls('popularEmotes', popularEmotes)
         props.updatePopularEmotes(popularEmotes)
 
@@ -275,7 +275,6 @@ function EmoteMenu({ list, onClick, onHideMenu }) {
     document.removeEventListener('mousedown', handleClick)
     document.addEventListener('mousedown', handleClick)
     function handleClick(e: MouseEvent) {
-        console.log('click');
         const target = e.target as HTMLElement
         if (target.closest('.emote-menu') || target.closest('.emote-icon'))
             return;
