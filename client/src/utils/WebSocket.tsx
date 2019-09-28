@@ -2,9 +2,7 @@ import { get } from 'lodash';
 import * as api from '../constants/apiActions';
 import * as types from '../constants/actionTypes';
 import { store } from '../store';
-import { sortPlaylistByIndex } from './index';
 import { toast } from 'react-toastify';
-import { parse as parseSubtitles } from 'subtitle';
 import { toastOpts } from '../conf';
 import {
     UpdateUsers,
@@ -22,7 +20,7 @@ import { Emoji } from '../reducers/emojis';
 import httpServices from './httpServices';
 import { parseAndDispatchSubtitiles } from './subtitles';
 
-const { dispatch } = store as Store;
+const { dispatch, getState } = store as Store;
 
 export interface SocketInterface {
     instance: WebSocket,
@@ -191,7 +189,9 @@ class Socket implements SocketInterface {
                     .catch(() => toast.error('Could not fetch subtitiles'))
 
                 const playlist = data.videos || [];
-                return dispatch({ type: types.ADD_TO_PLAYLIST, payload: playlist });
+
+                const dispatchAction = () => dispatch({ type: types.ADD_TO_PLAYLIST, payload: playlist });
+                return this.handleMediaChange(data, dispatchAction);
             }
             case 'ticker': {
                 const { ticker } = get(parsedData, 'body.event.data') as TickerData;
@@ -227,6 +227,24 @@ class Socket implements SocketInterface {
         }
     };
 
+    private handleMediaChange(data: any, dispatch: (...args: any) => void) {
+        const state = getState();
+        const mediaBefore = get(state, 'media.playlist[0]');
+        const mediaAfter = get(data, 'videos[0]');
+
+        const videoIdCurrent = get(mediaBefore, '__id');
+        const videoIdNew = get(mediaAfter, '__id');
+
+        const mediaBeforeChange = new CustomEvent('mediabeforechange', { 'detail': { mediaBefore, mediaAfter } });
+        const mediaAfterChange = new CustomEvent('mediaafterchange', { 'detail': { mediaBefore, mediaAfter } });
+
+        const changed = videoIdCurrent !== videoIdNew;
+        if (changed) document.dispatchEvent(mediaBeforeChange);
+        dispatch();
+        // Maybe wait for the next tick?
+        if (changed) document.dispatchEvent(mediaAfterChange);
+    }
+
     private handleError = () => {
         this.handleReconnect();
     };
@@ -258,12 +276,6 @@ class Socket implements SocketInterface {
     //     if (!this.pending) this._webSocketReconnect();
     //   }, WEBSOCKET_TIMEOUT);
     // };
-}
-
-function sanitizeHtml(html: string) {
-    // <iframe src="javascript:alert(0)"></iframe>
-    // document.cookie
-
 }
 
 function moveGuestsToTheEnd(users: User[]) {

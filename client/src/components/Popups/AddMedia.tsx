@@ -37,6 +37,7 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
     };
 
     inputEl = React.createRef();
+    subsInputEl = React.createRef() as React.RefObject<HTMLInputElement>;;
 
     schema = {
         link: Joi.string()
@@ -76,8 +77,10 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
         function onSuccess(result: any, error: any) {
             if (error)
                 console.warn('error while adding to playlist:', error);
-            if (result)
-                self.setState({ inputValue: '' });
+            if (result) {
+                self.setState({ inputValue: '', subtitlesName: '' });
+                if (self.subsInputEl) { self.subsInputEl.current.value = ''; }
+            }
             setToDone();
         }
         setToPending();
@@ -97,6 +100,7 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
     handleSubsFile = ({ target }: { target: HTMLInputElement }) => {
         this.setState({ subtitlesName: '' })
         this.subs64 = '';
+
         const file = get(target, 'files[0]');
         if (!file) return;
         const { name, type, size } = file;
@@ -183,7 +187,7 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
         const { subtitlesName } = this.state;
         return (
             <label className="button add-subs-button">
-                <input type="file" onChange={this.handleSubsFile} />
+                <input ref={this.subsInputEl} type="file" onChange={this.handleSubsFile} />
                 {subtitlesName || 'Or pick from PC'}
             </label>
         )
