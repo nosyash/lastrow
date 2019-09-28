@@ -23,9 +23,9 @@ interface PlayerProps {
     playlist: Video[];
     playing: boolean;
     cinemaMode: boolean;
-    forceSync: boolean;
     updatePlayer: (payload: any) => void;
     resetMedia: () => void;
+    setPlaying: () => void;
     switchPlay: () => void;
     switchMute: () => void;
     setVolume: (payload: any) => void;
@@ -38,6 +38,7 @@ interface PlayerProps {
 function Player(props: PlayerProps) {
     const [minimized, setMinimized] = useState(false);
     const [buffered, setBuffered] = useState([]);
+    const [synced, setSynced] = useState(true);
     const minimizedRef = useRef(false);
     const playerRef = useRef(null);
     const currentVideoRef = useRef(null);
@@ -62,8 +63,6 @@ function Player(props: PlayerProps) {
             document.removeEventListener('mediaafterchange', watchPlaylist);
         }
     }, []);
-
-    useEffect(() => { checkDelay() }, [props.media.actualTime]);
 
     useEffect(() => { checkDelay() }, [props.media.actualTime]);
 
@@ -144,10 +143,12 @@ function Player(props: PlayerProps) {
     }
 
     function checkDelay() {
-        const { actualTime, currentTime } = props.media;
+        const { actualTime, currentTime, playing } = props.media;
+        const { setPlaying } = props;
 
         const shouldSeek = Math.abs(actualTime - currentTime) > MAX_VIDEO_SYNC_OFFSET;
-        if (shouldSeek) safelySeekTo(actualTime);
+        if (shouldSeek && synced) safelySeekTo(actualTime);
+        if (!playing && synced) setPlaying()
     }
 
     function getBufferedTime() {
@@ -262,12 +263,11 @@ function Player(props: PlayerProps) {
     }
 
     function renderPlayerGUI() {
-        const { showSubs, forceSync } = props.media;
+        const { showSubs } = props.media;
         // TODO: Hide time for streams
-        // const { } = getCurrentVideo() || {};
         const playerClasses = cn('video-player', {
-            'video-player_sync-on': forceSync,
-            'video-player_sincin-off': !forceSync,
+            'video-player__sync-on': synced,
+            'video-player__sync-off': !synced,
         });
         return (
             <div className={playerClasses}>
@@ -280,6 +280,7 @@ function Player(props: PlayerProps) {
     }
 
     function handleProgressChange(percent) {
+        if (synced) setSynced(false);
         safelySeekTo(percent / 100, 'fraction')
     }
 
@@ -301,28 +302,46 @@ function Player(props: PlayerProps) {
         requestFullscreen(video);
     }
 
+    function toggleSynced() {
+        setSynced(!synced)
+        checkDelay();
+        if (!synced) safelySeekTo(props.media.actualTime);
+    }
+
+    function togglePlay() {
+        const { switchPlay } = props;
+        if (synced) setSynced(false);
+        switchPlay();
+    }
+
     function renderVideoMid() {
-        const { media, switchPlay, cinemaMode, forceSync } = props;
+        const { media, cinemaMode } = props;
         const { toggleCinemaMode, toggleSync } = props;
         return (
             <div className="video-player_mid">
                 {renderVolumeControl()}
-                <div onClick={switchPlay} className="control play-button">
+                <div title="Toggle playback" onClick={togglePlay} className="control play-button">
                     <i className={`fa fa-${media.playing ? 'pause' : 'play'}`} />
                 </div>
-                {/* <div onClick={toggleCinemaMode} className="control toggle-cinemamode">
-          {!cinemaMode && <i className="fas fa-film" />}
-          {cinemaMode && <i className="fas fa-film" />}
-        </div> */}
-                <div onClick={toggleFullscreen} className="control toggle-fullscreen">
+                {/* <div onClick={toggleCinemaMode} className="control toggle-cinemamode"> */}
+                {/* {!cinemaMode && <i className="fas fa-film" />}
+                {cinemaMode && <i className="fas fa-film" />} */}
+                {/* </div> */}
+                <div
+                    onClick={toggleFullscreen}
+                    className="control toggle-fullscreen"
+                    title="Toggle fullscreen"
+                >
                     <i className="fas fa-expand" />
                 </div>
-                {/* <div
-          onClick={toggleSync}
-          className={cn('control', 'toggle-sync', { 'sync-on': forceSync })}
-        >
-          <i className="fas fa-sync-alt" />
-        </div> */}
+                <div
+                    onClick={toggleSynced}
+                    title={synced ? 'Playback is synchronized' : 'Playback is not synchronized'}
+                    className={cn('control', 'toggle-sync', { 'sync-off': !synced })}
+                >
+                    <span className="toggle-sync__sign">SYNC</span>
+                    <span className="toggle-sync__icon"></span>
+                </div>
             </div>
         );
     }
@@ -428,7 +447,6 @@ const mapStateToProps = (state: any): ReactRedux.MapStateToProps<any, any, any> 
     playlist: state.media.playlist,
     playing: state.media.playing,
     cinemaMode: state.mainStates.cinemaMode,
-    forceSync: state.media.forceSync,
 } as any);
 
 const mapDispatchToProps = {
@@ -439,7 +457,8 @@ const mapDispatchToProps = {
     setVolume: (payload: any) => ({ type: types.SET_VOLUME, payload }),
     toggleCinemaMode: () => ({ type: types.TOGGLE_CINEMAMODE }),
     toggleSync: () => ({ type: types.TOGGLE_SYNC }),
-    hideSubs: () => ({ type: types.HIDE_SUBS })
+    hideSubs: () => ({ type: types.HIDE_SUBS }),
+    setPlaying: () => ({ type: types.SET_PLAY })
 } as any;
 
 export default connect(
