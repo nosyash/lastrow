@@ -25,15 +25,17 @@ func (db Database) GetRoom(key, value string) (Room, error) {
 }
 
 // CreateNewRoom create a new room
-func (db Database) CreateNewRoom(title, path, userUUID, roomUUID string) error {
+func (db Database) CreateNewRoom(title, path, userUUID, roomUUID, password string, hidden bool) error {
 	if db.RoomIsExists("path", path) {
 		return errors.New("Room with this path is already exists")
 	}
 
 	newRoom := Room{
-		Title: title,
-		Path:  path,
-		UUID:  roomUUID,
+		Title:    title,
+		Path:     path,
+		UUID:     roomUUID,
+		Password: password,
+		Hidden:   hidden,
 		Owners: []owner{
 			{
 				userUUID,

@@ -44,6 +44,8 @@ type roomBody struct {
 	UpdateType string    `json:"type"`
 	Title      string    `json:"title"`
 	Path       string    `json:"path"`
+	Hidden     bool      `json:"hidden"`
+	Password   string    `json:"passwd"`
 	Data       imageBody `json:"data"`
 }
 

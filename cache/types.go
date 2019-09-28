@@ -30,6 +30,8 @@ type playlist struct {
 	AddFeedBack    chan error
 	DelFeedBack    chan error
 	UpdatePlaylist chan struct{}
+	MoveVideo      chan MoveVideo
+	MoveFeedBack   chan int
 	uploadPath     string
 }
 
@@ -66,4 +68,10 @@ type NewVideo struct {
 	Subtitles     string
 	SubtitlesURL  string
 	SubtitlesType string
+}
+
+// MoveVideo object for moving video
+type MoveVideo struct {
+	ID    string
+	Index int
 }

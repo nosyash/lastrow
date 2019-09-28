@@ -145,6 +145,24 @@ export const DELETE_VIDEO_FROM_PLAYLIST = ({ __id, uuid }: { __id: string, uuid?
     return JSON.stringify(request);
 };
 
+export const REORDER_MEDIA = ({ __id, index }: { __id: string, index: number }) => {
+    const request = {
+        action: "player_event",
+        body: {
+            event: {
+                type: "move",
+                data: {
+                    __id: __id,
+                    index: index
+                }
+            }
+        },
+        jwt: getCookie('jwt'),
+    }
+
+    return JSON.stringify(request)
+}
+
 export interface AddEmoteRequest {
     name: string;
     type: 'png' | 'gif';

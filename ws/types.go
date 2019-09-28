@@ -67,6 +67,7 @@ type syncer struct {
 	resume           chan struct{}
 	rewind           chan int
 	close            chan struct{}
+	move             chan struct{}
 	rewindAfterPause int
 	currentVideoID   string
 	elapsed          int
@@ -86,6 +87,7 @@ type data struct {
 	Duration      int           `json:"duration,omitempty"`
 	RewindTime    int           `json:"time,omitempty"`
 	URL           string        `json:"url,omitempty"`
+	Index         int           `json:"index,omitempty"`
 	ID            string        `json:"__id,omitempty"`
 	UserID        string        `json:"user_id,omitempty"`
 	Users         []*cache.User `json:"users,omitempty"`
@@ -143,6 +145,7 @@ const (
 	eTypePause  = "pause"
 	eTypeResume = "resume"
 	eTypeRewind = "rewind"
+	eTypeMove   = "move"
 
 	eTypeUpdUserList = "update_users"
 	eTypePlaylistUpd = "update_playlist"

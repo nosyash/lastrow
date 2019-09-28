@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -13,6 +14,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/nosyash/backrow/jwt"
+	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 
 	"github.com/nosyash/backrow/db"
@@ -51,7 +53,7 @@ func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch req.Action {
 	case eTypeRoomCreate:
-		server.createRoom(w, req.Body.Title, req.Body.Path, payload.UUID)
+		server.createRoom(w, req.Body.Title, req.Body.Path, req.Body.Password, req.Body.Hidden, payload.UUID)
 	case eTypeRoomUpdate:
 		if len(payload.Owner) == 0 {
 			sendJSON(w, http.StatusBadRequest, message{
@@ -68,7 +70,7 @@ func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (server Server) createRoom(w http.ResponseWriter, title, path, userUUID string) {
+func (server Server) createRoom(w http.ResponseWriter, title, path, passwd string, hidden bool, uuid string) {
 	if path != "" && onlyStrAndNum.MatchString(path) {
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Room path must contain only string characters and numbers",
@@ -90,7 +92,25 @@ func (server Server) createRoom(w http.ResponseWriter, title, path, userUUID str
 		return
 	}
 
-	err := server.db.CreateNewRoom(title, path, userUUID, getRandomUUID())
+	if passwd != "" {
+		if utf8.RuneCountInString(passwd) < minPasswordLength || utf8.RuneCountInString(passwd) > maxPasswordLength {
+			sendJSON(w, http.StatusBadRequest, message{
+				Error: fmt.Errorf("Password length must be no more than %d characters and at least %d", maxPasswordLength, minPasswordLength).Error(),
+			})
+			return
+		}
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
+	if err != nil {
+		log.Printf("bcrypt.GenerateFromPassword(): %v", err)
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "Couldn't create new account",
+		})
+		return
+	}
+
+	err = server.db.CreateNewRoom(title, path, uuid, getRandomUUID(), hex.EncodeToString(hash[:]), hidden)
 	if err != nil {
 		log.Printf("server.db.CreateNewRoom(): %v", err)
 		sendJSON(w, http.StatusOK, message{
@@ -100,7 +120,7 @@ func (server Server) createRoom(w http.ResponseWriter, title, path, userUUID str
 	}
 
 	// Sooo, we need update jwt for a user. Because, jwt have the information about where a user is owner
-	server.setUpAuthSession(w, userUUID)
+	server.setUpAuthSession(w, uuid)
 }
 
 func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest, payload *jwt.Payload) {
@@ -378,9 +398,21 @@ func (server Server) getAllRooms(w http.ResponseWriter) {
 		return
 	}
 
-	about = make([]db.AboutRoom, len(rooms))
+	roomCount := 0
+
+	for _, r := range rooms {
+		if r.Hidden {
+			continue
+		}
+		roomCount++
+	}
+	about = make([]db.AboutRoom, roomCount)
 
 	for i, r := range rooms {
+		if r.Hidden {
+			continue
+		}
+
 		about[i].Title = r.Title
 		about[i].Path = r.Path
 		about[i].Play = storage.GetCurrentVideoTitle(r.Path)
@@ -388,7 +420,7 @@ func (server Server) getAllRooms(w http.ResponseWriter) {
 	}
 
 	resp := db.Rooms{
-		Number: len(rooms),
+		Number: len(about),
 		Body:   about,
 	}
 
