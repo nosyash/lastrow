@@ -71,6 +71,7 @@ const converter = new showdown.Converter({
         'reply',
         'spoiler',
         'me',
+        'do',
         'bold',
         'italic',
         'quote',
