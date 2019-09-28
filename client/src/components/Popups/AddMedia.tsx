@@ -79,7 +79,8 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
                 console.warn('error while adding to playlist:', error);
             if (result) {
                 self.setState({ inputValue: '', subtitlesName: '' });
-                if (self.subsInputEl) { self.subsInputEl.current.value = ''; }
+                const inputExists = get(self.subsInputEl, 'current.value')
+                if (inputExists) { self.subsInputEl.current.value = ''; }
             }
             setToDone();
         }

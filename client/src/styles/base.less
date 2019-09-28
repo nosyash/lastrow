@@ -1734,6 +1734,10 @@ body {
     background: rgba(37, 39, 40, 0.9);
     // height: 100%;
     box-shadow: none;
+
+    ul {
+        padding: 0;
+    }
 }
 
 .playlist_inner {
@@ -1746,29 +1750,51 @@ body {
 .paylist-item {
     display: flex;
     flex-direction: row;
+    z-index: 100;
+    font-size: 0.9em;
 
     a {
+        margin-right: 10px;
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
 
     }
+
+
+    &:first-child {
+        background: #acafb3;
+        color: #303030;
+        padding: 1px 7px 0;
+        border-radius: 4px;
+        margin-left: -7px;
+        margin-right: -7px;
+        margin-bottom: 2px;
+
+        a {
+            color: #303030;
+        }
+
+        .control {
+            color: #303030;
+        }
+    }
 }
 
 .popup.playlist {
     max-width: 600px;
-    min-width: 400px;
+    min-width: 500px;
     max-height: 70vh;
     z-index: 9;
     // min-height: 200px;
 }
 
 .playlist-item__duration {
-    margin-left: 5px;
+    margin-left: auto;
 }
 
 .playlist-item__remove-icon {
-    margin-left: auto;
+    margin-left: 4px;
 }
 
 // Add media
