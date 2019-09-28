@@ -135,8 +135,6 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 	case eTypeMove:
 		if !h.syncer.isSleep {
 			if result := h.checkPermissions(conn, req.Payload, eTypeMove); result {
-				moveLock.Lock()
-
 				h.cache.Playlist.MoveVideo <- cache.MoveVideo{
 					ID:    req.Body.Event.Data.ID,
 					Index: req.Body.Event.Data.Index,
@@ -145,8 +143,6 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 				if r := <-h.cache.Playlist.MoveFeedBack; r == cache.MoveHead {
 					h.syncer.move <- struct{}{}
 				}
-
-				moveLock.Unlock()
 			}
 		}
 	}
