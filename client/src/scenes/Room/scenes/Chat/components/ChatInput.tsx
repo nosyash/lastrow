@@ -239,6 +239,7 @@ function ChatInput(props) {
             </div>
             {showEmotes && (
                 <EmoteMenu
+                    onHideMenu={() => setShowEmotes(false)}
                     list={props.emotesList}
                     onClick={name => pasteEmoteByName(name, true)}
                 />
@@ -270,9 +271,23 @@ function InputTopBar({ toggleShowEmotes, onClick, popularEmotes, emotes }) {
     )
 }
 
-function EmoteMenu({ list, onClick }) {
+function EmoteMenu({ list, onClick, onHideMenu }) {
+    document.removeEventListener('mousedown', handleClick)
+    document.addEventListener('mousedown', handleClick)
+    function handleClick(e: MouseEvent) {
+        console.log('click');
+        const target = e.target as HTMLElement
+        if (target.closest('.emote-menu') || target.closest('.emote-icon'))
+            return;
+        onHideMenu();
+    }
+
+    const chatEl = document.getElementById('chat-input');
+    const { left, width, height, bottom: b } = chatEl.getBoundingClientRect();
+    const innerHeight = window.innerHeight;
+    const bottom = innerHeight - b + height + 10;
     return (
-        <div className="emote-menu">
+        <div style={{ left, width, bottom }} className="emote-menu">
             <div className="emote-menu__scroll">
                 {list.map(emote => (
                     <span
