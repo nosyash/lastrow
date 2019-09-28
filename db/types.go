@@ -13,11 +13,13 @@ type AboutRoom struct {
 }
 
 type Room struct {
-	Title  string  `json:"title"`
-	Path   string  `json:"path"`
-	UUID   string  `json:"uuid"`
-	Owners []owner `json:"owners"`
-	Emoji  []Emoji `json:"emoji"`
+	Title    string  `json:"title"`
+	Path     string  `json:"path"`
+	UUID     string  `json:"uuid"`
+	Hidden   bool    `json:"hidden"`
+	Password string  `json:"passwd"`
+	Owners   []owner `json:"owners"`
+	Emoji    []Emoji `json:"emoji"`
 }
 
 type UserView struct {

@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const maxFileSize = 10 * 1024 * 1024 // 15mb
+const maxFileSize = 15 * 1024 * 1024 // 15mb
 
 var errFileSize = fmt.Errorf("Subtitles must be less than or equal %dmb", (maxFileSize / (1024 * 1024)))
 
