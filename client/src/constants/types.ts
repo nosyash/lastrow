@@ -7,7 +7,8 @@ export interface PasswordChange {
 
 export interface WebSocketRegister extends Message {
     room_id: string;
-    user_uuid: string;
+    jwt?: string;
+    user_uuid?: string;
 }
 
 export interface WebSocketGuestRegister extends WebSocketRegister {
@@ -15,7 +16,7 @@ export interface WebSocketGuestRegister extends WebSocketRegister {
 }
 
 export interface SendMediaToPlaylist extends Message {
-    user_uuid: string,
+    jwt: string,
 }
 
 export interface DeleteMediaFromPlaylist extends SendMediaToPlaylist { }

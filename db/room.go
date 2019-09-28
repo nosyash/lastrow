@@ -25,15 +25,17 @@ func (db Database) GetRoom(key, value string) (Room, error) {
 }
 
 // CreateNewRoom create a new room
-func (db Database) CreateNewRoom(title, path, userUUID, roomUUID string) error {
+func (db Database) CreateNewRoom(title, path, userUUID, roomUUID, password string, hidden bool) error {
 	if db.RoomIsExists("path", path) {
 		return errors.New("Room with this path is already exists")
 	}
 
 	newRoom := Room{
-		Title: title,
-		Path:  path,
-		UUID:  roomUUID,
+		Title:    title,
+		Path:     path,
+		UUID:     roomUUID,
+		Password: password,
+		Hidden:   hidden,
 		Owners: []owner{
 			{
 				userUUID,
@@ -66,6 +68,14 @@ func (db Database) GetEmojiCount(uuid string) (int, error) {
 	}
 
 	return len(room.Emoji), nil
+}
+
+// WhereUserOwner return founded room slice where UUID is owner
+func (db Database) WhereUserOwner(uuid string) ([]Room, error) {
+	var rooms []Room
+
+	err := db.rc.Find(bson.M{"owners": bson.M{"$elemMatch": bson.M{"uuid": uuid}}}).All(&rooms)
+	return rooms, err
 }
 
 // UpdateRoomValue update specified key in a room

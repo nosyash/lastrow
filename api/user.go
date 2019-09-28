@@ -1,12 +1,18 @@
 package api
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"unicode/utf8"
+
+	"golang.org/x/crypto/bcrypt"
+
+	"github.com/nosyash/backrow/db"
 
 	"github.com/nosyash/backrow/storage"
 
@@ -18,16 +24,17 @@ var (
 )
 
 func (server Server) userHandler(w http.ResponseWriter, r *http.Request) {
-	userUUID, err := server.getUserUUIDBySessionID(w, r)
+	payload, err := server.extractPayload(w, r)
 	if err != nil {
-		sendJson(w, http.StatusBadRequest, message{
-			Error: err.Error(),
+		log.Printf("user.go server.extractPayload(): %v", err)
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "Your JWT is invalid",
 		})
 		return
 	}
 
 	if r.Method == http.MethodGet {
-		server.getUser(w, userUUID)
+		server.getUser(w, payload.UUID)
 		return
 	}
 
@@ -36,7 +43,7 @@ func (server Server) userHandler(w http.ResponseWriter, r *http.Request) {
 	err = decoder.Decode(&userReq)
 
 	if err != nil {
-		sendJson(w, http.StatusBadRequest, message{
+		sendJSON(w, http.StatusBadRequest, message{
 			Error: err.Error(),
 		})
 		return
@@ -44,32 +51,52 @@ func (server Server) userHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch userReq.Action {
 	case eTypeUserUpdateImg:
-		server.updateProfileImage(w, userUUID, &userReq.Body.Image.Img)
+		server.updateProfileImage(w, payload.UUID, &userReq.Body.Image.Img)
 		if storage.Size() > 0 {
-			storage.UpdateUser(userUUID)
+			storage.UpdateUser(payload.UUID)
 		}
 	case eTypeUserDeleteImg:
-		server.deleteProfileImage(w, userUUID)
+		server.deleteProfileImage(w, payload.UUID)
 		if storage.Size() > 0 {
-			storage.UpdateUser(userUUID)
+			storage.UpdateUser(payload.UUID)
 		}
 	case eTypeUserUpdatePer:
-		server.updatePersonalInfo(w, userUUID, userReq.Body.Name, userReq.Body.Color)
+		server.updatePersonalInfo(w, payload.UUID, userReq.Body.Name, userReq.Body.Color)
 		if storage.Size() > 0 {
-			storage.UpdateUser(userUUID)
+			storage.UpdateUser(payload.UUID)
 		}
 	case eTypeUserUpdatePswd:
-		server.updatePassword(w, userUUID, userReq.Body.CurPasswd, userReq.Body.NewPasswd)
+		server.updatePassword(w, payload.UUID, userReq.Body.CurPasswd, userReq.Body.NewPasswd)
 	default:
-		sendJson(w, http.StatusBadRequest, message{
+		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Unknown /api/user action",
 		})
 	}
 }
 
 func (server Server) getUser(w http.ResponseWriter, userUUID string) {
-	user, _ := server.db.GetUserProfile(userUUID)
-	userAsByte, _ := json.Marshal(user)
+	user, err := server.db.GetUserByUUID(userUUID)
+	if err != nil {
+		if err != mgo.ErrNotFound {
+			log.Printf("server.db.GetUserByUUID(): %v", err)
+		}
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "Couldn't find user by specified UUID",
+		})
+		return
+	} else if err != nil {
+
+	}
+
+	userView := db.UserView{
+		Username: user.Uname,
+		Name:     user.Name,
+		Color:    user.Color,
+		Image:    user.Image,
+		UUID:     user.UUID,
+	}
+
+	userAsByte, _ := json.Marshal(userView)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(userAsByte)
@@ -78,7 +105,10 @@ func (server Server) getUser(w http.ResponseWriter, userUUID string) {
 func (server Server) updateProfileImage(w http.ResponseWriter, userUUID string, b64Img *string) {
 	oldPath, err := server.db.GetUserImage(userUUID)
 	if err != nil {
-		sendJson(w, http.StatusBadRequest, message{
+		if err != mgo.ErrNotFound {
+			log.Printf("server.db.GetUserImage(): %v", err)
+		}
+		sendJSON(w, http.StatusBadRequest, message{
 			Error: err.Error(),
 		})
 		return
@@ -86,21 +116,22 @@ func (server Server) updateProfileImage(w http.ResponseWriter, userUUID string, 
 
 	rndUUID := getRandomUUID()
 
-	imgPath := filepath.Join(filepath.Join("/media", server.imageServer.ProfImgPath), rndUUID[:32], fmt.Sprintf("%s.%s", rndUUID[32:], "jpg"))
+	imgPath := filepath.Join(filepath.Join("/media", server.uploadServer.ProfImgPath), rndUUID[:32], fmt.Sprintf("%s.%s", rndUUID[32:], "jpg"))
 
 	image := newImage(b64Img)
 	if oldPath == "" {
-		err = image.createImage(filepath.Join(server.imageServer.UplPath, imgPath), "jpg")
+		err = image.createImage(filepath.Join(server.uploadServer.UplPath, imgPath), "jpg")
 	} else {
-		err = image.replaceImage(filepath.Join(server.imageServer.UplPath, oldPath), filepath.Join(server.imageServer.UplPath, imgPath), "jpg")
+		err = image.replaceImage(filepath.Join(server.uploadServer.UplPath, oldPath), filepath.Join(server.uploadServer.UplPath, imgPath), "jpg")
 		if err != nil {
 			server.db.UpdateUserValue(userUUID, "image", "")
 		}
 	}
 
 	if err != nil {
-		sendJson(w, http.StatusBadRequest, message{
-			Error: err.Error(),
+		log.Printf("image.createImage(), image.replaceImage(): %v", err)
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "Couldn't update profile image",
 		})
 		return
 	}
@@ -112,14 +143,17 @@ func (server Server) updateProfileImage(w http.ResponseWriter, userUUID string, 
 func (server Server) deleteProfileImage(w http.ResponseWriter, userUUID string) {
 	imgPath, err := server.db.GetUserImage(userUUID)
 	if err != nil {
-		sendJson(w, http.StatusBadRequest, message{
-			Error: err.Error(),
+		if err != mgo.ErrNotFound {
+			log.Printf("server.db.GetUserImage(): %v", err)
+		}
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "Couldn't delete profile image",
 		})
 		return
 	}
 
 	imgFolder, _ := filepath.Split(imgPath)
-	os.RemoveAll(filepath.Join(server.imageServer.UplPath, imgFolder))
+	os.RemoveAll(filepath.Join(server.uploadServer.UplPath, imgFolder))
 
 	server.db.UpdateUserValue(userUUID, "image", "")
 	server.getUser(w, userUUID)
@@ -131,8 +165,8 @@ func (server Server) updatePersonalInfo(w http.ResponseWriter, userUUID, name, c
 	}
 
 	if utf8.RuneCountInString(name) < minNameLength || utf8.RuneCountInString(name) > maxNameLength {
-		sendJson(w, http.StatusBadRequest, message{
-			Error: errNameLength.Error(),
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: fmt.Errorf("Name length must be no more than %d and no less %d", minNameLength, maxNameLength).Error(),
 		})
 		return
 	}
@@ -143,22 +177,43 @@ func (server Server) updatePersonalInfo(w http.ResponseWriter, userUUID, name, c
 
 func (server Server) updatePassword(w http.ResponseWriter, userUUID, curPasswd, newPasswd string) {
 	if utf8.RuneCountInString(newPasswd) < minPasswordLength || utf8.RuneCountInString(newPasswd) > maxPasswordLength {
-		sendJson(w, http.StatusBadRequest, message{
-			Error: errPasswdLength.Error(),
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: fmt.Errorf("Password length must be no more than %d characters and at least %d", maxPasswordLength, minPasswordLength).Error(),
 		})
 		return
 	}
 
-	_, err := server.db.FindUser("uuid", userUUID, getHashOfString(curPasswd))
-	if err == mgo.ErrNotFound {
-		sendJson(w, http.StatusBadRequest, message{
+	user, err := server.db.GetUserByUUID(userUUID)
+	if err != nil {
+		if err != mgo.ErrNotFound {
+			log.Printf("server.db.GetUserByUUID(): %v", err)
+		}
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "Couldn't find user with specified UUID",
+		})
+		return
+	}
+
+	dHash, err := hex.DecodeString(user.Hash)
+	if err != nil {
+		log.Printf("hex.DecodeString(): %v", err)
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "Internal server error while trying to update password",
+		})
+		return
+	}
+
+	if err = bcrypt.CompareHashAndPassword(dHash, []byte(curPasswd)); err != nil {
+		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Current password is invalid",
 		})
 		return
 	}
 
-	server.db.UpdateUserValue(userUUID, "hash", getHashOfString(newPasswd))
-	sendJson(w, http.StatusOK, message{
+	nHash, err := bcrypt.GenerateFromPassword([]byte(newPasswd), bcrypt.DefaultCost)
+
+	server.db.UpdateUserValue(userUUID, "hash", hex.EncodeToString(nHash[:]))
+	sendJSON(w, http.StatusOK, message{
 		Message: "Your password has been successfully changed",
 	})
 }

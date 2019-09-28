@@ -1,8 +1,8 @@
 package api
 
 import (
+	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,15 +10,9 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/nosyash/backrow/jwt"
+	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
-)
-
-var (
-	errInvalidSessionID = errors.New("Your sessionID is invalid")
-
-	errUnameLength = fmt.Errorf("Username length must be no more than %d characters and at least %d", maxUsernameLength, minUsernameLength)
-
-	errPasswdLength = fmt.Errorf("Password length must be no more than %d characters and at least %d", maxPasswordLength, minPasswordLength)
 )
 
 func (server Server) authHandler(w http.ResponseWriter, r *http.Request) {
@@ -27,7 +21,7 @@ func (server Server) authHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := decoder.Decode(&authReq)
 	if err != nil {
-		sendJson(w, http.StatusBadRequest, message{
+		sendJSON(w, http.StatusBadRequest, message{
 			Error: err.Error(),
 		})
 		return
@@ -38,120 +32,160 @@ func (server Server) authHandler(w http.ResponseWriter, r *http.Request) {
 		server.register(w, authReq.Body.Uname, authReq.Body.Passwd, authReq.Body.Email, authReq.Body.Name)
 	case eTypeAccountLogin:
 		server.login(w, authReq.Body.Uname, authReq.Body.Passwd)
-	case eTypeAccountLogout:
-		sessionID, err := r.Cookie("session_id")
-		if err == nil && sessionID.Value != "" {
-			server.logout(w, sessionID.Value)
-		}
 	default:
-		sendJson(w, http.StatusBadRequest, message{
+		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Unknown /api/auth action",
 		})
 	}
 }
 
 func (server Server) register(w http.ResponseWriter, uname, passwd, email, name string) {
-	if utf8.RuneCountInString(uname) < minUsernameLength || utf8.RuneCountInString(uname) > maxUsernameLength {
-		sendJson(w, http.StatusBadRequest, message{
-			Error: errUnameLength.Error(),
+	if len(uname) < minUsernameLength || len(uname) > maxUsernameLength {
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: fmt.Errorf("Username length must be no more than %d characters and at least %d", maxUsernameLength, minUsernameLength).Error(),
 		})
 		return
 	}
 
 	if utf8.RuneCountInString(passwd) < minPasswordLength || utf8.RuneCountInString(passwd) > maxPasswordLength {
-		sendJson(w, http.StatusBadRequest, message{
-			Error: errPasswdLength.Error(),
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: fmt.Errorf("Password length must be no more than %d characters and at least %d", maxPasswordLength, minPasswordLength).Error(),
 		})
 		return
 	}
 
-	if exp.MatchString(uname) {
-		sendJson(w, http.StatusBadRequest, message{
+	if onlyStrAndNum.MatchString(uname) {
+		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Username must contain only string characters and numbers",
 		})
 		return
 	}
 
-	userUUID := getRandomUUID()
-	result, err := server.db.CreateNewUser(uname, uname, getHashOfString(passwd), strings.TrimSpace(email), userUUID)
+	uuid := getRandomUUID()
 
+	hash, err := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
 	if err != nil {
-		sendJson(w, http.StatusInternalServerError, message{
-			Error: err.Error(),
+		log.Printf("bcrypt.GenerateFromPassword(): %v", err)
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "Couldn't create new account",
+		})
+		return
+	}
+
+	result, err := server.db.CreateNewUser(uname, uname, hex.EncodeToString(hash[:]), strings.TrimSpace(email), uuid)
+	if err != nil {
+		log.Printf("server.db.CreateNewUser(): %v", err)
+		sendJSON(w, http.StatusInternalServerError, message{
+			Error: "Couldn't create new account",
 		})
 		return
 	}
 	if !result {
-		sendJson(w, http.StatusBadRequest, message{
+		sendJSON(w, http.StatusBadRequest, message{
 			Error: "This username or email is already taken",
 		})
 		return
 	}
-	server.setUpAuthSession(w, userUUID)
+
+	server.setUpAuthSession(w, uuid)
 }
 
 func (server Server) login(w http.ResponseWriter, uname, passwd string) {
 	if uname == "" || passwd == "" {
-		sendJson(w, http.StatusBadRequest, message{
+		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Username or password are empty",
 		})
 		return
 	}
 
-	user, err := server.db.FindUser("uname", uname, getHashOfString(passwd))
+	user, err := server.db.GetUserByUname(uname)
 	if err == mgo.ErrNotFound {
-		sendJson(w, http.StatusBadRequest, message{
+		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Username or password is invalid",
 		})
 		return
 	}
+
 	if err != nil {
-		sendJson(w, http.StatusInternalServerError, message{
-			Error: err.Error(),
+		log.Printf("server.db.GetUserByUname(): %v", err)
+		sendJSON(w, http.StatusInternalServerError, message{
+			Error: "Internal server error while trying to login",
 		})
 		return
 	}
+
+	dHash, err := hex.DecodeString(user.Hash)
+	if err != nil {
+		log.Printf("hex.DecodeString(): %v", err)
+		sendJSON(w, http.StatusInternalServerError, message{
+			Error: "Internal server error while trying to login",
+		})
+		return
+	}
+
+	if err = bcrypt.CompareHashAndPassword(dHash, []byte(passwd)); err != nil {
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "Username or password is invalid",
+		})
+		return
+	}
+
 	server.setUpAuthSession(w, user.UUID)
 }
 
-func (server Server) logout(w http.ResponseWriter, sessionID string) {
-	err := server.db.DeleteSession(sessionID)
+func (server Server) setUpAuthSession(w http.ResponseWriter, uuid string) {
+	isAdmin, err := server.db.IsAdmin(uuid)
 	if err != nil {
-		sendJson(w, http.StatusBadRequest, message{
-			Error: errInvalidSessionID.Error(),
+		log.Printf("server.db.IsAdmin(): %v", err)
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "Couldn't create auth session",
 		})
 		return
 	}
-}
 
-func (server Server) setUpAuthSession(w http.ResponseWriter, userUUID string) {
-	sessionID := getRandomUUID()
-	err := server.db.CreateSession(sessionID, userUUID)
+	roomList, err := server.db.WhereUserOwner(uuid)
 	if err != nil {
-		log.Printf("Couldn't create auth session: %v", err)
+		log.Printf("server.db.WhereUserOwner(): %v", err)
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "Couldn't create auth session",
+		})
 		return
 	}
 
-	// TODO
-	// Set secure flag when TLS be available
+	var header jwt.Header
+	var payload jwt.Payload
+	var owner = make([]jwt.Owner, len(roomList))
+	var timeNow = time.Now().Add(1 * 365 * 24 * time.Hour)
+
+	for i, r := range roomList {
+		owner[i].RoomID = r.UUID
+		for _, r := range r.Owners {
+			if r.UUID == uuid {
+				owner[i].Permissions = r.Permissions
+			}
+		}
+	}
+
+	header.Aig = "HS512"
+
+	payload.UUID = uuid
+	payload.IsAdmin = isAdmin
+	payload.Owner = owner
+	payload.Exp = timeNow.UnixNano()
+
+	token, err := jwt.GenerateNewToken(header, payload, server.hmacKey)
+	if err != nil {
+		log.Printf("jwt.GenerateNewToken(): %v", err)
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "Couldn't create auth session",
+		})
+		return
+	}
 
 	http.SetCookie(w, &http.Cookie{
-		Name:    "session_id",
-		Value:   sessionID,
+		Name:    "jwt",
+		Value:   token,
 		Path:    "/",
-		Expires: time.Now().Add(5 * 365 * 24 * time.Hour),
+		Expires: timeNow,
 	})
-}
-
-func (server Server) getUserUUIDBySessionID(w http.ResponseWriter, r *http.Request) (string, error) {
-	sessionID, err := r.Cookie("session_id")
-	if err != nil || sessionID.Value == "" {
-		return "", errors.New("Couldn't get your session_id")
-	}
-
-	userUUID, err := server.db.GetSession(sessionID.Value)
-	if err != nil || userUUID == "" {
-		return "", errInvalidSessionID
-	}
-	return userUUID, nil
 }

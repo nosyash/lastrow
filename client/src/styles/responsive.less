@@ -23,7 +23,11 @@
   }
 
   .chat-messages__scroll-to-bottom {
-    bottom: 70px;
+    bottom: 90px;
+  }
+
+  .chat-message_header {
+    padding: 6px 9px;
   }
 
   .chat-avatar {
@@ -33,6 +37,16 @@
 }
 
 @media (max-width: 768px) {
+  .u {
+    &-mobile-flex {
+      flex-direction: column !important;
+    }
+  }
+
+  .chat-messages {
+    min-height: 150px;
+  }
+
   .room-container {
     flex-direction: column;
   }

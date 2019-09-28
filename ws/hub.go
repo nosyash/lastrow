@@ -2,6 +2,7 @@ package ws
 
 import (
 	"errors"
+	"os"
 
 	"github.com/nosyash/backrow/db"
 
@@ -21,6 +22,7 @@ var (
 func HandleWsConnection(db *db.Database) {
 	Register = make(chan *websocket.Conn)
 	closeRoom = make(chan string)
+	hmacKey = os.Getenv("HS512_KEY")
 
 	rh := &roomsHub{
 		make(map[string]*hub),
@@ -58,7 +60,7 @@ func (rh *roomsHub) registerNewConn(conn *websocket.Conn) {
 	}
 
 	if !user.Guest {
-		_, err = rh.db.GetUser(user.UUID)
+		_, err = rh.db.GetUserByUUID(user.Payload.UUID)
 		if err == mgo.ErrNotFound {
 			sendError(conn, ErrInvalidUserID)
 			return
@@ -72,7 +74,7 @@ func (rh *roomsHub) registerNewConn(conn *websocket.Conn) {
 		}
 	}
 
-	hub := NewRoomHub(roomID)
+	hub := NewRoomHub(roomID, rh.db)
 	rh.rhub[roomID] = hub
 
 	go rh.rhub[roomID].HandleActions()

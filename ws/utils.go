@@ -4,22 +4,41 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"sync"
 
 	"github.com/gorilla/websocket"
+	"github.com/nosyash/backrow/jwt"
 )
 
 var sendLocker sync.Mutex
+var hmacKey string
 
 func readPacket(conn *websocket.Conn) (*packet, error) {
 	request := &packet{}
 	err := websocket.ReadJSON(conn, &request)
+
+	if request.JWT != "" {
+		payload, err := extractPayload(request.JWT)
+		if err != nil {
+			return nil, err
+		}
+
+		request.Payload = payload
+	}
+
 	return request, err
 }
 
-func sendError(conn *websocket.Conn, errMsg error) error {
-	return writeMessage(conn, websocket.TextMessage, createPacket(errorEvent, errorEvent, data{
-		Error: errMsg.Error(),
+func sendError(conn *websocket.Conn, msg error) error {
+	return writeMessage(conn, websocket.TextMessage, createPacket(errorEvent, errorEvent, &data{
+		Error: msg.Error(),
+	}))
+}
+
+func sendFeedBack(conn *websocket.Conn, fb *feedback) {
+	writeMessage(conn, websocket.TextMessage, createPacket(playerEvent, eTypeFeedBack, &data{
+		FeedBack: fb,
 	}))
 }
 
@@ -29,7 +48,7 @@ func writeMessage(conn *websocket.Conn, messageType int, message []byte) error {
 	return conn.WriteMessage(messageType, message)
 }
 
-func createPacket(action, eType string, d data) []byte {
+func createPacket(action, eType string, d *data) []byte {
 	data, _ := json.Marshal(&packet{
 		Action: action,
 		Body: body{
@@ -45,4 +64,19 @@ func createPacket(action, eType string, d data) []byte {
 func getHashOfString(str string) string {
 	hash := sha256.Sum256([]byte(str))
 	return hex.EncodeToString(hash[:])
+}
+
+func extractPayload(token string) (*jwt.Payload, error) {
+	result, err := jwt.ValidateToken(token, hmacKey)
+	if err != nil && err != jwt.ErrKeyLength {
+		return nil, err
+	} else if err == jwt.ErrKeyLength {
+		return nil, errors.New("Internal server error while trying to validate your JWT")
+	}
+
+	if !result {
+		return nil, jwt.ErrCorruptedToken
+	}
+
+	return jwt.UnmarshalPayload(token)
 }

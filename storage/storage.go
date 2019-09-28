@@ -20,14 +20,9 @@ func init() {
 func Add(cache *cache.Cache, close <-chan struct{}) {
 	storage.cs[cache.ID] = cache
 
-	for {
-		select {
-		case <-close:
-			cache.Close <- struct{}{}
-			delete(storage.cs, cache.ID)
-			return
-		}
-	}
+	<-close
+	cache.Close <- struct{}{}
+	delete(storage.cs, cache.ID)
 }
 
 // Size return storage size
@@ -38,7 +33,7 @@ func Size() int {
 // UpdateUser user in cache
 func UpdateUser(userUUID string) {
 	for _, cache := range storage.cs {
-		_, ok := cache.Users.GetUser(userUUID)
+		_, ok := cache.Users.GetUserByUUID(userUUID)
 		if ok {
 			cache.Users.UpdateUser(userUUID)
 		}
@@ -64,7 +59,7 @@ func GetUsersCount(roomPath string) int {
 func GetCurrentVideoTitle(roomPath string) string {
 	if c, ok := storage.cs[roomPath]; ok {
 		if c.Playlist.Size() == 0 {
-			return ""
+			return "-"
 		}
 		if title := c.Playlist.GetCurrentTitle(); title != "" {
 			return title

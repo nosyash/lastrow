@@ -1,4 +1,3 @@
-import { parse } from 'subtitle';
 import { toast } from 'react-toastify';
 import http from '../utils/httpServices';
 import * as api from '../constants/apiActions';
@@ -11,18 +10,6 @@ import { store } from '../store';
 import { SOCKET_ENDPOINT } from '../constants';
 import { toastOpts } from '../conf';
 
-export const fetchSubs = (url: string) => (dispatch: any) => {
-    return http
-        .get(url)
-        .then(response => {
-            dispatch({ type: types.SET_SUBS, payload: { srt: parse(response.data) } });
-        })
-        .catch(error => {
-            throw error;
-        });
-};
-
-/** @type Socket */
 let socket = null as Socket;
 
 export const webSocketConnect = ({ roomID }: { roomID: any }) => {
@@ -34,7 +21,7 @@ export const webSocketConnect = ({ roomID }: { roomID: any }) => {
     return socket.state();
 };
 
-const isConnectingSameRoom = (roomID: string) => (socket ? roomID === socket.roomID : false);
+export const isConnectingSameRoom = (roomID: string) => (socket ? roomID === socket.roomID : false);
 
 export const webSocketSend = (data: string, messageTypeToGet?: string, cb?: () => void) => {
     return socket.sendMessage(data, messageTypeToGet, cb);
@@ -80,7 +67,7 @@ export const requestEmoteDelete = (params: { name: string }) => {
 
     http.post(api.API_ROOMS(), api.REMOVE_EMOTE({ ...params, roomId: ID }))
         .then(() => requestRoom()(store.dispatch))
-        .then(() => toast.success('Emote successfully removed', toastOpts))
+        .then(() => toast.success('Emote was removed', toastOpts))
 }
 
 export const requestRoom = () => async (dispatch: any) => {
@@ -90,8 +77,11 @@ export const requestRoom = () => async (dispatch: any) => {
     if (!data)
         return Promise.resolve(false);
 
+    const emojiList = get(data, 'emoji') || []
+    emojiList.sort((a, b) => a.name > b.name ? 1 : -1);
+
     store.dispatch({ type: types.UPDATE_MAIN_STATES, payload: { ID: data.ID } })
-    store.dispatch({ type: types.ADD_EMOJIS, payload: data.emoji ? data.emoji.reverse() : [] })
+    store.dispatch({ type: types.ADD_EMOJIS, payload: emojiList })
 
     document.title = data.title;
 

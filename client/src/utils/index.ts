@@ -38,7 +38,7 @@ export function togglePointerEvent(element: HTMLElement) {
     element.style.pointerEvents = 'none';
 }
 
-export const formatTime = (num: string) => {
+export const formatTime = (num: any) => {
     const secNum = parseInt(num, 10);
     const hours = Math.floor(secNum / 3600);
     let hoursString = hours.toString();
@@ -150,3 +150,9 @@ function handleNotifyClose(n: Notification) {
         n.close();
     }, 4000);
 }
+
+export function getCookie(name) {
+    var value = "; " + document.cookie;
+    var parts = value.split("; " + name + "=");
+    if (parts.length == 2) return parts.pop().split(";").shift();
+  }

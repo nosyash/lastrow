@@ -42,7 +42,7 @@ function ProfileSettings(props: ProfileSettings) {
     }, [props.roomID])
 
     return (
-        <div className="popup-element settings-container">
+        <div className="popup-element u-mobile-flex">
             <SettingsMenu list={items} active={active} onClick={name => setActive(name)} />
             <SettingsScenes active={active} />
         </div>

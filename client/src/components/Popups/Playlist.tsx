@@ -5,25 +5,65 @@ import { webSocketSend } from '../../actions';
 import * as api from '../../constants/apiActions';
 import AddMedia from './AddMedia';
 import { Video } from '../../utils/types';
+import { SortableContainer, SortableElement } from 'react-sortable-hoc';
+
 
 interface PlaylistProps {
     uuid: string;
+    guest: boolean;
     playlist: Video[]
 }
 
-class Playlist extends Component<PlaylistProps> {
+const SortableItem = SortableElement(({ element, handleDelete, deletable }) =>
+    <PlaylistElement deletable={deletable} element={element} onDelete={() => handleDelete(element)} />);
 
+const SortableList = SortableContainer(({ items, handleDelete, deletable }) => {
+    return (
+        <ul>
+            {!!items && items.map((element, index) => (
+                <SortableItem
+                    deletable={deletable}
+                    disabled={!deletable}
+                    handleDelete={handleDelete}
+                    index={index}
+                    key={`item-${element.__id}`} element={element}
+                />
+            ))}
+        </ul>
+    );
+});
+
+class Playlist extends Component<PlaylistProps> {
+    currentlyMoving: Video;
     handleDelete = ({ __id }) => {
         const { uuid } = this.props;
         webSocketSend(api.DELETE_VIDEO_FROM_PLAYLIST({ __id, uuid }));
     };
 
+    onSortEnd = ({ newIndex }) => {
+        const __id = this.currentlyMoving.__id;
+        webSocketSend(api.REORDER_MEDIA({ __id, index: newIndex }));
+    }
+
+    onSortStart = ({ node }) => {
+        const dataSet = (node as HTMLElement).dataset.video;
+        this.currentlyMoving = JSON.parse(dataSet) as Video;
+    }
+
     render() {
-        const { playlist } = this.props;
+        const { playlist, guest } = this.props;
         return (
             <div className="popup-element playlist_container">
                 {<AddMedia />}
-                {!!playlist.length && (
+                <SortableList distance={2}
+                    transitionDuration={100}
+                    items={playlist}
+                    deletable={!guest}
+                    handleDelete={this.handleDelete}
+                    onSortStart={this.onSortStart}
+                    onSortEnd={this.onSortEnd}
+                />
+                {/* {!!playlist.length && (
                     <div className="playlist_inner">
                         {playlist.map(element =>
                             <PlaylistElement
@@ -33,13 +73,13 @@ class Playlist extends Component<PlaylistProps> {
                             />
                         )}
                     </div>
-                )}
+                )} */}
             </div>
         );
     }
 }
 
-function PlaylistElement({ element, onDelete }) {
+function PlaylistElement({ element, onDelete, deletable }) {
     const [deleted, setDeleted] = useState(false);
     const handleDelete = () => {
         if (!deleted) {
@@ -49,12 +89,13 @@ function PlaylistElement({ element, onDelete }) {
     }
     if (deleted) return null;
     return (
-        <div className="paylist-item">
+        <div data-video={JSON.stringify(element)} className="paylist-item">
             <a className="control" target="_blank" rel="noopener noreferrer" href={element.url}>
                 {element.title || element.url}
             </a>
             <span className="playlist-item__duration">{formatTime(element.duration)}</span>
             <span
+                hidden={!deletable}
                 onClick={handleDelete}
                 className="control playlist-item__remove-icon"
             >
@@ -66,6 +107,7 @@ function PlaylistElement({ element, onDelete }) {
 
 const mapStateToProps = state => ({
     playlist: state.media.playlist,
+    guest: state.profile.guest,
     uuid: state.profile.uuid,
 });
 

@@ -111,6 +111,10 @@
 
 }
 
+.popup.settings .popup-element {
+    overflow: auto;
+}
+
 .emotes-settings {
     padding: 15px;
     border-radius: 5px;
@@ -214,6 +218,17 @@
 
         input {
             display: none;
+        }
+    }
+}
+
+
+@media (max-width: 768px) {
+    .emotes-settings {
+        min-height: 500px;
+
+        .emote-settings__input {
+            width: 70%;
         }
     }
 }

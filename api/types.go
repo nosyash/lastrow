@@ -44,6 +44,8 @@ type roomBody struct {
 	UpdateType string    `json:"type"`
 	Title      string    `json:"title"`
 	Path       string    `json:"path"`
+	Hidden     bool      `json:"hidden"`
+	Password   string    `json:"passwd"`
 	Data       imageBody `json:"data"`
 }
 
@@ -114,4 +116,15 @@ const (
 const (
 	maxOwnersCount = 15
 	maxEmojiCount  = 100
+)
+
+const (
+	profileImgWidth  = 500
+	profileImgHeight = 500
+
+	maxEmojiImgWidth  = 128
+	maxEmojiImgHeight = 128
+
+	minEmojiImgWidth  = 32
+	minEmojiImgHeight = 32
 )

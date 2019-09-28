@@ -3,6 +3,7 @@ package ws
 import (
 	"github.com/nosyash/backrow/cache"
 	"github.com/nosyash/backrow/db"
+	"github.com/nosyash/backrow/jwt"
 
 	"github.com/gorilla/websocket"
 )
@@ -17,6 +18,7 @@ type roomsHub struct {
 }
 
 type hub struct {
+	db           *db.Database
 	hub          map[string]*websocket.Conn
 	broadcast    chan []byte
 	register     chan *user
@@ -29,18 +31,21 @@ type hub struct {
 }
 
 type user struct {
-	Conn  *websocket.Conn
-	UUID  string
-	Name  string
-	Guest bool
+	Conn    *websocket.Conn
+	Payload *jwt.Payload
+	UUID    string
+	Name    string
+	Guest   bool
 }
 
 type packet struct {
-	Action   string `json:"action"`
-	Body     body   `json:"body"`
-	RoomID   string `json:"room_id,omitempty"`
-	UserUUID string `json:"user_uuid,omitempty"`
-	Name     string `json:"name,omitempty"`
+	Action  string       `json:"action"`
+	Body    body         `json:"body"`
+	RoomID  string       `json:"room_id,omitempty"`
+	UUID    string       `json:"user_uuid,omitempty"`
+	JWT     string       `json:"jwt,omitempty"`
+	Payload *jwt.Payload `json:"-"`
+	Name    string       `json:"name,omitempty"`
 }
 
 type body struct {
@@ -49,34 +54,46 @@ type body struct {
 
 type eventBody struct {
 	Type string `json:"type"`
-	Data data   `json:"data"`
+	Data *data  `json:"data,omitempty"`
 }
 
 type syncer struct {
-	sleep          bool
-	wakeUp         chan struct{}
-	skip           chan struct{}
-	pause          chan struct{}
-	resume         chan struct{}
-	close          chan struct{}
-	currentVideoID string
+	isSleep          bool
+	isStreamOrFrame  bool
+	isPause          bool
+	wakeUp           chan struct{}
+	skip             chan struct{}
+	pause            chan struct{}
+	resume           chan struct{}
+	rewind           chan int
+	close            chan struct{}
+	move             chan struct{}
+	rewindAfterPause int
+	currentVideoID   string
+	elapsed          int
 }
 
 type data struct {
-	Message  string        `json:"message,omitempty"`
-	Error    string        `json:"error,omitempty"`
-	Color    string        `json:"color,omitempty"`
-	Image    string        `json:"image,omitempty"`
-	Name     string        `json:"name,omitempty"`
-	Guest    bool          `json:"guest,omitempty"`
-	Title    string        `json:"title,omitempty"`
-	Duration int           `json:"duration,omitempty"`
-	URL      string        `json:"url,omitempty"`
-	ID       string        `json:"__id,omitempty"`
-	Users    []*cache.User `json:"users,omitempty"`
-	Ticker   *elapsedTime  `json:"ticker,omitempty"`
-	Emoji    []db.Emoji    `json:"emoji,omitempty"`
-	FeedBack *feedback     `json:"feedback,omitempty"`
+	Message       string        `json:"message,omitempty"`
+	Error         string        `json:"error,omitempty"`
+	Color         string        `json:"color,omitempty"`
+	Image         string        `json:"image,omitempty"`
+	Name          string        `json:"name,omitempty"`
+	Guest         bool          `json:"guest,omitempty"`
+	Title         string        `json:"title,omitempty"`
+	Subtitles     string        `json:"subtitles,omitempty"`
+	SubtitlesURL  string        `json:"subs_url,omitempty"`
+	SubtitlesType string        `json:"subs_type,omitempty"`
+	Duration      int           `json:"duration,omitempty"`
+	RewindTime    int           `json:"time,omitempty"`
+	URL           string        `json:"url,omitempty"`
+	Index         int           `json:"index,omitempty"`
+	ID            string        `json:"__id,omitempty"`
+	UserID        string        `json:"user_id,omitempty"`
+	Users         []*cache.User `json:"users,omitempty"`
+	Ticker        *elapsedTime  `json:"ticker,omitempty"`
+	Emoji         []db.Emoji    `json:"emoji,omitempty"`
+	FeedBack      *feedback     `json:"feedback,omitempty"`
 }
 
 type elapsedTime struct {
@@ -121,12 +138,21 @@ const (
 )
 
 const (
-	eTypeMsg         = "message"
-	eTypePlAdd       = "playlist_add"
-	eTypePlDel       = "playlist_del"
+	eTypeMsg = "message"
+
+	eTypePlAdd  = "playlist_add"
+	eTypePlDel  = "playlist_del"
+	eTypePause  = "pause"
+	eTypeResume = "resume"
+	eTypeRewind = "rewind"
+	eTypeMove   = "move"
+
 	eTypeUpdUserList = "update_users"
 	eTypePlaylistUpd = "update_playlist"
 	eTypeEmojiUpdate = "emoji_update"
-	eTypeFeedBack    = "feedback"
-	eTypeTicker      = "ticker"
+
+	eTypeFeedBack = "feedback"
+	eTypeTicker   = "ticker"
+
+	eTypeKick = "kick"
 )

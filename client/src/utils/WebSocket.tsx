@@ -2,7 +2,6 @@ import { get } from 'lodash';
 import * as api from '../constants/apiActions';
 import * as types from '../constants/actionTypes';
 import { store } from '../store';
-import { sortPlaylistByIndex } from './index';
 import { toast } from 'react-toastify';
 import { toastOpts } from '../conf';
 import {
@@ -18,8 +17,10 @@ import {
 import { User } from './types';
 import { Store } from 'redux';
 import { Emoji } from '../reducers/emojis';
+import httpServices from './httpServices';
+import { parseAndDispatchSubtitiles } from './subtitles';
 
-const { dispatch } = store as Store;
+const { dispatch, getState } = store as Store;
 
 export interface SocketInterface {
     instance: WebSocket,
@@ -114,7 +115,7 @@ class Socket implements SocketInterface {
 
     public destroy = () => {
         this.unsubscribeEvents();
-        this.instance.close();
+        if (this.instance) this.instance.close();
         this.resetStates();
     };
 
@@ -159,19 +160,21 @@ class Socket implements SocketInterface {
         if (!this.guest) {
             this.instance.send(api.USER_REGISTER(this.roomID, this.uuid));
         } else {
-            this.instance.send(api.GUEST_REGISTER(this.roomID, this.uuid, this.name));
+            const request = api.GUEST_REGISTER(this.roomID, this.uuid, this.name);
+            this.instance.send(request);
         }
         dispatch({ type: types.SET_SOCKET_CONNECTED, payload: true });
     }
 
     private handleMessage = ({ data }: MessageEvent) => {
         const parsedData = JSON.parse(data) as Message;
+        // console.log(JSON.stringify(parsedData, null, 4));
         const messageType = get(parsedData, 'body.event.type') as MessageType;
 
         switch (messageType) {
             case 'update_users': {
                 const data = get(parsedData, 'body.event.data') as UpdateUsersData;
-                return dispatch({ type: types.UPDATE_USERLIST, payload: data.users });
+                return dispatch({ type: types.UPDATE_USERLIST, payload: moveGuestsToTheEnd(data.users) });
             }
             case 'message': {
                 const message = get(parsedData, 'body.event.data') as ChatMessage;
@@ -180,8 +183,15 @@ class Socket implements SocketInterface {
             }
             case 'update_playlist': {
                 const data = get(parsedData, 'body.event.data') as UpdatePlaylistData;
+                const subtitilesUrl = get(parsedData, 'body.event.data.videos[0].subs') as string;
+                if (subtitilesUrl) httpServices.get(subtitilesUrl)
+                    .then(response => parseAndDispatchSubtitiles(response.data))
+                    .catch(() => toast.error('Could not fetch subtitiles'))
+
                 const playlist = data.videos || [];
-                return dispatch({ type: types.ADD_TO_PLAYLIST, payload: playlist });
+
+                const dispatchAction = () => dispatch({ type: types.ADD_TO_PLAYLIST, payload: playlist });
+                return this.handleMediaChange(data, dispatchAction);
             }
             case 'ticker': {
                 const { ticker } = get(parsedData, 'body.event.data') as TickerData;
@@ -190,6 +200,17 @@ class Socket implements SocketInterface {
             case 'emoji_update': {
                 const emoji = get(parsedData, 'body.event.data.emoji') as Emoji[];
                 return dispatch({ type: types.ADD_EMOJIS, payload: emoji || [] });
+            }
+            // TODO: structure may be different
+            case 'subtitles': {
+                const subtitilesUrl = get(parsedData, 'body.event.data.subs') as string;
+                httpServices.get(subtitilesUrl)
+                    .then(response => parseAndDispatchSubtitiles(response.data))
+                    .catch(() => toast.error('Could not fetch subtitiles'))
+            }
+            case 'error': {
+                const error = get(parsedData, 'body.event.data.error') as string;
+                return toast.error(error, toastOpts);
             }
             case 'feedback': {
                 const { feedback } = get(parsedData, 'body.event.data') as FeedbackData;
@@ -206,6 +227,24 @@ class Socket implements SocketInterface {
         }
     };
 
+    private handleMediaChange(data: any, dispatch: (...args: any) => void) {
+        const state = getState();
+        const mediaBefore = get(state, 'media.playlist[0]');
+        const mediaAfter = get(data, 'videos[0]');
+
+        const videoIdCurrent = get(mediaBefore, '__id');
+        const videoIdNew = get(mediaAfter, '__id');
+
+        const mediaBeforeChange = new CustomEvent('mediabeforechange', { 'detail': { mediaBefore, mediaAfter } });
+        const mediaAfterChange = new CustomEvent('mediaafterchange', { 'detail': { mediaBefore, mediaAfter } });
+
+        const changed = videoIdCurrent !== videoIdNew;
+        if (changed) document.dispatchEvent(mediaBeforeChange);
+        dispatch();
+        // Maybe wait for the next tick?
+        if (changed) document.dispatchEvent(mediaAfterChange);
+    }
+
     private handleError = () => {
         this.handleReconnect();
     };
@@ -219,10 +258,11 @@ class Socket implements SocketInterface {
         clearTimeout(this.reconnectTimer);
         this.reconnectTimer = setTimeout(() => {
             this.initWebSocket();
-        }, 1000);
+        }, 3000);
     };
 
     private unsubscribeEvents = () => {
+        if (!this.instance) return;
         this.instance.onopen = () => null;
         this.instance.onmessage = () => null;
         this.instance.onerror = () => null;
@@ -236,6 +276,14 @@ class Socket implements SocketInterface {
     //     if (!this.pending) this._webSocketReconnect();
     //   }, WEBSOCKET_TIMEOUT);
     // };
+}
+
+function moveGuestsToTheEnd(users: User[]) {
+    if (!users) return [];
+    const guests = users.filter(user => user.guest);
+    const notGuests = users.filter(user => !user.guest);
+
+    return [...notGuests, ...guests]
 }
 
 const setAddMediaToSuccess = () => {

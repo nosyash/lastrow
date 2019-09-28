@@ -65,12 +65,7 @@ class LogForm extends Form {
     };
 
     handleLogOut = async () => {
-        // const { updateProfile } = this.props as any;
-
-        const res = await http.post(api.API_AUTH(), api.LOG_OUT()) as any;
-        if (res.error) return toast.error(res.error, toastOpts);
-        // else updateProfile({ logged: false });
-        document.cookie = 'session_id=; Max-Age=0;';
+        document.cookie = 'jwt=; expires=Thu, 01 Jan 1970 00:00:01 GMT';
         window.location.reload();
     };
 

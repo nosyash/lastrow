@@ -3,10 +3,12 @@ import { connect } from 'react-redux';
 import cn from 'classnames';
 import * as types from '../../../../../constants/actionTypes';
 import * as keys from '../../../../../constants/keys';
-import { MAX_MESSAGE_LENGTH } from '../../../../../constants';
+import { MAX_MESSAGE_LENGTH, MAXIMUM_RECENT_EMOTES } from '../../../../../constants';
 import * as api from '../../../../../constants/apiActions';
 import { webSocketSend } from '../../../../../actions';
 import { reverse, mod } from '../../../../../utils';
+import ls from 'local-storage';
+import { Emoji } from '../../../../../reducers/emojis';
 
 const KEY_A = 97;
 const KEY_Z = 122;
@@ -153,6 +155,8 @@ function ChatInput(props) {
         // if we're not at the beginning, manually add space before emote;
         if (inputStart) inputStart += ' ';
 
+        handlePopularEmote(name);
+
         setInputValue(`${inputStart}:${name}: ${inputEnd}`);
         setCurrentEmote(0);
         setEmoteQuery([]);
@@ -172,6 +176,35 @@ function ChatInput(props) {
         setCurrentEmote(0);
     }
 
+    function handlePopularEmote(name: string) {
+        const { emotesList } = props;
+        const emoteObject = emotesList.find(emote => emote.name === name);
+        if (!emoteObject) return;
+
+        const popularEmotes = ls('popularEmotes') as any;
+        if (!popularEmotes) {
+            ls('popularEmotes', []);
+            return handlePopularEmote(emoteObject);
+        }
+
+        const curEmote = popularEmotes.find((emote) => emote.name === emoteObject.name)
+        if (!curEmote) {
+            popularEmotes.splice(0, 0, emoteObject)
+            // return ls('popularEmotes', popularEmotes)
+        } else {
+            // const index = popularEmotes.indexOf(curEmote);
+            // popularEmotes.splice(index, 1)
+            // popularEmotes.splice(0, 0, emoteObject)
+        }
+
+        if (popularEmotes.length > 10) {
+            popularEmotes.pop()
+        }
+        ls('popularEmotes', popularEmotes)
+        props.updatePopularEmotes(popularEmotes)
+
+    }
+
     return (
         <div className="chat-input">
             <textarea
@@ -184,6 +217,11 @@ function ChatInput(props) {
                 className="chat-input"
                 id="chat-input"
             />
+            <InputTopBar
+                onClick={name => pasteEmoteByName(name, true)}
+                popularEmotes={props.popularEmotes}
+                emotes={props.emotesList}
+                toggleShowEmotes={() => setShowEmotes(!showEmotes)} />
             <div className="emote-search">
                 {emoteQuery.map((emote, index) => (
                     <span
@@ -201,20 +239,54 @@ function ChatInput(props) {
             </div>
             {showEmotes && (
                 <EmoteMenu
+                    onHideMenu={() => setShowEmotes(false)}
                     list={props.emotesList}
                     onClick={name => pasteEmoteByName(name, true)}
                 />
             )}
-            <span onClick={() => setShowEmotes(!showEmotes)} className="control emote-icon">
-                <i className="fa fa-smile" />
-            </span>
         </div>
     );
 }
 
-function EmoteMenu({ list, onClick }) {
+function InputTopBar({ toggleShowEmotes, onClick, popularEmotes, emotes }) {
+    const mapEmoteToName = emotes.map(emote => emote.name);
+    const popular = popularEmotes.filter((emote) => mapEmoteToName.includes(emote.name))
+    const popularSliced = popular.slice(0, MAXIMUM_RECENT_EMOTES);
     return (
-        <div className="emote-menu">
+        <div className="chat-input__topbar">
+            <div className="chat-input__popular-emotes">
+                {popularSliced.map(emote => <img
+                    onClick={() => onClick(emote.name, true)}
+                    src={emote.path}
+                    alt={emote.name}
+                    title={emote.name}
+                    key={emote.path}
+                    className="emote chat-topbar__emote"
+                />)}
+            </div>
+            <span onClick={toggleShowEmotes} className="control emote-icon">
+                <i className="fa fa-smile" />
+            </span>
+        </div>
+    )
+}
+
+function EmoteMenu({ list, onClick, onHideMenu }) {
+    document.removeEventListener('mousedown', handleClick)
+    document.addEventListener('mousedown', handleClick)
+    function handleClick(e: MouseEvent) {
+        const target = e.target as HTMLElement
+        if (target.closest('.emote-menu') || target.closest('.emote-icon'))
+            return;
+        onHideMenu();
+    }
+
+    const chatEl = document.getElementById('chat-input');
+    const { left, width, height, bottom: b } = chatEl.getBoundingClientRect();
+    const innerHeight = window.innerHeight;
+    const bottom = innerHeight - b + height + 10;
+    return (
+        <div style={{ left, width, bottom }} className="emote-menu">
             <div className="emote-menu__scroll">
                 {list.map(emote => (
                     <span
@@ -236,10 +308,12 @@ const mapStateToProps = state => ({
     roomID: state.mainStates.roomID,
     socketState: state.chat.connected,
     emotesList: state.emojis.list,
+    popularEmotes: state.emojis.popularEmotes,
 });
 
 const mapDispatchToProps = {
     AppendToHistory: payload => ({ type: types.APPEND_TO_HISTORY, payload }),
+    updatePopularEmotes: payload => ({ type: types.UPDATE_POPULAR_EMOTE, payload })
 };
 
 export default connect(

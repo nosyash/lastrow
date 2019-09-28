@@ -1,8 +1,14 @@
 package cache
 
+import "log"
+
 // AddUser read information about user from Database and add the user to the user cache
 func (u *Users) addUser(uuid string) {
-	userProfile, _ := u.db.GetUserProfile(uuid)
+	userProfile, err := u.db.GetUserByUUID(uuid)
+	if err != nil {
+		log.Printf("u.db.GetUserByUUID(): %v", err)
+		return
+	}
 
 	u.users[uuid] = &User{
 		Name:  userProfile.Name,
@@ -24,25 +30,44 @@ func (u *Users) addGuest(user *User) {
 // DelUser delete a user from the cache
 func (u *Users) delUser(uuid string) {
 	delete(u.users, uuid)
-	u.UpdateUsers <- struct{}{}
+	if len(u.users) > 0 {
+		u.UpdateUsers <- struct{}{}
+	}
 }
 
-// GetUser return user object by UUID
-func (u Users) GetUser(uuid string) (*User, bool) {
+// GetUserByUUID return user object by UUID
+func (u Users) GetUserByUUID(uuid string) (*User, bool) {
 	user, ok := u.users[uuid]
 	return user, ok
 }
 
+// GetUserByID return user object by ID
+func (u Users) GetUserByID(id string) *User {
+	for _, user := range u.users {
+		if user.ID == id {
+			return user
+		}
+	}
+
+	return nil
+}
+
 // UpdateUser update user in cache, image, nickname, color etc.
 func (u *Users) UpdateUser(uuid string) {
-	userProfile, _ := u.db.GetUserProfile(uuid)
-	user, _ := u.GetUser(uuid)
+	userProfile, err := u.db.GetUserByUUID(uuid)
+	if err != nil {
+		log.Printf("u.db.GetUserByUUID(): %v", err)
+	}
 
-	user.Name = userProfile.Name
-	user.Color = userProfile.Color
-	user.Image = userProfile.Image
+	user, ok := u.GetUserByUUID(uuid)
 
-	u.UpdateUsers <- struct{}{}
+	if ok {
+		user.Name = userProfile.Name
+		user.Color = userProfile.Color
+		user.Image = userProfile.Image
+
+		u.UpdateUsers <- struct{}{}
+	}
 }
 
 // UsersCount return count users for current room

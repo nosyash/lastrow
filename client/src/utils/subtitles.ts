@@ -1,3 +1,6 @@
+import { store } from "../store";
+import { parse as parseSubtitles } from "subtitle";
+import * as types from '../constants/actionTypes'
 const PREEMPTIVE_TIME = 30;
 const UPDATE_INTERVAL = 10;
 
@@ -5,42 +8,41 @@ const newLineRegExp = new RegExp(/\n/, 'gm');
 const bracketsRegExp = new RegExp(/^<.*>(.*)<\/.*>$/);
 
 export default class SubtitlesHandler {
-    subtitles: any[];
-    tempSubtitles: any[];
-    currentSubtitles: any[];
+    subs: any[];
+    subsChunk: any[];
     currentTime: number;
     timer: NodeJS.Timeout;
     constructor() {
-        this.subtitles = [];
-        this.tempSubtitles = [];
-        this.currentSubtitles = [];
+        this.subs = [];
+        this.subsChunk = [];
 
         this.currentTime = 0;
 
         this.timer = null;
 
-        this.updateTempSubtitiles();
+        this.updateSubsChunk();
     }
 
-    setSubtitles(subtitles) {
-        this.subtitles = subtitles;
-        this.setTemporarySubtitiles();
+    public setSubtitles(subtitles: any[]) {
+        this.subs = subtitles;
+        this.setSubsChunk();
     }
 
-    setCurrentTime(timeMs) {
+    public setCurrentTime(timeMs: number) {
         const difference = Math.abs(this.currentTime - timeMs);
         this.currentTime = timeMs;
-        if (difference > 200) this.updateTempSubtitiles();
+        if (difference > 200)
+            this.updateSubsChunk();
     }
 
-    updateTempSubtitiles = (callback?) => {
+    public updateSubsChunk = (callback?) => {
         clearTimeout(this.timer);
-        this.timer = setTimeout(this.updateTempSubtitiles, UPDATE_INTERVAL * 1000);
-        return this.setTemporarySubtitiles(callback);
+        this.timer = setTimeout(this.updateSubsChunk, UPDATE_INTERVAL * 1000);
+        return this.setSubsChunk(callback);
     };
 
-    setTemporarySubtitiles = (callback?) => {
-        const { currentTime, subtitles } = this;
+    private setSubsChunk = (callback?) => {
+        const { currentTime, subs: subtitles } = this;
         const preemptiveTime = PREEMPTIVE_TIME * 1000;
         const subsList = subtitles.filter(
             s =>
@@ -48,11 +50,12 @@ export default class SubtitlesHandler {
                 (s.start >= currentTime && currentTime + preemptiveTime >= s.end)
         );
 
-        this.tempSubtitles = this.removeBrackets(subsList);
-        if (callback) return callback();
+        this.subsChunk = this.removeBrackets(subsList);
+        if (callback)
+            return callback();
     };
 
-    removeBrackets = subtitles => {
+    private removeBrackets = subtitles => {
         return subtitles.map(el => {
             return {
                 ...el,
@@ -63,24 +66,32 @@ export default class SubtitlesHandler {
         });
     };
 
-    getSubtitles = timeMs => {
+    public getSubtitles = (timeMs: number) => {
         const difference = Math.abs(this.currentTime - timeMs);
         this.currentTime = timeMs;
         if (difference > 200)
-            return this.updateTempSubtitiles(() => {
-                return this.findCurrentSubtitles();
-            });
+            return this.updateSubsChunk(() =>
+                this.findCurrentSubtitles()
+            );
 
         return this.findCurrentSubtitles();
     };
 
-    findCurrentSubtitles = () => {
-        return this.tempSubtitles.filter(s => {
-            return s.start <= this.currentTime && this.currentTime <= s.end;
-        });
+    private findCurrentSubtitles = () => {
+        return this.subsChunk.filter(s =>
+            s.start <= this.currentTime && this.currentTime <= s.end
+        );
     };
 
-    destroy() {
+    public destroy() {
         clearTimeout(this.timer);
     }
+}
+
+export function parseAndDispatchSubtitiles(data: string) {
+    try {
+        const parsed = parseSubtitles(data);
+        store.dispatch({ type: types.SET_SUBS, payload: { parsed } })
+        return store.dispatch({ type: types.SHOW_SUBS })
+    } catch (error) { }
 }

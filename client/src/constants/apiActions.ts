@@ -2,6 +2,7 @@
 import { API_ENDPOINT } from '../constants';
 import { Message } from '../utils/types';
 import { PasswordChange, WebSocketRegister, WebSocketGuestRegister, SendMediaToPlaylist, DeleteMediaFromPlaylist } from './types';
+import { getCookie } from '../utils';
 
 export const API_AUTH = () => `${API_ENDPOINT}/auth`;
 export const API_ROOM = (roomID: string) => `${API_ENDPOINT}/r/${roomID}`;
@@ -12,12 +13,6 @@ export const ROOM_CREATE = (title: string, path: string) =>
     JSON.stringify({
         action: 'room_create',
         body: { title, path },
-    } as Message);
-
-export const LOG_OUT = () =>
-    JSON.stringify({
-        action: 'logout',
-        body: { uname: '', passwd: '', email: '' },
     } as Message);
 
 export const LOG_IN = (uname: string, passwd: string, email: string) =>
@@ -63,11 +58,11 @@ export const UPDATE_PASSWORD = ({ cur_passwd, new_passwd }: PasswordChange) =>
 // ####################
 //      WebSocket
 // ####################
-export const USER_REGISTER = (room_id: string, user_uuid: string) =>
+export const USER_REGISTER = (room_id: string, user_uuid?: string) =>
     JSON.stringify({
         action: 'user_register',
         room_id,
-        user_uuid,
+        jwt: getCookie('jwt'),
     } as WebSocketRegister);
 
 export const GUEST_REGISTER = (room_id: string, user_uuid: string, name: string) =>
@@ -78,7 +73,7 @@ export const GUEST_REGISTER = (room_id: string, user_uuid: string, name: string)
         user_uuid,
     } as WebSocketGuestRegister);
 
-export const SEND_MESSAGE = (message: string, user_uuid: string) =>
+export const SEND_MESSAGE = (message: string, user_uuid?: string) =>
     JSON.stringify({
         action: 'user_event',
         body: {
@@ -90,6 +85,7 @@ export const SEND_MESSAGE = (message: string, user_uuid: string) =>
             },
         },
         user_uuid,
+        jwt: getCookie('jwt'),
     } as Message);
 
 export const GET_ERROR = (string: string) => {
@@ -97,7 +93,24 @@ export const GET_ERROR = (string: string) => {
     if (obj.error) return obj.error;
 };
 
-export const SEND_MEDIA_TO_PLAYLIST = ({ url, uuid }: { url: string, uuid: string }) => {
+// export const SEND_MEDIA_TO_PLAYLIST_WITH_SUBS = ({ url, uuid }) => {
+//     const request = {
+//         action: "player_event",
+//         body: {
+//             event: {
+//                 type: "playlist_add",
+//                 data: {
+//                     url: "https://up.bona.cafe/src/54/4ed8190abce24f2b4ce73df845ef1f4f6f031e.webm",
+//                     subtitles: "bonan_durek",
+//                     subs_type: "srt"
+//                 }
+//             }
+//         },
+//         jwt: getCookie('jwt'),
+//     }
+// }
+
+export const SEND_MEDIA_TO_PLAYLIST = ({ url, subtitles = {}, uuid }: { url: string, uuid?: string, subtitles?: any }) => {
     const request = {
         action: 'player_event',
         body: {
@@ -105,16 +118,17 @@ export const SEND_MEDIA_TO_PLAYLIST = ({ url, uuid }: { url: string, uuid: strin
                 type: 'playlist_add',
                 data: {
                     url,
+                    ...subtitles,
                 },
             },
         },
-        user_uuid: uuid,
+        jwt: getCookie('jwt'),
     } as SendMediaToPlaylist;
 
     return JSON.stringify(request);
 };
 
-export const DELETE_VIDEO_FROM_PLAYLIST = ({ __id, uuid }: { __id: string, uuid: string }) => {
+export const DELETE_VIDEO_FROM_PLAYLIST = ({ __id, uuid }: { __id: string, uuid?: string }) => {
     const request = {
         action: 'player_event',
         body: {
@@ -125,11 +139,29 @@ export const DELETE_VIDEO_FROM_PLAYLIST = ({ __id, uuid }: { __id: string, uuid:
                 },
             },
         },
-        user_uuid: uuid,
+        jwt: getCookie('jwt'),
     } as DeleteMediaFromPlaylist;
 
     return JSON.stringify(request);
 };
+
+export const REORDER_MEDIA = ({ __id, index }: { __id: string, index: number }) => {
+    const request = {
+        action: "player_event",
+        body: {
+            event: {
+                type: "move",
+                data: {
+                    __id: __id,
+                    index: index
+                }
+            }
+        },
+        jwt: getCookie('jwt'),
+    }
+
+    return JSON.stringify(request)
+}
 
 export interface AddEmoteRequest {
     name: string;

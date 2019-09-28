@@ -13,6 +13,7 @@ export const SET_CURRENT_ROOMID = 'SET_CURRENT_ROOMID';
 export const ADD_EMOJIS = 'ADD_EMOJIS';
 export const UPDATE_MAIN_STATES = 'UPDATE_MAIN_STATES';
 export const TOGGLE_CINEMAMODE = 'TOGGLE_CINEMAMODE';
+export const UPDATE_POPULAR_EMOTE = 'UPDATE_POPULAR_EMOTE';
 
 // User
 export const UPDATE_PROFILE = 'UPDATE_PROFILE';
@@ -26,6 +27,9 @@ export const SWITCH_MUTE = 'SWITCH_MUTE';
 export const SET_VOLUME = 'SET_VOLUME';
 export const SET_SUBS = 'SET_SUBS';
 export const SET_CURRENT_SUBS = 'SET_CURRENT_SUBS';
+export const SET_SUBS_URL = 'SET_SUBS_URL';
+export const SHOW_SUBS = 'SHOW_SUBS';
+export const HIDE_SUBS = 'HIDE_SUBS';
 export const FETCH_SUBS = 'FETCH_SUBS';
 export const ADD_TO_PLAYLIST = 'ADD_TO_PLAYLIST';
 export const TOGGLE_SYNC = 'TOGGLE_SYNC';
