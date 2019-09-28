@@ -140,9 +140,11 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 					Index: req.Body.Event.Data.Index,
 				}
 
+				moveLock.Lock()
 				if r := <-h.cache.Playlist.MoveFeedBack; r == cache.MoveHead {
 					h.syncer.move <- struct{}{}
 				}
+				moveLock.Unlock()
 			}
 		}
 	}
