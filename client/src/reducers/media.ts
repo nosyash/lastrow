@@ -42,7 +42,7 @@ const InitialState = {
     muted: false,
     playbackRate: 0,
     playing: true,
-    playlist: [] as Video[],
+    playlist: [],
     showSubs: false,
     subs: {
         url: 'https://stream.bona.cafe/uzzu/ep15.srt',

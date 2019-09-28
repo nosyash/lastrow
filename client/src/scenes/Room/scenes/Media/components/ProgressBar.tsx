@@ -6,6 +6,7 @@ import { SEEK_SEL } from '../../../../../constants';
 interface ProgressBarProps {
     onWheelClick?: () => void;
     onProgressChange?: (number: number) => void;
+    subProgress?: { start: number, end: number }[]
     value: number;
     wheel?: boolean;
     classes?: string;
@@ -148,8 +149,12 @@ class ProgressBar extends Component<ProgressBarProps, ProgressBarState> {
         return `translateX(-${isUndefined ? 100 : 100 - curProgress}%)`;
     }
 
+    getSubProgressStyle({ start, end }) {
+        return { left: `${start}%`, width: `${end}%` }
+    }
+
     render() {
-        const { classes } = this.props;
+        const { classes, subProgress } = this.props;
         const transform = this.getTransformStyle();
         return (
             <div
@@ -163,6 +168,9 @@ class ProgressBar extends Component<ProgressBarProps, ProgressBarState> {
                 </div>
                 <div ref={this.progressEl} className="progress-bar">
                     <div style={{ transform }} className="progress-bar_passed" />
+                    {subProgress && subProgress.map((element) =>
+                        <div key={element.start + element.end} style={{ ...this.getSubProgressStyle(element) }} className="progress-bar_passed progress-bar_sub-progress" />
+                    )}
                 </div>
             </div>
         );

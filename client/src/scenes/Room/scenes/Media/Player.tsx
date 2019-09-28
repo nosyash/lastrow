@@ -37,6 +37,8 @@ interface PlayerProps {
 
 function Player(props: PlayerProps) {
     const [minimized, setMinimized] = useState(false);
+    const [buffered, setBuffered] = useState([]);
+    const minimizedRef = useRef(false);
     const playerRef = useRef(null);
     const currentVideoRef = useRef(null);
     let volume = 0.3;
@@ -52,39 +54,23 @@ function Player(props: PlayerProps) {
 
     useEffect(() => {
         document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mediaafterchange', watchPlaylist);
 
         return () => {
             clearInterval(prefetchWatcher);
             document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mediaafterchange', watchPlaylist);
         }
-    });
+    }, []);
 
     useEffect(() => { checkDelay() }, [props.media.actualTime]);
 
     useEffect(() => { checkDelay() }, [props.media.actualTime]);
 
-    useEffect(() => { watchPlaylist() }, [props.media.playlist])
-
-    function watchPlaylist() {
-        // TODO: watch media change on websocket level
-        const isVideoHasChanged = isVideoChanged();
-        if (!isVideoHasChanged) return;
-
-        document.dispatchEvent(new Event('mediachanged'));
-
+    function watchPlaylist(e: CustomEvent) {
         safelySeekTo(0);
         // waitForPrefetch();
         props.hideSubs();
-    }
-
-    function isVideoChanged(): boolean {
-        const currentVideo = getCurrentVideo()
-
-        const currentVideoId = get(currentVideo, '__id')
-        const oldVideoId = get(currentVideoRef.current, '__id')
-
-        currentVideoRef.current = currentVideo;
-        return currentVideoId !== oldVideoId;
     }
 
     function waitForPrefetch() {
@@ -164,18 +150,46 @@ function Player(props: PlayerProps) {
         if (shouldSeek) safelySeekTo(actualTime);
     }
 
+    function getBufferedTime() {
+        const [duration] = safelyGetTimeAndDuration();
+        const buffered = videoEl ? videoEl.buffered : null
+        if (!buffered || !duration) return [];
+        return Array(buffered.length)
+            .fill(0)
+            .map((_, i) => {
+                const start = buffered.start(i) / duration * 100;
+                const end = buffered.end(i) / duration * 100;
+                return {
+                    start,
+                    end: end - start,
+                }
+            })
+    }
+
     function handlePlaying({ playedSeconds }) {
+        const buffered = getBufferedTime();
+        setBuffered(buffered);
         props.updatePlayer({ currentTime: playedSeconds });
         // handleMouseMove();
     }
 
+
+
     function handleMouseMove({ target }) {
-        document.removeEventListener('mousemove', handleMouseMove);
         clearTimeout(minimizeTimer);
         if (target.closest('.video-player')) return;
-        if (minimized) return;
+        if (minimizedRef.current) return;
+        minimizeTimer = setTimeout(setMinimizedTrue, PLAYER_MINIMIZE_TIMEOUT);
+    }
 
-        minimizeTimer = setTimeout(() => setMinimized(true), PLAYER_MINIMIZE_TIMEOUT);
+    function setMinimizedFalse() {
+        minimizedRef.current = false;
+        setMinimized(false)
+    }
+
+    function setMinimizedTrue() {
+        minimizedRef.current = true;
+        setMinimized(true)
     }
 
     const handlePlay = () => {
@@ -242,7 +256,7 @@ function Player(props: PlayerProps) {
                     </div>
                 }
                 {isDirectLink() && <div className="video-overlay" />}
-                {/* {<PreloadIframe nextVideo={nextVideo} />} */}
+                {<PreloadMedia nextVideo={nextVideo} />}
             </React.Fragment>
         );
     }
@@ -276,7 +290,7 @@ function Player(props: PlayerProps) {
         return (
             <div className="video-player_top">
                 <div className="video-time current-time">{formatTime(media.currentTime)}</div>
-                <ProgressBar onProgressChange={handleProgressChange} value={progressValue} />
+                <ProgressBar subProgress={buffered} onProgressChange={handleProgressChange} value={progressValue} />
                 <div className="video-time duration">{formatTime(media.duration)}</div>
             </div>
         );
@@ -352,8 +366,8 @@ function Player(props: PlayerProps) {
     return (
         <React.Fragment>
             <div
-                onMouseLeave={() => setMinimized(true)}
-                onMouseMove={() => setMinimized(false)}
+                onMouseLeave={setMinimizedTrue}
+                onMouseMove={setMinimizedFalse}
                 className={classes}
             >
                 {RenderPlayer()}
@@ -363,36 +377,31 @@ function Player(props: PlayerProps) {
     );
 }
 
-// Loads second video in playlist if it's a YouTube.
-function PreloadIframe({ nextVideo }: { nextVideo: Video | null }) {
-    // TODO: test it
-    // Video cache may be removed if main video is too long,
-    // so we could just always have this iframe on the backround.
-    // It's not going to preload the whole video anyway.
-    // But it could cause problems on initial main video load in case of slow connections
 
-    const [show, setShow] = useState(true);
-    const timer = useRef(null);
-
-    if (!show) return null;
+function PreloadMedia({ nextVideo }: { nextVideo: Video | null }) {
     if (!nextVideo) return null;
-    if (nextVideo.direct) return null;
+    // const [show, setShow] = useState(true);
+    // const timer = useRef(null);
+
+    // if (!show) return null;
+    // if (!nextVideo) return null;
+    // if (nextVideo.direct) return null;
 
     // YouTube video doesn't have 'iframe' property,
     // because this property refers to user-provided custom iframe
     if (nextVideo.iframe) return null;
 
-    const handleAutoClose = () => {
-        clearTimeout(timer.current);
-        timer.current = setTimeout(() => setShow(false), 7000);
-    }
+    // const handleAutoClose = () => {
+    //     clearTimeout(timer.current);
+    //     timer.current = setTimeout(() => setShow(false), 7000);
+    // }
 
-    useEffect(() => {
-        setShow(true);
-        handleAutoClose();
+    // useEffect(() => {
+    // setShow(true);
+    // handleAutoClose();
 
-        return () => { clearTimeout(timer.current) }
-    }, [nextVideo.url])
+    // return () => { clearTimeout(timer.current) }
+    // }, [nextVideo.url])
 
     return (
         <ReactPlayer
@@ -400,7 +409,7 @@ function PreloadIframe({ nextVideo }: { nextVideo: Video | null }) {
             width="0px"
             height="0px"
             // TODO: Maybe just set to display: none?
-            style={{ visibility: 'hidden' }}
+            style={{ visibility: 'hidden', display: 'none' }}
             config={playerConf}
             autoPlay
             controls={false}
