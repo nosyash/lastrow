@@ -374,7 +374,7 @@ func (server Server) roomInnerHandler(w http.ResponseWriter, r *http.Request) {
 
 		rv := roomView{
 			Title: room.Title,
-			ID:    room.UUID,
+			UUID:  room.UUID,
 			Emoji: room.Emoji,
 		}
 
@@ -429,3 +429,13 @@ func (server Server) getAllRooms(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(r)
 }
+
+// func (server Server) bannedList(w http.ResponseWriter, r *http.Request) {
+// 	payload, err := server.extractPayload(w, r)
+// 	if err != nil {
+// 		sendJSON(w, http.StatusForbidden, err)
+// 		return
+// 	}
+
+// 	if
+// }

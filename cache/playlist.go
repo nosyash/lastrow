@@ -262,10 +262,10 @@ func (pl *playlist) moveVideo(index int, ID string) {
 	val := pl.playlist[oldIdx]
 
 	pl.playlist = append(pl.playlist[:oldIdx], pl.playlist[oldIdx+1:]...)
-	newSlice := make([]*Video, index+1)
-	copy(newSlice, pl.playlist[:index])
-	newSlice[index] = val
-	pl.playlist = append(newSlice, pl.playlist[index:]...)
+	before := make([]*Video, index+1)
+	copy(before, pl.playlist[:index])
+	before[index] = val
+	pl.playlist = append(before, pl.playlist[index:]...)
 
 	// Update head element
 	if index == 0 || oldIdx == 0 {

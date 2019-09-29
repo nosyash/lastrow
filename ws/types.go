@@ -39,13 +39,13 @@ type user struct {
 }
 
 type packet struct {
-	Action  string       `json:"action"`
-	Body    body         `json:"body"`
-	RoomID  string       `json:"room_id,omitempty"`
-	UUID    string       `json:"user_uuid,omitempty"`
-	JWT     string       `json:"jwt,omitempty"`
-	Payload *jwt.Payload `json:"-"`
-	Name    string       `json:"name,omitempty"`
+	Action   string       `json:"action"`
+	Body     body         `json:"body"`
+	RoomUUID string       `json:"room_uuid,omitempty"`
+	UUID     string       `json:"user_uuid,omitempty"`
+	JWT      string       `json:"jwt,omitempty"`
+	Payload  *jwt.Payload `json:"-"`
+	Name     string       `json:"name,omitempty"`
 }
 
 type body struct {
@@ -89,7 +89,7 @@ type data struct {
 	URL           string        `json:"url,omitempty"`
 	Index         int           `json:"index,omitempty"`
 	ID            string        `json:"__id,omitempty"`
-	UserID        string        `json:"user_id,omitempty"`
+	BanType       string        `json:"ban_type,omitempty"`
 	Users         []*cache.User `json:"users,omitempty"`
 	Ticker        *elapsedTime  `json:"ticker,omitempty"`
 	Emoji         []db.Emoji    `json:"emoji,omitempty"`
@@ -155,4 +155,5 @@ const (
 	eTypeTicker   = "ticker"
 
 	eTypeKick = "kick"
+	eTypeBan  = "ban"
 )

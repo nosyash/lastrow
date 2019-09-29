@@ -41,7 +41,7 @@ func HandleWsConnection(db *db.Database) {
 }
 
 func (rh *roomsHub) registerNewConn(conn *websocket.Conn) {
-	user, roomID, err := handleRegRequest(conn)
+	user, roomUUID, err := handleRegRequest(conn)
 	if err != nil {
 		sendError(conn, err)
 		conn.Close()
@@ -53,7 +53,7 @@ func (rh *roomsHub) registerNewConn(conn *websocket.Conn) {
 		return
 	}
 
-	if !rh.db.RoomIsExists("path", roomID) {
+	if !rh.db.RoomIsExists("uuid", roomUUID) {
 		sendError(conn, ErrRoomWasNotFound)
 		conn.Close()
 		return
@@ -68,15 +68,15 @@ func (rh *roomsHub) registerNewConn(conn *websocket.Conn) {
 	}
 
 	for room := range rh.rhub {
-		if room == roomID {
-			rh.rhub[roomID].register <- user
+		if room == roomUUID {
+			rh.rhub[roomUUID].register <- user
 			return
 		}
 	}
 
-	hub := NewRoomHub(roomID, rh.db)
-	rh.rhub[roomID] = hub
+	hub := NewRoomHub(roomUUID, rh.db)
+	rh.rhub[roomUUID] = hub
 
-	go rh.rhub[roomID].HandleActions()
-	rh.rhub[roomID].register <- user
+	go rh.rhub[roomUUID].HandleActions()
+	rh.rhub[roomUUID].register <- user
 }

@@ -82,3 +82,21 @@ func (db Database) WhereUserOwner(uuid string) ([]Room, error) {
 func (db Database) UpdateRoomValue(uuid, key string, value interface{}) error {
 	return db.rc.Update(bson.M{"uuid": uuid}, bson.M{"$set": bson.M{key: value}})
 }
+
+// BanUser add a user to ban list
+func (db Database) BanUser(roomUUID, userUUID string) error {
+	var room Room
+
+	err := db.rc.Find(bson.M{"uuid": roomUUID}).One(&room)
+	if err != nil {
+		return err
+	}
+
+	banned := room.BanedUsers
+	banned = append(banned, bannedUsers{
+		UUID:    userUUID,
+		Expires: 0,
+	})
+
+	return db.UpdateRoomValue(roomUUID, "baned_users", banned)
+}

@@ -58,7 +58,7 @@ type authBody struct {
 
 type roomView struct {
 	Title string     `json:"title,omitempty"`
-	ID    string     `json:"ID,omitempty"`
+	UUID  string     `json:"uuid,omitempty"`
 	Emoji []db.Emoji `json:"emoji,omitempty"`
 }
 

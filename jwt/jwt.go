@@ -27,10 +27,11 @@ type Header struct {
 
 // Payload information in JWT about user
 type Payload struct {
-	UUID    string
-	IsAdmin bool `json:"is_admin"`
-	Owner   []Owner
-	Exp     int64
+	UUID      string
+	IsAdmin   bool `json:"is_admin"`
+	Owner     []Owner
+	AuthRooms []string
+	Exp       int64
 }
 
 // Owner describes information about where user is owner and what is him Permissions
