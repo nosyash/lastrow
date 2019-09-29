@@ -114,7 +114,7 @@ func (server Server) createRoom(w http.ResponseWriter, title, path, passwd strin
 		if err != nil {
 			log.Printf("bcrypt.GenerateFromPassword(): %v", err)
 			sendJSON(w, http.StatusBadRequest, message{
-				Error: "Couldn't create new account",
+				Error: "Couldn't generate password hash for this room",
 			})
 			return
 		}
@@ -392,7 +392,9 @@ func (server Server) authInRoom(w http.ResponseWriter, path, passwd string, payl
 
 	hash, _ := hex.DecodeString(room.Password)
 	if err := bcrypt.CompareHashAndPassword(hash, []byte(passwd)); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "Password is invalid",
+		})
 		return
 	}
 
