@@ -111,13 +111,16 @@ func (db Database) UnbanUser(roomUUID, userUUID string) error {
 
 	var banned []BannedUsers
 
-	for i, u := range room.BannedUsers {
-		if u.UUID == userUUID {
-			banned = append(room.BannedUsers[:i], room.BannedUsers[i+1:]...)
+	if len(banned) > 0 {
+		for i, u := range room.BannedUsers {
+			if u.UUID == userUUID {
+				banned = append(room.BannedUsers[:i], room.BannedUsers[i+1:]...)
+			}
 		}
+		return db.UpdateRoomValue(roomUUID, "banned_users", banned)
 	}
 
-	return db.UpdateRoomValue(roomUUID, "banned_users", banned)
+	return errors.New("Banned user list is empty")
 }
 
 // BanAddress add a ipadress to ban list
@@ -154,11 +157,14 @@ func (db Database) UnbanAddress(roomUUID, ipAddress string) error {
 
 	var banned []BannedIps
 
-	for i, u := range room.BannedIps {
-		if u.IP == ipAddress {
-			banned = append(room.BannedIps[:i], room.BannedIps[i+1:]...)
+	if len(banned) > 0 {
+		for i, u := range room.BannedIps {
+			if u.IP == ipAddress {
+				banned = append(room.BannedIps[:i], room.BannedIps[i+1:]...)
+			}
 		}
-	}
 
-	return db.UpdateRoomValue(roomUUID, "banned_ip", banned)
+		return db.UpdateRoomValue(roomUUID, "banned_ip", banned)
+	}
+	return errors.New("Banned ip adress list is empty")
 }

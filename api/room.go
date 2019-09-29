@@ -462,9 +462,23 @@ func (server Server) roomInnerHandler(w http.ResponseWriter, req *http.Request) 
 			return
 		}
 
+		if err != nil {
+			sendJSON(w, http.StatusBadRequest, message{
+				Error: err.Error(),
+			})
+			return
+		}
+
 		for _, r := range payload.AuthRooms {
 			if r.UUID == room.UUID {
-				hash, _ := hex.DecodeString(r.Hash)
+				hash, err := hex.DecodeString(r.Hash)
+				if err != nil {
+					sendJSON(w, http.StatusBadRequest, message{
+						Error: "Couldn't read authorized session for this room",
+					})
+					return
+				}
+
 				decPasswd, _ := hex.DecodeString(room.Password)
 
 				if err := bcrypt.CompareHashAndPassword(decPasswd, hash); err != nil {
