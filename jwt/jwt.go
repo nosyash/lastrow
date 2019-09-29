@@ -30,7 +30,7 @@ type Payload struct {
 	UUID      string
 	IsAdmin   bool `json:"is_admin"`
 	Owner     []Owner
-	AuthRooms []string
+	AuthRooms []AuthRoom `json:"auth_rooms"`
 	Exp       int64
 }
 
@@ -38,6 +38,12 @@ type Payload struct {
 type Owner struct {
 	RoomUUID    string `json:"room_uuid"`
 	Permissions int
+}
+
+// AuthRooms is a list where user authorized
+type AuthRoom struct {
+	UUID string `json:"uuid"`
+	Hash string `json:"hash"`
 }
 
 // Required length in bytes of a HMAC-512SHA key
@@ -56,7 +62,7 @@ var (
 )
 
 // GenerateNewToken generate and return new JWT
-func GenerateNewToken(header Header, payload Payload, key string) (string, error) {
+func GenerateNewToken(header Header, payload *Payload, key string) (string, error) {
 	if utf8.RuneCountInString(key) != requiredKeySize {
 		return "", ErrKeyLength
 	}

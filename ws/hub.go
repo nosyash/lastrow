@@ -19,7 +19,7 @@ var (
 	ErrInvalidUserID = errors.New("Cannot find user with given user_uuid")
 
 	// ErrBannedInARoom send when user banned in a room
-	ErrBannedInARoom = errors.New("You are banned in this room")
+	ErrBannedInARoom = errors.New("You're banned in this room")
 )
 
 // HandleWsConnection handle new websocker connection

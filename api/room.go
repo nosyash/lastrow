@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"github.com/nosyash/backrow/jwt"
@@ -31,22 +32,26 @@ func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	payload, err := server.extractPayload(w, r)
+	var req roomRequest
+	decoder := json.NewDecoder(r.Body)
+
+	err := decoder.Decode(&req)
 	if err != nil {
-		log.Printf("room.go server.extractPayload(): %v", err)
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: "Your JWT is incorrect",
+			Error: err.Error(),
 		})
 		return
 	}
 
-	var req roomRequest
-	decoder := json.NewDecoder(r.Body)
-
-	err = decoder.Decode(&req)
-	if err != nil {
+	payload, err := server.extractPayload(w, r)
+	if req.Action == eTypeAuthInRoom && err != nil && err != errJwtIsEmpty {
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: err.Error(),
+			Error: "Your JWT is incorrect",
+		})
+		return
+	} else if req.Action != eTypeAuthInRoom && err != nil {
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "Your JWT is incorrect",
 		})
 		return
 	}
@@ -63,6 +68,8 @@ func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		server.updateRoom(w, &req, payload)
+	case eTypeAuthInRoom:
+		server.authInRoom(w, req.RoomPath, req.Body.Password, payload)
 	default:
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Unknown /api/room action",
@@ -92,6 +99,9 @@ func (server Server) createRoom(w http.ResponseWriter, title, path, passwd strin
 		return
 	}
 
+	var hash []byte
+	var err error
+
 	if passwd != "" {
 		if utf8.RuneCountInString(passwd) < minPasswordLength || utf8.RuneCountInString(passwd) > maxPasswordLength {
 			sendJSON(w, http.StatusBadRequest, message{
@@ -99,18 +109,23 @@ func (server Server) createRoom(w http.ResponseWriter, title, path, passwd strin
 			})
 			return
 		}
+
+		hash, err = bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
+		if err != nil {
+			log.Printf("bcrypt.GenerateFromPassword(): %v", err)
+			sendJSON(w, http.StatusBadRequest, message{
+				Error: "Couldn't create new account",
+			})
+			return
+		}
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
-	if err != nil {
-		log.Printf("bcrypt.GenerateFromPassword(): %v", err)
-		sendJSON(w, http.StatusBadRequest, message{
-			Error: "Couldn't create new account",
-		})
-		return
+	if len(hash) == 0 {
+		err = server.db.CreateNewRoom(title, path, uuid, getRandomUUID(), "", hidden)
+	} else {
+		err = server.db.CreateNewRoom(title, path, uuid, getRandomUUID(), hex.EncodeToString(hash[:]), hidden)
 	}
 
-	err = server.db.CreateNewRoom(title, path, uuid, getRandomUUID(), hex.EncodeToString(hash[:]), hidden)
 	if err != nil {
 		log.Printf("server.db.CreateNewRoom(): %v", err)
 		sendJSON(w, http.StatusOK, message{
@@ -125,7 +140,7 @@ func (server Server) createRoom(w http.ResponseWriter, title, path, passwd strin
 
 func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest, payload *jwt.Payload) {
 	for _, r := range payload.Owner {
-		if r.RoomUUID == req.RoomID {
+		if r.RoomUUID == req.RoomUUID {
 			if r.Permissions != 10 {
 				sendJSON(w, http.StatusBadRequest, message{
 					Error: "You don't have permissions for this action",
@@ -139,7 +154,7 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest, payload
 	newName := strings.TrimSpace(req.Body.Data.NewName)
 	img := req.Body.Data.Img
 	iType := req.Body.Data.Type
-	id := req.RoomID
+	id := req.RoomUUID
 
 	if !server.db.RoomIsExists("uuid", id) {
 		sendJSON(w, http.StatusBadRequest, message{
@@ -358,35 +373,140 @@ func (server Server) changeEmojiName(w http.ResponseWriter, name, newName, uuid 
 	}
 }
 
-func (server Server) roomInnerHandler(w http.ResponseWriter, r *http.Request) {
-	path, ok := mux.Vars(r)["roomPath"]
-	if ok {
-		if !server.db.RoomIsExists("path", path) {
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
-
-		room, err := server.db.GetRoom("path", path)
-		if err != nil {
-			log.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
-		}
-
-		rv := roomView{
-			Title: room.Title,
-			UUID:  room.UUID,
-			Emoji: room.Emoji,
-		}
-
-		r, _ := json.Marshal(&rv)
-
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(r)
-
+func (server Server) authInRoom(w http.ResponseWriter, path, passwd string, payload *jwt.Payload) {
+	if !server.db.RoomIsExists("path", path) {
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	w.WriteHeader(http.StatusBadRequest)
+	room, err := server.db.GetRoom("path", path)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	if room.Password == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	hash, _ := hex.DecodeString(room.Password)
+	if err := bcrypt.CompareHashAndPassword(hash, []byte(passwd)); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if payload != nil {
+		payload.AuthRooms = append(payload.AuthRooms, jwt.AuthRoom{
+			UUID: room.UUID,
+			Hash: hex.EncodeToString([]byte(passwd)),
+		})
+
+		token, err := jwt.GenerateNewToken(jwt.Header{
+			Aig: "HS512",
+		}, payload, server.hmacKey)
+		if err != nil {
+			log.Println(err)
+			sendJSON(w, http.StatusInternalServerError, message{
+				Error: "Error while trying to update your JWT",
+			})
+		}
+
+		http.SetCookie(w, &http.Cookie{
+			Name:    "jwt",
+			Value:   token,
+			Path:    "/",
+			Expires: time.Unix(0, payload.Exp),
+		})
+	}
+
+	rv := roomView{
+		Title: room.Title,
+		UUID:  room.UUID,
+		Emoji: room.Emoji,
+	}
+
+	r, _ := json.Marshal(&rv)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(r)
+
+	return
+}
+
+func (server Server) roomInnerHandler(w http.ResponseWriter, req *http.Request) {
+	path, ok := mux.Vars(req)["roomPath"]
+	if !ok {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if !server.db.RoomIsExists("path", path) {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	room, err := server.db.GetRoom("path", path)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	if room.Password != "" {
+		payload, err := server.extractPayload(w, req)
+		if err == errJwtIsEmpty {
+			// This is guest
+			sendJSON(w, http.StatusBadRequest, message{
+				Error: "You're not logged in this room",
+			})
+			return
+		}
+
+		for _, r := range payload.AuthRooms {
+			if r.UUID == room.UUID {
+				hash, _ := hex.DecodeString(r.Hash)
+				decPasswd, _ := hex.DecodeString(room.Password)
+
+				if err := bcrypt.CompareHashAndPassword(decPasswd, hash); err != nil {
+					sendJSON(w, http.StatusBadRequest, message{
+						Error: "Password invalid",
+					})
+					return
+				}
+
+				rv := roomView{
+					Title: room.Title,
+					UUID:  room.UUID,
+					Emoji: room.Emoji,
+				}
+
+				r, _ := json.Marshal(&rv)
+
+				w.Header().Set("Content-Type", "application/json")
+				w.Write(r)
+
+				return
+			}
+		}
+
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "You're not logged in this room",
+		})
+		return
+	}
+
+	rv := roomView{
+		Title: room.Title,
+		UUID:  room.UUID,
+		Emoji: room.Emoji,
+	}
+
+	r, _ := json.Marshal(&rv)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(r)
+
+	return
 }
 
 func (server Server) getAllRooms(w http.ResponseWriter) {

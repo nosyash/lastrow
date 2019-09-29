@@ -173,7 +173,7 @@ func (server Server) setUpAuthSession(w http.ResponseWriter, uuid string) {
 	payload.Owner = owner
 	payload.Exp = timeNow.UnixNano()
 
-	token, err := jwt.GenerateNewToken(header, payload, server.hmacKey)
+	token, err := jwt.GenerateNewToken(header, &payload, server.hmacKey)
 	if err != nil {
 		log.Printf("jwt.GenerateNewToken(): %v", err)
 		sendJSON(w, http.StatusBadRequest, message{

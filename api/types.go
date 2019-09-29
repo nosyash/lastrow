@@ -15,9 +15,10 @@ type authRequest struct {
 }
 
 type roomRequest struct {
-	Action string   `json:"action"`
-	Body   roomBody `json:"body"`
-	RoomID string   `json:"room_uuid"`
+	Action   string   `json:"action"`
+	Body     roomBody `json:"body"`
+	RoomUUID string   `json:"room_uuid"`
+	RoomPath string   `json:"room_path"`
 }
 
 type userRequest struct {
@@ -78,6 +79,7 @@ const (
 	eTypeRoomCreate = "room_create"
 	eTypeRoomUpdate = "room_update"
 	eTypeRoomDelete = "room_delete"
+	eTypeAuthInRoom = "room_auth"
 )
 
 const (
