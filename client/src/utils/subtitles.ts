@@ -7,6 +7,8 @@ const UPDATE_INTERVAL = 10;
 const newLineRegExp = new RegExp(/\n/, 'gm');
 const bracketsRegExp = new RegExp(/^<.*>(.*)<\/.*>$/);
 
+const DELAY = 75;
+
 export default class SubtitlesHandler {
     subs: any[];
     subsChunk: any[];
@@ -30,7 +32,7 @@ export default class SubtitlesHandler {
 
     public setCurrentTime(timeMs: number) {
         const difference = Math.abs(this.currentTime - timeMs);
-        this.currentTime = timeMs;
+        this.currentTime = timeMs + DELAY;
         if (difference > 200)
             this.updateSubsChunk();
     }
@@ -44,6 +46,7 @@ export default class SubtitlesHandler {
     private setSubsChunk = (callback?) => {
         const { currentTime, subs: subtitles } = this;
         const preemptiveTime = PREEMPTIVE_TIME * 1000;
+
         const subsList = subtitles.filter(
             s =>
                 (s.start <= currentTime && currentTime <= s.end) ||
@@ -51,6 +54,7 @@ export default class SubtitlesHandler {
         );
 
         this.subsChunk = this.removeBrackets(subsList);
+
         if (callback)
             return callback();
     };
@@ -68,7 +72,7 @@ export default class SubtitlesHandler {
 
     public getSubtitles = (timeMs: number) => {
         const difference = Math.abs(this.currentTime - timeMs);
-        this.currentTime = timeMs;
+        this.currentTime = timeMs + DELAY;
         if (difference > 200)
             return this.updateSubsChunk(() =>
                 this.findCurrentSubtitles()

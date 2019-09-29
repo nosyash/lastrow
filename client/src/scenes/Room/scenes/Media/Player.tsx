@@ -31,6 +31,7 @@ interface PlayerProps {
     setVolume: (payload: any) => void;
     toggleCinemaMode: () => void;
     toggleSync: () => void;
+    toggleSubs: () => void;
     getSubs: (payload: any) => void;
     hideSubs: () => void;
 }
@@ -66,9 +67,14 @@ function Player(props: PlayerProps) {
 
     useEffect(() => { checkDelay() }, [props.media.actualTime]);
 
-    function watchPlaylist(e: CustomEvent) {
-        safelySeekTo(0);
-        // waitForPrefetch();
+    function watchPlaylist({ detail }: CustomEvent) {
+        const liveStream = get(detail, 'mediaAfter.live_stream') as boolean;
+        const iframe = get(detail, 'mediaAfter.iframe') as boolean;
+
+        if (!liveStream && !iframe) {
+            safelySeekTo(0);
+            setSynced(true);
+        }
         props.hideSubs();
     }
 
@@ -314,9 +320,12 @@ function Player(props: PlayerProps) {
         switchPlay();
     }
 
+    function toggleSubs() {
+        props.toggleSubs();
+    }
+
     function renderVideoMid() {
-        const { media, cinemaMode } = props;
-        const { toggleCinemaMode, toggleSync } = props;
+        const { media } = props;
         return (
             <div className="video-player_mid">
                 {renderVolumeControl()}
@@ -328,11 +337,11 @@ function Player(props: PlayerProps) {
                 {cinemaMode && <i className="fas fa-film" />} */}
                 {/* </div> */}
                 <div
-                    onClick={toggleFullscreen}
-                    className="control toggle-fullscreen"
-                    title="Toggle fullscreen"
+                    onClick={toggleSubs}
+                    className={cn('control', 'toggle-subtitles', { 'subs-off': !media.showSubs })}
+                    title="Toggle subtitles"
                 >
-                    <i className="fas fa-expand" />
+                    <i className="fas fa-closed-captioning" />
                 </div>
                 <div
                     onClick={toggleSynced}
@@ -341,6 +350,13 @@ function Player(props: PlayerProps) {
                 >
                     <span className="toggle-sync__sign">SYNC</span>
                     <span className="toggle-sync__icon"></span>
+                </div>
+                <div
+                    onClick={toggleFullscreen}
+                    className="control toggle-fullscreen"
+                    title="Toggle fullscreen"
+                >
+                    <i className="fas fa-expand" />
                 </div>
             </div>
         );
@@ -399,28 +415,7 @@ function Player(props: PlayerProps) {
 
 function PreloadMedia({ nextVideo }: { nextVideo: Video | null }) {
     if (!nextVideo) return null;
-    // const [show, setShow] = useState(true);
-    // const timer = useRef(null);
-
-    // if (!show) return null;
-    // if (!nextVideo) return null;
-    // if (nextVideo.direct) return null;
-
-    // YouTube video doesn't have 'iframe' property,
-    // because this property refers to user-provided custom iframe
     if (nextVideo.iframe) return null;
-
-    // const handleAutoClose = () => {
-    //     clearTimeout(timer.current);
-    //     timer.current = setTimeout(() => setShow(false), 7000);
-    // }
-
-    // useEffect(() => {
-    // setShow(true);
-    // handleAutoClose();
-
-    // return () => { clearTimeout(timer.current) }
-    // }, [nextVideo.url])
 
     return (
         <ReactPlayer
@@ -430,12 +425,11 @@ function PreloadMedia({ nextVideo }: { nextVideo: Video | null }) {
             // TODO: Maybe just set to display: none?
             style={{ visibility: 'hidden', display: 'none' }}
             config={playerConf}
-            autoPlay
             controls={false}
             loop={false}
             progressInterval={10000}
             muted={true}
-            playing={true}
+            playing={false}
             volume={0}
             url={nextVideo.url}
         />
@@ -458,6 +452,7 @@ const mapDispatchToProps = {
     toggleCinemaMode: () => ({ type: types.TOGGLE_CINEMAMODE }),
     toggleSync: () => ({ type: types.TOGGLE_SYNC }),
     hideSubs: () => ({ type: types.HIDE_SUBS }),
+    toggleSubs: () => ({ type: types.TOGGLE_SUBS }),
     setPlaying: () => ({ type: types.SET_PLAY })
 } as any;
 
