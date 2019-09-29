@@ -58,17 +58,17 @@ export const UPDATE_PASSWORD = ({ cur_passwd, new_passwd }: PasswordChange) =>
 // ####################
 //      WebSocket
 // ####################
-export const USER_REGISTER = (room_id: string, user_uuid?: string) =>
+export const USER_REGISTER = (room_uuid: string, user_uuid?: string) =>
     JSON.stringify({
         action: 'user_register',
-        room_id,
+        room_uuid,
         jwt: getCookie('jwt'),
     } as WebSocketRegister);
 
-export const GUEST_REGISTER = (room_id: string, user_uuid: string, name: string) =>
+export const GUEST_REGISTER = (room_uuid: string, user_uuid: string, name: string) =>
     JSON.stringify({
         action: 'guest_register',
-        room_id,
+        room_uuid,
         name,
         user_uuid,
     } as WebSocketGuestRegister);
@@ -167,7 +167,7 @@ export interface AddEmoteRequest {
     name: string;
     type: 'png' | 'gif';
     base64: string;
-    roomId?: string;
+    room_uuid?: string;
 }
 
 const getEmoteName = (name: string) =>
@@ -176,7 +176,7 @@ const getEmoteName = (name: string) =>
         .replace(/\.\w+$/, '')
         .replace(/[^a-z0-9_]/gi, '') || 'emote' + Math.round(Math.random() * 10000)
 
-export const ADD_EMOTE = ({ name, type, base64, roomId }: AddEmoteRequest) => {
+export const ADD_EMOTE = ({ name, type, base64, room_uuid }: AddEmoteRequest) => {
     const request = {
         action: "room_update",
         body: {
@@ -187,13 +187,13 @@ export const ADD_EMOTE = ({ name, type, base64, roomId }: AddEmoteRequest) => {
                 raw_img: base64.replace(/^data:.+;base64,/, ''),
             }
         },
-        room_id: roomId,
+        room_uuid,
 
     }
     return JSON.stringify(request);
 }
 
-export const REMOVE_EMOTE = ({ name, roomId }) => {
+export const REMOVE_EMOTE = ({ name, room_uuid }) => {
     const request = {
         action: "room_update",
         body: {
@@ -202,14 +202,14 @@ export const REMOVE_EMOTE = ({ name, roomId }) => {
                 name,
             }
         },
-        room_id: roomId,
+        room_uuid,
     }
     return JSON.stringify(request);
 }
 
 
 
-export const RENAME_EMOTE = ({ name, newname, roomId }) => {
+export const RENAME_EMOTE = ({ name, newname, room_uuid }) => {
     const request = {
         action: "room_update",
         body: {
@@ -219,7 +219,7 @@ export const RENAME_EMOTE = ({ name, newname, roomId }) => {
                 new_name: newname
             }
         },
-        room_id: roomId
+        room_uuid
     }
 
     return JSON.stringify(request);

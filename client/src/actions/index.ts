@@ -48,7 +48,7 @@ export const requestColorUpdate = (color: string) => async (dispatch: any) => {
 
 export const requestAddEmote = (params: api.AddEmoteRequest) => async (dispatch: any) => {
     const { uuid } = store.getState().mainStates;
-    http.post(api.API_ROOMS(), api.ADD_EMOTE({ ...params, roomId: uuid }))
+    http.post(api.API_ROOMS(), api.ADD_EMOTE({ ...params, room_uuid: uuid }))
         .then(() => toast.success('Emote successfully upload', toastOpts))
         .then(() => requestRoom()(dispatch))
         .catch(() => toast.error('There was an error loading emote...', toastOpts))
@@ -57,7 +57,7 @@ export const requestAddEmote = (params: api.AddEmoteRequest) => async (dispatch:
 export const requestEmoteRename = (params: { name: string, newname: string }) => {
     const { uuid } = store.getState().mainStates;
 
-    http.post(api.API_ROOMS(), api.RENAME_EMOTE({ ...params, roomId: uuid }))
+    http.post(api.API_ROOMS(), api.RENAME_EMOTE({ ...params, room_uuid: uuid }))
         .then(() => requestRoom()(store.dispatch))
         .then(() => toast.success('Emote successfully renamed', toastOpts))
 }
@@ -65,7 +65,7 @@ export const requestEmoteRename = (params: { name: string, newname: string }) =>
 export const requestEmoteDelete = (params: { name: string }) => {
     const { uuid } = store.getState().mainStates;
 
-    http.post(api.API_ROOMS(), api.REMOVE_EMOTE({ ...params, roomId: uuid }))
+    http.post(api.API_ROOMS(), api.REMOVE_EMOTE({ ...params, room_uuid: uuid }))
         .then(() => requestRoom()(store.dispatch))
         .then(() => toast.success('Emote was removed', toastOpts))
 }
