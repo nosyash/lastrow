@@ -292,5 +292,14 @@ func (h *hub) pauseTicker() bool {
 }
 
 func (h hub) checkPermissions(conn *websocket.Conn, payload *jwt.Payload, eType string) bool {
+	if eType == eTypeBan || eType == eTypeUnban {
+		for _, r := range payload.Owner {
+			if r.RoomUUID == h.id && r.Permissions == 10 {
+				return true
+			}
+		}
+		return false
+	}
+
 	return true
 }
