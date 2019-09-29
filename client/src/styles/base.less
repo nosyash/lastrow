@@ -1567,6 +1567,7 @@ body {
     cursor: move;
     user-select: none;
     background: @darkSecond;
+    background: rgba(48, 48, 48, 0.9);
     display: flex;
 
     .controls-container {
@@ -1591,7 +1592,7 @@ body {
 .popup {
     overflow: hidden;
     border-radius: 4px;
-    backdrop-filter: saturate(300%) blur(18px);
+    backdrop-filter: blur(18px);
     box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
     position: fixed;
     left: 0;
@@ -1744,7 +1745,7 @@ body {
 
 // Playlist
 .playlist_container {
-    background: rgba(37, 39, 40, 0.9);
+    background: rgba(48, 48, 48, 0.9);
     // height: 100%;
     box-shadow: none;
 
@@ -1754,7 +1755,7 @@ body {
 }
 
 .add-media_container {
-    margin-bottom: 7px;
+    margin-bottom: 10px;
 }
 
 .playlist_inner {
