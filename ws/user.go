@@ -2,6 +2,7 @@ package ws
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/gorilla/websocket"
 )
@@ -14,6 +15,8 @@ func (h hub) handleUserEvent(p *packet, conn *websocket.Conn) {
 		h.kickUser(conn, p)
 	case eTypeBan:
 		h.banUser(conn, p)
+	case eTypeUnban:
+		h.unbanUser(conn, p)
 	default:
 		sendError(conn, errors.New("Unknown event type"))
 	}
@@ -74,21 +77,52 @@ func (h hub) banUser(conn *websocket.Conn, p *packet) {
 	}
 
 	if p.Body.Event.Data.ID != "" {
-		banType := p.Body.Event.Data.BanType
 		uuid := h.cache.Users.GetUUIDByID(p.Body.Event.Data.ID)
-		if uuid != "" && banType != "" {
-			_, ok := h.hub[uuid]
+		if uuid != "" && p.Body.Event.Data.BanType != "" {
+			userConn, ok := h.hub[uuid]
 			if ok {
-				if banType == "uuid" {
+				if p.Body.Event.Data.BanType == "uuid" {
 					if err := h.db.BanUser(h.id, uuid); err != nil {
 						sendError(conn, err)
+						return
 					}
-					return
+
+					userConn.Close()
 				}
 
-				if banType == "ip" {
-					// Ban user by ip address
+				if p.Body.Event.Data.BanType == "ip" {
+					address := strings.Split(userConn.RemoteAddr().String(), ":")[0]
+					if err := h.db.BanAddress(h.id, address); err != nil {
+						sendError(conn, err)
+						return
+					}
+
+					userConn.Close()
 				}
+			}
+		}
+	}
+}
+
+func (h hub) unbanUser(conn *websocket.Conn, p *packet) {
+	if !h.checkPermissions(conn, p.Payload, eTypeUnban) {
+		return
+	}
+
+	if p.Body.Event.Data.UUID != "" {
+		if p.Body.Event.Data.UUID != "" && p.Body.Event.Data.BanType != "" {
+			if p.Body.Event.Data.BanType == "uuid" {
+				if err := h.db.UnbanUser(h.id, p.Body.Event.Data.UUID); err != nil {
+					sendError(conn, err)
+				}
+				return
+			}
+
+			if p.Body.Event.Data.BanType == "ip" && p.Body.Event.Data.IP != "" {
+				if err := h.db.UnbanAddress(h.id, p.Body.Event.Data.IP); err != nil {
+					sendError(conn, err)
+				}
+				return
 			}
 		}
 	}

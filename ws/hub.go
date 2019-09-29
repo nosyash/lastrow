@@ -3,6 +3,7 @@ package ws
 import (
 	"errors"
 	"os"
+	"strings"
 
 	"github.com/nosyash/backrow/db"
 
@@ -16,6 +17,9 @@ var (
 
 	// ErrInvalidUserID send when invalid user ID was received
 	ErrInvalidUserID = errors.New("Cannot find user with given user_uuid")
+
+	// ErrBannedInARoom send when user banned in a room
+	ErrBannedInARoom = errors.New("You are banned in this room")
 )
 
 // HandleWsConnection handle new websocker connection
@@ -59,11 +63,48 @@ func (rh *roomsHub) registerNewConn(conn *websocket.Conn) {
 		return
 	}
 
+	room, err := rh.db.GetRoom("uuid", roomUUID)
+	if err != nil {
+		sendError(conn, ErrRoomWasNotFound)
+		conn.Close()
+		return
+	}
+
+	if user.Guest {
+		address := strings.Split(conn.RemoteAddr().String(), ":")[0]
+		for _, u := range room.BannedIps {
+			if address == u.IP {
+				sendError(conn, ErrBannedInARoom)
+				conn.Close()
+				return
+			}
+		}
+	}
+
 	if !user.Guest {
 		_, err = rh.db.GetUserByUUID(user.Payload.UUID)
 		if err == mgo.ErrNotFound {
 			sendError(conn, ErrInvalidUserID)
 			return
+		}
+
+		// Check by UUID
+		for _, u := range room.BannedUsers {
+			if user.Payload.UUID == u.UUID {
+				sendError(conn, ErrBannedInARoom)
+				conn.Close()
+				return
+			}
+		}
+
+		address := strings.Split(conn.RemoteAddr().String(), ":")[0]
+		// And by IP
+		for _, u := range room.BannedIps {
+			if address == u.IP {
+				sendError(conn, ErrBannedInARoom)
+				conn.Close()
+				return
+			}
 		}
 	}
 

@@ -158,7 +158,7 @@ func (server Server) setUpAuthSession(w http.ResponseWriter, uuid string) {
 	var timeNow = time.Now().Add(1 * 365 * 24 * time.Hour)
 
 	for i, r := range roomList {
-		owner[i].RoomID = r.UUID
+		owner[i].RoomUUID = r.UUID
 		for _, r := range r.Owners {
 			if r.UUID == uuid {
 				owner[i].Permissions = r.Permissions

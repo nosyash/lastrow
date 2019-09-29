@@ -89,6 +89,8 @@ type data struct {
 	URL           string        `json:"url,omitempty"`
 	Index         int           `json:"index,omitempty"`
 	ID            string        `json:"__id,omitempty"`
+	UUID          string        `json:"uuid,omitempty"`
+	IP            string        `json:"ip,omitempty"`
 	BanType       string        `json:"ban_type,omitempty"`
 	Users         []*cache.User `json:"users,omitempty"`
 	Ticker        *elapsedTime  `json:"ticker,omitempty"`
@@ -154,6 +156,7 @@ const (
 	eTypeFeedBack = "feedback"
 	eTypeTicker   = "ticker"
 
-	eTypeKick = "kick"
-	eTypeBan  = "ban"
+	eTypeKick  = "kick"
+	eTypeBan   = "ban"
+	eTypeUnban = "unban"
 )

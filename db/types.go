@@ -13,15 +13,15 @@ type AboutRoom struct {
 }
 
 type Room struct {
-	Title      string        `json:"title"`
-	Path       string        `json:"path"`
-	UUID       string        `json:"uuid"`
-	Hidden     bool          `json:"hidden"`
-	Password   string        `json:"passwd"`
-	BanedUsers []bannedUsers `json:"baned_users"`
-	BanedIps   []bannedIps   `json:"baned_ips"`
-	Owners     []owner       `json:"owners"`
-	Emoji      []Emoji       `json:"emoji"`
+	Title       string        `json:"title"`
+	Path        string        `json:"path"`
+	UUID        string        `json:"uuid"`
+	Hidden      bool          `json:"hidden"`
+	Password    string        `json:"passwd"`
+	BannedUsers []BannedUsers `json:"banned_users" bson:"banned_users"`
+	BannedIps   []BannedIps   `json:"banned_ips" bson:"banned_ips"`
+	Owners      []owner       `json:"owners"`
+	Emoji       []Emoji       `json:"emoji"`
 }
 
 type UserView struct {
@@ -48,12 +48,12 @@ type Emoji struct {
 	Path string `json:"path"`
 }
 
-type bannedUsers struct {
+type BannedUsers struct {
 	UUID    string `json:"uuid"`
 	Expires int64
 }
 
-type bannedIps struct {
+type BannedIps struct {
 	IP      string `json:"ip"`
 	Expires int64
 }

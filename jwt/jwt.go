@@ -36,7 +36,7 @@ type Payload struct {
 
 // Owner describes information about where user is owner and what is him Permissions
 type Owner struct {
-	RoomID      string `json:"room_id"`
+	RoomUUID    string `json:"room_uuid"`
 	Permissions int
 }
 

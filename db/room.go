@@ -92,11 +92,73 @@ func (db Database) BanUser(roomUUID, userUUID string) error {
 		return err
 	}
 
-	banned := room.BanedUsers
-	banned = append(banned, bannedUsers{
+	banned := append(room.BannedUsers, BannedUsers{
 		UUID:    userUUID,
 		Expires: 0,
 	})
 
-	return db.UpdateRoomValue(roomUUID, "baned_users", banned)
+	return db.UpdateRoomValue(roomUUID, "banned_users", banned)
+}
+
+// UnbanUser remove user from ban list by uuid
+func (db Database) UnbanUser(roomUUID, userUUID string) error {
+	var room Room
+
+	err := db.rc.Find(bson.M{"uuid": roomUUID}).One(&room)
+	if err != nil {
+		return err
+	}
+
+	var banned []BannedUsers
+
+	for i, u := range room.BannedUsers {
+		if u.UUID == userUUID {
+			banned = append(room.BannedUsers[:i], room.BannedUsers[i+1:]...)
+		}
+	}
+
+	return db.UpdateRoomValue(roomUUID, "banned_users", banned)
+}
+
+// BanAddress add a ipadress to ban list
+func (db Database) BanAddress(roomUUID, ipAddress string) error {
+	var room Room
+
+	err := db.rc.Find(bson.M{"uuid": roomUUID}).One(&room)
+	if err != nil {
+		return err
+	}
+
+	for _, u := range room.BannedIps {
+		if u.IP == ipAddress {
+			return errors.New("This user already banned in this room")
+		}
+	}
+
+	banned := append(room.BannedIps, BannedIps{
+		IP:      ipAddress,
+		Expires: 0,
+	})
+
+	return db.UpdateRoomValue(roomUUID, "banned_ips", banned)
+}
+
+// UnbanAddress remove ipaddress from banlist
+func (db Database) UnbanAddress(roomUUID, ipAddress string) error {
+	var room Room
+
+	err := db.rc.Find(bson.M{"uuid": roomUUID}).One(&room)
+	if err != nil {
+		return err
+	}
+
+	var banned []BannedIps
+
+	for i, u := range room.BannedIps {
+		if u.IP == ipAddress {
+			banned = append(room.BannedIps[:i], room.BannedIps[i+1:]...)
+		}
+	}
+
+	return db.UpdateRoomValue(roomUUID, "banned_ip", banned)
 }

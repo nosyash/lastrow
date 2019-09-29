@@ -17,7 +17,7 @@ type authRequest struct {
 type roomRequest struct {
 	Action string   `json:"action"`
 	Body   roomBody `json:"body"`
-	RoomID string   `json:"room_id"`
+	RoomID string   `json:"room_uuid"`
 }
 
 type userRequest struct {
@@ -60,6 +60,11 @@ type roomView struct {
 	Title string     `json:"title,omitempty"`
 	UUID  string     `json:"uuid,omitempty"`
 	Emoji []db.Emoji `json:"emoji,omitempty"`
+}
+
+type bannedList struct {
+	BannedUsers []db.BannedUsers `json:"users"`
+	BannedIps   []db.BannedIps   `json:"ips"`
 }
 
 const (

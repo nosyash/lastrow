@@ -125,7 +125,7 @@ func (server Server) createRoom(w http.ResponseWriter, title, path, passwd strin
 
 func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest, payload *jwt.Payload) {
 	for _, r := range payload.Owner {
-		if r.RoomID == req.RoomID {
+		if r.RoomUUID == req.RoomID {
 			if r.Permissions != 10 {
 				sendJSON(w, http.StatusBadRequest, message{
 					Error: "You don't have permissions for this action",
@@ -406,17 +406,21 @@ func (server Server) getAllRooms(w http.ResponseWriter) {
 		}
 		roomCount++
 	}
-	about = make([]db.AboutRoom, roomCount)
 
-	for i, r := range rooms {
+	about = make([]db.AboutRoom, roomCount)
+	idx := 0
+
+	for _, r := range rooms {
 		if r.Hidden {
 			continue
 		}
 
-		about[i].Title = r.Title
-		about[i].Path = r.Path
-		about[i].Play = storage.GetCurrentVideoTitle(r.Path)
-		about[i].Users = strconv.Itoa(storage.GetUsersCount(r.Path))
+		about[idx].Title = r.Title
+		about[idx].Path = r.Path
+		about[idx].Play = storage.GetCurrentVideoTitle(r.UUID)
+		about[idx].Users = strconv.Itoa(storage.GetUsersCount(r.UUID))
+
+		idx++
 	}
 
 	resp := db.Rooms{
@@ -430,12 +434,44 @@ func (server Server) getAllRooms(w http.ResponseWriter) {
 	w.Write(r)
 }
 
-// func (server Server) bannedList(w http.ResponseWriter, r *http.Request) {
-// 	payload, err := server.extractPayload(w, r)
-// 	if err != nil {
-// 		sendJSON(w, http.StatusForbidden, err)
-// 		return
-// 	}
+func (server Server) bannedList(w http.ResponseWriter, r *http.Request) {
+	path, ok := mux.Vars(r)["roomPath"]
+	if !ok {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-// 	if
-// }
+	if !server.db.RoomIsExists("path", path) {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	payload, err := server.extractPayload(w, r)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	if len(payload.Owner) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	room, err := server.db.GetRoom("path", path)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	for _, r := range payload.Owner {
+		if r.RoomUUID == room.UUID && r.Permissions == 10 {
+			sendJSON(w, http.StatusOK, bannedList{
+				BannedUsers: room.BannedUsers,
+				BannedIps:   room.BannedIps,
+			})
+			return
+		}
+	}
+
+	w.WriteHeader(http.StatusBadRequest)
+}
