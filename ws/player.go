@@ -24,7 +24,6 @@ var delLock sync.Mutex
 var pauseLock sync.Mutex
 var resumeLock sync.Mutex
 var rewindLock sync.Mutex
-var moveLock sync.Mutex
 
 const (
 	syncPeriod       = 3
