@@ -381,8 +381,9 @@ func (server Server) authInRoom(w http.ResponseWriter, path, passwd string, payl
 
 	room, err := server.db.GetRoom("path", path)
 	if err != nil {
-		log.Println(err)
+		log.Printf("server.go->authInRoom(): %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	if room.Password == "" {
@@ -408,10 +409,11 @@ func (server Server) authInRoom(w http.ResponseWriter, path, passwd string, payl
 			Aig: "HS512",
 		}, payload, server.hmacKey)
 		if err != nil {
-			log.Println(err)
+			log.Printf("server.go->authInRoom(): %v", err)
 			sendJSON(w, http.StatusInternalServerError, message{
 				Error: "Error while trying to update your JWT",
 			})
+			return
 		}
 
 		http.SetCookie(w, &http.Cookie{
@@ -450,8 +452,9 @@ func (server Server) roomInnerHandler(w http.ResponseWriter, req *http.Request) 
 
 	room, err := server.db.GetRoom("path", path)
 	if err != nil {
-		log.Println(err)
+		log.Printf("server.go->roomInnerHandler(): %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	if room.Password != "" {
