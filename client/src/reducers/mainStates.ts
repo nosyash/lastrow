@@ -3,7 +3,7 @@ import * as types from '../constants/actionTypes';
 const initialState = {
     cinemaMode: false,
     roomID: '',
-    ID: '',
+    uuid: '',
     chatWidth: parseInt(localStorage.chatWidth) || 300,
 };
 

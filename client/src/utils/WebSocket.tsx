@@ -23,14 +23,14 @@ import { parseAndDispatchSubtitiles } from './subtitles';
 const { dispatch, getState } = store as Store;
 
 export interface SocketInterface {
-    instance: WebSocket,
-    url: string,
-    guest: boolean,
-    name: string,
-    roomID: string,
-    uuid: string,
-    timer: NodeJS.Timeout,
-    reconnectTimer: NodeJS.Timeout,
+    instance: WebSocket;
+    url: string;
+    guest: boolean;
+    name: string;
+    room_uuid: string;
+    uuid: string;
+    timer: NodeJS.Timeout;
+    reconnectTimer: NodeJS.Timeout;
 }
 
 class Socket implements SocketInterface {
@@ -38,7 +38,7 @@ class Socket implements SocketInterface {
     url: string;
     guest: boolean;
     name: string;
-    roomID: string;
+    room_uuid: string;
     uuid: string;
     timer: NodeJS.Timeout;
     reconnectTimer: NodeJS.Timeout;
@@ -46,7 +46,7 @@ class Socket implements SocketInterface {
         this.url = props.url;
         this.guest = props.guest;
         this.name = props.name;
-        this.roomID = props.roomID;
+        this.room_uuid = props.room_uuid;
         this.uuid = props.uuid;
 
         this.timer = null;
@@ -158,9 +158,9 @@ class Socket implements SocketInterface {
 
     private handleHandshake() {
         if (!this.guest) {
-            this.instance.send(api.USER_REGISTER(this.roomID, this.uuid));
+            this.instance.send(api.USER_REGISTER(this.room_uuid, this.uuid));
         } else {
-            const request = api.GUEST_REGISTER(this.roomID, this.uuid, this.name);
+            const request = api.GUEST_REGISTER(this.room_uuid, this.uuid, this.name);
             this.instance.send(request);
         }
         dispatch({ type: types.SET_SOCKET_CONNECTED, payload: true });
@@ -178,7 +178,7 @@ class Socket implements SocketInterface {
             }
             case 'message': {
                 const message = get(parsedData, 'body.event.data') as ChatMessage;
-                const payload = { ...message, roomID: this.roomID };
+                const payload = { ...message, roomID: this.room_uuid };
                 return dispatch({ type: types.ADD_MESSAGE, payload });
             }
             case 'update_playlist': {
