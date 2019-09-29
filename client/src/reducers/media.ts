@@ -115,6 +115,10 @@ const Player = (state = InitialState, action: any): Media => {
             return { ...state, showSubs: false };
         }
 
+        case types.TOGGLE_SUBS: {
+            return { ...state, showSubs: !state.showSubs };
+        }
+
         case types.RESET_MEDIA: {
             return { ...InitialState };
         }

@@ -81,6 +81,7 @@ class Playlist extends Component<PlaylistProps> {
 
 function PlaylistElement({ element, onDelete, deletable }) {
     const [deleted, setDeleted] = useState(false);
+    const liveStream = element.live_stream;
     const handleDelete = () => {
         if (!deleted) {
             onDelete();
@@ -93,7 +94,8 @@ function PlaylistElement({ element, onDelete, deletable }) {
             <a className="control" target="_blank" rel="noopener noreferrer" href={element.url}>
                 {element.title || element.url}
             </a>
-            <span className="playlist-item__duration">{formatTime(element.duration)}</span>
+            {!liveStream && <span className="playlist-item__duration">{formatTime(element.duration)}</span>}
+            {liveStream && <span className="playlist-item__duration">LIVE</span>}
             <span
                 hidden={!deletable}
                 onClick={handleDelete}

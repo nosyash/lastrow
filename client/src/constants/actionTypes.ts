@@ -30,6 +30,7 @@ export const SET_CURRENT_SUBS = 'SET_CURRENT_SUBS';
 export const SET_SUBS_URL = 'SET_SUBS_URL';
 export const SHOW_SUBS = 'SHOW_SUBS';
 export const HIDE_SUBS = 'HIDE_SUBS';
+export const TOGGLE_SUBS = 'TOGGLE_SUBS';
 export const FETCH_SUBS = 'FETCH_SUBS';
 export const ADD_TO_PLAYLIST = 'ADD_TO_PLAYLIST';
 export const TOGGLE_SYNC = 'TOGGLE_SYNC';

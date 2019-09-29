@@ -8,6 +8,7 @@ import { Subtitles, Media, SubtitlesItem } from '../../../../../reducers/media';
 interface SubtitilesProps {
     media: Media;
     subs: Subtitles;
+    showSubs: boolean;
     videoEl: HTMLVideoElement;
     updateSubs: (payload: any) => void;
     setCurrentSubs: (payload: any) => void;
@@ -18,9 +19,9 @@ let pauseTimer = null;
 const subtitlesHandler = new SubtitlesHandler();
 
 function SubtitlesContainer(props: SubtitilesProps) {
+    const videoEl = React.useRef() as any;
     useEffect(() => {
-        initSubs(() =>
-            setTimeout(formatSubs, 0));
+        initSubs(formatSubs);
 
         return () => {
             clearTimeout(timer);
@@ -30,18 +31,20 @@ function SubtitlesContainer(props: SubtitilesProps) {
     function initSubs(callback: () => void) {
         const { subs } = props;
         if (!subs.parsed) return;
+        videoEl.current = document.querySelector('.player-inner video');
         subtitlesHandler.setSubtitles(subs.parsed);
         callback();
     }
 
     function formatSubs() {
-        const { subs } = props;
+        const { subs, showSubs } = props;
         const { setCurrentSubs } = props;
 
-        const currentText = subs.raw;
+        if (!showSubs) return;
+        if (!videoEl.current) return;
 
-        const { videoEl } = props;
-        const timeMs = videoEl.currentTime * 1000;
+        const currentText = subs.raw;
+        const timeMs = videoEl.current.currentTime * 1000;
         if (videoEl.paused) {
             pauseTimer = setTimeout(() => {
                 subtitlesHandler.setCurrentTime(timeMs);
@@ -49,12 +52,12 @@ function SubtitlesContainer(props: SubtitilesProps) {
             }, 20);
             clearTimeout(pauseTimer);
         }
-        // subtitlesHandler.setCurrentTime(timeMs);
+
         const newText = subtitlesHandler.getSubtitles(timeMs);
         if (JSON.stringify(currentText) !== JSON.stringify(newText)) {
             setCurrentSubs(newText);
         }
-        timer = setTimeout(formatSubs, 16);
+        timer = setTimeout(formatSubs, 64);
     }
 
     const { raw } = props.subs;
@@ -85,6 +88,7 @@ const RenderSub = ({ text }: { text: SubtitlesItem[] }) => {
 
 const mapStateToProps = state => ({
     media: state.media,
+    showSubs: state.media.showSubs,
     subs: state.media.subs,
 });
 
