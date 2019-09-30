@@ -1,6 +1,7 @@
 import { dispatch } from "../store";
 import * as types from "../constants/actionTypes";
 import Worker from './main.worker';
+import { WorkerMessage } from './types';
 const worker = new Worker();
 
 
@@ -11,7 +12,7 @@ worker.addEventListener('message', (message: WorkerMessage | any) => {
         // case 'SUBTITLES_PARSED':
         //     worker.postMessage('this is a test message to the worker');
         //     break;
-    
+
         default:
             break;
     }

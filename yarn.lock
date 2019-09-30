@@ -1380,6 +1380,13 @@
   dependencies:
     redux "*"
 
+"@types/striptags@^3.1.1":
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/@types/striptags/-/striptags-3.1.1.tgz#26322004d802843db36a6bf31a9744e946194108"
+  integrity sha512-t11pzegWB32MpVjCMXD0LoSxsUQESC7CInDtVoEmnPbLWA5hMRSLBa0U/xCOdj6zFQyHlLn0Qmp76kyp/KyfQw==
+  dependencies:
+    striptags "*"
+
 "@types/subtitle@^2.0.2":
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/@types/subtitle/-/subtitle-2.0.2.tgz#4df70f2a7db3df55c6e692ebce8b240dc4c862bd"
@@ -11890,7 +11897,7 @@ strip-json-comments@~2.0.1:
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
   integrity sha1-PFMZQukIwml8DsNEhYwobHygpgo=
 
-striptags@^3.1.1:
+striptags@*, striptags@^3.1.1:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/striptags/-/striptags-3.1.1.tgz#c8c3e7fdd6fb4bb3a32a3b752e5b5e3e38093ebd"
   integrity sha1-yMPn/db7S7OjKjt1LltePjgJPr0=

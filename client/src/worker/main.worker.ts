@@ -4,6 +4,7 @@ const ctx: Worker = self as any;
 import { parse as parseSubtitles } from "subtitle";
 import striptags from 'striptags';
 import { SubtitlesItem } from "../reducers/media";
+import { MESSAGE_TYPE, WorkerMessage, MESSAGE_KIND } from './types';
 const PREEMPTIVE_TIME = 30;
 const UPDATE_INTERVAL = 10;
 
@@ -15,7 +16,7 @@ const DELAY = 75;
 let subtitlesHandler = null as SubtitlesHandler;
 
 ctx.addEventListener('message', (message: WorkerMessage | Event) => {
-    // ctx.postMessage('test')
+    ctx.postMessage('test')
     const { type, data, kind } = message as WorkerMessage;
     if (type !== MESSAGE_TYPE.REQUEST) return;
     switch (kind) {
@@ -29,7 +30,7 @@ ctx.addEventListener('message', (message: WorkerMessage | Event) => {
             break;
     }
 });
-
+ctx.postMessage('test')
 
 function initSubs(raw: string) {
     if (subtitlesHandler) subtitlesHandler.destroy();
@@ -46,7 +47,7 @@ class SubtitlesHandler {
     private subs: any[];
     private subsChunk: any[];
     private currentTime: number;
-    private timer: number;
+    private timer: NodeJS.Timeout;
     constructor(private subsRaw: string) {
         this.subsRaw = subsRaw;
         this.subs = [];
@@ -88,7 +89,7 @@ class SubtitlesHandler {
 
     private updateSubsChunk = (cb?: (...args) => void) => {
         clearTimeout(this.timer);
-        this.timer = window.setTimeout(this.updateSubsChunk, UPDATE_INTERVAL * 1000);
+        this.timer = setTimeout(this.updateSubsChunk, UPDATE_INTERVAL * 1000);
         return this.setSubsChunk(cb);
     };
 
