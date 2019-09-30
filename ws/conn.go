@@ -44,6 +44,7 @@ func NewRoomHub(id string, db *db.Database) *hub {
 			make(chan struct{}),
 			make(chan int, 1),
 			make(chan struct{}),
+			make(chan struct{}),
 			0,
 			"",
 			0,

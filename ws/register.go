@@ -18,7 +18,7 @@ func handleRegRequest(conn *websocket.Conn) (*user, string, error) {
 	}
 
 	if req.Action == guestRegisterEvent {
-		return handleGuestRegister(conn, req.RoomID, req.Name, req.UUID)
+		return handleGuestRegister(conn, req.RoomUUID, req.Name, req.UUID)
 	}
 
 	if req.Action == userRegisterEvent {
@@ -28,7 +28,7 @@ func handleRegRequest(conn *websocket.Conn) (*user, string, error) {
 				Name:    "",
 				Guest:   false,
 			},
-			req.RoomID,
+			req.RoomUUID,
 			nil
 	}
 

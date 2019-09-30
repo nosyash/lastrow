@@ -1,4 +1,3 @@
-import { parse } from 'subtitle';
 import { toast } from 'react-toastify';
 import http from '../utils/httpServices';
 import * as api from '../constants/apiActions';
@@ -11,30 +10,18 @@ import { store } from '../store';
 import { SOCKET_ENDPOINT } from '../constants';
 import { toastOpts } from '../conf';
 
-export const fetchSubs = (url: string) => (dispatch: any) => {
-    return http
-        .get(url)
-        .then(response => {
-            dispatch({ type: types.SET_SUBS, payload: { srt: parse(response.data) } });
-        })
-        .catch(error => {
-            throw error;
-        });
-};
-
-/** @type Socket */
 let socket = null as Socket;
 
-export const webSocketConnect = ({ roomID }: { roomID: any }) => {
+export const webSocketConnect = ({ room_uuid }: { room_uuid: string }) => {
     const { uuid, name, guest } = store.getState().profile;
 
     webSocketDisconnect();
 
-    socket = new Socket({ url: SOCKET_ENDPOINT, roomID, uuid, guest, name } as SocketInterface);
+    socket = new Socket({ url: SOCKET_ENDPOINT, room_uuid, uuid, guest, name } as SocketInterface);
     return socket.state();
 };
 
-const isConnectingSameRoom = (roomID: string) => (socket ? roomID === socket.roomID : false);
+export const isConnectingSameRoom = (room_uuid: string) => (socket ? room_uuid === socket.room_uuid : false);
 
 export const webSocketSend = (data: string, messageTypeToGet?: string, cb?: () => void) => {
     return socket.sendMessage(data, messageTypeToGet, cb);
@@ -60,25 +47,25 @@ export const requestColorUpdate = (color: string) => async (dispatch: any) => {
 };
 
 export const requestAddEmote = (params: api.AddEmoteRequest) => async (dispatch: any) => {
-    const { ID } = store.getState().mainStates;
-    http.post(api.API_ROOMS(), api.ADD_EMOTE({ ...params, roomId: ID }))
+    const { uuid } = store.getState().mainStates;
+    http.post(api.API_ROOMS(), api.ADD_EMOTE({ ...params, room_uuid: uuid }))
         .then(() => toast.success('Emote successfully upload', toastOpts))
         .then(() => requestRoom()(dispatch))
         .catch(() => toast.error('There was an error loading emote...', toastOpts))
 };
 
 export const requestEmoteRename = (params: { name: string, newname: string }) => {
-    const { ID } = store.getState().mainStates;
+    const { uuid } = store.getState().mainStates;
 
-    http.post(api.API_ROOMS(), api.RENAME_EMOTE({ ...params, roomId: ID }))
+    http.post(api.API_ROOMS(), api.RENAME_EMOTE({ ...params, room_uuid: uuid }))
         .then(() => requestRoom()(store.dispatch))
         .then(() => toast.success('Emote successfully renamed', toastOpts))
 }
 
 export const requestEmoteDelete = (params: { name: string }) => {
-    const { ID } = store.getState().mainStates;
+    const { uuid } = store.getState().mainStates;
 
-    http.post(api.API_ROOMS(), api.REMOVE_EMOTE({ ...params, roomId: ID }))
+    http.post(api.API_ROOMS(), api.REMOVE_EMOTE({ ...params, room_uuid: uuid }))
         .then(() => requestRoom()(store.dispatch))
         .then(() => toast.success('Emote was removed', toastOpts))
 }
@@ -90,8 +77,11 @@ export const requestRoom = () => async (dispatch: any) => {
     if (!data)
         return Promise.resolve(false);
 
-    store.dispatch({ type: types.UPDATE_MAIN_STATES, payload: { ID: data.ID } })
-    store.dispatch({ type: types.ADD_EMOJIS, payload: data.emoji ? data.emoji.reverse() : [] })
+    const emojiList = get(data, 'emoji') || []
+    emojiList.sort((a, b) => a.name > b.name ? 1 : -1);
+
+    store.dispatch({ type: types.UPDATE_MAIN_STATES, payload: { uuid: data.uuid } })
+    store.dispatch({ type: types.ADD_EMOJIS, payload: emojiList })
 
     document.title = data.title;
 

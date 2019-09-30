@@ -13,11 +13,15 @@ type AboutRoom struct {
 }
 
 type Room struct {
-	Title  string  `json:"title"`
-	Path   string  `json:"path"`
-	UUID   string  `json:"uuid"`
-	Owners []owner `json:"owners"`
-	Emoji  []Emoji `json:"emoji"`
+	Title       string        `json:"title"`
+	Path        string        `json:"path"`
+	UUID        string        `json:"uuid"`
+	Hidden      bool          `json:"hidden"`
+	Password    string        `json:"passwd"`
+	BannedUsers []BannedUsers `json:"banned_users" bson:"banned_users"`
+	BannedIps   []BannedIps   `json:"banned_ips" bson:"banned_ips"`
+	Owners      []owner       `json:"owners"`
+	Emoji       []Emoji       `json:"emoji"`
 }
 
 type UserView struct {
@@ -39,14 +43,24 @@ type User struct {
 	UUID    string `json:"uuid"`
 }
 
-type owner struct {
-	UUID        string `json:"UUID"`
-	Permissions int    `json:"permissions"`
-}
-
 type Emoji struct {
 	Name string `json:"name"`
 	Path string `json:"path"`
+}
+
+type BannedUsers struct {
+	UUID    string `json:"uuid"`
+	Expires int64
+}
+
+type BannedIps struct {
+	IP      string `json:"ip"`
+	Expires int64
+}
+
+type owner struct {
+	UUID        string `json:"UUID"`
+	Permissions int    `json:"permissions"`
 }
 
 const (

@@ -8,6 +8,10 @@ import (
 	"github.com/nosyash/backrow/jwt"
 )
 
+var (
+	errJwtIsEmpty = errors.New("Your JWT is empty")
+)
+
 func sendJSON(w http.ResponseWriter, code int, msg interface{}) {
 	resp, _ := json.Marshal(msg)
 
@@ -20,7 +24,7 @@ func sendJSON(w http.ResponseWriter, code int, msg interface{}) {
 func (server Server) extractPayload(w http.ResponseWriter, r *http.Request) (*jwt.Payload, error) {
 	token, err := r.Cookie("jwt")
 	if err != nil {
-		return nil, errors.New("Your JWT is empty")
+		return nil, errJwtIsEmpty
 	}
 
 	result, err := jwt.ValidateToken(token.Value, server.hmacKey)

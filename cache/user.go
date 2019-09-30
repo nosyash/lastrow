@@ -1,6 +1,8 @@
 package cache
 
-import "log"
+import (
+	"log"
+)
 
 // AddUser read information about user from Database and add the user to the user cache
 func (u *Users) addUser(uuid string) {
@@ -15,7 +17,7 @@ func (u *Users) addUser(uuid string) {
 		Color: userProfile.Color,
 		Image: userProfile.Image,
 		Guest: false,
-		ID:    getHashOfString(uuid[:8]),
+		ID:    getRandomUUID(),
 	}
 
 	u.UpdateUsers <- struct{}{}
@@ -41,15 +43,15 @@ func (u Users) GetUserByUUID(uuid string) (*User, bool) {
 	return user, ok
 }
 
-// GetUserByID return user object by ID
-func (u Users) GetUserByID(id string) *User {
-	for _, user := range u.users {
+// GetUUIDByID return user UUID by ID
+func (u Users) GetUUIDByID(id string) string {
+	for uuid, user := range u.users {
 		if user.ID == id {
-			return user
+			return uuid
 		}
 	}
 
-	return nil
+	return ""
 }
 
 // UpdateUser update user in cache, image, nickname, color etc.

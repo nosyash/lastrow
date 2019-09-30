@@ -23,6 +23,11 @@ class Divider extends Component<any, any> {
         this.setState({ width: this.props.chatWidth });
     }
 
+    componentWillUnmount() {
+        document.removeEventListener('mouseup', this.handleMouseUp);
+        document.removeEventListener('mousemove', this.handleMouseMove);
+    }
+
     handleMouseDown = e => {
         this.setState({ moving: true });
 

@@ -29,6 +29,7 @@ interface RoomBaseProps {
     history: any;
     cinemaMode: boolean;
     connected: boolean;
+    room_uuid: string;
     clearPopups: () => void;
     clearUsers: () => void;
     updateMainStates: (...args: any) => any;
@@ -114,9 +115,8 @@ class RoomBase extends Component<RoomBaseProps, any> {
     };
 
     initWebsocket = () => {
-        const { match } = this.props;
-        const { id: roomID } = match.params;
-        webSocketConnect({ roomID });
+        const { room_uuid } = this.props;
+        webSocketConnect({ room_uuid });
     };
 
     initStore = callback => {
@@ -185,6 +185,7 @@ const mapStateToProps = state => ({
     currentRoomID: state.chat.currentRoomID,
     cinemaMode: state.mainStates.cinemaMode,
     roomID: state.mainStates.roomID,
+    room_uuid: state.mainStates.uuid,
     emojiList: state.emojis.list,
     userList: state.chat.users,
     profile: state.profile,

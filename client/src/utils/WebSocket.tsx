@@ -2,7 +2,6 @@ import { get } from 'lodash';
 import * as api from '../constants/apiActions';
 import * as types from '../constants/actionTypes';
 import { store } from '../store';
-import { sortPlaylistByIndex } from './index';
 import { toast } from 'react-toastify';
 import { toastOpts } from '../conf';
 import {
@@ -18,18 +17,20 @@ import {
 import { User } from './types';
 import { Store } from 'redux';
 import { Emoji } from '../reducers/emojis';
+import httpServices from './httpServices';
+import { parseAndDispatchSubtitiles } from './subtitles';
 
-const { dispatch } = store as Store;
+const { dispatch, getState } = store as Store;
 
 export interface SocketInterface {
-    instance: WebSocket,
-    url: string,
-    guest: boolean,
-    name: string,
-    roomID: string,
-    uuid: string,
-    timer: NodeJS.Timeout,
-    reconnectTimer: NodeJS.Timeout,
+    instance: WebSocket;
+    url: string;
+    guest: boolean;
+    name: string;
+    room_uuid: string;
+    uuid: string;
+    timer: NodeJS.Timeout;
+    reconnectTimer: NodeJS.Timeout;
 }
 
 class Socket implements SocketInterface {
@@ -37,7 +38,7 @@ class Socket implements SocketInterface {
     url: string;
     guest: boolean;
     name: string;
-    roomID: string;
+    room_uuid: string;
     uuid: string;
     timer: NodeJS.Timeout;
     reconnectTimer: NodeJS.Timeout;
@@ -45,7 +46,7 @@ class Socket implements SocketInterface {
         this.url = props.url;
         this.guest = props.guest;
         this.name = props.name;
-        this.roomID = props.roomID;
+        this.room_uuid = props.room_uuid;
         this.uuid = props.uuid;
 
         this.timer = null;
@@ -114,7 +115,7 @@ class Socket implements SocketInterface {
 
     public destroy = () => {
         this.unsubscribeEvents();
-        this.instance.close();
+        if (this.instance) this.instance.close();
         this.resetStates();
     };
 
@@ -157,9 +158,9 @@ class Socket implements SocketInterface {
 
     private handleHandshake() {
         if (!this.guest) {
-            this.instance.send(api.USER_REGISTER(this.roomID, this.uuid));
+            this.instance.send(api.USER_REGISTER(this.room_uuid, this.uuid));
         } else {
-            const request = api.GUEST_REGISTER(this.roomID, this.uuid, this.name);
+            const request = api.GUEST_REGISTER(this.room_uuid, this.uuid, this.name);
             this.instance.send(request);
         }
         dispatch({ type: types.SET_SOCKET_CONNECTED, payload: true });
@@ -177,13 +178,20 @@ class Socket implements SocketInterface {
             }
             case 'message': {
                 const message = get(parsedData, 'body.event.data') as ChatMessage;
-                const payload = { ...message, roomID: this.roomID };
+                const payload = { ...message, roomID: this.room_uuid };
                 return dispatch({ type: types.ADD_MESSAGE, payload });
             }
             case 'update_playlist': {
                 const data = get(parsedData, 'body.event.data') as UpdatePlaylistData;
+                const subtitilesUrl = get(parsedData, 'body.event.data.videos[0].subs') as string;
+                if (subtitilesUrl) httpServices.get(subtitilesUrl)
+                    .then(response => parseAndDispatchSubtitiles(response.data))
+                    .catch(() => toast.error('Could not fetch subtitiles'))
+
                 const playlist = data.videos || [];
-                return dispatch({ type: types.ADD_TO_PLAYLIST, payload: playlist });
+
+                const dispatchAction = () => dispatch({ type: types.ADD_TO_PLAYLIST, payload: playlist });
+                return this.handleMediaChange(data, dispatchAction);
             }
             case 'ticker': {
                 const { ticker } = get(parsedData, 'body.event.data') as TickerData;
@@ -192,6 +200,13 @@ class Socket implements SocketInterface {
             case 'emoji_update': {
                 const emoji = get(parsedData, 'body.event.data.emoji') as Emoji[];
                 return dispatch({ type: types.ADD_EMOJIS, payload: emoji || [] });
+            }
+            // TODO: structure may be different
+            case 'subtitles': {
+                const subtitilesUrl = get(parsedData, 'body.event.data.subs') as string;
+                httpServices.get(subtitilesUrl)
+                    .then(response => parseAndDispatchSubtitiles(response.data))
+                    .catch(() => toast.error('Could not fetch subtitiles'))
             }
             case 'error': {
                 const error = get(parsedData, 'body.event.data.error') as string;
@@ -212,6 +227,24 @@ class Socket implements SocketInterface {
         }
     };
 
+    private handleMediaChange(data: any, dispatch: (...args: any) => void) {
+        const state = getState();
+        const mediaBefore = get(state, 'media.playlist[0]');
+        const mediaAfter = get(data, 'videos[0]');
+
+        const videoIdCurrent = get(mediaBefore, '__id');
+        const videoIdNew = get(mediaAfter, '__id');
+
+        const mediaBeforeChange = new CustomEvent('mediabeforechange', { 'detail': { mediaBefore, mediaAfter } });
+        const mediaAfterChange = new CustomEvent('mediaafterchange', { 'detail': { mediaBefore, mediaAfter } });
+
+        const changed = videoIdCurrent !== videoIdNew;
+        if (changed) document.dispatchEvent(mediaBeforeChange);
+        dispatch();
+        // Maybe wait for the next tick?
+        if (changed) document.dispatchEvent(mediaAfterChange);
+    }
+
     private handleError = () => {
         this.handleReconnect();
     };
@@ -229,6 +262,7 @@ class Socket implements SocketInterface {
     };
 
     private unsubscribeEvents = () => {
+        if (!this.instance) return;
         this.instance.onopen = () => null;
         this.instance.onmessage = () => null;
         this.instance.onerror = () => null;
@@ -242,12 +276,6 @@ class Socket implements SocketInterface {
     //     if (!this.pending) this._webSocketReconnect();
     //   }, WEBSOCKET_TIMEOUT);
     // };
-}
-
-function sanitizeHtml(html: string) {
-    // <iframe src="javascript:alert(0)"></iframe>
-    // document.cookie
-
 }
 
 function moveGuestsToTheEnd(users: User[]) {

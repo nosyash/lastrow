@@ -82,14 +82,21 @@ export interface UpdatePlaylistData {
 }
 
 export interface Video {
+    // TODO: declare subtitles type
     title: string;
     duration: number;
     url: string;
     index: number;
     direct: boolean;
+    iframe?: boolean;
     __id: string;
 }
 
+// TODO: declare and test
+// export interface YouTube extends Video {
+//     direct: false;
+//     iframe: false;
+// }
 
 export interface Ticker {
     action: string;
