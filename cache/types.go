@@ -8,6 +8,7 @@ import (
 type Cache struct {
 	Users    Users
 	Playlist playlist
+	Messages Messages
 	Room     room
 	ID       string
 	Close    chan struct{}
@@ -38,6 +39,20 @@ type playlist struct {
 type room struct {
 	UpdateEmojis chan string
 	db           *db.Database
+}
+
+type Messages struct {
+	list       []Message
+	AddMessage chan Message
+}
+
+type Message struct {
+	Message string
+	Name    string
+	Color   string
+	Image   string
+	ID      string
+	Guest   bool
 }
 
 // User is single user instance

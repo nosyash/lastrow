@@ -118,6 +118,21 @@ func (h hub) add(user *user) {
 		h.hub[user.Payload.UUID] = user.Conn
 	}
 
+	// FIXME:
+	// We need send this after update user list
+	for _, m := range h.cache.Messages.GetAllMessages() {
+		pck := createPacket(chatEvent, eTypeMsg, &data{
+			Message: m.Message,
+			Name:    m.Name,
+			Color:   m.Color,
+			Image:   m.Image,
+			ID:      m.ID,
+			Guest:   m.Guest,
+		})
+
+		writeMessage(user.Conn, websocket.TextMessage, pck)
+	}
+
 	pl := h.cache.Playlist.GetAllPlaylist()
 
 	if pl != nil {
@@ -153,8 +168,7 @@ func (h hub) remove(conn *websocket.Conn) {
 		h.cache.Users.DelUser <- uuid
 
 		if len(h.hub) == 0 {
-
-			if h.cache.Playlist.Size() == 0 {
+			if h.cache.Playlist.Size() == 0 && h.cache.Messages.GetMessagesSize() == 0 {
 				h.closeStorage <- struct{}{}
 				h.syncer.close <- struct{}{}
 				closeRoom <- h.id

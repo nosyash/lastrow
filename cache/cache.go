@@ -34,6 +34,10 @@ func New(id string) *Cache {
 			make(chan int),
 			uploadPath,
 		},
+		Messages{
+			make([]Message, 0),
+			make(chan Message),
+		},
 		room{
 			make(chan string),
 			db,
@@ -59,6 +63,8 @@ func (cache *Cache) HandleCacheEvents() {
 			cache.Playlist.delVideo(id)
 		case mv := <-cache.Playlist.MoveVideo:
 			cache.Playlist.moveVideo(mv.Index, mv.ID)
+		case message := <-cache.Messages.AddMessage:
+			cache.Messages.addMessage(message)
 		case <-cache.Close:
 			return
 		}
