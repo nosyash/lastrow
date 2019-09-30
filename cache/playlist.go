@@ -96,10 +96,19 @@ func (pl *playlist) addYoutube(url *url.URL) {
 		return
 	}
 
+	// This for youtube playlist links
+	// Because on client side, next video after youtube playlist link, will be from youtube playlist
+	var vURL string
+	if url.Hostname() == "youtu.be" {
+		vURL = fmt.Sprintf("https://youtu.be/%s", vID)
+	} else {
+		vURL = fmt.Sprintf("https://youtube.com/watch?v=%s", vID)
+	}
+
 	pl.playlist = append(pl.playlist, &Video{
 		Title:      title,
 		Duration:   duration,
-		URL:        url.String(),
+		URL:        vURL,
 		ID:         getRandomUUID(),
 		Direct:     false,
 		Iframe:     false,

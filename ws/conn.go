@@ -118,24 +118,8 @@ func (h hub) add(user *user) {
 		h.hub[user.Payload.UUID] = user.Conn
 	}
 
-	// FIXME:
-	// We need send this after update user list
-	for _, m := range h.cache.Messages.GetAllMessages() {
-		pck := createPacket(chatEvent, eTypeMsg, &data{
-			Message: m.Message,
-			Name:    m.Name,
-			Color:   m.Color,
-			Image:   m.Image,
-			ID:      m.ID,
-			Guest:   m.Guest,
-		})
-
-		writeMessage(user.Conn, websocket.TextMessage, pck)
-	}
-
-	pl := h.cache.Playlist.GetAllPlaylist()
-
-	if pl != nil {
+	// Send playlist to user.Conn
+	if pl := h.cache.Playlist.GetAllPlaylist(); pl != nil {
 		packet := playlist{
 			Action: playlistEvent,
 			Body: plBody{

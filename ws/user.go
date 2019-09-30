@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/gorilla/websocket"
-	"github.com/nosyash/backrow/cache"
 )
 
 func (h hub) handleUserEvent(p *packet, conn *websocket.Conn) {
@@ -38,15 +37,6 @@ func (h hub) handleMessage(p *packet) {
 
 	user, ok := h.cache.Users.GetUserByUUID(uuid)
 	if ok {
-		h.cache.Messages.AddMessage <- cache.Message{
-			Message: p.Body.Event.Data.Message,
-			Name:    user.Name,
-			Color:   user.Color,
-			Image:   user.Image,
-			ID:      user.ID,
-			Guest:   user.Guest,
-		}
-
 		h.broadcast <- createPacket(chatEvent, eTypeMsg, &data{
 			Message: p.Body.Event.Data.Message,
 			Name:    user.Name,
@@ -65,7 +55,7 @@ func (h hub) updateUserList() {
 }
 
 func (h hub) kickUser(conn *websocket.Conn, p *packet) {
-	if !h.checkPermissions(conn, p.Payload, eTypeBan) {
+	if !h.checkPermissions(conn, p.Payload, eTypeKick) {
 		return
 	}
 
