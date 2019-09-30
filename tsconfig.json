@@ -4,13 +4,14 @@
     "compilerOptions": {
         // TODO: Declare type for everyting and set it to true
         "noImplicitAny": false,
-        "isolatedModules": false,
+        "isolatedModules": true,
         "skipLibCheck": true,
         "removeComments": true,
         "esModuleInterop": true,
         "moduleResolution": "node",
         "module": "esnext",
+        "lib": ["webworker", "es5", "scripthost", "dom"],
         "sourceMap": true,
         "jsx": "react"
-    },
+    }
 }

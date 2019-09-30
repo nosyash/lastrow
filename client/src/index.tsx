@@ -6,11 +6,15 @@ import '../../node_modules/bootstrap/dist/css/bootstrap.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import 'react-toastify/dist/ReactToastify.css';
 
+
 import './styles/main.less'
 import * as serviceWorker from './serviceWorker';
 import App from './App';
 
 import { store } from './store';
+import { workerPostMessage } from './worker';
+console.log(workerPostMessage);
+// import Worker from 'worker-loader!./Worker.js';
 
 const render = () => {
     return ReactDOM.render(

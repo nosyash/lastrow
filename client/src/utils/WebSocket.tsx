@@ -182,16 +182,15 @@ class Socket implements SocketInterface {
                 return dispatch({ type: types.ADD_MESSAGE, payload });
             }
             case 'update_playlist': {
-                const data = get(parsedData, 'body.event.data') as UpdatePlaylistData;
-                const subtitilesUrl = get(parsedData, 'body.event.data.videos[0].subs') as string;
+                const playlistData = get(parsedData, 'body.event.data') as UpdatePlaylistData;
+
+                const subtitilesUrl = get(playlistData, 'videos[0].subs') as string;
                 if (subtitilesUrl) httpServices.get(subtitilesUrl)
-                    .then(response => parseAndDispatchSubtitiles(response.data))
+                    .then(response => dispatch({ type: types.SET_CURRENT_SUBS, payload: response.data }))
                     .catch(() => toast.error('Could not fetch subtitiles'))
 
-                const playlist = data.videos || [];
-
-                const dispatchAction = () => dispatch({ type: types.ADD_TO_PLAYLIST, payload: playlist });
-                return this.handleMediaChange(data, dispatchAction);
+                const dispatchAction = () => dispatch({ type: types.ADD_TO_PLAYLIST, payload: playlistData.videos });
+                return this.handleMediaChange(playlistData, dispatchAction);
             }
             case 'ticker': {
                 const { ticker } = get(parsedData, 'body.event.data') as TickerData;
@@ -200,13 +199,6 @@ class Socket implements SocketInterface {
             case 'emoji_update': {
                 const emoji = get(parsedData, 'body.event.data.emoji') as Emoji[];
                 return dispatch({ type: types.ADD_EMOJIS, payload: emoji || [] });
-            }
-            // TODO: structure may be different
-            case 'subtitles': {
-                const subtitilesUrl = get(parsedData, 'body.event.data.subs') as string;
-                httpServices.get(subtitilesUrl)
-                    .then(response => parseAndDispatchSubtitiles(response.data))
-                    .catch(() => toast.error('Could not fetch subtitiles'))
             }
             case 'error': {
                 const error = get(parsedData, 'body.event.data.error') as string;

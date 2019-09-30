@@ -1,7 +1,8 @@
-import { store } from "../store";
+
+const ctx: Worker = self as any;
+
 import { parse as parseSubtitles } from "subtitle";
 import striptags from 'striptags';
-import * as types from '../constants/actionTypes'
 import { SubtitlesItem } from "../reducers/media";
 const PREEMPTIVE_TIME = 30;
 const UPDATE_INTERVAL = 10;
@@ -11,12 +12,41 @@ const bracketsRegExp = new RegExp(/^<.*>(.*)<\/.*>$/);
 
 const DELAY = 75;
 
-export default class SubtitlesHandler {
+let subtitlesHandler = null as SubtitlesHandler;
+
+ctx.addEventListener('message', (message: WorkerMessage | Event) => {
+    // ctx.postMessage('test')
+    const { type, data, kind } = message as WorkerMessage;
+    if (type !== MESSAGE_TYPE.REQUEST) return;
+    switch (kind) {
+        case MESSAGE_KIND.SUBTITLES_INIT:
+            return initSubs(data.subtitles.raw);
+
+        case MESSAGE_KIND.SUBTITLES_SET_TIME:
+            return setSubsTime(data.subtitles.time);
+
+        default:
+            break;
+    }
+});
+
+
+function initSubs(raw: string) {
+    if (subtitlesHandler) subtitlesHandler.destroy();
+    subtitlesHandler = new SubtitlesHandler(raw)
+}
+
+function setSubsTime(timeMs: number) {
+    if (!subtitlesHandler) return;
+    subtitlesHandler.setCurrentTime(timeMs)
+}
+
+class SubtitlesHandler {
     public ready: boolean;
     private subs: any[];
     private subsChunk: any[];
     private currentTime: number;
-    private timer: NodeJS.Timeout;
+    private timer: number;
     constructor(private subsRaw: string) {
         this.subsRaw = subsRaw;
         this.subs = [];
@@ -32,7 +62,7 @@ export default class SubtitlesHandler {
         const difference = Math.abs(this.currentTime - timeMs);
         this.currentTime = timeMs + DELAY;
         if (difference > 200) this.currentTime
-            this.updateSubsChunk();
+        this.updateSubsChunk();
 
         if (cb) return cb();
     }
@@ -58,7 +88,7 @@ export default class SubtitlesHandler {
 
     private updateSubsChunk = (cb?: (...args) => void) => {
         clearTimeout(this.timer);
-        this.timer = setTimeout(this.updateSubsChunk, UPDATE_INTERVAL * 1000);
+        this.timer = window.setTimeout(this.updateSubsChunk, UPDATE_INTERVAL * 1000);
         return this.setSubsChunk(cb);
     };
 
@@ -104,10 +134,5 @@ export default class SubtitlesHandler {
     }
 }
 
-export function parseAndDispatchSubtitiles(data: string) {
-    try {
-        const parsed = parseSubtitles(data);
-        store.dispatch({ type: types.SET_SUBS, payload: { parsed } })
-        return store.dispatch({ type: types.SHOW_SUBS })
-    } catch (error) { }
-}
+// fixes typescript error
+export default {} as typeof Worker & (new () => Worker);

@@ -284,6 +284,18 @@ module.exports = function(webpackEnv) {
         module: {
             strictExportPresence: true,
             rules: [
+                {
+                test: /\.worker.ts$/,
+                    use: [
+                        {
+                        loader: require.resolve('worker-loader'),
+                        options: {
+                            name: 'static/js/[name].js',
+                            publicPath,
+                        },
+                        },
+                    ],
+                },
                 // Disable require.ensure as it's not a standard language feature.
                 { parser: { requireEnsure: false } },
 

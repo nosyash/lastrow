@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import * as types from '../../../../../constants/actionTypes';
 import SubtitlesHandler from '../../../../../utils/subtitles';
+import { get } from 'lodash';
 import { Subtitles, Media, SubtitlesItem } from '../../../../../reducers/media';
 
 
@@ -16,24 +17,24 @@ interface SubtitilesProps {
 
 let timer = null;
 let pauseTimer = null;
-const subtitlesHandler = new SubtitlesHandler();
 
 function SubtitlesContainer(props: SubtitilesProps) {
-    const videoEl = React.useRef() as any;
+    const videoEl = useRef<HTMLVideoElement | null>(null);
+    const subtitlesHandler = useRef<SubtitlesHandler | null>(null);
     useEffect(() => {
-        initSubs(formatSubs);
+        initSubtitles(formatSubs);
 
         return () => {
             clearTimeout(timer);
+            subtitlesHandler.current.destroy();
         };
     }, []);
 
-    function initSubs(callback: () => void) {
+    function initSubtitles(cb: (...args) => void) {
         const { subs } = props;
-        if (!subs.parsed) return;
         videoEl.current = document.querySelector('.player-inner video');
-        subtitlesHandler.setSubtitles(subs.parsed);
-        callback();
+        subtitlesHandler.current = new SubtitlesHandler(subs.raw)
+        cb();
     }
 
     function formatSubs() {
@@ -43,43 +44,43 @@ function SubtitlesContainer(props: SubtitilesProps) {
         if (!showSubs) return;
         if (!videoEl.current) return;
 
-        const currentText = subs.raw;
+        const prevCurrentSubtitles = subs.raw;
         const timeMs = videoEl.current.currentTime * 1000;
-        if (videoEl.paused) {
+        if (videoEl.current.paused) {
             pauseTimer = setTimeout(() => {
-                subtitlesHandler.setCurrentTime(timeMs);
-                subtitlesHandler.updateSubsChunk();
+                subtitlesHandler.current.setCurrentTime(timeMs);
+                subtitlesHandler.current.forceUpdateChunk();
             }, 20);
             clearTimeout(pauseTimer);
         }
 
-        const newText = subtitlesHandler.getSubtitles(timeMs);
-        if (JSON.stringify(currentText) !== JSON.stringify(newText)) {
-            setCurrentSubs(newText);
-        }
-        timer = setTimeout(formatSubs, 64);
+        // const nextCurrentSubtitles = subtitlesHandler.current.getSubtitles(timeMs);
+        // const isChanged = JSON.stringify(prevCurrentSubtitles) !== JSON.stringify(nextCurrentSubtitles);
+        // if (isChanged) setCurrentSubs(nextCurrentSubtitles);
+
+        // timer = setTimeout(formatSubs, 64);
     }
 
-    const { raw } = props.subs;
-    return <RenderSubs text={raw} />;
+    const { currentSubtitles } = props.subs;
+    return <RenderSubs currentSubtitles={currentSubtitles} />;
 }
 
 // eslint-disable-next-line react/display-name
-const RenderSubs = React.memo(({ text }: { text: SubtitlesItem[] }) => {
-    return <RenderSub text={text} />;
+const RenderSubs = React.memo(({ currentSubtitles }: { currentSubtitles: SubtitlesItem[] }) => {
+    return <RenderSub currentSubtitles={currentSubtitles} />;
 });
 
-const RenderSub = ({ text }: { text: SubtitlesItem[] }) => {
-    const minify = text.length > 3;
+const RenderSub = ({ currentSubtitles }: { currentSubtitles: SubtitlesItem[] }) => {
+    const minify = currentSubtitles.length > 3;
     const classes = `subs-container${minify ? ' subs-container_minified' : ''}`;
     return (
         <div className={classes}>
-            {text.map(currentSub => (
+            {currentSubtitles.map(subtitlesItem => (
                 <div
-                    key={currentSub.text + currentSub.end + currentSub.start}
+                    key={subtitlesItem.text + subtitlesItem.end + subtitlesItem.start}
                     className="sub-line"
                 >
-                    {currentSub.text}
+                    {subtitlesItem.text}
                 </div>
             ))}
         </div>
