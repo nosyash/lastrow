@@ -158,7 +158,7 @@ func (server Server) setUpAuthSession(w http.ResponseWriter, uuid string) {
 	var timeNow = time.Now().Add(1 * 365 * 24 * time.Hour)
 
 	for i, r := range roomList {
-		owner[i].RoomID = r.UUID
+		owner[i].RoomUUID = r.UUID
 		for _, r := range r.Owners {
 			if r.UUID == uuid {
 				owner[i].Permissions = r.Permissions
@@ -173,7 +173,7 @@ func (server Server) setUpAuthSession(w http.ResponseWriter, uuid string) {
 	payload.Owner = owner
 	payload.Exp = timeNow.UnixNano()
 
-	token, err := jwt.GenerateNewToken(header, payload, server.hmacKey)
+	token, err := jwt.GenerateNewToken(header, &payload, server.hmacKey)
 	if err != nil {
 		log.Printf("jwt.GenerateNewToken(): %v", err)
 		sendJSON(w, http.StatusBadRequest, message{

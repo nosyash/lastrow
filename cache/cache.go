@@ -30,6 +30,8 @@ func New(id string) *Cache {
 			make(chan error),
 			make(chan error),
 			make(chan struct{}),
+			make(chan MoveVideo),
+			make(chan int),
 			uploadPath,
 		},
 		room{
@@ -55,6 +57,8 @@ func (cache *Cache) HandleCacheEvents() {
 			cache.Playlist.addVideo(video)
 		case id := <-cache.Playlist.DelVideo:
 			cache.Playlist.delVideo(id)
+		case mv := <-cache.Playlist.MoveVideo:
+			cache.Playlist.moveVideo(mv.Index, mv.ID)
 		case <-cache.Close:
 			return
 		}

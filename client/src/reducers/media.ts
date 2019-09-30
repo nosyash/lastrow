@@ -10,7 +10,7 @@ export interface SubtitlesItem {
 export interface Subtitles {
     url?: string;
     parsed: SubtitlesItem[];
-    raw: string;
+    raw: any[];
 }
 
 export interface Media {
@@ -42,12 +42,12 @@ const InitialState = {
     muted: false,
     playbackRate: 0,
     playing: true,
-    playlist: [] as Video[],
+    playlist: [],
     showSubs: false,
     subs: {
         url: 'https://stream.bona.cafe/uzzu/ep15.srt',
         parsed: [],
-        raw: '',
+        raw: [],
     },
     url: '',
     volume: 50,
@@ -113,6 +113,10 @@ const Player = (state = InitialState, action: any): Media => {
 
         case types.HIDE_SUBS: {
             return { ...state, showSubs: false };
+        }
+
+        case types.TOGGLE_SUBS: {
+            return { ...state, showSubs: !state.showSubs };
         }
 
         case types.RESET_MEDIA: {

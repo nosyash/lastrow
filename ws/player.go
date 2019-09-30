@@ -12,6 +12,12 @@ import (
 	"github.com/nosyash/backrow/jwt"
 )
 
+const (
+	exitNormal = iota
+	exitClosed
+	exitUpdateHead
+)
+
 var errNotHavePermissions = errors.New("You don't have permissions to do this action")
 
 var delLock sync.Mutex
@@ -125,6 +131,19 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 				h.syncer.rewind <- req.Body.Event.Data.RewindTime
 			}
 		}
+	case eTypeMove:
+		if !h.syncer.isSleep {
+			if result := h.checkPermissions(conn, req.Payload, eTypeMove); result {
+				h.cache.Playlist.MoveVideo <- cache.MoveVideo{
+					ID:    req.Body.Event.Data.ID,
+					Index: req.Body.Event.Data.Index,
+				}
+
+				if r := <-h.cache.Playlist.MoveFeedBack; r == cache.MoveHead {
+					h.syncer.move <- struct{}{}
+				}
+			}
+		}
 	}
 }
 
@@ -164,13 +183,16 @@ func (h *hub) syncElapsedTime() {
 			continue
 		}
 
-		if r := h.elapsedTicker(video); r {
+		switch h.elapsedTicker(video) {
+		case exitClosed:
 			return
+		case exitNormal:
+			h.syncer.currentVideoID = ""
+			h.cache.Playlist.DelVideo <- video.ID
+			<-h.cache.Playlist.DelFeedBack
+		case exitUpdateHead:
+			continue
 		}
-
-		h.syncer.currentVideoID = ""
-		h.cache.Playlist.DelVideo <- video.ID
-		<-h.cache.Playlist.DelFeedBack
 	}
 }
 
@@ -198,13 +220,15 @@ func (h *hub) handleIframeOrStream(id string) bool {
 			<-h.cache.Playlist.DelFeedBack
 
 			return false
+		case <-h.syncer.move:
+			return false
 		case <-h.syncer.close:
 			return true
 		}
 	}
 }
 
-func (h *hub) elapsedTicker(video *cache.Video) bool {
+func (h *hub) elapsedTicker(video *cache.Video) int {
 	var ep elapsedTime
 	var d data
 	var elapsed int
@@ -229,7 +253,7 @@ func (h *hub) elapsedTicker(video *cache.Video) bool {
 		case <-h.syncer.pause:
 			if r := h.pauseTicker(); r {
 				cancel()
-				return true
+				return exitClosed
 			}
 			if h.syncer.rewindAfterPause > 0 && h.syncer.rewindAfterPause < video.Duration {
 				elapsed = h.syncer.rewindAfterPause
@@ -242,13 +266,16 @@ func (h *hub) elapsedTicker(video *cache.Video) bool {
 			}
 		case <-h.syncer.skip:
 			cancel()
-			return false
+			return exitNormal
+		case <-h.syncer.move:
+			cancel()
+			return exitUpdateHead
 		case <-ctx.Done():
 			cancel()
-			return false
+			return exitNormal
 		case <-h.syncer.close:
 			cancel()
-			return true
+			return exitClosed
 		}
 	}
 }
@@ -265,5 +292,14 @@ func (h *hub) pauseTicker() bool {
 }
 
 func (h hub) checkPermissions(conn *websocket.Conn, payload *jwt.Payload, eType string) bool {
+	if eType == eTypeBan || eType == eTypeUnban {
+		for _, r := range payload.Owner {
+			if r.RoomUUID == h.id && r.Permissions == 10 {
+				return true
+			}
+		}
+		return false
+	}
+
 	return true
 }

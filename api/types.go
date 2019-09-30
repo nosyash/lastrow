@@ -15,9 +15,10 @@ type authRequest struct {
 }
 
 type roomRequest struct {
-	Action string   `json:"action"`
-	Body   roomBody `json:"body"`
-	RoomID string   `json:"room_id"`
+	Action   string   `json:"action"`
+	Body     roomBody `json:"body"`
+	RoomUUID string   `json:"room_uuid"`
+	RoomPath string   `json:"room_path"`
 }
 
 type userRequest struct {
@@ -44,6 +45,8 @@ type roomBody struct {
 	UpdateType string    `json:"type"`
 	Title      string    `json:"title"`
 	Path       string    `json:"path"`
+	Hidden     bool      `json:"hidden"`
+	Password   string    `json:"passwd"`
 	Data       imageBody `json:"data"`
 }
 
@@ -56,8 +59,13 @@ type authBody struct {
 
 type roomView struct {
 	Title string     `json:"title,omitempty"`
-	ID    string     `json:"ID,omitempty"`
+	UUID  string     `json:"uuid,omitempty"`
 	Emoji []db.Emoji `json:"emoji,omitempty"`
+}
+
+type bannedList struct {
+	BannedUsers []db.BannedUsers `json:"users"`
+	BannedIps   []db.BannedIps   `json:"ips"`
 }
 
 const (
@@ -71,6 +79,7 @@ const (
 	eTypeRoomCreate = "room_create"
 	eTypeRoomUpdate = "room_update"
 	eTypeRoomDelete = "room_delete"
+	eTypeAuthInRoom = "room_auth"
 )
 
 const (

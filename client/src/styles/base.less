@@ -331,10 +331,10 @@ body {
 }
 
 .chat-messages {
-    overflow-y: auto;
+    overflow-y: scroll;
     padding: 10px;
     padding-right: 30px;
-    width: calc(100% + 20px);
+    width: calc(100% + 30px);
     position: relative;
 
     height: 100%;
@@ -393,17 +393,15 @@ body {
 .emote {
     max-width: 32px;
     max-height: 32px;
-    height: auto;
-    width: auto;
 }
 
 .chat-message.highlight {
-    background: #334656;
-    border-radius: 4px;
-    padding: 2px 4px;
+    // background: #334656;
+    // border-radius: 4px;
+    // padding: 2px 4px;
 
     .emote {
-        margin-top: 5px;
+        // margin-top: 5px;
     }
 }
 
@@ -453,34 +451,44 @@ body {
     display: flex;
     flex-direction: row;
     align-items: center;
-    margin-bottom: 6px;
-    border-top: 1px solid #343434;
-    padding-top: 12px;
+    margin-bottom: 9px;
+    // border-top: 1px solid #343434;
+    // padding-top: 12px;
+    background: #343434;
+    padding: 8px 10px;
+    border-radius: 5px;
 }
 
 .chat-message.highlight .chat-message_header {
     border-top: none;
-    padding-top: 0;
+    // padding-top: 0;
+
+    // background: hsla(0, 0%, 20%, 0.369);
     margin-top: 20px;
 }
 
+.chat-message.highlight .chat-message_body {
+    background: #334656;
+    border-radius: 4px;
+    padding: 2px 6px;
+    padding-top: 6px;
+}
+
 .chat-message:not(:first-of-type) .chat-message_header {
-    margin-top: 8px;
+    margin-top: 15px;
 }
 
 .chat-message_body {
     font-size: 15px;
     font-weight: 400;
     font-family: 'Open Sans';
-    padding: 0 1px;
+    padding: 0px 6px;
 
     p {
         margin-bottom: 0;
     }
 
     .emote {
-        height: 32px;
-        width: auto;
         vertical-align: baseline;
     }
 }
@@ -546,7 +554,8 @@ body {
     display: flex;
     // max-width: 100px;
     overflow-x: auto;
-    background: #3b3b3b;
+    background: hsla(0, 0%, 23%, 0.9);
+    backdrop-filter: blur(5px);
     z-index: 100000;
     border-radius: 4px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
@@ -556,19 +565,22 @@ body {
     bottom: calc(100% + 10px);
 }
 
+.emote-search__emote {}
+
 .emote-search__emote span {
     font-weight: 600;
     margin-left: 10px;
-    font-size: 0.9em;
+    font-size: 0.92em;
     vertical-align: middle;
 }
 
 .emote-search__emote {
-    padding: 5px;
+    padding: 5px 10px;
     cursor: pointer;
 
     &:hover {
-        background: #586a7c
+        .emote-search__emote_selected();
+        opacity: 0.85;
     }
 }
 
@@ -577,14 +589,15 @@ body {
 }
 
 .emote-menu {
-    position: absolute;
+    transition: 0.1s;
+    position: fixed;
     overflow-x: auto;
-    background: hsla(0, 0%, 23%, 1);
+    background: hsla(0, 0%, 23%, 0.9);
+    backdrop-filter: blur(5px);
     z-index: 100000;
     box-shadow: 0 1px 6px rgba(0, 0, 0, 0.15);
-    left: 0;
-    right: 0;
-    bottom: 30px;
+    // left: 0;// right: 0;
+    // bottom: 30px;
     flex-direction: row;
     display: flex;
     flex-wrap: wrap;
@@ -599,7 +612,7 @@ body {
     max-height: 200px;
     padding: 4px;
     margin-right: -35px;
-    padding-right: 25px;
+    padding-right: 17px;
 }
 
 .emote-menu__emote {
@@ -1182,6 +1195,17 @@ body {
     flex-direction: column;
     padding: 5px 0;
     transition: 0.1s;
+    transform: translateY(0px);
+
+    &__sync-on {
+
+        .video-player_top .progress-bar_container,
+        .play-button {
+            // pointer-events: none;
+            // cursor: default;
+            // opacity: 0.75;
+        }
+    }
 }
 
 .video-player_top {
@@ -1239,13 +1263,17 @@ body {
 
 .progress-bar_passed {
     background: rgba(172, 175, 179, 0.8);
-    ;
     position: absolute;
     left: 0;
     top: 0;
     border-radius: 5px;
     bottom: 0;
     width: 100%;
+}
+
+.progress-bar_sub-progress {
+    left: 2px;
+    background: #ccc;
 }
 
 .scrubber_container {
@@ -1320,6 +1348,7 @@ body {
     .player-embed {
         width: 100%;
         height: 100%;
+        border: none;
     }
 
     // height: 100%;
@@ -1340,7 +1369,7 @@ body {
 .player-minimized {
     .video-player {
         background: transparent;
-        bottom: 0;
+        transform: translateY(40px);
         backdrop-filter: none;
     }
 
@@ -1351,36 +1380,6 @@ body {
     .video-player>div:not(.subs-container) {
         opacity: 0;
     }
-
-    // .video-player {
-    //   bottom: -52px;
-    //   left: 0;
-    //   max-width: 100%;
-    //   right: 0;
-    //   background: transparent;
-    // }
-
-    // .video-time {
-    //   display: none;
-    // }
-
-    // .video-player_top {
-    //   margin: 0;
-    // }
-
-    // .progress-bar {
-    //   margin: 0;
-    //   height: 6px;
-    //   border-radius: 0;
-    // }
-
-    // .scrubber_container {
-    //   display: none;
-    // }
-
-    // .progress-bar_passed {
-    //   border-radius: 0;
-    // }
 }
 
 .video-player_overflow {
@@ -1393,11 +1392,11 @@ body {
     width: 100%;
     bottom: 85px;
     color: #e3e5e7;
-    font-family: Merriweather;
+    font-family: 'Open Sans';
     text-align: center;
-    font-size: 2em;
+    font-size: 1.9em;
     font-weight: 500;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.025em;
     transition: 0.2s ease-out;
     display: flex;
     flex-direction: column;
@@ -1435,11 +1434,47 @@ body {
 }
 
 .toggle-sync {
-    margin-left: 5px;
+    margin-bottom: 2px;
+    margin-left: 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    &.sync-off {
+        .toggle-sync__icon {
+            background: rgb(143, 143, 143);
+        }
+
+        opacity: 0.5;
+    }
+
+    &__sign {
+        font-family: Quicksand;
+        font-weight: bold;
+        font-size: 0.8em;
+    }
+
+    &__icon {
+        height: 5px;
+        width: 5px;
+        margin-left: 3px;
+        margin-bottom: 1px;
+        display: block;
+        background: #da073b;
+        border-radius: 50%;
+    }
 }
 
-.toggle-sync.sync-on {
-    color: rgb(0, 180, 141);
+.toggle-fullscreen {
+    margin-left: 10px;
+}
+
+.toggle-subtitles {
+    margin-left: 10px;
+
+    &.subs-off {
+        opacity: 0.5;
+    }
 }
 
 .go-back {
@@ -1475,9 +1510,10 @@ body {
 }
 
 .cinema-mode .chat-message.highlight {
-    background: hsla(207, 26%, 27%, 0.555);
-    border-radius: 4px;
-    padding: 2px 4px;
+    // background: hsla(207, 26%, 27%, 0.555);
+    // border-radius: 4px;
+    // padding: 2px 4px;
+
 }
 
 
@@ -1531,6 +1567,7 @@ body {
     cursor: move;
     user-select: none;
     background: @darkSecond;
+    background: rgba(48, 48, 48, 0.9);
     display: flex;
 
     .controls-container {
@@ -1555,7 +1592,7 @@ body {
 .popup {
     overflow: hidden;
     border-radius: 4px;
-    backdrop-filter: saturate(300%) blur(18px);
+    backdrop-filter: blur(18px);
     box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
     position: fixed;
     left: 0;
@@ -1708,9 +1745,17 @@ body {
 
 // Playlist
 .playlist_container {
-    background: rgba(37, 39, 40, 0.9);
+    background: rgba(48, 48, 48, 0.9);
     // height: 100%;
     box-shadow: none;
+
+    ul {
+        padding: 0;
+    }
+}
+
+.add-media_container {
+    margin-bottom: 10px;
 }
 
 .playlist_inner {
@@ -1723,29 +1768,51 @@ body {
 .paylist-item {
     display: flex;
     flex-direction: row;
+    z-index: 100;
+    font-size: 0.9em;
 
     a {
+        margin-right: 10px;
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
 
     }
+
+
+    &:first-child {
+        background: #acafb3;
+        color: #303030;
+        padding: 1px 7px 0;
+        border-radius: 4px;
+        margin-left: -7px;
+        margin-right: -7px;
+        margin-bottom: 2px;
+
+        a {
+            color: #303030;
+        }
+
+        .control {
+            color: #303030;
+        }
+    }
 }
 
 .popup.playlist {
     max-width: 600px;
-    min-width: 400px;
+    min-width: 500px;
     max-height: 70vh;
     z-index: 9;
     // min-height: 200px;
 }
 
 .playlist-item__duration {
-    margin-left: 5px;
+    margin-left: auto;
 }
 
 .playlist-item__remove-icon {
-    margin-left: auto;
+    margin-left: 4px;
 }
 
 // Add media
@@ -1756,7 +1823,31 @@ body {
 .add-media_container form {
     margin-top: 0;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+
+    div {
+        display: flex;
+        flex-direction: row;
+        margin-top: 5px;
+    }
+
+    .add-subs-button {
+        // width: 100%;
+        // text-align: center;
+
+        display: inline-block;
+        width: 200px;
+        height: 35px;
+        margin-left: 5px;
+        font-size: 0.8em;
+        text-align: center;
+        line-height: 3;
+        cursor: pointer;
+
+        input {
+            display: none;
+        }
+    }
 }
 
 .add-media-button {
@@ -1764,6 +1855,7 @@ body {
     width: 50px;
     height: 35px;
     margin-left: 5px;
+    line-height: 2.4;
 }
 
 .add-media-input {

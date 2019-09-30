@@ -17,6 +17,12 @@ import (
 	"golang.org/x/net/html"
 )
 
+const (
+	MoveNormal = iota
+	MoveHead
+	MoveError
+)
+
 var (
 	// ErrUnsupportedFormat return when link to unsupported video format was received
 	ErrUnsupportedFormat = errors.New("Unsupported video format. Support only .mp4, .m3u8, .webm")
@@ -239,6 +245,45 @@ func (pl *playlist) delVideo(id string) {
 	}
 
 	pl.DelFeedBack <- ErrVideoNotFound
+}
+
+func (pl *playlist) moveVideo(index int, ID string) {
+	video, oldIdx := pl.findVideoByID(ID)
+	if video == nil {
+		pl.MoveFeedBack <- MoveError
+		return
+	}
+
+	if oldIdx < 0 || oldIdx > len(pl.playlist)-1 || index < 0 || index > len(pl.playlist)-1 || oldIdx == index {
+		pl.MoveFeedBack <- MoveError
+		return
+	}
+
+	val := pl.playlist[oldIdx]
+
+	pl.playlist = append(pl.playlist[:oldIdx], pl.playlist[oldIdx+1:]...)
+	before := make([]*Video, index+1)
+	copy(before, pl.playlist[:index])
+	before[index] = val
+	pl.playlist = append(before, pl.playlist[index:]...)
+
+	// Update head element
+	if index == 0 || oldIdx == 0 {
+		pl.MoveFeedBack <- MoveHead
+	} else {
+		pl.MoveFeedBack <- MoveNormal
+	}
+	pl.UpdatePlaylist <- struct{}{}
+}
+
+func (pl playlist) findVideoByID(ID string) (*Video, int) {
+	for i, v := range pl.playlist {
+		if v.ID == ID {
+			return v, i
+		}
+	}
+
+	return nil, 0
 }
 
 // GetAllPlaylist return all videos in playlist

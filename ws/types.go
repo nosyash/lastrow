@@ -39,13 +39,13 @@ type user struct {
 }
 
 type packet struct {
-	Action  string       `json:"action"`
-	Body    body         `json:"body"`
-	RoomID  string       `json:"room_id,omitempty"`
-	UUID    string       `json:"user_uuid,omitempty"`
-	JWT     string       `json:"jwt,omitempty"`
-	Payload *jwt.Payload `json:"-"`
-	Name    string       `json:"name,omitempty"`
+	Action   string       `json:"action"`
+	Body     body         `json:"body"`
+	RoomUUID string       `json:"room_uuid,omitempty"`
+	UUID     string       `json:"user_uuid,omitempty"`
+	JWT      string       `json:"jwt,omitempty"`
+	Payload  *jwt.Payload `json:"-"`
+	Name     string       `json:"name,omitempty"`
 }
 
 type body struct {
@@ -67,6 +67,7 @@ type syncer struct {
 	resume           chan struct{}
 	rewind           chan int
 	close            chan struct{}
+	move             chan struct{}
 	rewindAfterPause int
 	currentVideoID   string
 	elapsed          int
@@ -86,8 +87,11 @@ type data struct {
 	Duration      int           `json:"duration,omitempty"`
 	RewindTime    int           `json:"time,omitempty"`
 	URL           string        `json:"url,omitempty"`
+	Index         int           `json:"index,omitempty"`
 	ID            string        `json:"__id,omitempty"`
-	UserID        string        `json:"user_id,omitempty"`
+	UUID          string        `json:"uuid,omitempty"`
+	IP            string        `json:"ip,omitempty"`
+	BanType       string        `json:"ban_type,omitempty"`
 	Users         []*cache.User `json:"users,omitempty"`
 	Ticker        *elapsedTime  `json:"ticker,omitempty"`
 	Emoji         []db.Emoji    `json:"emoji,omitempty"`
@@ -143,6 +147,7 @@ const (
 	eTypePause  = "pause"
 	eTypeResume = "resume"
 	eTypeRewind = "rewind"
+	eTypeMove   = "move"
 
 	eTypeUpdUserList = "update_users"
 	eTypePlaylistUpd = "update_playlist"
@@ -151,5 +156,7 @@ const (
 	eTypeFeedBack = "feedback"
 	eTypeTicker   = "ticker"
 
-	eTypeKick = "kick"
+	eTypeKick  = "kick"
+	eTypeBan   = "ban"
+	eTypeUnban = "unban"
 )

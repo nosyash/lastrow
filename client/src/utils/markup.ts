@@ -12,9 +12,9 @@ showdown.setOption('omitExtraWLInCodeBlocks', true)
 let postAuthorName = '';
 let userList = [{ name: 'kekw' }];
 
-const escapeMap = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" };
+const escapeMap = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;", "#": "\\#" };
 const urlEscapeMap = { "%": '%25', ":": '%3A' }
-showdown.extension('escapeMap', () => [{ type: 'lang', regex: /([&<>"'])/g, replace: (s, match) => escapeMap[match] }]);
+showdown.extension('escapeMap', () => [{ type: 'lang', regex: /([&<>"'#])/g, replace: (s, match) => escapeMap[match] }]);
 
 showdown.extension('spoiler', () => [{ type: 'lang', regex: /%%(.+?)%%/gs, replace: `<del class="markup--spoiler">$1</del>` }]);
 showdown.extension('bold', () => [{ type: 'lang', regex: /\*\*(.+)\*\*/gs, replace: `<strong class="markup--bold">$1</strong>` }]);
@@ -53,7 +53,7 @@ function doReplace(_: string, match: string) {
 }
 function replyReplace(string: string, match: string) {
     const userList = store.getState().chat.users;
-    const user = userList.find(({ name }) => match.substr(1).includes(name))
+    const user = userList.find(({ name }) => match.replace(/&lt/g, '<').substr(1).includes(name))
     if (!user) return match;
     const nameLength = user.name.length + 1;
     const matchWithoutName = match.substr(nameLength);
@@ -71,6 +71,7 @@ const converter = new showdown.Converter({
         'reply',
         'spoiler',
         'me',
+        'do',
         'bold',
         'italic',
         'quote',
