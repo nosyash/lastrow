@@ -18,7 +18,8 @@ import { User } from './types';
 import { Store } from 'redux';
 import { Emoji } from '../reducers/emojis';
 import httpServices from './httpServices';
-import { parseAndDispatchSubtitiles } from './subtitles';
+import { parseAndDispatchSubtitles } from './subtitles';
+import { workerRequest } from '../worker/index';
 
 const { dispatch, getState } = store as Store;
 
@@ -184,10 +185,10 @@ class Socket implements SocketInterface {
             case 'update_playlist': {
                 const playlistData = get(parsedData, 'body.event.data') as UpdatePlaylistData;
 
-                const subtitilesUrl = get(playlistData, 'videos[0].subs') as string;
-                if (subtitilesUrl) httpServices.get(subtitilesUrl)
-                    .then(response => dispatch({ type: types.SET_CURRENT_SUBS, payload: response.data }))
-                    .catch(() => toast.error('Could not fetch subtitiles'))
+                const subtitlesUrl = get(playlistData, 'videos[0].subs') as string;
+                if (subtitlesUrl) httpServices.get(subtitlesUrl)
+                    .then(handleSubtitles)
+                    .catch(() => toast.error('Could not fetch subtitles'))
 
                 const dispatchAction = () => dispatch({ type: types.ADD_TO_PLAYLIST, payload: playlistData.videos });
                 return this.handleMediaChange(playlistData, dispatchAction);
@@ -268,6 +269,18 @@ class Socket implements SocketInterface {
     //     if (!this.pending) this._webSocketReconnect();
     //   }, WEBSOCKET_TIMEOUT);
     // };
+}
+
+function subtitlesUpdateEvent() {
+    const subtitlesAftersChanged = new CustomEvent('subtitlesafterchange', { 'detail': {} });
+    document.dispatchEvent(subtitlesAftersChanged);
+}
+
+function handleSubtitles({ data }) {
+    // dispatch({ type: types.SET_RAW_SUBS, payload: data })
+    dispatch({ type: types.SHOW_SUBS })
+    workerRequest.subtitlesInit(data)
+    // subtitlesUpdateEvent()
 }
 
 function moveGuestsToTheEnd(users: User[]) {

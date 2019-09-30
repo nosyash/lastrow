@@ -14,4 +14,15 @@ export enum MESSAGE_TYPE {
 export enum MESSAGE_KIND {
     SUBTITLES_SET_TIME = 'subtitlesSetTime',
     SUBTITLES_INIT = 'subtitlesInit',
+    SUBTITLES_READY = 'subtitlesReady',
+    SUBTITLES_ERROR = 'subtitlesError',
+    GENERIC = 'generic',
 }
+
+// export interface WorkerSubtitlesInit extends WorkerMessage {
+//     data: {
+//         subtitles: {
+//             raw: string,
+//         }
+//     }
+// }

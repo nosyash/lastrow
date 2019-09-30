@@ -1,12 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import * as types from '../../../../../constants/actionTypes';
-import SubtitlesHandler from '../../../../../utils/subtitles';
-import { get } from 'lodash';
 import { Subtitles, Media, SubtitlesItem } from '../../../../../reducers/media';
+import { workerRequest } from '../../../../../worker/index';
 
 
-interface SubtitilesProps {
+interface SubtitlesProps {
     media: Media;
     subs: Subtitles;
     showSubs: boolean;
@@ -18,41 +17,53 @@ interface SubtitilesProps {
 let timer = null;
 let pauseTimer = null;
 
-function SubtitlesContainer(props: SubtitilesProps) {
-    const videoEl = useRef<HTMLVideoElement | null>(null);
-    const subtitlesHandler = useRef<SubtitlesHandler | null>(null);
+function SubtitlesContainer(props: SubtitlesProps) {
+    const videoEl = useRef<HTMLVideoElement>(null);
+    // const subtitlesHandler = useRef<SubtitlesHandler>(null);
     useEffect(() => {
-        initSubtitles(formatSubs);
-
+        initSubtitles();
+        document.addEventListener('subtitlesready', initSubtitles);
+        document.addEventListener('subtitlesdestroyed', clearTimers);
         return () => {
             clearTimeout(timer);
-            subtitlesHandler.current.destroy();
+            document.removeEventListener('subtitlesready', initSubtitles);
+            document.removeEventListener('subtitlesdestroyed', clearTimers);
         };
     }, []);
 
-    function initSubtitles(cb: (...args) => void) {
-        const { subs } = props;
+    function clearTimers() {
+        clearInterval(timer)
+    }
+
+    function initSubtitles() {
         videoEl.current = document.querySelector('.player-inner video');
-        subtitlesHandler.current = new SubtitlesHandler(subs.raw)
-        cb();
+        watchAndChangeTime()
+    }
+
+    function watchAndChangeTime() {
+        clearInterval(timer)
+        timer = setInterval(() => {
+            if (!videoEl.current) clearInterval(timer)
+            workerRequest.subtitlesSetTime(videoEl.current.currentTime)
+        }, 32)
     }
 
     function formatSubs() {
-        const { subs, showSubs } = props;
-        const { setCurrentSubs } = props;
+        // const { subs, showSubs } = props;
+        // const { setCurrentSubs } = props;
 
-        if (!showSubs) return;
-        if (!videoEl.current) return;
+        // if (!showSubs) return;
+        // if (!videoEl.current) return;
 
-        const prevCurrentSubtitles = subs.raw;
-        const timeMs = videoEl.current.currentTime * 1000;
-        if (videoEl.current.paused) {
-            pauseTimer = setTimeout(() => {
-                subtitlesHandler.current.setCurrentTime(timeMs);
-                subtitlesHandler.current.forceUpdateChunk();
-            }, 20);
-            clearTimeout(pauseTimer);
-        }
+        // const prevCurrentSubtitles = subs.raw;
+        // const timeMs = videoEl.current.currentTime * 1000;
+        // if (videoEl.current.paused) {
+        //     pauseTimer = setTimeout(() => {
+        //         subtitlesHandler.current.setCurrentTime(timeMs);
+        //         subtitlesHandler.current.forceUpdateChunk();
+        //     }, 20);
+        //     clearTimeout(pauseTimer);
+        // }
 
         // const nextCurrentSubtitles = subtitlesHandler.current.getSubtitles(timeMs);
         // const isChanged = JSON.stringify(prevCurrentSubtitles) !== JSON.stringify(nextCurrentSubtitles);

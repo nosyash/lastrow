@@ -12,8 +12,6 @@ import * as serviceWorker from './serviceWorker';
 import App from './App';
 
 import { store } from './store';
-import { workerPostMessage } from './worker';
-console.log(workerPostMessage);
 // import Worker from 'worker-loader!./Worker.js';
 
 const render = () => {

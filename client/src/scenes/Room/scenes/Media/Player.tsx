@@ -279,7 +279,7 @@ function Player(props: PlayerProps) {
             <div className={playerClasses}>
                 {renderVideoTop()}
                 {renderVideoMid()}
-                {showSubs && videoEl && <Subtitles videoEl={videoEl} />}
+                {videoEl && <Subtitles videoEl={videoEl} />}
                 <div className="video-player_overflow" />
             </div>
         );

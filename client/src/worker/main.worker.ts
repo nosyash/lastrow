@@ -2,7 +2,7 @@
 const ctx: Worker = self as any;
 
 import { parse as parseSubtitles } from "subtitle";
-import striptags from 'striptags';
+import striptags from "striptags";
 import { SubtitlesItem } from "../reducers/media";
 import { MESSAGE_TYPE, WorkerMessage, MESSAGE_KIND } from './types';
 const PREEMPTIVE_TIME = 30;
@@ -15,22 +15,20 @@ const DELAY = 75;
 
 let subtitlesHandler = null as SubtitlesHandler;
 
-ctx.addEventListener('message', (message: WorkerMessage | Event) => {
-    ctx.postMessage('test')
-    const { type, data, kind } = message as WorkerMessage;
+ctx.addEventListener('message', (message: any) => {
+    const { type, data, kind } = message.data as WorkerMessage;
     if (type !== MESSAGE_TYPE.REQUEST) return;
     switch (kind) {
-        case MESSAGE_KIND.SUBTITLES_INIT:
-            return initSubs(data.subtitles.raw);
+    case MESSAGE_KIND.SUBTITLES_INIT:
+        return initSubs(data.subtitles.raw);
 
-        case MESSAGE_KIND.SUBTITLES_SET_TIME:
-            return setSubsTime(data.subtitles.time);
+    case MESSAGE_KIND.SUBTITLES_SET_TIME:
+        return setSubsTime(data.subtitles.time);
 
-        default:
-            break;
+    default:
+        break;
     }
 });
-ctx.postMessage('test')
 
 function initSubs(raw: string) {
     if (subtitlesHandler) subtitlesHandler.destroy();
@@ -40,6 +38,29 @@ function initSubs(raw: string) {
 function setSubsTime(timeMs: number) {
     if (!subtitlesHandler) return;
     subtitlesHandler.setCurrentTime(timeMs)
+}
+
+const workerResponse = {
+    subtitlesReady() {
+        ctx.postMessage({
+            type: MESSAGE_TYPE.RESULT,
+            kind: MESSAGE_KIND.SUBTITLES_READY,
+            data: {
+                subtitles: {
+                    message: 'Ready'
+                }
+            }
+        })
+    },
+    error(message: string) {
+        ctx.postMessage({
+            type: MESSAGE_TYPE.ERROR,
+            kind: MESSAGE_KIND.GENERIC,
+            data: {
+                message,
+            }
+        })
+    }
 }
 
 class SubtitlesHandler {
@@ -55,15 +76,14 @@ class SubtitlesHandler {
         this.currentTime = 0;
         this.timer = null;
         this.ready = false;
-
         this.parse(this.subsRaw);
     }
 
     public setCurrentTime(timeMs: number, cb?: (...args) => void) {
         const difference = Math.abs(this.currentTime - timeMs);
         this.currentTime = timeMs + DELAY;
-        if (difference > 200) this.currentTime
-        this.updateSubsChunk();
+        if (difference > 200)
+            this.updateSubsChunk();
 
         if (cb) return cb();
     }
@@ -96,6 +116,7 @@ class SubtitlesHandler {
     private setSubtitles(subtitles: any[]) {
         this.subs = subtitles;
         this.setSubsChunk();
+        workerResponse.subtitlesReady();
         this.ready = true;
     }
 

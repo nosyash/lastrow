@@ -104,7 +104,7 @@ export default class SubtitlesHandler {
     }
 }
 
-export function parseAndDispatchSubtitiles(data: string) {
+export function parseAndDispatchSubtitles(data: string) {
     try {
         const parsed = parseSubtitles(data);
         store.dispatch({ type: types.SET_SUBS, payload: { parsed } })
