@@ -135,6 +135,18 @@ func (h hub) add(user *user) {
 		data, _ := json.Marshal(&packet)
 		writeMessage(user.Conn, websocket.TextMessage, data)
 	}
+
+	// And messages cache
+	for _, m := range h.cache.Messages.GetAllMessages() {
+		writeMessage(user.Conn, websocket.TextMessage, createPacket(chatEvent, eTypeMsg, &data{
+			Message: m.Message,
+			Name:    m.Name,
+			Color:   m.Color,
+			Image:   m.Image,
+			ID:      m.ID,
+			Guest:   m.Guest,
+		}))
+	}
 }
 
 func (h hub) remove(conn *websocket.Conn) {

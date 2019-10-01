@@ -17,7 +17,7 @@ func (u *Users) addUser(uuid string) {
 		Color: userProfile.Color,
 		Image: userProfile.Image,
 		Guest: false,
-		ID:    getRandomUUID(),
+		ID:    getHashOfString(uuid[:8]),
 	}
 
 	u.UpdateUsers <- struct{}{}
