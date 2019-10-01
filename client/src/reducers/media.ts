@@ -17,7 +17,6 @@ export interface Subtitles {
 export interface Media {
     addMediaPending: boolean;
     actualTime: number;
-    currentTime: number;
     duration: number;
     width: number;
     forceSync: boolean;
@@ -35,7 +34,6 @@ export interface Media {
 const InitialState = {
     addMediaPending: false,
     actualTime: 0,
-    currentTime: 0,
     duration: 0,
     width: 0,
     forceSync: true,

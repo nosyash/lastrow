@@ -9,9 +9,10 @@
         "skipLibCheck": true,
         "removeComments": true,
         "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
         "moduleResolution": "classic",
         "module": "esnext",
-        "lib": ["webworker", "es5", "scripthost", "dom"],
+        "lib": ["webworker", "es6", "scripthost", "dom"],
         "sourceMap": true,
         "jsx": "react"
     },

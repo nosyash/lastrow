@@ -1,7 +1,7 @@
-declare module 'worker-loader!*' {
-    class WebpackWorker extends Worker {
-        constructor();
-    }
+declare module 'workerize-loader*' {
+    export default function worker();
+}
 
-    export = WebpackWorker;
+declare module 'comlink-loader*' {
+    export default worker();
 }

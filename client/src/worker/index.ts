@@ -10,11 +10,17 @@ worker.addEventListener('message', (message: any) => {
     if (type === MESSAGE_TYPE.ERROR) console.log(data.message)
     if (type !== MESSAGE_TYPE.RESULT) return;
     switch (kind) {
-    case MESSAGE_KIND.SUBTITLES_READY: {
-        const subtitlesReady = new CustomEvent('subtitlesready', { 'detail': {} });
-        document.dispatchEvent(subtitlesReady);
-        break;
-    }
+        case MESSAGE_KIND.SUBTITLES_READY: {
+            console.log('ready')
+            const subtitlesReady = new CustomEvent('subtitlesready', { 'detail': {} });
+            document.dispatchEvent(subtitlesReady);
+            break;
+        }
+
+        case MESSAGE_KIND.SUBTITLES_CURRENT: {
+            setCurrentSubs(data.subtitles.current)
+            break;
+        }
 
     default:
         break;

@@ -286,14 +286,14 @@ module.exports = function(webpackEnv) {
             strictExportPresence: true,
             rules: [
                 {
-                test: /\.worker.ts$/,
+                    test: /\.worker.ts$/,
                     use: [
                         {
-                        loader: require.resolve('worker-loader'),
-                        options: {
-                            name: 'static/js/[name].js',
-                            publicPath,
-                        },
+                            loader: require.resolve('worker-loader'),
+                            options: {
+                                name: 'static/js/[name].js',
+                                publicPath,
+                            },
                         },
                     ],
                 },

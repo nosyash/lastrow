@@ -4,7 +4,6 @@ import * as types from '../../../../../constants/actionTypes';
 import { Subtitles, Media, SubtitlesItem } from '../../../../../reducers/media';
 import { workerRequest } from '../../../../../worker/index';
 
-
 interface SubtitlesProps {
     media: Media;
     subs: Subtitles;
@@ -41,10 +40,11 @@ function SubtitlesContainer(props: SubtitlesProps) {
     }
 
     function watchAndChangeTime() {
+        // TODO: Destroy subtitles worker
         clearInterval(timer)
         timer = setInterval(() => {
             if (!videoEl.current) clearInterval(timer)
-            workerRequest.subtitlesSetTime(videoEl.current.currentTime)
+            workerRequest.subtitlesSetTime(videoEl.current.currentTime * 1000)
         }, 32)
     }
 

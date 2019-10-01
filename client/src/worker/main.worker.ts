@@ -11,7 +11,7 @@ const UPDATE_INTERVAL = 10;
 const newLineRegExp = new RegExp(/\n/, 'gm');
 const bracketsRegExp = new RegExp(/^<.*>(.*)<\/.*>$/);
 
-const DELAY = 75;
+const DELAY = 100;
 
 let subtitlesHandler = null as SubtitlesHandler;
 
@@ -52,6 +52,17 @@ const workerResponse = {
             }
         })
     },
+    subtitlesCurrent(current: SubtitlesItem[]) {
+        ctx.postMessage({
+            type: MESSAGE_TYPE.RESULT,
+            kind: MESSAGE_KIND.SUBTITLES_CURRENT,
+            data: {
+                subtitles: {
+                    current,
+                }
+            }
+        })
+    },
     error(message: string) {
         ctx.postMessage({
             type: MESSAGE_TYPE.ERROR,
@@ -65,16 +76,20 @@ const workerResponse = {
 
 class SubtitlesHandler {
     public ready: boolean;
-    private subs: any[];
-    private subsChunk: any[];
+    private subs: SubtitlesItem[];
+    private lastSubs: SubtitlesItem[];
+    private subsChunk: SubtitlesItem[];
     private currentTime: number;
     private timer: NodeJS.Timeout;
+    private mainTimer: NodeJS.Timeout;
     constructor(private subsRaw: string) {
         this.subsRaw = subsRaw;
         this.subs = [];
+        this.lastSubs = [];
         this.subsChunk = [];
         this.currentTime = 0;
         this.timer = null;
+        this.mainTimer = null;
         this.ready = false;
         this.parse(this.subsRaw);
     }
@@ -82,7 +97,7 @@ class SubtitlesHandler {
     public setCurrentTime(timeMs: number, cb?: (...args) => void) {
         const difference = Math.abs(this.currentTime - timeMs);
         this.currentTime = timeMs + DELAY;
-        if (difference > 200)
+        if (difference > 300)
             this.updateSubsChunk();
 
         if (cb) return cb();
@@ -90,9 +105,24 @@ class SubtitlesHandler {
 
     public forceUpdateChunk = () => this.updateSubsChunk();
 
-    public getCurrentSubtitles = () => {
+    private getCurrentSubtitles = () => {
         return this.findCurrentSubtitles();
     };
+
+    private watchSubtitles() {
+        this.mainTimer = setTimeout(() => {
+            const currentSubtitles = this.getCurrentSubtitles()
+            if (this.subtitlesHasChanged(currentSubtitles))
+                workerResponse.subtitlesCurrent(currentSubtitles);
+            this.watchSubtitles()
+        }, 64);
+    }
+
+    private subtitlesHasChanged(currentSubtitles: SubtitlesItem[]) {
+        const changed = JSON.stringify(this.lastSubs) !== JSON.stringify(currentSubtitles);
+        this.lastSubs = currentSubtitles;
+        return changed;
+    }
 
     private parse(raw: string) {
         try {
@@ -108,28 +138,29 @@ class SubtitlesHandler {
     }
 
     private updateSubsChunk = (cb?: (...args) => void) => {
-        clearTimeout(this.timer);
+        // clearTimeout(this.timer);
         this.timer = setTimeout(this.updateSubsChunk, UPDATE_INTERVAL * 1000);
         return this.setSubsChunk(cb);
     };
 
     private setSubtitles(subtitles: any[]) {
         this.subs = subtitles;
-        this.setSubsChunk();
-        workerResponse.subtitlesReady();
+        // this.setSubsChunk();
+        this.updateSubsChunk();
         this.ready = true;
+        workerResponse.subtitlesReady();
+        this.watchSubtitles();
     }
 
     private setSubsChunk = (cb?: (...args) => void) => {
         const { currentTime, subs: subtitles } = this;
         const preemptiveTime = PREEMPTIVE_TIME * 1000;
-
+        
         const subsList = subtitles.filter(
             s =>
                 (s.start <= currentTime && currentTime <= s.end) ||
                 (s.start >= currentTime && currentTime + preemptiveTime >= s.end)
         );
-
         this.subsChunk = this.removeBrackets(subsList);
 
         if (cb) return cb();
