@@ -83,7 +83,8 @@ const (
 )
 
 const (
-	eTypeUpdateTitle   = "update_title"
+	eTypeChangeTitle   = "change_title"
+	eTypeChangePath    = "change_path"
 	eTypeAddEmoji      = "add_emoji"
 	eTypeDelEmoji      = "del_emoji"
 	eTypeChangeEmojnam = "change_emoji_name"

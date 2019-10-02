@@ -60,37 +60,37 @@ type BannedIps struct {
 }
 
 type Permissions struct {
-	RoomUpdate    roomUpdate    `bson:"room_update"`
-	PlaylistEvent playlistEvent `bson:"playlist_event"`
-	PlayerEvent   playerEvent   `bson:"player_event"`
-	UserEvent     userEvent     `bson:"user_event"`
+	RoomUpdate    roomUpdate    `json:"room_update" bson:"room_update"`
+	PlaylistEvent playlistEvent `json:"playlist_event" bson:"playlist_event"`
+	PlayerEvent   playerEvent   `json:"player_event" bson:"player_event"`
+	UserEvent     userEvent     `json:"user_event" bson:"user_event"`
 }
 
 type roomUpdate struct {
-	UpdateTitle     int `bson:"update_title"`
-	UpdatePath      int `bson:"update_path"`
-	AddEmoji        int `bson:"add_emoji"`
-	DelEmoji        int `bson:"del_emoji"`
-	ChangeEmojiName int `bson:"change_emoji_name"`
+	ChangeTitle     int `json:"change_title" bson:"update_title"`
+	ChangePath      int `json:"change_path" bson:"update_path"`
+	AddEmoji        int `json:"add_emoji" bson:"add_emoji"`
+	DelEmoji        int `json:"del_emoji" bson:"del_emoji"`
+	ChangeEmojiName int `json:"change_emoji_name" bson:"change_emoji_name"`
 }
 
 type playlistEvent struct {
-	Add  int
-	Del  int
-	Move int
+	Add  int `json:"playlist_add"`
+	Del  int `json:"playlist_del"`
+	Move int `json:"move"`
 }
 
 type playerEvent struct {
-	Pause  int
-	Resume int
-	Rewind int
+	Pause  int `json:"pause"`
+	Resume int `json:"resume"`
+	Rewind int `json:"rewind"`
 }
 
 type userEvent struct {
-	Message int
-	Kick    int
-	Ban     int
-	Unban   int
+	Message int `json:"message"`
+	Kick    int `json:"kick"`
+	Ban     int `json:"ban"`
+	Unban   int `json:"unban"`
 }
 
 type owner struct {

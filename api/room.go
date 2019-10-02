@@ -580,8 +580,45 @@ func (server Server) bannedList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !server.db.RoomIsExists("path", path) {
+	payload, err := server.extractPayload(w, r)
+	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	if len(payload.Owner) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	room, err := server.db.GetRoom("path", path)
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			w.WriteHeader(http.StatusNotFound)
+		} else {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+		return
+	}
+
+	for _, r := range payload.Owner {
+		if r.RoomUUID == room.UUID && r.Permissions == 6 {
+			sendJSON(w, http.StatusOK, bannedList{
+				BannedUsers: room.BannedUsers,
+				BannedIps:   room.BannedIps,
+			})
+			return
+		}
+	}
+
+	w.WriteHeader(http.StatusBadRequest)
+}
+
+func (server Server) permissionsList(w http.ResponseWriter, r *http.Request) {
+	path, ok := mux.Vars(r)["roomPath"]
+	if !ok {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -598,16 +635,18 @@ func (server Server) bannedList(w http.ResponseWriter, r *http.Request) {
 
 	room, err := server.db.GetRoom("path", path)
 	if err != nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
+		if err == mgo.ErrNotFound {
+			w.WriteHeader(http.StatusNotFound)
+		} else {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+		return
 	}
 
 	for _, r := range payload.Owner {
-		if r.RoomUUID == room.UUID && r.Permissions == 10 {
-			sendJSON(w, http.StatusOK, bannedList{
-				BannedUsers: room.BannedUsers,
-				BannedIps:   room.BannedIps,
-			})
+		if r.RoomUUID == room.UUID && r.Permissions == 6 {
+			sendJSON(w, http.StatusOK, room.Permissions)
 			return
 		}
 	}

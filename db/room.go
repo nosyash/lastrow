@@ -32,8 +32,8 @@ func (db Database) CreateNewRoom(title, path, userUUID, roomUUID, password strin
 
 	var permissions = Permissions{
 		RoomUpdate: roomUpdate{
-			UpdateTitle:     4,
-			UpdatePath:      4,
+			ChangeTitle:     4,
+			ChangePath:      4,
 			AddEmoji:        4,
 			DelEmoji:        4,
 			ChangeEmojiName: 4,
@@ -214,8 +214,8 @@ func (p Permissions) ToMap() map[string]int {
 
 	// FIX THAT:
 
-	permissions["update_title"] = p.RoomUpdate.UpdateTitle
-	permissions["update_path"] = p.RoomUpdate.UpdatePath
+	permissions["change_title"] = p.RoomUpdate.ChangeTitle
+	permissions["change_path"] = p.RoomUpdate.ChangePath
 	permissions["add_emoji"] = p.RoomUpdate.AddEmoji
 	permissions["del_emoji"] = p.RoomUpdate.DelEmoji
 	permissions["change_emoji_name"] = p.RoomUpdate.ChangeEmojiName

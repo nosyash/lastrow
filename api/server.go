@@ -66,6 +66,7 @@ func (server Server) RunServer() error {
 	r.HandleFunc("/api/room", server.roomHandler).Methods("GET", "POST")
 	r.HandleFunc("/api/r/{roomPath}", server.roomInnerHandler).Methods("GET")
 	r.HandleFunc("/api/r/{roomPath}/banned", server.bannedList).Methods("GET")
+	r.HandleFunc("/api/r/{roomPath}/permissions", server.permissionsList).Methods("GET")
 	r.HandleFunc("/api/user", server.userHandler).Methods("GET", "POST")
 	r.HandleFunc("/api/auth", server.authHandler).Methods("POST")
 	r.HandleFunc("/api/ws", server.acceptWebsocket).Methods("GET")
