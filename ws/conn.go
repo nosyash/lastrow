@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/nosyash/backrow/cache"
@@ -59,7 +58,6 @@ func (h hub) HandleActions() {
 	for {
 		select {
 		case user := <-h.register:
-			fmt.Println(h.cache.Playlist.Size(), h.cache.Messages.Size(), h.closeDeadline)
 			if h.closeDeadline {
 				h.cancelChan <- struct{}{}
 			}
