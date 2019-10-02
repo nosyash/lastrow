@@ -7,7 +7,6 @@ import (
 
 	"github.com/nosyash/backrow/db"
 	"github.com/nosyash/backrow/jwt"
-	"github.com/pkg/errors"
 )
 
 // New create new cache
@@ -20,7 +19,7 @@ func New(id string) *Cache {
 
 	permission, err := db.GetAllPermissions(id)
 	if err != nil {
-		log.Println(errors.Wrap(err, fmt.Sprintf("Couldn't get permissions for %s", id)))
+		log.Println(fmt.Errorf("Couldn't get permissions for %s -> %v", id, err))
 		return nil
 	}
 

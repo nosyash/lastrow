@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -24,9 +25,12 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var onlyStrAndNum = regexp.MustCompile(`[^a-zA-Z0-9-_]`)
+var (
+	errNotHavePermission = errors.New("You don't have permissions for this action")
+	onlyStrAndNum        = regexp.MustCompile(`[^a-zA-Z0-9-_]`)
+)
 
-func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
+func (server Server) roomHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		server.getAllRooms(w)
 		return
@@ -60,6 +64,10 @@ func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 	case eTypeRoomCreate:
 		server.createRoom(w, req.Body.Title, req.Body.Path, req.Body.Password, req.Body.Hidden, payload.UUID)
 	case eTypeRoomUpdate:
+		if !server.checkPermissions(req.Body.UpdateType, req.RoomUUID, payload) {
+			sendJSON(w, http.StatusBadRequest, errNotHavePermission)
+			return
+		}
 		server.updateRoom(w, &req, payload)
 	case eTypeAuthInRoom:
 		server.authInRoom(w, req.RoomPath, req.Body.Password, payload)
@@ -134,7 +142,7 @@ func (server Server) createRoom(w http.ResponseWriter, title, path, passwd strin
 func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest, payload *jwt.Payload) {
 	if len(payload.Owner) == 0 {
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: "You don't have permissions for this action",
+			Error: errNotHavePermission.Error(),
 		})
 		return
 	}
@@ -143,7 +151,7 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest, payload
 		if r.RoomUUID == req.RoomUUID {
 			if r.Permissions != 6 {
 				sendJSON(w, http.StatusBadRequest, message{
-					Error: "You don't have permissions for this action",
+					Error: errNotHavePermission.Error(),
 				})
 				return
 			}
@@ -156,12 +164,6 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest, payload
 	iType := req.Body.Data.Type
 	id := req.RoomUUID
 
-	if !server.db.RoomIsExists("uuid", id) {
-		sendJSON(w, http.StatusBadRequest, message{
-			Error: "Room with this UUID was not be found",
-		})
-		return
-	}
 	room, err := server.db.GetRoom("uuid", id)
 	if err != nil {
 		log.Printf("server.db.GetRoom(): %v", err)

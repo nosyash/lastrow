@@ -208,8 +208,7 @@ func (db Database) UnbanAddress(roomUUID, ipAddress string) error {
 	return errors.New("Banned ip adress list is empty")
 }
 
-// ToMap convert Permissions struct to a map
-// More usefull for checking
+// ToMap convert Permissions struct to a map. More usefull for checking
 func (p Permissions) ToMap() map[string]int {
 	var permissions = make(map[string]int)
 
