@@ -49,6 +49,12 @@ export const workerRequest = {
                 }
             }
         });
+    },
+    subtitlesDestroy() {
+        worker.postMessage({
+            kind: MESSAGE_KIND.SUBTITLES_DESTROY,
+            type: MESSAGE_TYPE.REQUEST,
+        });
     }
 }
 

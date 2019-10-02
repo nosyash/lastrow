@@ -20,11 +20,13 @@ function SubtitlesContainer(props: SubtitlesProps) {
     const videoEl = useRef<HTMLVideoElement>(null);
     // const subtitlesHandler = useRef<SubtitlesHandler>(null);
     useEffect(() => {
-        initSubtitles();
+        // initSubtitles();
+        workerRequest.subtitlesInit(props.subs.raw)
         document.addEventListener('subtitlesready', initSubtitles);
         document.addEventListener('subtitlesdestroyed', clearTimers);
         return () => {
             clearTimeout(timer);
+            workerRequest.subtitlesDestroy();
             document.removeEventListener('subtitlesready', initSubtitles);
             document.removeEventListener('subtitlesdestroyed', clearTimers);
         };
@@ -40,12 +42,10 @@ function SubtitlesContainer(props: SubtitlesProps) {
     }
 
     function watchAndChangeTime() {
-        // TODO: Destroy subtitles worker
-        clearInterval(timer)
-        timer = setInterval(() => {
-            if (!videoEl.current) clearInterval(timer)
+        if (videoEl.current)
             workerRequest.subtitlesSetTime(videoEl.current.currentTime * 1000)
-        }, 32)
+        clearTimeout(timer)
+        timer = setTimeout(watchAndChangeTime, 32)
     }
 
     function formatSubs() {

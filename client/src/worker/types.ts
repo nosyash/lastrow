@@ -16,6 +16,7 @@ export enum MESSAGE_KIND {
     SUBTITLES_INIT = 'subtitlesInit',
     SUBTITLES_READY = 'subtitlesReady',
     SUBTITLES_CURRENT = 'subtitlesCurrent',
+    SUBTITLES_DESTROY = 'subtitlesDestroy',
     SUBTITLES_ERROR = 'subtitlesError',
     GENERIC = 'generic',
 }

@@ -277,9 +277,9 @@ function subtitlesUpdateEvent() {
 }
 
 function handleSubtitles({ data }) {
-    // dispatch({ type: types.SET_RAW_SUBS, payload: data })
+    dispatch({ type: types.SET_RAW_SUBS, payload: data })
     dispatch({ type: types.SHOW_SUBS })
-    workerRequest.subtitlesInit(data)
+    // workerRequest.subtitlesInit(data)
     // subtitlesUpdateEvent()
 }
 

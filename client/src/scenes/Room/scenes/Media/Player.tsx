@@ -224,7 +224,6 @@ function Player(props: PlayerProps) {
 
     function renderPlayerGUI() {
         const { showSubs } = props.media;
-        // TODO: Hide time for streams
         const playerClasses = cn('video-player', {
             'video-player__sync-on': synced,
             'video-player__sync-off': !synced,
@@ -233,7 +232,7 @@ function Player(props: PlayerProps) {
             <div className={playerClasses}>
                 {renderVideoTop()}
                 {renderVideoMid()}
-                {videoEl && <Subtitles videoEl={videoEl} />}
+                {showSubs && videoEl && <Subtitles videoEl={videoEl} />}
                 <div className="video-player_overflow" />
             </div>
         );
@@ -251,7 +250,7 @@ function Player(props: PlayerProps) {
         return (
             <div className="video-player_top">
                 <div className="video-time current-time">{formatTime(currentTime)}</div>
-                <CustomProgressBar handleProgressChange={handleProgressChange} videoEl={videoEl} />
+                <CustomProgressBar shouldUpdate={!minimized} handleProgressChange={handleProgressChange} videoEl={videoEl} />
                 {/* <ProgressBar subProgress={buffered} onProgressChange={handleProgressChange} value={progressValue} /> */}
                 <div className="video-time duration">{formatTime(media.duration)}</div>
             </div>
@@ -354,21 +353,20 @@ function Player(props: PlayerProps) {
         },
     ]);
     return (
-        <React.Fragment>
-            <div
-                onMouseLeave={setMinimizedTrue}
-                onMouseMove={setMinimizedFalse}
-                className={classes}
-            >
-                {RenderPlayer()}
-                {isDirectLink() && playerRef.current && renderPlayerGUI()}
-            </div>
-        </React.Fragment>
+        <div
+            onMouseLeave={setMinimizedTrue}
+            onMouseMove={setMinimizedFalse}
+            className={classes}
+        >
+            {RenderPlayer()}
+            {isDirectLink() && playerRef.current && renderPlayerGUI()}
+        </div>
     );
 }
 
 interface CustomProgressBarProps {
     videoEl: HTMLVideoElement;
+    shouldUpdate: boolean;
     handleProgressChange: (...args) => void;
 }
 
@@ -388,7 +386,16 @@ class CustomProgressBar extends Component<CustomProgressBarProps, CustomProgress
         this.watchTime();
     }
 
+    shouldComponentUpdate(nextProps: CustomProgressBarProps, nextState: CustomProgressBarState) {
+        if (nextProps.shouldUpdate) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     getBufferedTime = () => {
+
         const { duration } = this.props.videoEl;
         const buffered = videoEl ? videoEl.buffered : null
         if (!buffered || !duration) return [];
@@ -405,15 +412,15 @@ class CustomProgressBar extends Component<CustomProgressBarProps, CustomProgress
     }
 
     watchTime = () => {
-        const { videoEl } = this.props;
-        if (videoEl) {
+        const { videoEl, shouldUpdate } = this.props;
+        if (videoEl && shouldUpdate) {
             const buffered = this.getBufferedTime();
             const currentTime = this.props.videoEl.currentTime;
             const duration = this.props.videoEl.duration;
             const progressValue = (currentTime / duration) * 100;
             this.setState({ buffered, progressValue })
         }
-        this.timer = setTimeout(this.watchTime, 50);
+        this.timer = setTimeout(this.watchTime, 32);
     }
 
     render() {

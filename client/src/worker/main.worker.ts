@@ -22,22 +22,29 @@ ctx.addEventListener('message', (message: any) => {
     case MESSAGE_KIND.SUBTITLES_INIT:
         return initSubs(data.subtitles.raw);
 
-    case MESSAGE_KIND.SUBTITLES_SET_TIME:
-        return setSubsTime(data.subtitles.time);
+        case MESSAGE_KIND.SUBTITLES_SET_TIME:
+            return setSubsTime(data.subtitles.time);
 
+        case MESSAGE_KIND.SUBTITLES_DESTROY:
+            return subtitlesDestroy();
+            
     default:
         break;
     }
 });
 
 function initSubs(raw: string) {
-    if (subtitlesHandler) subtitlesHandler.destroy();
+    subtitlesDestroy()
     subtitlesHandler = new SubtitlesHandler(raw)
 }
 
 function setSubsTime(timeMs: number) {
     if (!subtitlesHandler) return;
     subtitlesHandler.setCurrentTime(timeMs)
+}
+
+function subtitlesDestroy() {
+    if (subtitlesHandler) { subtitlesHandler.destroy(); }
 }
 
 const workerResponse = {
@@ -184,6 +191,10 @@ class SubtitlesHandler {
 
     public destroy() {
         clearTimeout(this.timer);
+        clearTimeout(this.mainTimer);
+        this.subsChunk = []
+        this.subs = []
+        this.lastSubs = []
     }
 }
 
