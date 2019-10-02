@@ -30,6 +30,32 @@ func (db Database) CreateNewRoom(title, path, userUUID, roomUUID, password strin
 		return errors.New("Room with this path is already exists")
 	}
 
+	var permissions = Permissions{
+		RoomUpdate: roomUpdate{
+			UpdateTitle:     4,
+			UpdatePath:      4,
+			AddEmoji:        4,
+			DelEmoji:        4,
+			ChangeEmojiName: 4,
+		},
+		PlaylistEvent: playlistEvent{
+			Add:  1,
+			Del:  2,
+			Move: 2,
+		},
+		PlayerEvent: playerEvent{
+			Pause:  2,
+			Resume: 2,
+			Rewind: 2,
+		},
+		UserEvent: userEvent{
+			Message: 0,
+			Kick:    3,
+			Ban:     3,
+			Unban:   3,
+		},
+	}
+
 	newRoom := Room{
 		Title:    title,
 		Path:     path,
@@ -39,9 +65,10 @@ func (db Database) CreateNewRoom(title, path, userUUID, roomUUID, password strin
 		Owners: []owner{
 			{
 				userUUID,
-				10,
+				6,
 			},
 		},
+		Permissions: permissions,
 	}
 
 	return db.rc.Insert(&newRoom)
@@ -81,6 +108,18 @@ func (db Database) WhereUserOwner(uuid string) ([]Room, error) {
 // UpdateRoomValue update specified key in a room
 func (db Database) UpdateRoomValue(uuid, key string, value interface{}) error {
 	return db.rc.Update(bson.M{"uuid": uuid}, bson.M{"$set": bson.M{key: value}})
+}
+
+// GetAllPermissions return permissions rules for a room
+func (db Database) GetAllPermissions(uuid string) (*Permissions, error) {
+	var room Room
+
+	err := db.rc.Find(bson.M{"uuid": uuid}).One(&room)
+	if err != nil {
+		return nil, err
+	}
+
+	return &room.Permissions, nil
 }
 
 // BanUser add a user to ban list
@@ -167,4 +206,33 @@ func (db Database) UnbanAddress(roomUUID, ipAddress string) error {
 		return db.UpdateRoomValue(roomUUID, "banned_ip", banned)
 	}
 	return errors.New("Banned ip adress list is empty")
+}
+
+// ToMap convert Permissions struct to a map
+// More usefull for checking
+func (p Permissions) ToMap() map[string]int {
+	var permissions = make(map[string]int)
+
+	// FIX THAT:
+
+	permissions["update_title"] = p.RoomUpdate.UpdateTitle
+	permissions["update_path"] = p.RoomUpdate.UpdatePath
+	permissions["add_emoji"] = p.RoomUpdate.AddEmoji
+	permissions["del_emoji"] = p.RoomUpdate.DelEmoji
+	permissions["change_emoji_name"] = p.RoomUpdate.ChangeEmojiName
+
+	permissions["playlist_add"] = p.PlaylistEvent.Add
+	permissions["playlist_del"] = p.PlaylistEvent.Del
+	permissions["move"] = p.PlaylistEvent.Move
+
+	permissions["pause"] = p.PlayerEvent.Pause
+	permissions["resume"] = p.PlayerEvent.Resume
+	permissions["rewind"] = p.PlayerEvent.Rewind
+
+	permissions["message"] = p.UserEvent.Message
+	permissions["kick"] = p.UserEvent.Kick
+	permissions["ban"] = p.UserEvent.Ban
+	permissions["unban"] = p.UserEvent.Unban
+
+	return permissions
 }

@@ -18,11 +18,11 @@ var errFileSize = fmt.Errorf("Subtitles must be less than or equal %dmb", (maxFi
 // CreateFromBytes create temp subs. file from raw source any (actually not) and save to .srt
 // return url path to a .srt file
 func CreateFromBytes(sub []byte, subType, fname, uploadPath string) (string, error) {
-	var fpath string
-
 	if len(sub) > maxFileSize {
 		return "", errFileSize
 	}
+
+	var fpath string
 
 	switch subType {
 	case "srt":

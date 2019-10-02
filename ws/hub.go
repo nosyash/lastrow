@@ -97,8 +97,8 @@ func (rh *roomsHub) registerNewConn(conn *websocket.Conn) {
 			}
 		}
 
-		address := strings.Split(conn.RemoteAddr().String(), ":")[0]
 		// And by IP
+		address := strings.Split(conn.RemoteAddr().String(), ":")[0]
 		for _, u := range room.BannedIps {
 			if address == u.IP {
 				sendError(conn, ErrBannedInARoom)

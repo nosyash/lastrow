@@ -2,22 +2,25 @@ package cache
 
 import (
 	"log"
+
+	"github.com/nosyash/backrow/jwt"
 )
 
 // AddUser read information about user from Database and add the user to the user cache
-func (u *Users) addUser(uuid string) {
-	userProfile, err := u.db.GetUserByUUID(uuid)
+func (u *Users) addUser(payload *jwt.Payload) {
+	userProfile, err := u.db.GetUserByUUID(payload.UUID)
 	if err != nil {
 		log.Printf("u.db.GetUserByUUID(): %v", err)
 		return
 	}
 
-	u.users[uuid] = &User{
-		Name:  userProfile.Name,
-		Color: userProfile.Color,
-		Image: userProfile.Image,
-		Guest: false,
-		ID:    getHashOfString(uuid[:8]),
+	u.users[payload.UUID] = &User{
+		Name:    userProfile.Name,
+		Color:   userProfile.Color,
+		Image:   userProfile.Image,
+		Payload: payload,
+		Guest:   false,
+		ID:      getHashOfString(payload.UUID[:16]),
 	}
 
 	u.UpdateUsers <- struct{}{}

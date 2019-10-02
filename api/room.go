@@ -60,13 +60,6 @@ func (server Server) roomsHandler(w http.ResponseWriter, r *http.Request) {
 	case eTypeRoomCreate:
 		server.createRoom(w, req.Body.Title, req.Body.Path, req.Body.Password, req.Body.Hidden, payload.UUID)
 	case eTypeRoomUpdate:
-		if len(payload.Owner) == 0 {
-			sendJSON(w, http.StatusBadRequest, message{
-				Error: "You don't have permissions for this action",
-			})
-			return
-		}
-
 		server.updateRoom(w, &req, payload)
 	case eTypeAuthInRoom:
 		server.authInRoom(w, req.RoomPath, req.Body.Password, payload)
@@ -139,9 +132,16 @@ func (server Server) createRoom(w http.ResponseWriter, title, path, passwd strin
 }
 
 func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest, payload *jwt.Payload) {
+	if len(payload.Owner) == 0 {
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "You don't have permissions for this action",
+		})
+		return
+	}
+
 	for _, r := range payload.Owner {
 		if r.RoomUUID == req.RoomUUID {
-			if r.Permissions != 10 {
+			if r.Permissions != 6 {
 				sendJSON(w, http.StatusBadRequest, message{
 					Error: "You don't have permissions for this action",
 				})
@@ -231,11 +231,9 @@ func (server Server) addEmoji(w http.ResponseWriter, name, uuid, iType string, i
 		}
 	}
 
-	// Not support .jpg emoji
-	// fuck jpg emoji!!
-	if iType == "jpg " {
+	if iType == "jpg" || iType == "" {
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: "Unsupported emoji file extension",
+			Error: "Unsupported emoji file type",
 		})
 		return
 	}

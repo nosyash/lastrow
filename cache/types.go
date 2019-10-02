@@ -2,6 +2,7 @@ package cache
 
 import (
 	"github.com/nosyash/backrow/db"
+	"github.com/nosyash/backrow/jwt"
 )
 
 // Cache is storage of users and playlist for a room
@@ -9,7 +10,7 @@ type Cache struct {
 	Users    Users
 	Playlist playlist
 	Messages Messages
-	Room     room
+	Room     Room
 	ID       string
 	Close    chan struct{}
 }
@@ -17,7 +18,7 @@ type Cache struct {
 // Users is users storage and channels for adding/removing
 type Users struct {
 	users       map[string]*User
-	AddUser     chan string
+	AddUser     chan *jwt.Payload
 	AddGuest    chan *User
 	DelUser     chan string
 	UpdateUsers chan struct{}
@@ -36,8 +37,9 @@ type playlist struct {
 	uploadPath     string
 }
 
-type room struct {
+type Room struct {
 	UpdateEmojis chan string
+	Permissions  map[string]int
 	db           *db.Database
 }
 
@@ -57,12 +59,13 @@ type Message struct {
 
 // User is single user instance
 type User struct {
-	Name  string `json:"name"`
-	Color string `json:"color,omitempty"`
-	Image string `json:"image,omitempty"`
-	Guest bool   `json:"guest"`
-	UUID  string `json:"uuid,omitempty"`
-	ID    string `json:"__id"`
+	Name    string       `json:"name"`
+	Color   string       `json:"color,omitempty"`
+	Image   string       `json:"image,omitempty"`
+	Guest   bool         `json:"guest"`
+	Payload *jwt.Payload `json:"-"`
+	UUID    string       `json:"uuid,omitempty"`
+	ID      string       `json:"__id"`
 }
 
 // Video is instance of a video in playlist

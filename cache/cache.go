@@ -1,9 +1,13 @@
 package cache
 
 import (
+	"fmt"
+	"log"
 	"os"
 
 	"github.com/nosyash/backrow/db"
+	"github.com/nosyash/backrow/jwt"
+	"github.com/pkg/errors"
 )
 
 // New create new cache
@@ -14,10 +18,16 @@ func New(id string) *Cache {
 		uploadPath = "./"
 	}
 
+	permission, err := db.GetAllPermissions(id)
+	if err != nil {
+		log.Println(errors.Wrap(err, fmt.Sprintf("Couldn't get permissions for %s", id)))
+		return nil
+	}
+
 	return &Cache{
 		Users{
 			make(map[string]*User),
-			make(chan string),
+			make(chan *jwt.Payload),
 			make(chan *User),
 			make(chan string),
 			make(chan struct{}),
@@ -38,8 +48,9 @@ func New(id string) *Cache {
 			make([]Message, 0),
 			make(chan Message),
 		},
-		room{
+		Room{
 			make(chan string),
+			permission.ToMap(),
 			db,
 		},
 		id,
@@ -51,8 +62,8 @@ func New(id string) *Cache {
 func (cache *Cache) HandleCacheEvents() {
 	for {
 		select {
-		case user := <-cache.Users.AddUser:
-			cache.Users.addUser(user)
+		case payload := <-cache.Users.AddUser:
+			cache.Users.addUser(payload)
 		case guest := <-cache.Users.AddGuest:
 			cache.Users.addGuest(guest)
 		case uuid := <-cache.Users.DelUser:

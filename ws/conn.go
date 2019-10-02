@@ -89,16 +89,16 @@ func (h hub) HandleActions() {
 }
 
 func (h hub) add(user *user) {
-	for u := range h.hub {
-		var uuid string
+	var uuid string
 
+	for key := range h.hub {
 		if user.Payload != nil {
 			uuid = user.Payload.UUID
 		} else {
 			uuid = user.UUID
 		}
 
-		if u == uuid {
+		if key == uuid {
 			sendError(user.Conn, errors.New("You already connected to this room"))
 			user.Conn.Close()
 			return
@@ -109,12 +109,12 @@ func (h hub) add(user *user) {
 			Name:  user.Name,
 			Guest: true,
 			UUID:  user.UUID,
-			ID:    getHashOfString(user.UUID[:8]),
+			ID:    getHashOfString(user.UUID[:16]),
 		}
 
 		h.hub[user.UUID] = user.Conn
 	} else {
-		h.cache.Users.AddUser <- user.Payload.UUID
+		h.cache.Users.AddUser <- user.Payload
 		h.hub[user.Payload.UUID] = user.Conn
 	}
 
@@ -223,6 +223,8 @@ func (h *hub) read(conn *websocket.Conn) {
 		switch req.Action {
 		case userEvent:
 			go h.handleUserEvent(req, conn)
+		case playlistEvent:
+			go h.handlePlaylistEvent(req, conn)
 		case playerEvent:
 			go h.handlePlayerEvent(req, conn)
 		default:

@@ -8,6 +8,9 @@ import (
 	"github.com/nosyash/backrow/cache"
 )
 
+// TODO:
+// Move eTypeMsg to chat.go
+
 func (h hub) handleUserEvent(p *packet, conn *websocket.Conn) {
 	switch p.Body.Event.Type {
 	case eTypeMsg:
@@ -36,8 +39,19 @@ func (h hub) handleMessage(p *packet) {
 		uuid = p.Payload.UUID
 	}
 
+	if !h.cache.Room.CheckPermissions(eTypeMsg, h.id, p.Payload) {
+		conn, ok := h.hub[uuid]
+		if ok {
+			sendFeedBack(conn, &feedback{
+				Error: errNotHavePermissions.Error(),
+			})
+		}
+		return
+	}
+
 	user, ok := h.cache.Users.GetUserByUUID(uuid)
 	if ok {
+
 		h.cache.Messages.AddMessage <- cache.Message{
 			Message: p.Body.Event.Data.Message,
 			Name:    user.Name,
@@ -65,7 +79,10 @@ func (h hub) updateUserList() {
 }
 
 func (h hub) kickUser(conn *websocket.Conn, p *packet) {
-	if !h.checkPermissions(conn, p.Payload, eTypeKick) {
+	if !h.cache.Room.CheckPermissions(eTypeKick, h.id, p.Payload) {
+		sendFeedBack(conn, &feedback{
+			Error: errNotHavePermissions.Error(),
+		})
 		return
 	}
 
@@ -82,7 +99,10 @@ func (h hub) kickUser(conn *websocket.Conn, p *packet) {
 }
 
 func (h hub) banUser(conn *websocket.Conn, p *packet) {
-	if !h.checkPermissions(conn, p.Payload, eTypeBan) {
+	if !h.cache.Room.CheckPermissions(eTypeBan, h.id, p.Payload) {
+		sendFeedBack(conn, &feedback{
+			Error: errNotHavePermissions.Error(),
+		})
 		return
 	}
 
@@ -97,6 +117,7 @@ func (h hub) banUser(conn *websocket.Conn, p *packet) {
 						return
 					}
 
+					// Just close socket. Remove user from list and from cache will be automatically
 					userConn.Close()
 				}
 
@@ -107,6 +128,7 @@ func (h hub) banUser(conn *websocket.Conn, p *packet) {
 						return
 					}
 
+					// Just close socket. Remove user from list and from cache will be automatically
 					userConn.Close()
 				}
 			}
@@ -115,7 +137,10 @@ func (h hub) banUser(conn *websocket.Conn, p *packet) {
 }
 
 func (h hub) unbanUser(conn *websocket.Conn, p *packet) {
-	if !h.checkPermissions(conn, p.Payload, eTypeUnban) {
+	if !h.cache.Room.CheckPermissions(eTypeUnban, h.id, p.Payload) {
+		sendFeedBack(conn, &feedback{
+			Error: errNotHavePermissions.Error(),
+		})
 		return
 	}
 

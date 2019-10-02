@@ -21,6 +21,7 @@ type Room struct {
 	BannedUsers []BannedUsers `json:"banned_users" bson:"banned_users"`
 	BannedIps   []BannedIps   `json:"banned_ips" bson:"banned_ips"`
 	Owners      []owner       `json:"owners"`
+	Permissions Permissions   `json:"permissions"`
 	Emoji       []Emoji       `json:"emoji"`
 }
 
@@ -56,6 +57,40 @@ type BannedUsers struct {
 type BannedIps struct {
 	IP      string `json:"ip"`
 	Expires int64
+}
+
+type Permissions struct {
+	RoomUpdate    roomUpdate    `bson:"room_update"`
+	PlaylistEvent playlistEvent `bson:"playlist_event"`
+	PlayerEvent   playerEvent   `bson:"player_event"`
+	UserEvent     userEvent     `bson:"user_event"`
+}
+
+type roomUpdate struct {
+	UpdateTitle     int `bson:"update_title"`
+	UpdatePath      int `bson:"update_path"`
+	AddEmoji        int `bson:"add_emoji"`
+	DelEmoji        int `bson:"del_emoji"`
+	ChangeEmojiName int `bson:"change_emoji_name"`
+}
+
+type playlistEvent struct {
+	Add  int
+	Del  int
+	Move int
+}
+
+type playerEvent struct {
+	Pause  int
+	Resume int
+	Rewind int
+}
+
+type userEvent struct {
+	Message int
+	Kick    int
+	Ban     int
+	Unban   int
 }
 
 type owner struct {
