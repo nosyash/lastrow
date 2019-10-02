@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/nosyash/backrow/cache"
@@ -145,7 +146,7 @@ func (h hub) add(user *user) {
 	}
 }
 
-func (h hub) remove(conn *websocket.Conn) {
+func (h *hub) remove(conn *websocket.Conn) {
 	var uuid string
 
 	for u, c := range h.hub {
@@ -215,6 +216,15 @@ func (h *hub) read(conn *websocket.Conn) {
 			conn.Close()
 			break
 		}
+
+		var uuid string
+		if req.Payload == nil {
+			uuid = req.UUID
+		} else {
+			uuid = req.Payload.UUID
+		}
+
+		log.Printf("[%s:%s] -> [%s:%s]\n", conn.RemoteAddr().String(), uuid, req.Action, req.Body.Event.Type)
 
 		switch req.Action {
 		case userEvent:

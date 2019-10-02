@@ -115,7 +115,7 @@ func (server Server) acceptWebsocket(w http.ResponseWriter, r *http.Request) {
 func (server Server) logAndServe(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Host == server.originHost {
-			//log.Printf("%s -> %s %s %s\n", r.RemoteAddr, r.Method, r.URL, r.UserAgent())
+			log.Printf("%s -> %s %s %s\n", r.RemoteAddr, r.Method, r.URL, r.UserAgent())
 			handler.ServeHTTP(w, r)
 		}
 	})
