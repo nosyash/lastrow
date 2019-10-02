@@ -38,6 +38,6 @@ func (m Messages) GetAllMessages() []Message {
 }
 
 // GetMessagesSize return size of cache messages
-func (m Messages) GetMessagesSize() int {
+func (m Messages) Size() int {
 	return len(m.list)
 }

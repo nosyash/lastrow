@@ -60,6 +60,13 @@ func (server Server) roomHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.Action != eTypeRoomCreate {
+		if !server.db.RoomIsExists("uuid", req.RoomUUID) {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+	}
+
 	switch req.Action {
 	case eTypeRoomCreate:
 		server.createRoom(w, req.Body.Title, req.Body.Path, req.Body.Password, req.Body.Hidden, payload.UUID)
@@ -374,11 +381,6 @@ func (server Server) changeEmojiName(w http.ResponseWriter, name, newName, uuid 
 }
 
 func (server Server) authInRoom(w http.ResponseWriter, path, passwd string, payload *jwt.Payload) {
-	if !server.db.RoomIsExists("path", path) {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
 	room, err := server.db.GetRoom("path", path)
 	if err != nil {
 		log.Printf("server.go->authInRoom(): %v", err)
@@ -445,15 +447,14 @@ func (server Server) roomInnerHandler(w http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	if !server.db.RoomIsExists("path", path) {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
 	room, err := server.db.GetRoom("path", path)
 	if err != nil {
-		log.Printf("server.go->roomInnerHandler(): %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		if err == mgo.ErrNotFound {
+			w.WriteHeader(http.StatusNotFound)
+		} else {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 		return
 	}
 

@@ -18,16 +18,18 @@ type roomsHub struct {
 }
 
 type hub struct {
-	db           *db.Database
-	hub          map[string]*websocket.Conn
-	broadcast    chan []byte
-	register     chan *user
-	unregister   chan *websocket.Conn
-	cache        *cache.Cache
-	close        chan struct{}
-	closeStorage chan struct{}
-	syncer       syncer
-	id           string
+	db            *db.Database
+	hub           map[string]*websocket.Conn
+	broadcast     chan []byte
+	register      chan *user
+	unregister    chan *websocket.Conn
+	cache         *cache.Cache
+	close         chan struct{}
+	closeStorage  chan struct{}
+	syncer        syncer
+	id            string
+	closeDeadline bool
+	cancelChan    chan struct{}
 }
 
 type user struct {

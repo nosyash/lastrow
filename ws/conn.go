@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/nosyash/backrow/cache"
@@ -16,12 +17,6 @@ import (
 const (
 	// Timeout in seconds, when cache for this room will be closed
 	closeDeadlineTimeout = 120
-)
-
-var (
-	// Indicating whether to cancel the context or not
-	closeDeadline = false
-	cancelChan    = make(chan struct{})
 )
 
 func NewRoomHub(id string, db *db.Database) *hub {
@@ -50,6 +45,8 @@ func NewRoomHub(id string, db *db.Database) *hub {
 			0,
 		},
 		id,
+		false,
+		make(chan struct{}),
 	}
 }
 
@@ -62,8 +59,9 @@ func (h hub) HandleActions() {
 	for {
 		select {
 		case user := <-h.register:
-			if closeDeadline {
-				cancelChan <- struct{}{}
+			fmt.Println(h.cache.Playlist.Size(), h.cache.Messages.Size(), h.closeDeadline)
+			if h.closeDeadline {
+				h.cancelChan <- struct{}{}
 			}
 			h.add(user)
 			go h.read(user.Conn)
@@ -164,7 +162,7 @@ func (h hub) remove(conn *websocket.Conn) {
 		h.cache.Users.DelUser <- uuid
 
 		if len(h.hub) == 0 {
-			if h.cache.Playlist.Size() == 0 && h.cache.Messages.GetMessagesSize() == 0 {
+			if h.cache.Playlist.Size() == 0 && h.cache.Messages.Size() == 0 {
 				h.closeStorage <- struct{}{}
 				h.syncer.close <- struct{}{}
 				closeRoom <- h.id
@@ -174,7 +172,7 @@ func (h hub) remove(conn *websocket.Conn) {
 			go func() {
 				var elapsed int
 
-				closeDeadline = true
+				h.closeDeadline = true
 				ctx, cancel := context.WithTimeout(context.Background(), closeDeadlineTimeout*time.Second)
 
 				if !h.syncer.isStreamOrFrame {
@@ -184,7 +182,7 @@ func (h hub) remove(conn *websocket.Conn) {
 			loop:
 				for {
 					select {
-					case <-cancelChan:
+					case <-h.cancelChan:
 						if !h.syncer.isStreamOrFrame {
 							h.syncer.rewind <- elapsed
 						}
@@ -198,7 +196,7 @@ func (h hub) remove(conn *websocket.Conn) {
 						break loop
 					}
 				}
-				closeDeadline = false
+				h.closeDeadline = false
 				return
 			}()
 		}
