@@ -64,7 +64,7 @@ func (server Server) RunServer() error {
 	go ws.HandleWsConnection(server.db)
 
 	r.HandleFunc("/api/room", server.roomHandler).Methods("GET", "POST")
-	r.HandleFunc("/api/r/{roomPath}", server.roomInnerHandler).Methods("GET")
+	r.HandleFunc("/api/r/{roomPath}", server.getRoom).Methods("GET")
 	r.HandleFunc("/api/r/{roomPath}/banned", server.bannedList).Methods("GET")
 	r.HandleFunc("/api/r/{roomPath}/permissions", server.permissionsList).Methods("GET")
 	r.HandleFunc("/api/user", server.userHandler).Methods("GET", "POST")

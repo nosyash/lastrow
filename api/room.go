@@ -513,7 +513,7 @@ func (server Server) authInRoom(w http.ResponseWriter, path, passwd string, payl
 	return
 }
 
-func (server Server) roomInnerHandler(w http.ResponseWriter, req *http.Request) {
+func (server Server) getRoom(w http.ResponseWriter, req *http.Request) {
 	var path string
 	var ok bool
 
@@ -632,11 +632,6 @@ func (server Server) bannedList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if len(payload.Roles) == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
 	room, err := server.db.GetRoom("path", path)
 	if err != nil {
 		if err == mgo.ErrNotFound {
@@ -683,11 +678,6 @@ func (server Server) permissionsList(w http.ResponseWriter, r *http.Request) {
 	payload, err := server.extractPayload(w, r)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	if len(payload.Roles) == 0 {
-		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
