@@ -112,7 +112,7 @@ export const GET_ERROR = (string: string) => {
 
 export const SEND_MEDIA_TO_PLAYLIST = ({ url, subtitles = {}, uuid }: { url: string, uuid?: string, subtitles?: any }) => {
     const request = {
-        action: 'player_event',
+        action: 'playlist_event',
         body: {
             event: {
                 type: 'playlist_add',
@@ -130,7 +130,7 @@ export const SEND_MEDIA_TO_PLAYLIST = ({ url, subtitles = {}, uuid }: { url: str
 
 export const DELETE_VIDEO_FROM_PLAYLIST = ({ __id, uuid }: { __id: string, uuid?: string }) => {
     const request = {
-        action: 'player_event',
+        action: 'playlist_event',
         body: {
             event: {
                 type: 'playlist_del',
@@ -147,7 +147,7 @@ export const DELETE_VIDEO_FROM_PLAYLIST = ({ __id, uuid }: { __id: string, uuid?
 
 export const REORDER_MEDIA = ({ __id, index }: { __id: string, index: number }) => {
     const request = {
-        action: "player_event",
+        action: "playlist_event",
         body: {
             event: {
                 type: "move",
