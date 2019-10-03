@@ -11,19 +11,16 @@ const maxMessageStorageSize = 25
 // CheckPermissions check permissions and return result
 func (room Room) CheckPermissions(eType, uuid string, payload *jwt.Payload) bool {
 	var level = 0
+	var result bool
 
 	if payload != nil {
-		level = 1
-
-		for _, o := range payload.Roles {
-			if o.RoomUUID == uuid {
-				level = o.Permissions
-			}
+		if level, result = payload.GetLevel(uuid); !result {
+			level = 1
 		}
 
 		if level > 1 {
 			for _, r := range room.Roles {
-				if r.UUID == uuid && r.Permissions == level {
+				if r.UUID == payload.UUID && r.Permissions == level {
 					permssion, ok := room.Permissions[eType]
 					if ok {
 						return level >= permssion

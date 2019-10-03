@@ -45,22 +45,22 @@ func (server Server) extractPayload(w http.ResponseWriter, r *http.Request) (*jw
 
 func (server Server) checkPermissions(eType, uuid string, payload *jwt.Payload) bool {
 	var level = 1
+	var result bool
 
 	if payload != nil {
-		for _, o := range payload.Roles {
-			if o.RoomUUID == uuid {
-				level = o.Permissions
-			}
+		if level, result = payload.GetLevel(uuid); !result {
+			level = 1
 		}
 	} else {
 		// Since we need to check only for room updates actions, so skip guests immediately
 		return false
 	}
 
-	roles, err := server.db.GetAllRoles(uuid)
-	if err != nil {
-		log.Println(fmt.Errorf("Couldn't get roles for %s -> %v", uuid, err))
-		return false
+	if level > 1 {
+		result, err := server.db.CheckUserRole(payload.UUID, uuid, level)
+		if !result || err != nil {
+			return false
+		}
 	}
 
 	permission, err := server.db.GetAllPermissions(uuid)
@@ -69,17 +69,11 @@ func (server Server) checkPermissions(eType, uuid string, payload *jwt.Payload) 
 		return false
 	}
 
-	for _, r := range roles {
-		if r.UUID == payload.UUID && r.Permissions == level {
-			rule, ok := permission.ToMap()[eType]
-			if ok {
-				return level >= rule
-			}
-
-			log.Printf("server.go:checkPermissions() -> Unknown event type: %s\n", eType)
-			return false
-		}
+	rule, ok := permission.ToMap()[eType]
+	if ok {
+		return level >= rule
 	}
 
+	log.Printf("server.go:checkPermissions() -> Unknown event type: %s\n", eType)
 	return false
 }

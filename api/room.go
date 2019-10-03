@@ -157,6 +157,18 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest, payload
 		return
 	}
 
+	level, result := payload.GetLevel(room.UUID)
+	if !result {
+		sendJSON(w, http.StatusBadRequest, errNotHavePermission.Error())
+		return
+	}
+
+	result, err = server.db.CheckUserRole(payload.UUID, room.UUID, level)
+	if !result || err != nil {
+		sendJSON(w, http.StatusBadRequest, errNotHavePermission.Error())
+		return
+	}
+
 	switch req.Body.UpdateType {
 	case eTypeAddEmoji:
 		server.addEmoji(w, strings.TrimSpace(req.Body.Data.Name), req.RoomUUID, req.Body.Data.Type, &req.Body.Data.Img, &room)
@@ -165,9 +177,9 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest, payload
 	case eTypeChangeEmojname:
 		server.changeEmojiName(w, strings.TrimSpace(req.Body.Data.Name), strings.TrimSpace(req.Body.Data.NewName), req.RoomUUID, &room)
 	case eTypeAddRole:
-		server.addRole(w, payload, req.Body.ID, req.RoomUUID, req.Body.Level)
+		server.addRole(w, level, req.Body.ID, req.RoomUUID, req.Body.Level, &room)
 	case eTypeChangePermission:
-		// TODO;
+		// TODO:
 	case eTypeChangeTitle:
 		// TODO:
 	case eTypeChangePath:
@@ -368,23 +380,7 @@ func (server Server) changeEmojiName(w http.ResponseWriter, name, newName, uuid 
 	}
 }
 
-func (server Server) addRole(w http.ResponseWriter, payload *jwt.Payload, id, roomUUID string, level int) {
-	userLevel, result := payload.GetLevel(roomUUID)
-	if !result {
-		sendJSON(w, http.StatusBadRequest, message{
-			Error: errNotHavePermission.Error(),
-		})
-		return
-	}
-
-	result, err := server.db.CheckUserRole(payload.UUID, roomUUID, userLevel)
-	if !result || err != nil {
-		sendJSON(w, http.StatusBadRequest, message{
-			Error: errNotHavePermission.Error(),
-		})
-		return
-	}
-
+func (server Server) addRole(w http.ResponseWriter, userLevel int, id, roomUUID string, level int, room *db.Room) {
 	if userLevel <= level && userLevel != ownerLevel {
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: errNotHavePermission.Error(),
@@ -396,19 +392,6 @@ func (server Server) addRole(w http.ResponseWriter, payload *jwt.Payload, id, ro
 	if err != nil || guest {
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "User with this ID was not be found",
-		})
-		return
-	}
-
-	room, err := server.db.GetRoom("uuid", roomUUID)
-	if err != nil && err == mgo.ErrNotFound {
-		sendJSON(w, http.StatusBadRequest, message{
-			Error: "Room with this UUID was not be found",
-		})
-		return
-	} else if err != nil {
-		sendJSON(w, http.StatusBadRequest, message{
-			Error: "Internal server error",
 		})
 		return
 	}
