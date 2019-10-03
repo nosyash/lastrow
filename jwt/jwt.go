@@ -29,18 +29,18 @@ type Header struct {
 type Payload struct {
 	UUID      string
 	IsAdmin   bool `json:"is_admin"`
-	Owner     []Owner
+	Roles     []Role
 	AuthRooms []AuthRoom `json:"auth_rooms"`
 	Exp       int64
 }
 
-// Owner describes information about where user is owner and what is him Permissions
-type Owner struct {
+// Role describes information about where user is owner and what is him Permissions
+type Role struct {
 	RoomUUID    string `json:"room_uuid"`
 	Permissions int
 }
 
-// AuthRooms is a list where user authorized
+// AuthRoom is a list where user authorized
 type AuthRoom struct {
 	UUID string `json:"uuid"`
 	Hash string `json:"hash"`

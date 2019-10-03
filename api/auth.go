@@ -143,7 +143,7 @@ func (server Server) setUpAuthSession(w http.ResponseWriter, uuid string) {
 		return
 	}
 
-	roomList, err := server.db.WhereUserOwner(uuid)
+	roomList, err := server.db.GetUserRoles(uuid)
 	if err != nil {
 		log.Printf("server.db.WhereUserOwner(): %v", err)
 		sendJSON(w, http.StatusBadRequest, message{
@@ -154,14 +154,14 @@ func (server Server) setUpAuthSession(w http.ResponseWriter, uuid string) {
 
 	var header jwt.Header
 	var payload jwt.Payload
-	var owner = make([]jwt.Owner, len(roomList))
+	var roles = make([]jwt.Role, len(roomList))
 	var timeNow = time.Now().Add(1 * 365 * 24 * time.Hour)
 
 	for i, r := range roomList {
-		owner[i].RoomUUID = r.UUID
-		for _, r := range r.Owners {
+		roles[i].RoomUUID = r.UUID
+		for _, r := range r.Roles {
 			if r.UUID == uuid {
-				owner[i].Permissions = r.Permissions
+				roles[i].Permissions = r.Permissions
 			}
 		}
 	}
@@ -170,7 +170,7 @@ func (server Server) setUpAuthSession(w http.ResponseWriter, uuid string) {
 
 	payload.UUID = uuid
 	payload.IsAdmin = isAdmin
-	payload.Owner = owner
+	payload.Roles = roles
 	payload.Exp = timeNow.UnixNano()
 
 	token, err := jwt.GenerateNewToken(header, &payload, server.hmacKey)

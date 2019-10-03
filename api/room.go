@@ -71,10 +71,6 @@ func (server Server) roomHandler(w http.ResponseWriter, r *http.Request) {
 	case eTypeRoomCreate:
 		server.createRoom(w, req.Body.Title, req.Body.Path, req.Body.Password, req.Body.Hidden, payload.UUID)
 	case eTypeRoomUpdate:
-		if !server.checkPermissions(req.Body.UpdateType, req.RoomUUID, payload) {
-			sendJSON(w, http.StatusBadRequest, errNotHavePermission)
-			return
-		}
 		server.updateRoom(w, &req, payload)
 	case eTypeAuthInRoom:
 		server.authInRoom(w, req.RoomPath, req.Body.Password, payload)
@@ -147,31 +143,12 @@ func (server Server) createRoom(w http.ResponseWriter, title, path, passwd strin
 }
 
 func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest, payload *jwt.Payload) {
-	if len(payload.Owner) == 0 {
-		sendJSON(w, http.StatusBadRequest, message{
-			Error: errNotHavePermission.Error(),
-		})
+	if !server.checkPermissions(req.Body.UpdateType, req.RoomUUID, payload) {
+		sendJSON(w, http.StatusBadRequest, errNotHavePermission.Error())
 		return
 	}
 
-	for _, r := range payload.Owner {
-		if r.RoomUUID == req.RoomUUID {
-			if r.Permissions != 6 {
-				sendJSON(w, http.StatusBadRequest, message{
-					Error: errNotHavePermission.Error(),
-				})
-				return
-			}
-		}
-	}
-
-	name := strings.TrimSpace(req.Body.Data.Name)
-	newName := strings.TrimSpace(req.Body.Data.NewName)
-	img := req.Body.Data.Img
-	iType := req.Body.Data.Type
-	id := req.RoomUUID
-
-	room, err := server.db.GetRoom("uuid", id)
+	room, err := server.db.GetRoom("uuid", req.RoomUUID)
 	if err != nil {
 		log.Printf("server.db.GetRoom(): %v", err)
 		sendJSON(w, http.StatusBadRequest, message{
@@ -180,19 +157,30 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest, payload
 		return
 	}
 
+	var userLevel = 0
+	for _, o := range payload.Roles {
+		if o.RoomUUID == req.RoomUUID {
+			userLevel = o.Permissions
+		}
+	}
+
 	switch req.Body.UpdateType {
 	case eTypeAddEmoji:
-		server.addEmoji(w, name, id, iType, &img, &room)
+		server.addEmoji(w, strings.TrimSpace(req.Body.Data.Name), req.RoomUUID, req.Body.Data.Type, &req.Body.Data.Img, &room)
 	case eTypeDelEmoji:
-		server.delEmoji(w, name, id, &room)
-	case eTypeChangeEmojnam:
-		if name == newName {
-			sendJSON(w, http.StatusBadRequest, message{
-				Error: "Names are the same",
-			})
-			return
-		}
-		server.changeEmojiName(w, name, newName, id, &room)
+		server.delEmoji(w, strings.TrimSpace(req.Body.Data.Name), req.RoomUUID, &room)
+	case eTypeChangeEmojname:
+		server.changeEmojiName(w, strings.TrimSpace(req.Body.Data.Name), strings.TrimSpace(req.Body.Data.NewName), req.RoomUUID, &room)
+	case eTypeAddRole:
+		server.addRole(w, userLevel, req.Body.ID, req.RoomUUID, req.Body.Level)
+	case eTypeChangePermission:
+		// TODO;
+	case eTypeChangeTitle:
+		// TODO:
+	case eTypeChangePath:
+		// TODO:
+	case eTypeDeleteRoom:
+		// TODO:
 	default:
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Unknown /api/room action",
@@ -326,6 +314,13 @@ func (server Server) delEmoji(w http.ResponseWriter, name, uuid string, room *db
 }
 
 func (server Server) changeEmojiName(w http.ResponseWriter, name, newName, uuid string, room *db.Room) {
+	if name == newName {
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "Names are the same",
+		})
+		return
+	}
+
 	if onlyStrAndNum.MatchString(newName) {
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Emoji name must contain only string characters and numbers",
@@ -377,6 +372,78 @@ func (server Server) changeEmojiName(w http.ResponseWriter, name, newName, uuid 
 
 	if storage.Size() > 0 {
 		storage.UpdateEmojiList(room.Path)
+	}
+}
+
+func (server Server) addRole(w http.ResponseWriter, userLevel int, id, roomUUID string, level int) {
+	if userLevel <= level && userLevel != ownerLevel {
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: errNotHavePermission.Error(),
+		})
+		return
+	}
+
+	userUUID, guest, err := storage.GetUserUUIDByID(id, roomUUID)
+	if err != nil || guest {
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "User with this ID was not be found",
+		})
+		return
+	}
+
+	room, err := server.db.GetRoom("uuid", roomUUID)
+	if err != nil && err == mgo.ErrNotFound {
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "Room with this UUID was not be found",
+		})
+		return
+	} else if err != nil {
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "Internal server error",
+		})
+		return
+	}
+
+	// TODO:
+	// Check owner count. No more than two in a room
+
+	for i, r := range room.Roles {
+		if r.UUID == userUUID {
+			if level == r.Permissions {
+				sendJSON(w, http.StatusBadRequest, message{
+					Error: "Levels equal each other",
+				})
+				return
+			}
+
+			if level == userLevel {
+				room.Roles = append(room.Roles[:i], room.Roles[i+1:]...)
+			} else {
+				room.Roles[i].Permissions = level
+			}
+
+			if err = server.db.UpdateRoomValue(roomUUID, "roles", room.Roles); err != nil {
+				log.Printf("Couldn't update roles: %v\n", err)
+				sendJSON(w, http.StatusBadRequest, message{
+					Error: "Internal server error",
+				})
+				return
+			}
+			return
+		}
+	}
+
+	owners := append(room.Roles, db.Role{
+		UUID:        userUUID,
+		Permissions: level,
+	})
+
+	if err = server.db.UpdateRoomValue(roomUUID, "roles", owners); err != nil {
+		log.Printf("Couldn't update roles: %v\n", err)
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "Internal server error",
+		})
+		return
 	}
 }
 
@@ -587,7 +654,7 @@ func (server Server) bannedList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if len(payload.Owner) == 0 {
+	if len(payload.Roles) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -603,7 +670,7 @@ func (server Server) bannedList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, r := range payload.Owner {
+	for _, r := range payload.Roles {
 		if r.RoomUUID == room.UUID && r.Permissions == 6 {
 			sendJSON(w, http.StatusOK, bannedList{
 				BannedUsers: room.BannedUsers,
@@ -629,7 +696,7 @@ func (server Server) permissionsList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if len(payload.Owner) == 0 {
+	if len(payload.Roles) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -645,7 +712,7 @@ func (server Server) permissionsList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, r := range payload.Owner {
+	for _, r := range payload.Roles {
 		if r.RoomUUID == room.UUID && r.Permissions == 6 {
 			sendJSON(w, http.StatusOK, room.Permissions)
 			return

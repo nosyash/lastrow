@@ -20,7 +20,7 @@ type Room struct {
 	Password    string        `json:"passwd"`
 	BannedUsers []BannedUsers `json:"banned_users" bson:"banned_users"`
 	BannedIps   []BannedIps   `json:"banned_ips" bson:"banned_ips"`
-	Owners      []owner       `json:"owners"`
+	Roles       []Role        `json:"roles"`
 	Permissions Permissions   `json:"permissions"`
 	Emoji       []Emoji       `json:"emoji"`
 }
@@ -67,11 +67,13 @@ type Permissions struct {
 }
 
 type roomUpdate struct {
-	ChangeTitle     int `json:"change_title" bson:"update_title"`
-	ChangePath      int `json:"change_path" bson:"update_path"`
-	AddEmoji        int `json:"add_emoji" bson:"add_emoji"`
-	DelEmoji        int `json:"del_emoji" bson:"del_emoji"`
-	ChangeEmojiName int `json:"change_emoji_name" bson:"change_emoji_name"`
+	ChangeTitle      int `json:"change_title" bson:"update_title"`
+	ChangePath       int `json:"change_path" bson:"update_path"`
+	AddEmoji         int `json:"add_emoji" bson:"add_emoji"`
+	DelEmoji         int `json:"del_emoji" bson:"del_emoji"`
+	ChangeEmojiName  int `json:"change_emoji_name" bson:"change_emoji_name"`
+	AddRole          int `json:"add_role" bson:"add_role"`
+	ChangePermission int `json:"change_permission" bson:"change_permission"`
 }
 
 type playlistEvent struct {
@@ -93,7 +95,7 @@ type userEvent struct {
 	Unban   int `json:"unban"`
 }
 
-type owner struct {
+type Role struct {
 	UUID        string `json:"UUID"`
 	Permissions int    `json:"permissions"`
 }

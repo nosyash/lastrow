@@ -1,6 +1,10 @@
 package cache
 
-import "github.com/nosyash/backrow/jwt"
+import (
+	"log"
+
+	"github.com/nosyash/backrow/jwt"
+)
 
 const maxMessageStorageSize = 25
 
@@ -9,18 +13,37 @@ func (room Room) CheckPermissions(eType, uuid string, payload *jwt.Payload) bool
 	var level = 0
 
 	if payload != nil {
-		for _, o := range payload.Owner {
+		level = 1
+
+		for _, o := range payload.Roles {
 			if o.RoomUUID == uuid {
 				level = o.Permissions
 			}
 		}
+
+		if level > 1 {
+			for _, r := range room.Roles {
+				if r.UUID == uuid && r.Permissions == level {
+					permssion, ok := room.Permissions[eType]
+					if ok {
+						return level >= permssion
+					}
+
+					log.Printf("cache.go:CheckPermissions() -> Unknown event type: %s\n", eType)
+					return false
+				}
+			}
+
+			return false
+		}
 	}
 
-	rule, ok := room.Permissions[eType]
+	permssion, ok := room.Permissions[eType]
 	if ok {
-		return level >= rule
+		return level >= permssion
 	}
 
+	log.Printf("cache.go:CheckPermissions() -> Unknown event type: %s\n", eType)
 	return false
 }
 
@@ -37,7 +60,7 @@ func (m Messages) GetAllMessages() []Message {
 	return m.list
 }
 
-// GetMessagesSize return size of cache messages
+// Size return size of cache messages
 func (m Messages) Size() int {
 	return len(m.list)
 }

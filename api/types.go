@@ -47,6 +47,9 @@ type roomBody struct {
 	Path       string    `json:"path"`
 	Hidden     bool      `json:"hidden"`
 	Password   string    `json:"passwd"`
+	ID         string    `json:"id"`
+	Level      int       `json:"level"`
+	Action     string    `json:"action"`
 	Data       imageBody `json:"data"`
 }
 
@@ -83,11 +86,15 @@ const (
 )
 
 const (
-	eTypeChangeTitle   = "change_title"
-	eTypeChangePath    = "change_path"
-	eTypeAddEmoji      = "add_emoji"
-	eTypeDelEmoji      = "del_emoji"
-	eTypeChangeEmojnam = "change_emoji_name"
+	eTypeChangeTitle    = "change_title"
+	eTypeChangePath     = "change_path"
+	eTypeDeleteRoom     = "delete_room"
+	eTypeAddEmoji       = "add_emoji"
+	eTypeDelEmoji       = "del_emoji"
+	eTypeChangeEmojname = "change_emoji_name"
+
+	eTypeAddRole          = "add_role"
+	eTypeChangePermission = "change_permission"
 )
 
 const (
@@ -95,6 +102,16 @@ const (
 	eTypeUserDeleteImg  = "user_delete_img"
 	eTypeUserUpdatePer  = "user_update_per"
 	eTypeUserUpdatePswd = "user_update_pswd"
+)
+
+const (
+	ownerLevel      = 6
+	coOwnerLevel    = 5
+	moderatorLevel  = 4
+	jModeratorLevel = 3
+	djUser          = 2
+	user            = 1
+	guest           = 0
 )
 
 const (

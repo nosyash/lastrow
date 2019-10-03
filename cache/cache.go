@@ -19,7 +19,13 @@ func New(id string) *Cache {
 
 	permission, err := db.GetAllPermissions(id)
 	if err != nil {
-		log.Println(fmt.Errorf("Couldn't get permissions for %s -> %v", id, err))
+		log.Println(fmt.Errorf("cache.go:New() -> Couldn't get permissions for %s -> %v", id, err))
+		return nil
+	}
+
+	roles, err := db.GetAllRoles(id)
+	if err != nil {
+		log.Println(fmt.Errorf("cache.go:New() -> Couldn't get roles for %s -> %v", id, err))
 		return nil
 	}
 
@@ -49,7 +55,9 @@ func New(id string) *Cache {
 		},
 		Room{
 			make(chan string),
+			make(chan struct{}),
 			permission.ToMap(),
+			roles,
 			db,
 		},
 		id,

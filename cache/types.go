@@ -38,9 +38,11 @@ type playlist struct {
 }
 
 type Room struct {
-	UpdateEmojis chan string
-	Permissions  map[string]int
-	db           *db.Database
+	UpdateEmojis      chan string
+	UpdatePermissions chan struct{}
+	Permissions       map[string]int
+	Roles             []db.Role
+	db                *db.Database
 }
 
 type Messages struct {

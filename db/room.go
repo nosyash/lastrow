@@ -32,11 +32,13 @@ func (db Database) CreateNewRoom(title, path, userUUID, roomUUID, password strin
 
 	var permissions = Permissions{
 		RoomUpdate: roomUpdate{
-			ChangeTitle:     4,
-			ChangePath:      4,
-			AddEmoji:        4,
-			DelEmoji:        4,
-			ChangeEmojiName: 4,
+			ChangeTitle:      4,
+			ChangePath:       4,
+			AddEmoji:         4,
+			DelEmoji:         4,
+			ChangeEmojiName:  4,
+			AddRole:          3,
+			ChangePermission: 4,
 		},
 		PlaylistEvent: playlistEvent{
 			Add:  1,
@@ -62,7 +64,7 @@ func (db Database) CreateNewRoom(title, path, userUUID, roomUUID, password strin
 		UUID:     roomUUID,
 		Password: password,
 		Hidden:   hidden,
-		Owners: []owner{
+		Roles: []Role{
 			{
 				userUUID,
 				6,
@@ -74,7 +76,7 @@ func (db Database) CreateNewRoom(title, path, userUUID, roomUUID, password strin
 	return db.rc.Insert(&newRoom)
 }
 
-// RoomIsExists return true if found room by value with specified key
+// RoomIsExists return true if found a room by a value with specified a key
 func (db Database) RoomIsExists(key, value string) bool {
 	n, err := db.rc.Find(bson.M{key: value}).Count()
 	if n != 0 {
@@ -85,7 +87,7 @@ func (db Database) RoomIsExists(key, value string) bool {
 	return false
 }
 
-// GetEmojiCount return current emoji size in room
+// GetEmojiCount return current emoji size in a room
 func (db Database) GetEmojiCount(uuid string) (int, error) {
 	var room Room
 
@@ -97,11 +99,11 @@ func (db Database) GetEmojiCount(uuid string) (int, error) {
 	return len(room.Emoji), nil
 }
 
-// WhereUserOwner return founded room slice where UUID is owner
-func (db Database) WhereUserOwner(uuid string) ([]Room, error) {
+// GetUserRoles return rooms list user roles in rooms
+func (db Database) GetUserRoles(uuid string) ([]Room, error) {
 	var rooms []Room
 
-	err := db.rc.Find(bson.M{"owners": bson.M{"$elemMatch": bson.M{"uuid": uuid}}}).All(&rooms)
+	err := db.rc.Find(bson.M{"roles": bson.M{"$elemMatch": bson.M{"uuid": uuid}}}).All(&rooms)
 	return rooms, err
 }
 
@@ -120,6 +122,18 @@ func (db Database) GetAllPermissions(uuid string) (*Permissions, error) {
 	}
 
 	return &room.Permissions, nil
+}
+
+// GetAllRoles return all roles in room
+func (db Database) GetAllRoles(uuid string) ([]Role, error) {
+	var room Room
+
+	err := db.rc.Find(bson.M{"uuid": uuid}).One(&room)
+	if err != nil {
+		return nil, err
+	}
+
+	return room.Roles, nil
 }
 
 // BanUser add a user to ban list
@@ -212,13 +226,13 @@ func (db Database) UnbanAddress(roomUUID, ipAddress string) error {
 func (p Permissions) ToMap() map[string]int {
 	var permissions = make(map[string]int)
 
-	// FIX THAT:
-
 	permissions["change_title"] = p.RoomUpdate.ChangeTitle
 	permissions["change_path"] = p.RoomUpdate.ChangePath
 	permissions["add_emoji"] = p.RoomUpdate.AddEmoji
 	permissions["del_emoji"] = p.RoomUpdate.DelEmoji
 	permissions["change_emoji_name"] = p.RoomUpdate.ChangeEmojiName
+	permissions["add_role"] = p.RoomUpdate.AddRole
+	permissions["change_permission"] = p.RoomUpdate.ChangePermission
 
 	permissions["playlist_add"] = p.PlaylistEvent.Add
 	permissions["playlist_del"] = p.PlaylistEvent.Del
