@@ -18,6 +18,8 @@ import (
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 // Header information in JWT
@@ -140,4 +142,36 @@ func calcHash(key string, value string) string {
 	h.Write([]byte(value))
 
 	return hex.EncodeToString(h.Sum(nil))
+}
+
+// GetLevel return permissions level for a room
+func (p Payload) GetLevel(uuid string) (int, bool) {
+	for _, r := range p.Roles {
+		if r.RoomUUID == uuid {
+			return r.Permissions, true
+		}
+	}
+
+	return 0, false
+}
+
+// CheckAuthStatus check auth status in room
+func (p Payload) CheckAuthStatus(uuid, roomHash string) error {
+	for _, r := range p.AuthRooms {
+		if r.UUID == uuid {
+			hash, err := hex.DecodeString(r.Hash)
+			if err != nil {
+				return errors.New("Couldn't read authorized session for this room")
+			}
+
+			passwd, _ := hex.DecodeString(roomHash)
+			if err := bcrypt.CompareHashAndPassword(passwd, hash); err != nil {
+				return errors.New("Password invalid")
+			}
+
+			return nil
+		}
+	}
+
+	return errors.New("You're not logged in this room")
 }

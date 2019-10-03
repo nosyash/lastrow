@@ -157,13 +157,6 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest, payload
 		return
 	}
 
-	var userLevel = 0
-	for _, o := range payload.Roles {
-		if o.RoomUUID == req.RoomUUID {
-			userLevel = o.Permissions
-		}
-	}
-
 	switch req.Body.UpdateType {
 	case eTypeAddEmoji:
 		server.addEmoji(w, strings.TrimSpace(req.Body.Data.Name), req.RoomUUID, req.Body.Data.Type, &req.Body.Data.Img, &room)
@@ -172,7 +165,7 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest, payload
 	case eTypeChangeEmojname:
 		server.changeEmojiName(w, strings.TrimSpace(req.Body.Data.Name), strings.TrimSpace(req.Body.Data.NewName), req.RoomUUID, &room)
 	case eTypeAddRole:
-		server.addRole(w, userLevel, req.Body.ID, req.RoomUUID, req.Body.Level)
+		server.addRole(w, payload, req.Body.ID, req.RoomUUID, req.Body.Level)
 	case eTypeChangePermission:
 		// TODO;
 	case eTypeChangeTitle:
@@ -375,7 +368,23 @@ func (server Server) changeEmojiName(w http.ResponseWriter, name, newName, uuid 
 	}
 }
 
-func (server Server) addRole(w http.ResponseWriter, userLevel int, id, roomUUID string, level int) {
+func (server Server) addRole(w http.ResponseWriter, payload *jwt.Payload, id, roomUUID string, level int) {
+	userLevel, result := payload.GetLevel(roomUUID)
+	if !result {
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: errNotHavePermission.Error(),
+		})
+		return
+	}
+
+	result, err := server.db.CheckUserRole(payload.UUID, roomUUID, userLevel)
+	if !result || err != nil {
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: errNotHavePermission.Error(),
+		})
+		return
+	}
+
 	if userLevel <= level && userLevel != ownerLevel {
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: errNotHavePermission.Error(),
@@ -404,9 +413,6 @@ func (server Server) addRole(w http.ResponseWriter, userLevel int, id, roomUUID 
 		return
 	}
 
-	// TODO:
-	// Check owner count. No more than two in a room
-
 	for i, r := range room.Roles {
 		if r.UUID == userUUID {
 			if level == r.Permissions {
@@ -433,12 +439,12 @@ func (server Server) addRole(w http.ResponseWriter, userLevel int, id, roomUUID 
 		}
 	}
 
-	owners := append(room.Roles, db.Role{
+	roles := append(room.Roles, db.Role{
 		UUID:        userUUID,
 		Permissions: level,
 	})
 
-	if err = server.db.UpdateRoomValue(roomUUID, "roles", owners); err != nil {
+	if err = server.db.UpdateRoomValue(roomUUID, "roles", roles); err != nil {
 		log.Printf("Couldn't update roles: %v\n", err)
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Internal server error",
@@ -508,8 +514,10 @@ func (server Server) authInRoom(w http.ResponseWriter, path, passwd string, payl
 }
 
 func (server Server) roomInnerHandler(w http.ResponseWriter, req *http.Request) {
-	path, ok := mux.Vars(req)["roomPath"]
-	if !ok {
+	var path string
+	var ok bool
+
+	if path, ok = mux.Vars(req)["roomPath"]; !ok {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -528,7 +536,6 @@ func (server Server) roomInnerHandler(w http.ResponseWriter, req *http.Request) 
 	if room.Password != "" {
 		payload, err := server.extractPayload(w, req)
 		if err == errJwtIsEmpty {
-			// This is guest
 			sendJSON(w, http.StatusBadRequest, message{
 				Error: "You're not logged in this room",
 			})
@@ -542,44 +549,13 @@ func (server Server) roomInnerHandler(w http.ResponseWriter, req *http.Request) 
 			return
 		}
 
-		for _, r := range payload.AuthRooms {
-			if r.UUID == room.UUID {
-				hash, err := hex.DecodeString(r.Hash)
-				if err != nil {
-					sendJSON(w, http.StatusBadRequest, message{
-						Error: "Couldn't read authorized session for this room",
-					})
-					return
-				}
-
-				decPasswd, _ := hex.DecodeString(room.Password)
-
-				if err := bcrypt.CompareHashAndPassword(decPasswd, hash); err != nil {
-					sendJSON(w, http.StatusBadRequest, message{
-						Error: "Password invalid",
-					})
-					return
-				}
-
-				rv := roomView{
-					Title: room.Title,
-					UUID:  room.UUID,
-					Emoji: room.Emoji,
-				}
-
-				r, _ := json.Marshal(&rv)
-
-				w.Header().Set("Content-Type", "application/json")
-				w.Write(r)
-
-				return
-			}
+		err = payload.CheckAuthStatus(room.UUID, room.Password)
+		if err != nil {
+			sendJSON(w, http.StatusBadRequest, message{
+				Error: err.Error(),
+			})
+			return
 		}
-
-		sendJSON(w, http.StatusBadRequest, message{
-			Error: "You're not logged in this room",
-		})
-		return
 	}
 
 	rv := roomView{
@@ -642,8 +618,10 @@ func (server Server) getAllRooms(w http.ResponseWriter) {
 }
 
 func (server Server) bannedList(w http.ResponseWriter, r *http.Request) {
-	path, ok := mux.Vars(r)["roomPath"]
-	if !ok {
+	var path string
+	var ok bool
+
+	if path, ok = mux.Vars(r)["roomPath"]; !ok {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -670,22 +648,34 @@ func (server Server) bannedList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, r := range payload.Roles {
-		if r.RoomUUID == room.UUID && r.Permissions == 6 {
-			sendJSON(w, http.StatusOK, bannedList{
-				BannedUsers: room.BannedUsers,
-				BannedIps:   room.BannedIps,
-			})
-			return
-		}
+	level, result := payload.GetLevel(room.UUID)
+	if !result {
+		sendJSON(w, http.StatusBadRequest, errNotHavePermission.Error())
+		return
+	}
+
+	result, err = server.db.CheckUserRole(payload.UUID, room.UUID, level)
+	if !result || err != nil {
+		sendJSON(w, http.StatusBadRequest, errNotHavePermission.Error())
+		return
+	}
+
+	if level >= jModeratorLevel {
+		sendJSON(w, http.StatusOK, bannedList{
+			BannedUsers: room.BannedUsers,
+			BannedIps:   room.BannedIps,
+		})
+		return
 	}
 
 	w.WriteHeader(http.StatusBadRequest)
 }
 
 func (server Server) permissionsList(w http.ResponseWriter, r *http.Request) {
-	path, ok := mux.Vars(r)["roomPath"]
-	if !ok {
+	var path string
+	var ok bool
+
+	if path, ok = mux.Vars(r)["roomPath"]; !ok {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -712,11 +702,21 @@ func (server Server) permissionsList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, r := range payload.Roles {
-		if r.RoomUUID == room.UUID && r.Permissions == 6 {
-			sendJSON(w, http.StatusOK, room.Permissions)
-			return
-		}
+	level, result := payload.GetLevel(room.UUID)
+	if !result {
+		sendJSON(w, http.StatusBadRequest, errNotHavePermission.Error())
+		return
+	}
+
+	result, err = server.db.CheckUserRole(payload.UUID, room.UUID, level)
+	if !result || err != nil {
+		sendJSON(w, http.StatusBadRequest, errNotHavePermission.Error())
+		return
+	}
+
+	if level >= jModeratorLevel {
+		sendJSON(w, http.StatusOK, room.Permissions)
+		return
 	}
 
 	w.WriteHeader(http.StatusBadRequest)

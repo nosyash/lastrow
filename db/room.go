@@ -136,6 +136,22 @@ func (db Database) GetAllRoles(uuid string) ([]Role, error) {
 	return room.Roles, nil
 }
 
+// CheckUserRole check user level role and return result
+func (db Database) CheckUserRole(userUUID, roomUUID string, level int) (bool, error) {
+	roles, err := db.GetAllRoles(roomUUID)
+	if err != nil {
+		return false, err
+	}
+
+	for _, r := range roles {
+		if r.UUID == userUUID && level == r.Permissions {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
 // BanUser add a user to ban list
 func (db Database) BanUser(roomUUID, userUUID string) error {
 	var room Room
