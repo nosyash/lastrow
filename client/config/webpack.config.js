@@ -143,6 +143,7 @@ module.exports = function(webpackEnv) {
             // changing JS code would still trigger a refresh.
         ].filter(Boolean),
         output: {
+            globalObject: 'this',
             // The build folder.
             path: isEnvProduction ? paths.appBuild : undefined,
             // Add /* filename */ comments to generated require()s in the output.
@@ -284,6 +285,18 @@ module.exports = function(webpackEnv) {
         module: {
             strictExportPresence: true,
             rules: [
+                {
+                    test: /\.worker.ts$/,
+                    use: [
+                        {
+                            loader: require.resolve('worker-loader'),
+                            options: {
+                                name: 'static/js/[name].js',
+                                publicPath,
+                            },
+                        },
+                    ],
+                },
                 // Disable require.ensure as it's not a standard language feature.
                 { parser: { requireEnsure: false } },
 

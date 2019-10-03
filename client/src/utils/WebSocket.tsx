@@ -18,7 +18,8 @@ import { User } from './types';
 import { Store } from 'redux';
 import { Emoji } from '../reducers/emojis';
 import httpServices from './httpServices';
-import { parseAndDispatchSubtitiles } from './subtitles';
+import { parseAndDispatchSubtitles } from './subtitles';
+import { workerRequest } from '../worker/index';
 
 const { dispatch, getState } = store as Store;
 
@@ -182,16 +183,15 @@ class Socket implements SocketInterface {
                 return dispatch({ type: types.ADD_MESSAGE, payload });
             }
             case 'update_playlist': {
-                const data = get(parsedData, 'body.event.data') as UpdatePlaylistData;
-                const subtitilesUrl = get(parsedData, 'body.event.data.videos[0].subs') as string;
-                if (subtitilesUrl) httpServices.get(subtitilesUrl)
-                    .then(response => parseAndDispatchSubtitiles(response.data))
-                    .catch(() => toast.error('Could not fetch subtitiles'))
+                const playlistData = get(parsedData, 'body.event.data') as UpdatePlaylistData;
 
-                const playlist = data.videos || [];
+                const subtitlesUrl = get(playlistData, 'videos[0].subs') as string;
+                if (subtitlesUrl) httpServices.get(subtitlesUrl)
+                    .then(handleSubtitles)
+                    .catch(() => toast.error('Could not fetch subtitles'))
 
-                const dispatchAction = () => dispatch({ type: types.ADD_TO_PLAYLIST, payload: playlist });
-                return this.handleMediaChange(data, dispatchAction);
+                const dispatchAction = () => dispatch({ type: types.ADD_TO_PLAYLIST, payload: playlistData.videos });
+                return this.handleMediaChange(playlistData, dispatchAction);
             }
             case 'ticker': {
                 const { ticker } = get(parsedData, 'body.event.data') as TickerData;
@@ -200,13 +200,6 @@ class Socket implements SocketInterface {
             case 'emoji_update': {
                 const emoji = get(parsedData, 'body.event.data.emoji') as Emoji[];
                 return dispatch({ type: types.ADD_EMOJIS, payload: emoji || [] });
-            }
-            // TODO: structure may be different
-            case 'subtitles': {
-                const subtitilesUrl = get(parsedData, 'body.event.data.subs') as string;
-                httpServices.get(subtitilesUrl)
-                    .then(response => parseAndDispatchSubtitiles(response.data))
-                    .catch(() => toast.error('Could not fetch subtitiles'))
             }
             case 'error': {
                 const error = get(parsedData, 'body.event.data.error') as string;
@@ -276,6 +269,18 @@ class Socket implements SocketInterface {
     //     if (!this.pending) this._webSocketReconnect();
     //   }, WEBSOCKET_TIMEOUT);
     // };
+}
+
+function subtitlesUpdateEvent() {
+    const subtitlesAftersChanged = new CustomEvent('subtitlesafterchange', { 'detail': {} });
+    document.dispatchEvent(subtitlesAftersChanged);
+}
+
+function handleSubtitles({ data }) {
+    dispatch({ type: types.SET_RAW_SUBS, payload: data })
+    dispatch({ type: types.SHOW_SUBS })
+    // workerRequest.subtitlesInit(data)
+    // subtitlesUpdateEvent()
 }
 
 function moveGuestsToTheEnd(users: User[]) {

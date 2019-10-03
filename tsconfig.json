@@ -2,15 +2,21 @@
     "compileOnSave": false,
     "module": "esnext",
     "compilerOptions": {
-        // TODO: Declare type for everyting and set it to true
+        // TODO: Declare all types and set to true
         "noImplicitAny": false,
-        "isolatedModules": false,
+
+        "isolatedModules": true,
         "skipLibCheck": true,
         "removeComments": true,
         "esModuleInterop": true,
-        "moduleResolution": "node",
+        "allowSyntheticDefaultImports": true,
+        "moduleResolution": "classic",
         "module": "esnext",
+        "lib": ["webworker", "es6", "scripthost", "dom"],
         "sourceMap": true,
         "jsx": "react"
     },
+    "exclude": [
+        "**/*.worker.ts"
+    ]
 }

@@ -67,7 +67,7 @@ class Divider extends Component<any, any> {
 
     handleMouseUp = () => {
         if (this.state.moving) this.setState({ moving: false });
-
+        else return
         this.enableUserSelect();
         const { setChatWidth } = this.props;
         const width = Math.max(MIN_CHAT_WIDTH, Math.min(MAX_CHAT_WIDTH, this.state.width));

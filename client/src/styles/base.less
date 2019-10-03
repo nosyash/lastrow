@@ -1187,14 +1187,14 @@ body {
     height: 70px;
     max-width: 800px;
     margin: auto;
-    background: rgba(37, 39, 40, 0.85);
-    backdrop-filter: saturate(300%) blur(18px);
+    background-color: rgba(37, 39, 40, 0.85);
+    backdrop-filter: blur(18px);
     border-radius: 4px;
     user-select: none;
     display: flex;
     flex-direction: column;
     padding: 5px 0;
-    transition: 0.1s;
+    transition: 0.1s, 0s backdrop-filter, 0.2s background;
     transform: translateY(0px);
 
     &__sync-on {
@@ -1368,8 +1368,8 @@ body {
 
 .player-minimized {
     .video-player {
-        background: transparent;
-        transform: translateY(40px);
+        background-color: rgba(37, 39, 40, 0.0);
+        transform: translateY(10px);
         backdrop-filter: none;
     }
 
