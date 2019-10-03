@@ -27,6 +27,7 @@ export const SWITCH_MUTE = 'SWITCH_MUTE';
 export const SET_VOLUME = 'SET_VOLUME';
 export const SET_SUBS = 'SET_SUBS';
 export const SET_CURRENT_SUBS = 'SET_CURRENT_SUBS';
+export const SET_RAW_SUBS = 'SET_RAW_SUBS';
 export const SET_SUBS_URL = 'SET_SUBS_URL';
 export const SHOW_SUBS = 'SHOW_SUBS';
 export const HIDE_SUBS = 'HIDE_SUBS';
