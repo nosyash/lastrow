@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/nosyash/backrow/cache"
@@ -183,7 +184,7 @@ func (h *hub) remove(conn *websocket.Conn) {
 				for {
 					select {
 					case <-h.cancelChan:
-						if !h.syncer.isSleep && !h.syncer.isStreamOrFrame && {
+						if !h.syncer.isSleep && !h.syncer.isStreamOrFrame {
 							h.syncer.rewind <- elapsed
 						}
 						cancel()
