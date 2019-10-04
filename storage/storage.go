@@ -49,7 +49,7 @@ func UpdateEmojiList(roomUUID string) {
 	}
 }
 
-// UpdateRole add new role for a user in a cache and update a roles cache
+// UpdateRole add a new role for a user in a cache and update a roles cache
 func UpdateRole(id, roomUUID string, level int) {
 	if c, ok := storage.cs[roomUUID]; ok {
 		c.Users.UpdateRole <- cache.NewRole{

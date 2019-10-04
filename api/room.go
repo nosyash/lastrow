@@ -172,7 +172,7 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest, payload
 	case eTypeAddRole:
 		server.addRole(w, level, req.Body.ID, req.RoomUUID, req.Body.Level, &room)
 	case eTypeChangePermission:
-		// TODO:
+		server.changePermission(w, req.Body.Action, req.Body.Level, &room)
 	case eTypeChangeTitle:
 		// TODO:
 	case eTypeChangePath:
@@ -426,6 +426,10 @@ func (server Server) addRole(w http.ResponseWriter, userLevel int, id, roomUUID 
 	}
 
 	go storage.UpdateRole(id, roomUUID, level)
+}
+
+func (server Server) changePermission(w http.ResponseWriter, action string, level int, room *db.Room) {
+	println(action, level)
 }
 
 func (server Server) authInRoom(w http.ResponseWriter, path, passwd string, payload *jwt.Payload) {

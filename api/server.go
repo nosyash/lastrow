@@ -66,7 +66,6 @@ func (server Server) RunServer() error {
 	r.HandleFunc("/api/room", server.roomHandler).Methods("GET", "POST")
 	r.HandleFunc("/api/r/{roomPath}", server.getRoom).Methods("GET")
 	r.HandleFunc("/api/r/{roomPath}/banned", server.bannedList).Methods("GET")
-	// r.HandleFunc("/api/r/{roomPath}/permissions", server.permissionsList).Methods("GET")
 	r.HandleFunc("/api/user", server.userHandler).Methods("GET", "POST")
 	r.HandleFunc("/api/auth", server.authHandler).Methods("POST")
 	r.HandleFunc("/api/ws", server.acceptWebsocket).Methods("GET")
@@ -115,7 +114,7 @@ func (server Server) acceptWebsocket(w http.ResponseWriter, r *http.Request) {
 func (server Server) logAndServe(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Host == server.originHost {
-			log.Printf("[HTTP]:  [%s] -> %s %s %s\n", r.RemoteAddr, r.Method, r.URL, r.UserAgent())
+			//log.Printf("[HTTP]:  [%s] -> %s %s %s\n", r.RemoteAddr, r.Method, r.URL, r.UserAgent())
 			handler.ServeHTTP(w, r)
 		}
 	})

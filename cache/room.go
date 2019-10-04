@@ -69,10 +69,11 @@ func (room *Room) UpdateRoles(id string) {
 	room.Roles = roles
 }
 
-func (room *Room) updatePermissions(id string) {
-	permission, err := room.db.GetAllPermissions(id)
+// update permissions in a room cache with
+func (room *Room) updatePermissions(uuid string) {
+	permission, err := room.db.GetAllPermissions(uuid)
 	if err != nil {
-		log.Println(fmt.Errorf("cache.go:UpdatePermissions() -> Couldn't get permissions for %s -> %v", id, err))
+		log.Println(fmt.Errorf("cache.go:UpdatePermissions() -> Couldn't get permissions for %s -> %v", uuid, err))
 		return
 	}
 

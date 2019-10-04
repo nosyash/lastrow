@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"log"
 	"time"
 
 	"github.com/nosyash/backrow/cache"
@@ -184,7 +183,7 @@ func (h *hub) remove(conn *websocket.Conn) {
 				for {
 					select {
 					case <-h.cancelChan:
-						if !h.syncer.isStreamOrFrame {
+						if !h.syncer.isStreamOrFrame && !h.syncer.isSleep {
 							h.syncer.rewind <- elapsed
 						}
 						cancel()
@@ -209,12 +208,12 @@ func (h *hub) read(conn *websocket.Conn) {
 		h.unregister <- conn
 	}()
 
-	var uuid string
-	for u, c := range h.hub {
-		if c == conn {
-			uuid = u
-		}
-	}
+	// var uuid string
+	// for u, c := range h.hub {
+	// 	if c == conn {
+	// 		uuid = u
+	// 	}
+	// }
 
 	for {
 		req, err := readPacket(conn)
@@ -226,7 +225,7 @@ func (h *hub) read(conn *websocket.Conn) {
 			break
 		}
 
-		log.Printf("[WS]:    [%s:%s|%s] -> [%s:%s]\n", conn.RemoteAddr().String(), uuid[:16], h.id[:16], req.Action, req.Body.Event.Type)
+		// log.Printf("[WS]:    [%s:%s|%s] -> [%s:%s]\n", conn.RemoteAddr().String(), uuid[:16], h.id[:16], req.Action, req.Body.Event.Type)
 
 		switch req.Action {
 		case userEvent:
