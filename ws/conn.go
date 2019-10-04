@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"os"
 	"time"
 
 	"github.com/nosyash/backrow/cache"
@@ -46,6 +47,8 @@ func NewRoomHub(id string, db *db.Database) *hub {
 		},
 		id,
 		false,
+		log.New(os.Stdout, "[WS]:   ", log.Llongfile),
+		log.New(os.Stdout, "[WS]:   ", log.LstdFlags),
 		make(chan struct{}),
 	}
 }
@@ -226,7 +229,7 @@ func (h *hub) read(conn *websocket.Conn) {
 			break
 		}
 
-		log.Printf("[WS]:    [%s:%s|%s] -> [%s:%s]\n", conn.RemoteAddr().String(), uuid[:16], h.id[:16], req.Action, req.Body.Event.Type)
+		h.reqLogger.Printf("[%s:%s|%s] -> [%s:%s]\n", conn.RemoteAddr().String(), uuid[:16], h.id[:16], req.Action, req.Body.Event.Type)
 
 		switch req.Action {
 		case userEvent:

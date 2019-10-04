@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -65,7 +64,7 @@ func (server Server) register(w http.ResponseWriter, uname, passwd, email, name 
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
 	if err != nil {
-		log.Printf("bcrypt.GenerateFromPassword(): %v", err)
+		server.errLogger.Println(err)
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Couldn't create new account",
 		})
@@ -74,7 +73,7 @@ func (server Server) register(w http.ResponseWriter, uname, passwd, email, name 
 
 	result, err := server.db.CreateNewUser(uname, uname, hex.EncodeToString(hash[:]), strings.TrimSpace(email), uuid)
 	if err != nil {
-		log.Printf("server.db.CreateNewUser(): %v", err)
+		server.errLogger.Println(err)
 		sendJSON(w, http.StatusInternalServerError, message{
 			Error: "Couldn't create new account",
 		})
@@ -107,7 +106,7 @@ func (server Server) login(w http.ResponseWriter, uname, passwd string) {
 	}
 
 	if err != nil {
-		log.Printf("server.db.GetUserByUname(): %v", err)
+		server.errLogger.Println(err)
 		sendJSON(w, http.StatusInternalServerError, message{
 			Error: "Internal server error while trying to login",
 		})
@@ -116,7 +115,7 @@ func (server Server) login(w http.ResponseWriter, uname, passwd string) {
 
 	dHash, err := hex.DecodeString(user.Hash)
 	if err != nil {
-		log.Printf("hex.DecodeString(): %v", err)
+		server.errLogger.Println(err)
 		sendJSON(w, http.StatusInternalServerError, message{
 			Error: "Internal server error while trying to login",
 		})
@@ -140,7 +139,7 @@ func (server Server) setUpAuthSession(w http.ResponseWriter, uuid string) {
 	header.Aig = "HS512"
 	payload, err := server.getPayload(uuid, time)
 	if err != nil {
-		log.Printf("jwt.GenerateNewToken(): %v", err)
+		server.errLogger.Println(err)
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Couldn't create auth session",
 		})
@@ -149,7 +148,7 @@ func (server Server) setUpAuthSession(w http.ResponseWriter, uuid string) {
 
 	token, err := jwt.GenerateNewToken(header, payload, server.hmacKey)
 	if err != nil {
-		log.Printf("jwt.GenerateNewToken(): %v", err)
+		server.errLogger.Println(err)
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Couldn't create auth session",
 		})

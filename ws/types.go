@@ -1,6 +1,8 @@
 package ws
 
 import (
+	"log"
+
 	"github.com/nosyash/backrow/cache"
 	"github.com/nosyash/backrow/db"
 	"github.com/nosyash/backrow/jwt"
@@ -29,6 +31,8 @@ type hub struct {
 	syncer        syncer
 	id            string
 	closeDeadline bool
+	errLogger     *log.Logger
+	reqLogger     *log.Logger
 	cancelChan    chan struct{}
 }
 

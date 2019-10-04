@@ -2,7 +2,6 @@ package ws
 
 import (
 	"errors"
-	"log"
 	"strings"
 
 	"github.com/gorilla/websocket"
@@ -34,7 +33,7 @@ func (h hub) handleMessage(p *packet) {
 	uuid := p.getUserUUID()
 
 	if len(p.Body.Event.Data.Message) == 0 || len(p.Body.Event.Data.Message) > maxMessageSize {
-		log.Printf("Wrong message length was received: %d from %s", len(p.Body.Event.Data.Message), uuid[:16])
+		h.errLogger.Printf("wrong message length was received: %d from %s", len(p.Body.Event.Data.Message), uuid[:16])
 		return
 	}
 
@@ -82,7 +81,7 @@ func (h hub) updateRole(role cache.NewRole) {
 	user, result := h.cache.Users.GetUserByUUID(uuid)
 
 	if !result {
-		log.Printf("user.go:updateJWTFor() -> need to update JWT for %s but user was disconnect\n", role.ID[:16])
+		h.errLogger.Printf("need to update JWT for %s but user was disconnect\n", role.ID[:16])
 		return
 	}
 
@@ -93,7 +92,7 @@ func (h hub) updateRole(role cache.NewRole) {
 			Aig: "HS512",
 		}, user.Payload, hmacKey)
 		if err != nil {
-			log.Printf("user.go:updateRole() -> Error while trying to generate new JWT: %v\n", err)
+			h.errLogger.Println(err)
 			sendError(conn, errors.New("Couldn't update your token"))
 			return
 		}

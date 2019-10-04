@@ -31,7 +31,7 @@ func readPacket(conn *websocket.Conn) (*packet, error) {
 }
 
 func (p packet) getUserUUID() string {
-	if p.Payload == nil {
+	if p.Payload != nil {
 		return p.Payload.UUID
 	}
 

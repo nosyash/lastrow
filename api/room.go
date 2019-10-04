@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -109,7 +108,7 @@ func (server Server) createRoom(w http.ResponseWriter, title, path, passwd strin
 
 		hash, err = bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
 		if err != nil {
-			log.Printf("bcrypt.GenerateFromPassword(): %v", err)
+			server.errLogger.Println(err)
 			sendJSON(w, http.StatusBadRequest, message{
 				Error: "Couldn't generate password hash for this room",
 			})
@@ -124,7 +123,7 @@ func (server Server) createRoom(w http.ResponseWriter, title, path, passwd strin
 	}
 
 	if err != nil {
-		log.Printf("server.db.CreateNewRoom(): %v", err)
+		server.errLogger.Println(err)
 		sendJSON(w, http.StatusOK, message{
 			Error: "Couldn't create new room",
 		})
@@ -143,7 +142,7 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest, payload
 
 	room, err := server.db.GetRoom("uuid", req.RoomUUID)
 	if err != nil {
-		log.Printf("server.db.GetRoom(): %v", err)
+		server.errLogger.Println(err)
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Internal server error",
 		})
@@ -189,7 +188,7 @@ func (server Server) updateRoom(w http.ResponseWriter, req *roomRequest, payload
 func (server Server) addEmoji(w http.ResponseWriter, name, uuid, iType string, img *string, room *db.Room) {
 	ec, err := server.db.GetEmojiCount(uuid)
 	if err != nil {
-		log.Printf("server.db.GetEmojiCount(): %v", err)
+		server.errLogger.Println(err)
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Couldn't add new emoji",
 		})
@@ -238,7 +237,7 @@ func (server Server) addEmoji(w http.ResponseWriter, name, uuid, iType string, i
 
 	err = image.createImage(filepath.Join(server.uploadServer.UplPath, imgPath), iType)
 	if err != nil {
-		log.Printf("image.createImage(): %v", err)
+		server.errLogger.Println(err)
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Error while trying to add emoji",
 		})
@@ -251,7 +250,7 @@ func (server Server) addEmoji(w http.ResponseWriter, name, uuid, iType string, i
 	})
 
 	if err = server.db.UpdateRoomValue(uuid, "emoji", emoji); err != nil {
-		log.Printf("server.db.UpdateRoomValue(): %v", err)
+		server.errLogger.Println(err)
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Couldn't add new emoji",
 		})
@@ -297,7 +296,7 @@ func (server Server) delEmoji(w http.ResponseWriter, name, uuid string, room *db
 
 	if err := server.db.UpdateRoomValue(uuid, "emoji", emoji); err != nil {
 		if err != mgo.ErrNotFound {
-			log.Printf("server.db.UpdateRoomValue(): %v", err)
+			server.errLogger.Println(err)
 		}
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Couldn't delete emoji",
@@ -357,7 +356,7 @@ func (server Server) changeEmojiName(w http.ResponseWriter, name, newName, uuid 
 
 	if err := server.db.UpdateRoomValue(uuid, "emoji", room.Emoji); err != nil {
 		if err != mgo.ErrNotFound {
-			log.Printf("server.db.UpdateRoomValue(): %v", err)
+			server.errLogger.Println(err)
 		}
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Couldn't change emoji name",
@@ -400,7 +399,7 @@ func (server Server) addRole(w http.ResponseWriter, userLevel int, id, roomUUID 
 			}
 
 			if err = server.db.UpdateRoomValue(roomUUID, "roles", room.Roles); err != nil {
-				log.Printf("Couldn't update roles: %v\n", err)
+				server.errLogger.Println(err)
 				sendJSON(w, http.StatusBadRequest, message{
 					Error: "Internal server error",
 				})
@@ -418,7 +417,7 @@ func (server Server) addRole(w http.ResponseWriter, userLevel int, id, roomUUID 
 	})
 
 	if err = server.db.UpdateRoomValue(roomUUID, "roles", roles); err != nil {
-		log.Printf("Couldn't update roles: %v\n", err)
+		server.errLogger.Println(err)
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Internal server error",
 		})
@@ -439,7 +438,7 @@ func (server Server) authInRoom(w http.ResponseWriter, path, passwd string, payl
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		log.Printf("server.go->authInRoom(): %v", err)
+		server.errLogger.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -479,7 +478,7 @@ func (server Server) authInRoom(w http.ResponseWriter, path, passwd string, payl
 		Aig: "HS512",
 	}, payload, server.hmacKey)
 	if err != nil {
-		log.Printf("server.go->authInRoom(): %v", err)
+		server.errLogger.Println(err)
 		sendJSON(w, http.StatusInternalServerError, message{
 			Error: "Error while trying to update your JWT",
 		})
@@ -519,7 +518,7 @@ func (server Server) getRoom(w http.ResponseWriter, req *http.Request) {
 		if err == mgo.ErrNotFound {
 			w.WriteHeader(http.StatusNotFound)
 		} else {
-			log.Println(err)
+			server.errLogger.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 		return
@@ -571,7 +570,7 @@ func (server Server) getAllRooms(w http.ResponseWriter) {
 
 	rooms, err := server.db.GetAllRooms()
 	if err != nil {
-		log.Printf("server.db.GetAllRooms(): %v", err)
+		server.errLogger.Println(err)
 		return
 	}
 
@@ -631,7 +630,7 @@ func (server Server) bannedList(w http.ResponseWriter, r *http.Request) {
 		if err == mgo.ErrNotFound {
 			w.WriteHeader(http.StatusNotFound)
 		} else {
-			log.Println(err)
+			server.errLogger.Println(err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 		return
