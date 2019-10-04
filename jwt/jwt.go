@@ -157,13 +157,11 @@ func (p Payload) GetLevel(uuid string) (int, bool) {
 
 // SetLevel set up new permissions level for a room
 func (p *Payload) SetLevel(uuid string, level int) {
-	_, r := p.GetLevel(uuid)
-	if !r {
+	if _, r := p.GetLevel(uuid); !r {
 		p.Roles = append(p.Roles, Role{
 			UUID:  uuid,
 			Level: level,
 		})
-
 		return
 	}
 

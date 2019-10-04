@@ -2,6 +2,7 @@ package ws
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/gorilla/websocket"
@@ -112,15 +113,23 @@ func (h hub) kickUser(conn *websocket.Conn, p *packet) {
 		})
 		return
 	}
+	uuid := h.cache.Users.GetUUIDByID(p.Body.Event.Data.ID)
+	if uuid == "" {
+		sendFeedBack(conn, &feedback{
+			Error: "Couldn't get user UUID by ID",
+		})
+		return
+	}
 
 	if p.Body.Event.Data.ID != "" {
-		uuid := h.cache.Users.GetUUIDByID(p.Body.Event.Data.ID)
-		if uuid != "" {
-			// Just close socket. Remove user from list and from cache will be automatically
-			userConn, ok := h.hub[uuid]
-			if ok {
-				userConn.Close()
-			}
+		userConn, ok := h.hub[uuid]
+		if ok {
+			userConn.Close()
+		} else {
+			sendFeedBack(conn, &feedback{
+				Error: fmt.Sprintf("Couldn't kick %s. User disconnected", uuid),
+			})
+			return
 		}
 	}
 }
@@ -133,33 +142,58 @@ func (h hub) banUser(conn *websocket.Conn, p *packet) {
 		return
 	}
 
-	if p.Body.Event.Data.ID != "" {
-		uuid := h.cache.Users.GetUUIDByID(p.Body.Event.Data.ID)
-		if uuid != "" && p.Body.Event.Data.BanType != "" {
+	uuid := h.cache.Users.GetUUIDByID(p.Body.Event.Data.ID)
+	if uuid == "" {
+		sendFeedBack(conn, &feedback{
+			Error: "Couldn't get user UUID by ID",
+		})
+		return
+	}
+
+	switch p.Body.Event.Data.BanType {
+	case "uuid":
+		if p.Body.Event.Data.ID != "" {
+			if err := h.db.BanUser(h.id, uuid); err != nil {
+				sendError(conn, err)
+				return
+			}
+
 			userConn, ok := h.hub[uuid]
 			if ok {
-				if p.Body.Event.Data.BanType == "uuid" {
-					if err := h.db.BanUser(h.id, uuid); err != nil {
-						sendError(conn, err)
-						return
-					}
-
-					// Just close socket. Remove user from list and from cache will be automatically
-					userConn.Close()
-				}
-
-				if p.Body.Event.Data.BanType == "ip" {
-					address := strings.Split(userConn.RemoteAddr().String(), ":")[0]
-					if err := h.db.BanAddress(h.id, address); err != nil {
-						sendError(conn, err)
-						return
-					}
-
-					// Just close socket. Remove user from list and from cache will be automatically
-					userConn.Close()
-				}
+				userConn.Close()
+			} else {
+				sendFeedBack(conn, &feedback{
+					Error: fmt.Sprintf("Couldn't ban %s. User disconnected", uuid),
+				})
+				return
 			}
+		} else {
+			sendError(conn, errors.New("ID is empty"))
+			return
 		}
+	case "ip":
+		if p.Body.Event.Data.BanType == "ip" {
+			userConn, ok := h.hub[uuid]
+			if ok {
+				if err := h.db.BanAddress(h.id, strings.Split(userConn.RemoteAddr().String(), ":")[0]); err != nil {
+					sendError(conn, err)
+					return
+				}
+
+				userConn.Close()
+			} else {
+				sendFeedBack(conn, &feedback{
+					Error: fmt.Sprintf("Couldn't ban %s. User disconnected", uuid),
+				})
+				return
+			}
+		} else {
+			sendError(conn, errors.New("IP is empty"))
+			return
+		}
+	default:
+		sendError(conn, errors.New("Unknow ban type"))
+		return
 	}
 }
 
@@ -171,21 +205,33 @@ func (h hub) unbanUser(conn *websocket.Conn, p *packet) {
 		return
 	}
 
-	if p.Body.Event.Data.UUID != "" {
-		if p.Body.Event.Data.UUID != "" && p.Body.Event.Data.BanType != "" {
-			if p.Body.Event.Data.BanType == "uuid" {
-				if err := h.db.UnbanUser(h.id, p.Body.Event.Data.UUID); err != nil {
-					sendError(conn, err)
-				}
+	switch p.Body.Event.Data.BanType {
+	case "uuid":
+		if p.Body.Event.Data.UUID != "" {
+			if err := h.db.UnbanUser(h.id, p.Body.Event.Data.UUID); err != nil {
+				sendError(conn, err)
 				return
 			}
-
-			if p.Body.Event.Data.BanType == "ip" && p.Body.Event.Data.IP != "" {
-				if err := h.db.UnbanAddress(h.id, p.Body.Event.Data.IP); err != nil {
-					sendError(conn, err)
-				}
-				return
-			}
+		} else {
+			sendError(conn, errors.New("UUID is empty"))
+			return
 		}
+	case "ip":
+		if p.Body.Event.Data.IP != "" {
+			if err := h.db.UnbanAddress(h.id, p.Body.Event.Data.IP); err != nil {
+				sendError(conn, err)
+				return
+			}
+		} else {
+			sendError(conn, errors.New("IP is empty"))
+			return
+		}
+	default:
+		sendError(conn, errors.New("Unknow unban type"))
+		return
 	}
+
+	sendFeedBack(conn, &feedback{
+		Message: fmt.Sprintf("%s was successful unbanned", p.Body.Event.Data.UUID),
+	})
 }
