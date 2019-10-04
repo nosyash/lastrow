@@ -499,8 +499,6 @@ func (server Server) authInRoom(w http.ResponseWriter, path, passwd string, payl
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(r)
-
-	return
 }
 
 func (server Server) getRoom(w http.ResponseWriter, req *http.Request) {
@@ -657,52 +655,3 @@ func (server Server) bannedList(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusBadRequest)
 }
-
-// func (server Server) permissionsList(w http.ResponseWriter, r *http.Request) {
-// 	var path string
-// 	var ok bool
-
-// 	if path, ok = mux.Vars(r)["roomPath"]; !ok {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 		return
-// 	}
-
-// 	payload, err := server.extractPayload(w, r)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusNotFound)
-// 		return
-// 	}
-
-// 	room, err := server.db.GetRoom("path", path)
-// 	if err != nil {
-// 		if err == mgo.ErrNotFound {
-// 			w.WriteHeader(http.StatusNotFound)
-// 		} else {
-// 			log.Println(err)
-// 			w.WriteHeader(http.StatusInternalServerError)
-// 		}
-// 		return
-// 	}
-
-// 	// FIXME:
-// 	// Here, probably we don't need to check permissions
-
-// 	level, result := payload.GetLevel(room.UUID)
-// 	if !result {
-// 		sendJSON(w, http.StatusBadRequest, errNotHavePermission.Error())
-// 		return
-// 	}
-
-// 	result, err = server.db.CheckUserRole(payload.UUID, room.UUID, level)
-// 	if !result || err != nil {
-// 		sendJSON(w, http.StatusBadRequest, errNotHavePermission.Error())
-// 		return
-// 	}
-
-// 	if level >= jModeratorLevel {
-// 		sendJSON(w, http.StatusOK, room.Permissions)
-// 		return
-// 	}
-
-// 	w.WriteHeader(http.StatusBadRequest)
-// }

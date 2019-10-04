@@ -105,6 +105,8 @@ func (h hub) updateRole(role cache.NewRole) {
 			JWT: token,
 		}))
 	}
+
+	h.cache.Room.UpdateRoles(h.id)
 }
 
 func (h hub) kickUser(conn *websocket.Conn, p *packet) {

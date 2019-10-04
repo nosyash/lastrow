@@ -112,7 +112,7 @@ func (server Server) getPayload(userUUID string, time time.Time) (*jwt.Payload, 
 		roles[i].UUID = r.UUID
 		for _, r := range r.Roles {
 			if r.UUID == userUUID {
-				roles[i].Permissions = r.Permissions
+				roles[i].Level = r.Permissions
 			}
 		}
 	}

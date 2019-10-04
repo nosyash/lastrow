@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/nosyash/backrow/jwt"
@@ -36,20 +37,17 @@ func (room Room) CheckPermissions(eType, uuid string, payload *jwt.Payload) bool
 			level = 1
 		}
 
-		if level > 1 {
-			for _, r := range room.Roles {
-				if r.UUID == payload.UUID && r.Permissions == level {
-					if permssion, ok := room.Permissions[eType]; ok {
-						return level >= permssion
-					}
-
-					log.Printf("cache.go:CheckPermissions() -> Unknown event type: %s\n", eType)
-					return false
+		for _, r := range room.Roles {
+			if r.UUID == payload.UUID && r.Permissions == level {
+				if permssion, ok := room.Permissions[eType]; ok {
+					return level >= permssion
 				}
-			}
 
-			return false
+				log.Printf("cache.go:CheckPermissions() -> Unknown event type: %s\n", eType)
+			}
 		}
+
+		return false
 	}
 
 	if permssion, ok := room.Permissions[eType]; ok {
@@ -58,4 +56,15 @@ func (room Room) CheckPermissions(eType, uuid string, payload *jwt.Payload) bool
 
 	log.Printf("cache.go:CheckPermissions() -> Unknown event type: %s\n", eType)
 	return false
+}
+
+// UpdateRoles update roles for a room
+func (room *Room) UpdateRoles(id string) {
+	roles, err := room.db.GetAllRoles(id)
+	if err != nil {
+		log.Println(fmt.Errorf("cache.go:UpdateRoles -> Couldn't get roles for %s -> %v", id, err))
+		return
+	}
+
+	room.Roles = roles
 }

@@ -209,6 +209,13 @@ func (h *hub) read(conn *websocket.Conn) {
 		h.unregister <- conn
 	}()
 
+	var uuid string
+	for u, c := range h.hub {
+		if c == conn {
+			uuid = u
+		}
+	}
+
 	for {
 		req, err := readPacket(conn)
 		if err != nil {
@@ -219,21 +226,7 @@ func (h *hub) read(conn *websocket.Conn) {
 			break
 		}
 
-		var uuid string
-		var name string
-
-		if req.Payload == nil {
-			uuid = req.UUID
-		} else {
-			uuid = req.Payload.UUID
-		}
-
-		u, r := h.cache.Users.GetUserByUUID(uuid)
-		if r {
-			name = u.Name
-		}
-
-		log.Printf("[WS]:    [%s:%s:%s] -> [%s:%s]\n", conn.RemoteAddr().String(), uuid[:16], name, req.Action, req.Body.Event.Type)
+		log.Printf("[WS]:    [%s:%s|%s] -> [%s:%s]\n", conn.RemoteAddr().String(), uuid[:16], h.id[:16], req.Action, req.Body.Event.Type)
 
 		switch req.Action {
 		case userEvent:

@@ -38,8 +38,8 @@ type Payload struct {
 
 // Role describes information about where user is owner and what is him Permissions
 type Role struct {
-	UUID        string `json:"room_uuid"`
-	Permissions int
+	UUID  string `json:"room_uuid"`
+	Level int
 }
 
 // AuthRoom is a list where user authorized
@@ -148,7 +148,7 @@ func calcHash(key string, value string) string {
 func (p Payload) GetLevel(uuid string) (int, bool) {
 	for _, r := range p.Roles {
 		if r.UUID == uuid {
-			return r.Permissions, true
+			return r.Level, true
 		}
 	}
 
@@ -160,8 +160,8 @@ func (p *Payload) SetLevel(uuid string, level int) {
 	_, r := p.GetLevel(uuid)
 	if !r {
 		p.Roles = append(p.Roles, Role{
-			UUID:        uuid,
-			Permissions: level,
+			UUID:  uuid,
+			Level: level,
 		})
 
 		return
@@ -169,7 +169,7 @@ func (p *Payload) SetLevel(uuid string, level int) {
 
 	for i, r := range p.Roles {
 		if r.UUID == uuid {
-			p.Roles[i].Permissions = level
+			p.Roles[i].Level = level
 		}
 	}
 }
@@ -195,16 +195,16 @@ func (p Payload) CheckAuthStatus(uuid string, hash []byte) error {
 }
 
 // SetAuthStatus set up new auth session for a room
-func (p *Payload) SetAuthStatus(uuid, hash string) {
+func (p *Payload) SetAuthStatus(uuid, passwd string) {
 	for i, r := range p.AuthRooms {
 		if r.UUID == uuid {
-			p.AuthRooms[i].Passwd = hash
+			p.AuthRooms[i].Passwd = passwd
 			return
 		}
 	}
 
 	p.AuthRooms = append(p.AuthRooms, AuthRoom{
 		UUID:   uuid,
-		Passwd: hash,
+		Passwd: passwd,
 	})
 }
