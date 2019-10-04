@@ -49,13 +49,20 @@ func UpdateEmojiList(roomUUID string) {
 	}
 }
 
-// UpdateJWT send new JWT via websocket for user with ID is id
-func UpdateJWT(id, roomUUID string, level int) {
+// UpdateRole add new role for a user in a cache and update a roles cache
+func UpdateRole(id, roomUUID string, level int) {
 	if c, ok := storage.cs[roomUUID]; ok {
 		c.Users.UpdateRole <- cache.NewRole{
 			ID:    id,
 			Level: level,
 		}
+	}
+}
+
+// UpdatePermissions update permissions in a room
+func UpdatePermissions(id, roomUUID string, level int) {
+	if c, ok := storage.cs[roomUUID]; ok {
+		c.Room.UpdatePermissions <- struct{}{}
 	}
 }
 

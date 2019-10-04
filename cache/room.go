@@ -62,9 +62,19 @@ func (room Room) CheckPermissions(eType, uuid string, payload *jwt.Payload) bool
 func (room *Room) UpdateRoles(id string) {
 	roles, err := room.db.GetAllRoles(id)
 	if err != nil {
-		log.Println(fmt.Errorf("cache.go:UpdateRoles -> Couldn't get roles for %s -> %v", id, err))
+		log.Println(fmt.Errorf("cache.go:UpdateRoles() -> Couldn't get roles for %s -> %v", id, err))
 		return
 	}
 
 	room.Roles = roles
+}
+
+func (room *Room) updatePermissions(id string) {
+	permission, err := room.db.GetAllPermissions(id)
+	if err != nil {
+		log.Println(fmt.Errorf("cache.go:UpdatePermissions() -> Couldn't get permissions for %s -> %v", id, err))
+		return
+	}
+
+	room.Permissions = permission.ToMap()
 }

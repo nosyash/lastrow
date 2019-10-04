@@ -407,7 +407,7 @@ func (server Server) addRole(w http.ResponseWriter, userLevel int, id, roomUUID 
 				return
 			}
 
-			go storage.UpdateJWT(id, roomUUID, level)
+			go storage.UpdateRole(id, roomUUID, level)
 			return
 		}
 	}
@@ -425,7 +425,7 @@ func (server Server) addRole(w http.ResponseWriter, userLevel int, id, roomUUID 
 		return
 	}
 
-	go storage.UpdateJWT(id, roomUUID, level)
+	go storage.UpdateRole(id, roomUUID, level)
 }
 
 func (server Server) authInRoom(w http.ResponseWriter, path, passwd string, payload *jwt.Payload) {

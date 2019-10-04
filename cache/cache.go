@@ -84,6 +84,8 @@ func (cache *Cache) HandleCacheEvents() {
 			cache.Playlist.moveVideo(mv.Index, mv.ID)
 		case message := <-cache.Messages.AddMessage:
 			cache.Messages.addMessage(message)
+		case <-cache.Room.UpdatePermissions:
+			cache.Room.updatePermissions(cache.ID)
 		case <-cache.Close:
 			return
 		}
