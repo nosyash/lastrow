@@ -134,46 +134,20 @@ func (server Server) login(w http.ResponseWriter, uname, passwd string) {
 }
 
 func (server Server) setUpAuthSession(w http.ResponseWriter, uuid string) {
-	isAdmin, err := server.db.IsAdmin(uuid)
-	if err != nil {
-		log.Printf("server.db.IsAdmin(): %v", err)
-		sendJSON(w, http.StatusBadRequest, message{
-			Error: "Couldn't create auth session",
-		})
-		return
-	}
-
-	roomList, err := server.db.GetUserRoles(uuid)
-	if err != nil {
-		log.Printf("server.db.WhereUserOwner(): %v", err)
-		sendJSON(w, http.StatusBadRequest, message{
-			Error: "Couldn't create auth session",
-		})
-		return
-	}
-
 	var header jwt.Header
-	var payload jwt.Payload
-	var roles = make([]jwt.Role, len(roomList))
-	var timeNow = time.Now().Add(1 * 365 * 24 * time.Hour)
-
-	for i, r := range roomList {
-		roles[i].RoomUUID = r.UUID
-		for _, r := range r.Roles {
-			if r.UUID == uuid {
-				roles[i].Permissions = r.Permissions
-			}
-		}
-	}
+	var time = time.Now().Add(1 * 365 * 24 * time.Hour)
 
 	header.Aig = "HS512"
+	payload, err := server.getPayload(uuid, time)
+	if err != nil {
+		log.Printf("jwt.GenerateNewToken(): %v", err)
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "Couldn't create auth session",
+		})
+		return
+	}
 
-	payload.UUID = uuid
-	payload.IsAdmin = isAdmin
-	payload.Roles = roles
-	payload.Exp = timeNow.UnixNano()
-
-	token, err := jwt.GenerateNewToken(header, &payload, server.hmacKey)
+	token, err := jwt.GenerateNewToken(header, payload, server.hmacKey)
 	if err != nil {
 		log.Printf("jwt.GenerateNewToken(): %v", err)
 		sendJSON(w, http.StatusBadRequest, message{
@@ -186,6 +160,6 @@ func (server Server) setUpAuthSession(w http.ResponseWriter, uuid string) {
 		Name:    "jwt",
 		Value:   token,
 		Path:    "/",
-		Expires: timeNow,
+		Expires: time,
 	})
 }

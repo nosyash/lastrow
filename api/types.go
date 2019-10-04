@@ -61,9 +61,10 @@ type authBody struct {
 }
 
 type roomView struct {
-	Title string     `json:"title,omitempty"`
-	UUID  string     `json:"uuid,omitempty"`
-	Emoji []db.Emoji `json:"emoji,omitempty"`
+	Title       string         `json:"title,omitempty"`
+	UUID        string         `json:"uuid,omitempty"`
+	Emoji       []db.Emoji     `json:"emoji,omitempty"`
+	Permissions db.Permissions `json:"permissions"`
 }
 
 type bannedList struct {

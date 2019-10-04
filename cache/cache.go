@@ -34,6 +34,7 @@ func New(id string) *Cache {
 			make(map[string]*User),
 			make(chan *jwt.Payload),
 			make(chan *User),
+			make(chan NewRole),
 			make(chan string),
 			make(chan struct{}),
 			db,

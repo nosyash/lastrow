@@ -74,6 +74,8 @@ func (h hub) HandleActions() {
 			go h.updateUserList()
 		case path := <-h.cache.Room.UpdateEmojis:
 			go h.updateEmojis(path)
+		case role := <-h.cache.Users.UpdateRole:
+			go h.updateRole(role)
 		case <-h.cache.Playlist.UpdatePlaylist:
 			go h.updatePlaylist()
 			if h.syncer.isSleep && h.cache.Playlist.Size() > 0 {
@@ -218,13 +220,20 @@ func (h *hub) read(conn *websocket.Conn) {
 		}
 
 		var uuid string
+		var name string
+
 		if req.Payload == nil {
 			uuid = req.UUID
 		} else {
 			uuid = req.Payload.UUID
 		}
 
-		log.Printf("[%s:%s] -> [%s:%s]\n", conn.RemoteAddr().String(), uuid, req.Action, req.Body.Event.Type)
+		u, r := h.cache.Users.GetUserByUUID(uuid)
+		if r {
+			name = u.Name
+		}
+
+		log.Printf("[WS]:    [%s:%s:%s] -> [%s:%s]\n", conn.RemoteAddr().String(), uuid[:16], name, req.Action, req.Body.Event.Type)
 
 		switch req.Action {
 		case userEvent:

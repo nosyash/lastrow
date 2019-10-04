@@ -38,14 +38,14 @@ type Payload struct {
 
 // Role describes information about where user is owner and what is him Permissions
 type Role struct {
-	RoomUUID    string `json:"room_uuid"`
+	UUID        string `json:"room_uuid"`
 	Permissions int
 }
 
 // AuthRoom is a list where user authorized
 type AuthRoom struct {
-	UUID string `json:"uuid"`
-	Hash string `json:"hash"`
+	UUID   string `json:"uuid"`
+	Passwd string `json:"passwd"`
 }
 
 // Required length in bytes of a HMAC-512SHA key
@@ -147,7 +147,7 @@ func calcHash(key string, value string) string {
 // GetLevel return permissions level for a room
 func (p Payload) GetLevel(uuid string) (int, bool) {
 	for _, r := range p.Roles {
-		if r.RoomUUID == uuid {
+		if r.UUID == uuid {
 			return r.Permissions, true
 		}
 	}
@@ -155,17 +155,35 @@ func (p Payload) GetLevel(uuid string) (int, bool) {
 	return 0, false
 }
 
+// SetLevel set up new permissions level for a room
+func (p *Payload) SetLevel(uuid string, level int) {
+	_, r := p.GetLevel(uuid)
+	if !r {
+		p.Roles = append(p.Roles, Role{
+			UUID:        uuid,
+			Permissions: level,
+		})
+
+		return
+	}
+
+	for i, r := range p.Roles {
+		if r.UUID == uuid {
+			p.Roles[i].Permissions = level
+		}
+	}
+}
+
 // CheckAuthStatus check auth status in room
-func (p Payload) CheckAuthStatus(uuid, roomHash string) error {
+func (p Payload) CheckAuthStatus(uuid string, hash []byte) error {
 	for _, r := range p.AuthRooms {
 		if r.UUID == uuid {
-			hash, err := hex.DecodeString(r.Hash)
+			passwd, err := hex.DecodeString(r.Passwd)
 			if err != nil {
 				return errors.New("Couldn't read authorized session for this room")
 			}
 
-			passwd, _ := hex.DecodeString(roomHash)
-			if err := bcrypt.CompareHashAndPassword(passwd, hash); err != nil {
+			if err := bcrypt.CompareHashAndPassword(hash, passwd); err != nil {
 				return errors.New("Password invalid")
 			}
 
@@ -174,4 +192,19 @@ func (p Payload) CheckAuthStatus(uuid, roomHash string) error {
 	}
 
 	return errors.New("You're not logged in this room")
+}
+
+// SetAuthStatus set up new auth session for a room
+func (p *Payload) SetAuthStatus(uuid, hash string) {
+	for i, r := range p.AuthRooms {
+		if r.UUID == uuid {
+			p.AuthRooms[i].Passwd = hash
+			return
+		}
+	}
+
+	p.AuthRooms = append(p.AuthRooms, AuthRoom{
+		UUID:   uuid,
+		Passwd: hash,
+	})
 }

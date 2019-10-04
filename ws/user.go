@@ -2,10 +2,12 @@ package ws
 
 import (
 	"errors"
+	"log"
 	"strings"
 
 	"github.com/gorilla/websocket"
 	"github.com/nosyash/backrow/cache"
+	"github.com/nosyash/backrow/jwt"
 )
 
 // TODO:
@@ -76,6 +78,33 @@ func (h hub) updateUserList() {
 	h.broadcast <- createPacket(userEvent, eTypeUpdUserList, &data{
 		Users: h.cache.Users.GetAllUsers(),
 	})
+}
+
+func (h hub) updateRole(role cache.NewRole) {
+	uuid := h.cache.Users.GetUUIDByID(role.ID)
+	user, result := h.cache.Users.GetUserByUUID(uuid)
+
+	if !result {
+		log.Printf("user.go:updateJWTFor() -> need to update JWT for %s but user was disconnect\n", role.ID[:16])
+		return
+	}
+
+	user.Payload.SetLevel(h.id, role.Level)
+
+	if conn, ok := h.hub[uuid]; ok {
+		token, err := jwt.GenerateNewToken(jwt.Header{
+			Aig: "HS512",
+		}, user.Payload, hmacKey)
+		if err != nil {
+			log.Printf("user.go:updateRole() -> Error while trying to generate new JWT: %v\n", err)
+			sendError(conn, errors.New("Couldn't update your token"))
+			return
+		}
+
+		writeMessage(conn, websocket.TextMessage, createPacket(userEvent, eTypeUpdateJWT, &data{
+			JWT: token,
+		}))
+	}
 }
 
 func (h hub) kickUser(conn *websocket.Conn, p *packet) {

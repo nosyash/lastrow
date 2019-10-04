@@ -49,6 +49,16 @@ func UpdateEmojiList(roomUUID string) {
 	}
 }
 
+// UpdateJWT send new JWT via websocket for user with ID is id
+func UpdateJWT(id, roomUUID string, level int) {
+	if c, ok := storage.cs[roomUUID]; ok {
+		c.Users.UpdateRole <- cache.NewRole{
+			ID:    id,
+			Level: level,
+		}
+	}
+}
+
 // GetUsersCount return users count in room by roomPath
 func GetUsersCount(roomUUID string) int {
 	if c, ok := storage.cs[roomUUID]; ok {

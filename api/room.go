@@ -60,13 +60,6 @@ func (server Server) roomHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.Action != eTypeRoomCreate {
-		if !server.db.RoomIsExists("uuid", req.RoomUUID) {
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
-	}
-
 	switch req.Action {
 	case eTypeRoomCreate:
 		server.createRoom(w, req.Body.Title, req.Body.Path, req.Body.Password, req.Body.Hidden, payload.UUID)
@@ -265,9 +258,7 @@ func (server Server) addEmoji(w http.ResponseWriter, name, uuid, iType string, i
 		return
 	}
 
-	if storage.Size() > 0 {
-		storage.UpdateEmojiList(room.Path)
-	}
+	go storage.UpdateEmojiList(room.Path)
 }
 
 func (server Server) delEmoji(w http.ResponseWriter, name, uuid string, room *db.Room) {
@@ -313,9 +304,8 @@ func (server Server) delEmoji(w http.ResponseWriter, name, uuid string, room *db
 		})
 		return
 	}
-	if storage.Size() > 0 {
-		storage.UpdateEmojiList(room.Path)
-	}
+
+	go storage.UpdateEmojiList(room.Path)
 }
 
 func (server Server) changeEmojiName(w http.ResponseWriter, name, newName, uuid string, room *db.Room) {
@@ -375,9 +365,7 @@ func (server Server) changeEmojiName(w http.ResponseWriter, name, newName, uuid 
 		return
 	}
 
-	if storage.Size() > 0 {
-		storage.UpdateEmojiList(room.Path)
-	}
+	go storage.UpdateEmojiList(room.Path)
 }
 
 func (server Server) addRole(w http.ResponseWriter, userLevel int, id, roomUUID string, level int, room *db.Room) {
@@ -418,6 +406,8 @@ func (server Server) addRole(w http.ResponseWriter, userLevel int, id, roomUUID 
 				})
 				return
 			}
+
+			go storage.UpdateJWT(id, roomUUID, level)
 			return
 		}
 	}
@@ -434,11 +424,17 @@ func (server Server) addRole(w http.ResponseWriter, userLevel int, id, roomUUID 
 		})
 		return
 	}
+
+	go storage.UpdateJWT(id, roomUUID, level)
 }
 
 func (server Server) authInRoom(w http.ResponseWriter, path, passwd string, payload *jwt.Payload) {
 	room, err := server.db.GetRoom("path", path)
 	if err != nil {
+		if err == mgo.ErrNotFound {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 		log.Printf("server.go->authInRoom(): %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -457,30 +453,41 @@ func (server Server) authInRoom(w http.ResponseWriter, path, passwd string, payl
 		return
 	}
 
-	if payload != nil {
-		payload.AuthRooms = append(payload.AuthRooms, jwt.AuthRoom{
-			UUID: room.UUID,
-			Hash: hex.EncodeToString([]byte(passwd)),
-		})
-
-		token, err := jwt.GenerateNewToken(jwt.Header{
-			Aig: "HS512",
-		}, payload, server.hmacKey)
-		if err != nil {
-			log.Printf("server.go->authInRoom(): %v", err)
-			sendJSON(w, http.StatusInternalServerError, message{
-				Error: "Error while trying to update your JWT",
-			})
-			return
+	// This is guest
+	if payload == nil {
+		rv := roomView{
+			Title: room.Title,
+			UUID:  room.UUID,
+			Emoji: room.Emoji,
 		}
 
-		http.SetCookie(w, &http.Cookie{
-			Name:    "jwt",
-			Value:   token,
-			Path:    "/",
-			Expires: time.Unix(0, payload.Exp),
-		})
+		r, _ := json.Marshal(&rv)
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(r)
+
+		return
 	}
+
+	payload.SetAuthStatus(room.UUID, hex.EncodeToString([]byte(passwd)))
+
+	token, err := jwt.GenerateNewToken(jwt.Header{
+		Aig: "HS512",
+	}, payload, server.hmacKey)
+	if err != nil {
+		log.Printf("server.go->authInRoom(): %v", err)
+		sendJSON(w, http.StatusInternalServerError, message{
+			Error: "Error while trying to update your JWT",
+		})
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:    "jwt",
+		Value:   token,
+		Path:    "/",
+		Expires: time.Unix(0, payload.Exp),
+	})
 
 	rv := roomView{
 		Title: room.Title,
@@ -532,7 +539,8 @@ func (server Server) getRoom(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		err = payload.CheckAuthStatus(room.UUID, room.Password)
+		hash, _ := hex.DecodeString(room.Password)
+		err = payload.CheckAuthStatus(room.UUID, hash)
 		if err != nil {
 			sendJSON(w, http.StatusBadRequest, message{
 				Error: err.Error(),
@@ -542,9 +550,10 @@ func (server Server) getRoom(w http.ResponseWriter, req *http.Request) {
 	}
 
 	rv := roomView{
-		Title: room.Title,
-		UUID:  room.UUID,
-		Emoji: room.Emoji,
+		Title:       room.Title,
+		UUID:        room.UUID,
+		Emoji:       room.Emoji,
+		Permissions: room.Permissions,
 	}
 
 	r, _ := json.Marshal(&rv)
@@ -649,48 +658,51 @@ func (server Server) bannedList(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusBadRequest)
 }
 
-func (server Server) permissionsList(w http.ResponseWriter, r *http.Request) {
-	var path string
-	var ok bool
+// func (server Server) permissionsList(w http.ResponseWriter, r *http.Request) {
+// 	var path string
+// 	var ok bool
 
-	if path, ok = mux.Vars(r)["roomPath"]; !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+// 	if path, ok = mux.Vars(r)["roomPath"]; !ok {
+// 		w.WriteHeader(http.StatusBadRequest)
+// 		return
+// 	}
 
-	payload, err := server.extractPayload(w, r)
-	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
+// 	payload, err := server.extractPayload(w, r)
+// 	if err != nil {
+// 		w.WriteHeader(http.StatusNotFound)
+// 		return
+// 	}
 
-	room, err := server.db.GetRoom("path", path)
-	if err != nil {
-		if err == mgo.ErrNotFound {
-			w.WriteHeader(http.StatusNotFound)
-		} else {
-			log.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
-		}
-		return
-	}
+// 	room, err := server.db.GetRoom("path", path)
+// 	if err != nil {
+// 		if err == mgo.ErrNotFound {
+// 			w.WriteHeader(http.StatusNotFound)
+// 		} else {
+// 			log.Println(err)
+// 			w.WriteHeader(http.StatusInternalServerError)
+// 		}
+// 		return
+// 	}
 
-	level, result := payload.GetLevel(room.UUID)
-	if !result {
-		sendJSON(w, http.StatusBadRequest, errNotHavePermission.Error())
-		return
-	}
+// 	// FIXME:
+// 	// Here, probably we don't need to check permissions
 
-	result, err = server.db.CheckUserRole(payload.UUID, room.UUID, level)
-	if !result || err != nil {
-		sendJSON(w, http.StatusBadRequest, errNotHavePermission.Error())
-		return
-	}
+// 	level, result := payload.GetLevel(room.UUID)
+// 	if !result {
+// 		sendJSON(w, http.StatusBadRequest, errNotHavePermission.Error())
+// 		return
+// 	}
 
-	if level >= jModeratorLevel {
-		sendJSON(w, http.StatusOK, room.Permissions)
-		return
-	}
+// 	result, err = server.db.CheckUserRole(payload.UUID, room.UUID, level)
+// 	if !result || err != nil {
+// 		sendJSON(w, http.StatusBadRequest, errNotHavePermission.Error())
+// 		return
+// 	}
 
-	w.WriteHeader(http.StatusBadRequest)
-}
+// 	if level >= jModeratorLevel {
+// 		sendJSON(w, http.StatusOK, room.Permissions)
+// 		return
+// 	}
+
+// 	w.WriteHeader(http.StatusBadRequest)
+// }

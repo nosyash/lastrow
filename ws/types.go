@@ -93,6 +93,7 @@ type data struct {
 	ID            string        `json:"__id,omitempty"`
 	UUID          string        `json:"uuid,omitempty"`
 	IP            string        `json:"ip,omitempty"`
+	JWT           string        `json:"jwt,omitempty"`
 	BanType       string        `json:"ban_type,omitempty"`
 	Users         []*cache.User `json:"users,omitempty"`
 	Ticker        *elapsedTime  `json:"ticker,omitempty"`
@@ -152,6 +153,7 @@ const (
 	eTypeMove   = "move"
 
 	eTypeUpdUserList = "update_users"
+	eTypeUpdateJWT   = "update_jwt"
 	eTypePlaylistUpd = "update_playlist"
 	eTypeEmojiUpdate = "emoji_update"
 

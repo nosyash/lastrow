@@ -20,6 +20,7 @@ type Users struct {
 	users       map[string]*User
 	AddUser     chan *jwt.Payload
 	AddGuest    chan *User
+	UpdateRole  chan NewRole
 	DelUser     chan string
 	UpdateUsers chan struct{}
 	db          *db.Database
@@ -57,6 +58,11 @@ type Message struct {
 	Image   string
 	ID      string
 	Guest   bool
+}
+
+type NewRole struct {
+	ID    string
+	Level int
 }
 
 // User is single user instance
