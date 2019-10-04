@@ -30,6 +30,14 @@ func readPacket(conn *websocket.Conn) (*packet, error) {
 	return request, err
 }
 
+func (p packet) getUserUUID() string {
+	if p.Payload == nil {
+		return p.Payload.UUID
+	}
+
+	return p.UUID
+}
+
 func sendError(conn *websocket.Conn, msg error) error {
 	return writeMessage(conn, websocket.TextMessage, createPacket(errorEvent, errorEvent, &data{
 		Error: msg.Error(),

@@ -10,6 +10,8 @@ import (
 	"github.com/nosyash/backrow/jwt"
 )
 
+const maxMessageSize = 400
+
 // TODO:
 // Move eTypeMsg to chat.go
 
@@ -29,16 +31,11 @@ func (h hub) handleUserEvent(p *packet, conn *websocket.Conn) {
 }
 
 func (h hub) handleMessage(p *packet) {
-	if len(p.Body.Event.Data.Message) == 0 {
+	uuid := p.getUserUUID()
+
+	if len(p.Body.Event.Data.Message) == 0 || len(p.Body.Event.Data.Message) > maxMessageSize {
+		log.Printf("Wrong message length was received: %d from %s", len(p.Body.Event.Data.Message), uuid[:16])
 		return
-	}
-
-	var uuid string
-
-	if p.Payload == nil {
-		uuid = p.UUID
-	} else {
-		uuid = p.Payload.UUID
 	}
 
 	if !h.cache.Room.CheckPermissions(eTypeMsg, h.id, p.Payload) {
