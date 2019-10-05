@@ -99,14 +99,6 @@ func (db Database) GetEmojiCount(uuid string) (int, error) {
 	return len(room.Emoji), nil
 }
 
-// GetUserRoles return rooms list user roles in rooms
-func (db Database) GetUserRoles(uuid string) ([]Room, error) {
-	var rooms []Room
-
-	err := db.rc.Find(bson.M{"roles": bson.M{"$elemMatch": bson.M{"uuid": uuid}}}).All(&rooms)
-	return rooms, err
-}
-
 // UpdateRoomValue update specified key in a room
 func (db Database) UpdateRoomValue(uuid, key string, value interface{}) error {
 	return db.rc.Update(bson.M{"uuid": uuid}, bson.M{"$set": bson.M{key: value}})
@@ -134,22 +126,6 @@ func (db Database) GetAllRoles(uuid string) ([]Role, error) {
 	}
 
 	return room.Roles, nil
-}
-
-// CheckUserRole check user level role and return result
-func (db Database) CheckUserRole(userUUID, roomUUID string, level int) (bool, error) {
-	roles, err := db.GetAllRoles(roomUUID)
-	if err != nil {
-		return false, err
-	}
-
-	for _, r := range roles {
-		if r.UUID == userUUID && level == r.Permissions {
-			return true, nil
-		}
-	}
-
-	return false, nil
 }
 
 // BanUser add a user to ban list

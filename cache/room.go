@@ -11,7 +11,7 @@ const maxMessageStorageSize = 25
 
 func (m *Messages) addMessage(msg Message) {
 	if len(m.list) >= maxMessageStorageSize {
-		m.list = m.list[:len(m.list)-1]
+		m.list = m.list[1:len(m.list)]
 	}
 
 	m.list = append(m.list, msg)

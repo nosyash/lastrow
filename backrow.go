@@ -32,6 +32,7 @@ func main() {
 		os.Exit(-1)
 	}
 
+	// Since we use DB_ENDPOINT is some packages
 	os.Setenv("DB_ENDPOINT", dbAddr)
 
 	if os.Getenv("YT_API_KEY") == "" {

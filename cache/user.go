@@ -64,9 +64,7 @@ func (u *Users) UpdateUser(uuid string) {
 		log.Printf("u.db.GetUserByUUID(): %v", err)
 	}
 
-	user, ok := u.GetUserByUUID(uuid)
-
-	if ok {
+	if user, ok := u.GetUserByUUID(uuid); ok {
 		user.Name = userProfile.Name
 		user.Color = userProfile.Color
 		user.Image = userProfile.Image

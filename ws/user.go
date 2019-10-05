@@ -48,9 +48,7 @@ func (h hub) handleMessage(p *packet) {
 		return
 	}
 
-	user, ok := h.cache.Users.GetUserByUUID(uuid)
-	if ok {
-
+	if user, ok := h.cache.Users.GetUserByUUID(uuid); ok {
 		h.cache.Messages.AddMessage <- cache.Message{
 			Message: p.Body.Event.Data.Message,
 			Name:    user.Name,
@@ -127,7 +125,7 @@ func (h hub) kickUser(conn *websocket.Conn, p *packet) {
 			userConn.Close()
 		} else {
 			sendFeedBack(conn, &feedback{
-				Error: fmt.Sprintf("Couldn't kick %s. User disconnected", uuid),
+				Error: fmt.Sprintf("Couldn't kick %s. User disconnected", p.Body.Event.Data.ID),
 			})
 			return
 		}
@@ -163,7 +161,7 @@ func (h hub) banUser(conn *websocket.Conn, p *packet) {
 				userConn.Close()
 			} else {
 				sendFeedBack(conn, &feedback{
-					Error: fmt.Sprintf("Couldn't ban %s. User disconnected", uuid),
+					Error: fmt.Sprintf("Couldn't ban %s. User disconnected", p.Body.Event.Data.ID),
 				})
 				return
 			}
@@ -183,7 +181,7 @@ func (h hub) banUser(conn *websocket.Conn, p *packet) {
 				userConn.Close()
 			} else {
 				sendFeedBack(conn, &feedback{
-					Error: fmt.Sprintf("Couldn't ban %s. User disconnected", uuid),
+					Error: fmt.Sprintf("Couldn't ban %s. User disconnected", p.Body.Event.Data.ID),
 				})
 				return
 			}
@@ -216,6 +214,10 @@ func (h hub) unbanUser(conn *websocket.Conn, p *packet) {
 			sendError(conn, errors.New("UUID is empty"))
 			return
 		}
+
+		sendFeedBack(conn, &feedback{
+			Message: fmt.Sprintf("%s was successful unbanned", p.Body.Event.Data.UUID),
+		})
 	case "ip":
 		if p.Body.Event.Data.IP != "" {
 			if err := h.db.UnbanAddress(h.id, p.Body.Event.Data.IP); err != nil {
@@ -226,12 +228,12 @@ func (h hub) unbanUser(conn *websocket.Conn, p *packet) {
 			sendError(conn, errors.New("IP is empty"))
 			return
 		}
+
+		sendFeedBack(conn, &feedback{
+			Message: fmt.Sprintf("%s was successful unbanned", p.Body.Event.Data.IP),
+		})
 	default:
 		sendError(conn, errors.New("Unknow unban type"))
 		return
 	}
-
-	sendFeedBack(conn, &feedback{
-		Message: fmt.Sprintf("%s was successful unbanned", p.Body.Event.Data.UUID),
-	})
 }

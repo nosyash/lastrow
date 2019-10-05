@@ -15,10 +15,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-const (
-	// Timeout in seconds, when cache for this room will be closed
-	closeDeadlineTimeout = 120
-)
+// Timeout in seconds, when cache for this room will be closed
+const closeDeadlineTimeout = 120
 
 func NewRoomHub(id string, db *db.Database) *hub {
 	return &hub{
