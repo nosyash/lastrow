@@ -160,7 +160,7 @@ func (h *hub) remove(conn *websocket.Conn) {
 	}
 
 	if uuid != "" {
-		delete(h.hub, uuid)
+		_, _ = h.deleteAndClose(uuid)
 		h.cache.Users.DelUser <- uuid
 
 		if len(h.hub) == 0 {
@@ -220,10 +220,6 @@ func (h *hub) read(conn *websocket.Conn) {
 	for {
 		req, err := readPacket(conn)
 		if err != nil {
-			if websocket.IsCloseError(err) || websocket.IsUnexpectedCloseError(err) {
-				break
-			}
-			conn.Close()
 			break
 		}
 

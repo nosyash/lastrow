@@ -120,10 +120,7 @@ func (h hub) kickUser(conn *websocket.Conn, p *packet) {
 	}
 
 	if p.Body.Event.Data.ID != "" {
-		userConn, ok := h.hub[uuid]
-		if ok {
-			userConn.Close()
-		} else {
+		if _, r := h.deleteAndClose(uuid); !r {
 			sendFeedBack(conn, &feedback{
 				Error: fmt.Sprintf("Couldn't kick %s. User disconnected", p.Body.Event.Data.ID),
 			})
@@ -155,11 +152,7 @@ func (h hub) banUser(conn *websocket.Conn, p *packet) {
 				sendError(conn, err)
 				return
 			}
-
-			userConn, ok := h.hub[uuid]
-			if ok {
-				userConn.Close()
-			} else {
+			if _, r := h.deleteAndClose(uuid); !r {
 				sendFeedBack(conn, &feedback{
 					Error: fmt.Sprintf("Couldn't ban %s. User disconnected", p.Body.Event.Data.ID),
 				})
@@ -171,14 +164,12 @@ func (h hub) banUser(conn *websocket.Conn, p *packet) {
 		}
 	case "ip":
 		if p.Body.Event.Data.BanType == "ip" {
-			userConn, ok := h.hub[uuid]
+			addr, ok := h.deleteAndClose(uuid)
 			if ok {
-				if err := h.db.BanAddress(h.id, strings.Split(userConn.RemoteAddr().String(), ":")[0]); err != nil {
+				if err := h.db.BanAddress(h.id, strings.Split(addr, ":")[0]); err != nil {
 					sendError(conn, err)
 					return
 				}
-
-				userConn.Close()
 			} else {
 				sendFeedBack(conn, &feedback{
 					Error: fmt.Sprintf("Couldn't ban %s. User disconnected", p.Body.Event.Data.ID),

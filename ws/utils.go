@@ -12,6 +12,7 @@ import (
 )
 
 var sendLocker sync.Mutex
+var delUserLocker sync.Mutex
 var hmacKey string
 
 func readPacket(conn *websocket.Conn) (*packet, error) {
@@ -87,4 +88,21 @@ func extractPayload(token string) (*jwt.Payload, error) {
 	}
 
 	return jwt.UnmarshalPayload(token)
+}
+
+func (h hub) deleteAndClose(uuid string) (string, bool) {
+	delUserLocker.Lock()
+	defer delUserLocker.Unlock()
+
+	var addr string
+	conn, ok := h.hub[uuid]
+	if ok {
+		addr = conn.RemoteAddr().String()
+		conn.Close()
+	} else {
+		return addr, false
+	}
+
+	delete(h.hub, uuid)
+	return addr, true
 }
