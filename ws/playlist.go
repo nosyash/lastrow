@@ -228,7 +228,7 @@ func (h *hub) elapsedTicker(video *cache.Video) int {
 			}
 			ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration-elapsed+sleepBeforeStart)*time.Second))
 		case e := <-h.syncer.rewind:
-			if e > 0 && e < video.Duration {
+			if e >= 0 && e < video.Duration {
 				elapsed = e
 				ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration-elapsed+sleepBeforeStart)*time.Second))
 			}
