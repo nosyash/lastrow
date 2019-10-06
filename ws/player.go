@@ -26,10 +26,11 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 			h.syncer.pause <- struct{}{}
 
 			h.broadcast <- createPacket(playerEvent, eTypePause, nil)
-			sendFeedBack(conn, &feedback{
-				Message: "Success",
-			})
 			h.syncer.isPause = true
+
+			sendFeedBack(conn, &feedback{
+				Message: "success",
+			})
 		}
 
 		pauseLock.Unlock()
@@ -47,10 +48,11 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 			h.syncer.resume <- struct{}{}
 
 			h.broadcast <- createPacket(playerEvent, eTypeResume, nil)
-			sendFeedBack(conn, &feedback{
-				Message: "Success",
-			})
 			h.syncer.isPause = false
+
+			sendFeedBack(conn, &feedback{
+				Message: "success",
+			})
 		}
 
 		resumeLock.Unlock()
@@ -72,8 +74,9 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 				break
 			}
 			h.syncer.rewind <- req.Body.Event.Data.RewindTime
+
 			sendFeedBack(conn, &feedback{
-				Message: "Success",
+				Message: "success",
 			})
 		}
 	}
