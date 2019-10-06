@@ -22,7 +22,7 @@ showdown.extension('bold', () => [{ type: 'lang', regex: /\*\*(.+)\*\*/gs, repla
 showdown.extension('italic', () => [{ type: 'lang', regex: /\*(.+)\*/gs, replace: `<em class="markup--italic">$1</em>` }]);
 showdown.extension('link', () => [{
     type: 'lang', regex: /(http(s)?:\/\/([^\s:])+[^.;\s:,])/gi,
-    replace: `<a href="$1" "class="markup--link" target="_blank"">$1</a>`
+    replace: `<a href="$1" "class="markup--link" target="_blank">$1</a>`
 }]);
 
 showdown.extension('me', () => [{ type: 'lang', regex: /^\/me (.+)/s, replace: meReplace }]);
@@ -70,7 +70,7 @@ function parseBody(string: string, params = {} as { postAuthorName: string }): s
     postAuthorName = params.postAuthorName;
     const parsed = converter.makeHtml(string)
     const parsedWithReplies = getReplies(parsed)
-    return dompurify.sanitize(parsedWithReplies, { ALLOWED_TAGS: ['a', 'em', 'strong', 'del', 'br', 'img'] });
+    return dompurify.sanitize(parsedWithReplies, { ADD_ATTR: ['target'], ALLOWED_TAGS: ['a', 'em', 'strong', 'del', 'br', 'img'] });
 }
 
 function getReplies(string: string) {
