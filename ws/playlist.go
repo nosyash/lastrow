@@ -154,6 +154,7 @@ func (h *hub) syncElapsedTime() {
 		case exitClosed:
 			return
 		case exitNormal:
+			h.syncer.isPause = false
 			h.syncer.currentVideoID = ""
 			h.cache.Playlist.DelVideo <- video.ID
 			<-h.cache.Playlist.DelFeedBack

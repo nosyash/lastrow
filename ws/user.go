@@ -74,7 +74,6 @@ func (h hub) updateUserList() {
 	h.broadcast <- createPacket(userEvent, eTypeUpdUserList, &data{
 		Users: h.cache.Users.GetAllUsers(),
 	})
-
 }
 
 func (h hub) updatesTo(conn *websocket.Conn) {
