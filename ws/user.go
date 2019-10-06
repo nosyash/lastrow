@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -73,6 +74,43 @@ func (h hub) updateUserList() {
 	h.broadcast <- createPacket(userEvent, eTypeUpdUserList, &data{
 		Users: h.cache.Users.GetAllUsers(),
 	})
+
+}
+
+func (h hub) updatesTo(conn *websocket.Conn) {
+	if !h.syncer.isSleep && h.syncer.isPause {
+		writeMessage(conn, websocket.TextMessage, createPacket(playerEvent, eTypePause, nil))
+	}
+
+	// And messages cache
+	for _, m := range h.cache.Messages.GetAllMessages() {
+		writeMessage(conn, websocket.TextMessage, createPacket(chatEvent, eTypeMsg, &data{
+			Message: m.Message,
+			Name:    m.Name,
+			Color:   m.Color,
+			Image:   m.Image,
+			ID:      m.ID,
+			Guest:   m.Guest,
+		}))
+	}
+
+	// Send playlist to user.Conn
+	if pl := h.cache.Playlist.GetAllPlaylist(); pl != nil {
+		packet := playlist{
+			Action: playlistEvent,
+			Body: plBody{
+				Event: plEvent{
+					Type: eTypePlaylistUpd,
+					Data: plData{
+						Playlist: pl,
+					},
+				},
+			},
+		}
+
+		data, _ := json.Marshal(&packet)
+		writeMessage(conn, websocket.TextMessage, data)
+	}
 }
 
 func (h hub) updateRole(role cache.NewRole) {

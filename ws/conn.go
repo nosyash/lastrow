@@ -2,10 +2,10 @@ package ws
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"log"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/nosyash/backrow/cache"
@@ -48,6 +48,7 @@ func NewRoomHub(id string, db *db.Database) *hub {
 		log.New(os.Stdout, "[WS]:   ", log.Llongfile),
 		log.New(os.Stdout, "[WS]:   ", log.LstdFlags),
 		make(chan struct{}),
+		&sync.WaitGroup{},
 	}
 }
 
@@ -117,36 +118,10 @@ func (h hub) add(user *user) {
 		h.cache.Users.AddUser <- user.Payload
 		h.hub[user.Payload.UUID] = user.Conn
 	}
-
-	// Send playlist to user.Conn
-	if pl := h.cache.Playlist.GetAllPlaylist(); pl != nil {
-		packet := playlist{
-			Action: playlistEvent,
-			Body: plBody{
-				Event: plEvent{
-					Type: eTypePlaylistUpd,
-					Data: plData{
-						Playlist: pl,
-					},
-				},
-			},
-		}
-
-		data, _ := json.Marshal(&packet)
-		writeMessage(user.Conn, websocket.TextMessage, data)
-	}
-
-	// And messages cache
-	for _, m := range h.cache.Messages.GetAllMessages() {
-		writeMessage(user.Conn, websocket.TextMessage, createPacket(chatEvent, eTypeMsg, &data{
-			Message: m.Message,
-			Name:    m.Name,
-			Color:   m.Color,
-			Image:   m.Image,
-			ID:      m.ID,
-			Guest:   m.Guest,
-		}))
-	}
+	go func() {
+		// h.wg.Add(1)
+		h.updatesTo(user.Conn)
+	}()
 }
 
 func (h *hub) remove(conn *websocket.Conn) {

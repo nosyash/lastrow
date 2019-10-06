@@ -2,6 +2,7 @@ package ws
 
 import (
 	"log"
+	"sync"
 
 	"github.com/nosyash/backrow/cache"
 	"github.com/nosyash/backrow/db"
@@ -34,6 +35,7 @@ type hub struct {
 	errLogger     *log.Logger
 	reqLogger     *log.Logger
 	cancelChan    chan struct{}
+	wg            *sync.WaitGroup
 }
 
 type user struct {
