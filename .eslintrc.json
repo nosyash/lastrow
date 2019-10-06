@@ -40,7 +40,7 @@
         "when": "multiline"
       }
     ],
-    "react/jsx-closing-bracket-location": [1, "tag-aligned"],
+    "react/jsx-closing-bracket-location": [1, "line-aligned"],
     "react/self-closing-comp": "warn",
     "indent": ["warn", 4, { "SwitchCase" : 1}],
     "@typescript-eslint/no-explicit-any": 0,
