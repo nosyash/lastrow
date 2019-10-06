@@ -16,7 +16,11 @@ function ListMessages(props) {
         event = () => handleManualScroll();
         messagesEl.current.addEventListener('wheel', event);
         handleAutoScroll();
-    }, [props.roomsMessages]);
+
+        return () => {
+            messagesEl.current.removeEventListener('wheel', event);
+        }
+    }, [props.roomsMessages, props.users]);
 
     function handleManualScroll() {
         const scrolledUp = currentScroll() < amountOfPixelsToBeAtBottom();

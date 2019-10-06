@@ -62,6 +62,7 @@ function Player(props: PlayerProps) {
 
         return () => {
             clearInterval(prefetchWatcher);
+            clearTimeout(minimizeTimer)
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mediaafterchange', watchPlaylist);
         }
@@ -384,6 +385,10 @@ class CustomProgressBar extends Component<CustomProgressBarProps, CustomProgress
 
     componentDidMount() {
         this.watchTime();
+    }
+
+    componentWillUnmount() {
+        clearTimeout(this.timer)
     }
 
     shouldComponentUpdate(nextProps: CustomProgressBarProps, nextState: CustomProgressBarState) {

@@ -8,12 +8,13 @@ import showdown from 'showdown';
 showdown.setOption('literalMidWordUnderscores', true)
 showdown.setOption('encodeEmails', false)
 showdown.setOption('omitExtraWLInCodeBlocks', true)
+showdown.setOption('simpleLineBreaks', false)
 
 let postAuthorName = '';
-let userList = [{ name: 'kekw' }];
 
-const escapeMap = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;", "#": "\\#" };
-const urlEscapeMap = { "%": '%25', ":": '%3A' }
+const escapeMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;', '#': '\\#' };
+const unescapeMap = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&apos;': "'", };
+
 showdown.extension('escapeMap', () => [{ type: 'lang', regex: /([&<>"'#])/g, replace: (s, match) => escapeMap[match] }]);
 
 showdown.extension('spoiler', () => [{ type: 'lang', regex: /%%(.+?)%%/gs, replace: `<del class="markup--spoiler">$1</del>` }]);
@@ -22,12 +23,7 @@ showdown.extension('italic', () => [{ type: 'lang', regex: /\*(.+)\*/gs, replace
 showdown.extension('link', () => [{
     type: 'lang', regex: /(http(s)?:\/\/([^\s:])+[^.;\s:,])/gi,
     replace: `<a href="$1" "class="markup--link" target="_blank"">$1</a>`
-    // replace(string: string, match: string) {
-    //     const escape = match.replace(/[:%]/g, (string) => urlEscapeMap[string])
-    //     return `<a href="${escape}" target="_blank"">${escape}</a>`
-    // }
 }]);
-showdown.extension('reply', () => [{ type: 'lang', regex: /(@[^@]+[^@ ])/g, replace: replyReplace }]);
 
 showdown.extension('me', () => [{ type: 'lang', regex: /^\/me (.+)/s, replace: meReplace }]);
 showdown.extension('do', () => [{ type: 'lang', regex: /^\/do (.+)/s, replace: doReplace }]);
@@ -49,26 +45,16 @@ function meReplace(_: string, match: string) {
     return `<em class="markup--me">${postAuthorName} ${match}</em>`
 }
 function doReplace(_: string, match: string) {
-    return `<em class="markup--do">${match}</em>`
-}
-function replyReplace(string: string, match: string) {
-    const userList = store.getState().chat.users;
-    const user = userList.find(({ name }) => match.replace(/&lt/g, '<').substr(1).includes(name))
-    if (!user) return match;
-    const nameLength = user.name.length + 1;
-    const matchWithoutName = match.substr(nameLength);
-    return `<em class="markup--reply">@${user.name}</em>${matchWithoutName}`;
+    const output = match.replace(/\n/g, ' ')
+    return `<em class="markup--do">${output}</em>`
 }
 
-// @kekw long text
-// @kekw
 
 const converter = new showdown.Converter({
     extensions: [
         'trailingLineBreak',
         'multiLineBreak',
         'escapeMap',
-        'reply',
         'spoiler',
         'me',
         'do',
@@ -82,9 +68,23 @@ const converter = new showdown.Converter({
 
 function parseBody(string: string, params = {} as { postAuthorName: string }): string {
     postAuthorName = params.postAuthorName;
-
     const parsed = converter.makeHtml(string)
-    return dompurify.sanitize(parsed, { ALLOWED_TAGS: ['a', 'em', 'strong', 'del', 'br', 'img'] });
+    const parsedWithReplies = getReplies(parsed)
+    return dompurify.sanitize(parsedWithReplies, { ALLOWED_TAGS: ['a', 'em', 'strong', 'del', 'br', 'img'] });
+}
+
+function getReplies(string: string) {
+    const userList = store.getState().chat.users;
+    if (!userList.length) return string;
+    const userListToName =
+        userList.map(user => escapeRegExp(user.name)
+            .replace(/([&<>"'#])/g, (match) =>escapeMap[match] ))
+    const reg = new RegExp(`(@${userListToName.join('|@')})`, 'g')
+    return string.replace(reg, '<em class="markup--reply">$1</em>')
+}
+
+function escapeRegExp(string: string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 export default parseBody;

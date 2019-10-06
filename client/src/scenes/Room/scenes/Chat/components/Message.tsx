@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import safelySetInnerHTML from '../../../../../utils/safelySetInnerHTML ';
 import parseBody from '../../../../../utils/markup';
@@ -18,7 +18,7 @@ interface MessageProps {
     emojiList: Emoji[]
 }
 
-class Message extends PureComponent<MessageProps, any> {
+class Message extends Component<MessageProps, any> {
     shown = false;
     bodyMarked = '';
 
@@ -32,7 +32,7 @@ class Message extends PureComponent<MessageProps, any> {
         return { className: `chat-message ${onlineClass} ${highlight}` };
     };
 
-    getStyles = (image, color) => {
+    getStyles = (image: string, color: string) => {
         const backgroundImage = image ? `url(${image})` : '';
         const backgroundColor = color;
 
