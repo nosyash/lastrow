@@ -1188,7 +1188,7 @@ body {
     max-width: 800px;
     margin: auto;
     background-color: rgba(37, 39, 40, 0.85);
-    backdrop-filter: saturate(500%) blur(18px);
+    backdrop-filter: saturate(200%) blur(18px);
     border-radius: 4px;
     user-select: none;
     display: flex;
@@ -1222,18 +1222,29 @@ body {
     cursor: pointer;
     text-align: center;
     vertical-align: middle;
-    font-weight: 900;
+    // font-weight: 900;
     font-size: 1em;
     color: @link;
     display: flex;
     flex-direction: column;
     &__item {
+        .player-minimized & {
+            display: none;
+        }
         background-color: rgba(37, 39, 40, 0.9);
         backdrop-filter: saturate(500%) blur(18px);
         padding: 5px 30px 3px;
         margin: 2px auto;
         border-radius: 4px;
         .hover();
+        .fa {
+            font-size: 0.7em;
+            vertical-align: 2px;
+        }
+        .fa-pause {
+            font-size: 0.7em;
+            vertical-align: 1px;
+        }
     }
 }
 
@@ -1255,9 +1266,22 @@ body {
         margin: 2px 0;
         border-radius: 4px;
         &.is-clickable {
+            // font-weight: 700;
             color: @link;
             .hover();
             cursor: pointer;
+        }
+        .fa {
+            font-size: 0.7em;
+            vertical-align: 1px;
+        }
+        .fa-pause {
+            font-size: 0.7em;
+            vertical-align: 1px;
+        }
+        .fa-play {
+            font-size: 0.6em;
+            vertical-align: 1px;
         }
     }
 }
@@ -1327,7 +1351,7 @@ body {
 
 .progress-bar_sub-progress {
     left: 2px;
-    background: #ccc;
+    background: #9fa2a5;
 }
 
 .scrubber_container {
@@ -1642,7 +1666,7 @@ body {
 .popup {
     overflow: hidden;
     border-radius: 4px;
-    backdrop-filter: blur(18px);
+    backdrop-filter: saturate(500%) blur(18px);
     box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
     position: fixed;
     left: 0;
