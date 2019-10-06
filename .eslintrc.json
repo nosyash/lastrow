@@ -7,12 +7,14 @@
   "extends": [
     "eslint:recommended",
     "plugin:react/recommended",
+    "plugin:@typescript-eslint/recommended"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
+    "sourceType": "module",
     "jsx": true,
     "useJSXTextNode": true,
-    "ecmaVersion": 8,
+    "ecmaVersion": 2019,
     "ecmaFeatures": {
       "experimentalObjectRestSpread": true,
       "impliedStrict": true,
@@ -38,9 +40,9 @@
         "when": "multiline"
       }
     ],
-    "react/jsx-closing-bracket-location": [1, "tag-aligned"],
+    "react/jsx-closing-bracket-location": [1, "line-aligned"],
     "react/self-closing-comp": "warn",
-    "indent": ["warn", 4, { "SwitchCase" : 0}],
+    "indent": ["warn", 4, { "SwitchCase" : 1}],
     "@typescript-eslint/no-explicit-any": 0,
     "@typescript-eslint/explicit-function-return-type": 0,
     "@typescript-eslint/no-use-before-define": ["warn", { "functions": false, "classes": false }],
@@ -121,7 +123,7 @@
       }
     ],
     "quotes": [
-      2,
+      1,
       "single",
       {
         "avoidEscape": true,

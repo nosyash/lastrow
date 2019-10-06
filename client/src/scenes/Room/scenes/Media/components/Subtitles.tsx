@@ -1,11 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import * as types from '../../../../../constants/actionTypes';
-import { Subtitles, Media, SubtitlesItem } from '../../../../../reducers/media';
+import { Subtitles, SubtitlesItem } from '../../../../../reducers/media';
 import { workerRequest } from '../../../../../worker/index';
 
 interface SubtitlesProps {
-    media: Media;
     subs: Subtitles;
     showSubs: boolean;
     videoEl: HTMLVideoElement;
@@ -99,7 +98,6 @@ const RenderSub = ({ currentSubtitles }: { currentSubtitles: SubtitlesItem[] }) 
 };
 
 const mapStateToProps = state => ({
-    media: state.media,
     showSubs: state.media.showSubs,
     subs: state.media.subs,
 });

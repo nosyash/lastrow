@@ -56,6 +56,7 @@ class Socket implements SocketInterface {
     }
 
     public initWebSocket = () => {
+        dispatch({ type: types.CLEAR_MESSAGE_LIST })
         this.resetStates();
         this.instance = new WebSocket(this.url);
         this.listen();

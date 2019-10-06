@@ -2,20 +2,21 @@ import React, { useState, useRef, useEffect, Dispatch, Component } from 'react';
 import ReactRedux, { connect, MapStateToProps } from 'react-redux';
 import ReactPlayer from 'react-player';
 import cn from 'classnames';
-import Redux from 'redux';
 import { get } from 'lodash';
 import * as types from '../../../../constants/actionTypes';
 import { formatTime, requestFullscreen } from '../../../../utils';
 import { PLAYER_MINIMIZE_TIMEOUT, MAX_VIDEO_SYNC_OFFSET } from '../../../../constants';
+import * as api from '../../../../constants/apiActions'
 
 import ProgressBar from './components/ProgressBar';
 import Subtitles from './components/Subtitles';
 import { playerConf } from '../../../../conf';
 import { Video } from '../../../../utils/types';
 import { Media } from '../../../../reducers/media';
+import { webSocketSend } from '../../../../actions';
 
 let minimizeTimer = null;
-let prefetchWatcher = null;
+let remoteControlTimer = null;
 let videoEl = null;
 
 interface PlayerProps {
@@ -39,12 +40,12 @@ interface PlayerProps {
 function Player(props: PlayerProps) {
     const [minimized, setMinimized] = useState(false);
     const [synced, setSynced] = useState(true);
+    const [remoteControlShow, setRemoteControlShow] = useState(false)
     // We only use currentTime to update player time.
     // In other case we get time directly from video element.
     const [currentTime, setCurrentTime] = useState(0);
     const minimizedRef = useRef(false);
     const playerRef = useRef(null);
-    const currentVideoRef = useRef(null);
     let volume = 0.3;
 
     useEffect(() => {
@@ -61,7 +62,8 @@ function Player(props: PlayerProps) {
         document.addEventListener('mediaafterchange', watchPlaylist);
 
         return () => {
-            clearInterval(prefetchWatcher);
+            clearTimeout(remoteControlTimer)
+            clearTimeout(minimizeTimer)
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mediaafterchange', watchPlaylist);
         }
@@ -85,14 +87,14 @@ function Player(props: PlayerProps) {
     }
 
     function init() {
-        // TODO: fix time parser later
+        // TODO: fix volume parser later
         try {
             const { updatePlayer } = props;
             // eslint-disable-next-line prefer-destructuring
             volume = localStorage.volume;
             volume = JSON.parse(volume as any || 1);
             updatePlayer({ volume });
-        } catch (error) { }
+        } catch (error) { return }
     }
 
     function handleReady() {
@@ -101,17 +103,17 @@ function Player(props: PlayerProps) {
     }
 
     function updateTime() {
-        const [duration, currentTime] = safelyGetTimeAndDuration();
+        const [duration, curTime] = safelyGetTimeAndDuration();
         videoEl = playerRef.current.getInternalPlayer();
         props.updatePlayer({ duration });
-        setCurrentTime(currentTime);
+        setCurrentTime(curTime);
     }
 
     function safelyGetTimeAndDuration(): [number, number] {
         try {
             const duration = playerRef.current.getDuration() as number;
-            const currentTime = playerRef.current.getCurrentTime() as number;
-            return [duration, currentTime]
+            const curTime = playerRef.current.getCurrentTime() as number;
+            return [duration, curTime]
         } catch (error) {
             return [0, 0]
         }
@@ -120,7 +122,7 @@ function Player(props: PlayerProps) {
     function safelySeekTo(n: number, type = 'seconds') {
         try {
             playerRef.current.seekTo(n, type);
-        } catch (error) { }
+        } catch (error) { return; }
     }
 
     function checkDelay() {
@@ -194,27 +196,26 @@ function Player(props: PlayerProps) {
         return (
             <React.Fragment>
                 {!iframe && <ReactPlayer
-                    ref={playerRef}
-                    className="player-inner"
-                    width="100%"
-                    height=""
-                    onPlay={handlePlay}
-                    onPause={handlePause}
-                    config={playerConf}
                     autoPlay
+                    className="player-inner"
+                    config={playerConf}
                     controls={!direct}
+                    height=""
                     loop={false}
-                    progressInterval={300}
                     muted={media.muted}
-                    playing={media.playing}
-                    volume={media.volume}
-                    url={url}
+                    onPause={handlePause}
+                    onPlay={handlePlay}
                     onProgress={handlePlaying}
                     onReady={handleReady}
+                    playing={media.playing}
+                    progressInterval={300}
+                    ref={playerRef}
+                    url={url}
+                    volume={media.volume}
+                    width="100%"
                 />}
                 {iframe &&
-                    <div dangerouslySetInnerHTML={{ __html: url }} style={{ width: "100%" }} className="player-inner">
-                    </div>
+                    <div dangerouslySetInnerHTML={{ __html: url }} style={{ width: '100%' }} className="player-inner" />
                 }
                 {isDirectLink() && <div className="video-overlay" />}
                 {<PreloadMedia nextVideo={nextVideo} />}
@@ -233,25 +234,40 @@ function Player(props: PlayerProps) {
                 {renderVideoTop()}
                 {renderVideoMid()}
                 {showSubs && videoEl && <Subtitles videoEl={videoEl} />}
-                <div className="video-player_overflow" />
+                {remoteControlShow &&
+                    <div onClick={handleRemoteRewind} className="video-player__remote-control">Rewind here for everyone else</div>}
+                <div className="video-player__overflow" />
             </div>
         );
     }
 
-    function handleProgressChange(percent) {
+    function handleRemoteRewind() {
+        const [_, time] = safelyGetTimeAndDuration()
+        webSocketSend(api.REWIND_MEDIA({ time }))
+        setSynced(true)
+        setRemoteControlShow(false);
+    }
+
+    function handleProgressChange(percent: number) {
         if (synced) setSynced(false);
         safelySeekTo(percent / 100, 'fraction')
+
+        clearTimeout(remoteControlTimer)
+        if (!remoteControlShow) {
+            setRemoteControlShow(true);
+        }
+        remoteControlTimer = setTimeout(() => {
+            setRemoteControlShow(false);
+        }, 4000);
     }
 
     function renderVideoTop() {
         const { media } = props;
-        const progressValue = (currentTime / media.duration) * 100;
         if (!videoEl) return null;
         return (
             <div className="video-player_top">
                 <div className="video-time current-time">{formatTime(currentTime)}</div>
                 <CustomProgressBar shouldUpdate={!minimized} handleProgressChange={handleProgressChange} videoEl={videoEl} />
-                {/* <ProgressBar subProgress={buffered} onProgressChange={handleProgressChange} value={progressValue} /> */}
                 <div className="video-time duration">{formatTime(media.duration)}</div>
             </div>
         );
@@ -260,6 +276,12 @@ function Player(props: PlayerProps) {
     function toggleFullscreen() {
         const video = document.getElementById('video-container');
         requestFullscreen(video);
+    }
+
+    function enableSync() {
+        setSynced(true)
+        checkDelay();
+        if (!synced) safelySeekTo(props.media.actualTime);
     }
 
     function toggleSynced() {
@@ -303,7 +325,7 @@ function Player(props: PlayerProps) {
                     className={cn('control', 'toggle-sync', { 'sync-off': !synced })}
                 >
                     <span className="toggle-sync__sign">SYNC</span>
-                    <span className="toggle-sync__icon"></span>
+                    <span className="toggle-sync__icon" />
                 </div>
                 <div
                     onClick={toggleFullscreen}
@@ -384,6 +406,10 @@ class CustomProgressBar extends Component<CustomProgressBarProps, CustomProgress
 
     componentDidMount() {
         this.watchTime();
+    }
+
+    componentWillUnmount() {
+        clearTimeout(this.timer)
     }
 
     shouldComponentUpdate(nextProps: CustomProgressBarProps, nextState: CustomProgressBarState) {

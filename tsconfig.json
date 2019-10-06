@@ -5,12 +5,12 @@
         // TODO: Declare all types and set to true
         "noImplicitAny": false,
 
-        "isolatedModules": true,
+        "isolatedModules": false,
         "skipLibCheck": true,
         "removeComments": true,
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
-        "moduleResolution": "classic",
+        "moduleResolution": "node",
         "module": "esnext",
         "lib": ["webworker", "es6", "scripthost", "dom"],
         "sourceMap": true,

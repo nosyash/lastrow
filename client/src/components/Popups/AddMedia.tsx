@@ -27,7 +27,7 @@ interface AddMediaStates {
 }
 
 class AddMedia extends Component<AddMediaProps, AddMediaStates> {
-    subs64: String | ArrayBuffer;
+    subs64: string | ArrayBuffer;
     state = {
         inputValue: '',
         inputValueSubs: '',
@@ -69,7 +69,7 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
 
         const { inputValue, subtitles } = this.state;
 
-        const subs = subtitles ? { subtitles: this.subs64, subs_type: "srt" } : {}
+        const subs = subtitles ? { subtitles: this.subs64, subs_type: 'srt' } : {}
         const data = { url: inputValue, uuid, subtitles: subs }
         const message = api.SEND_MEDIA_TO_PLAYLIST(data);
         webSocketSend(message, 'feedback', onSuccess as any);
@@ -105,7 +105,6 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
         const file = get(target, 'files[0]');
         if (!file) return;
         const { name, type, size } = file;
-        console.log(type);
         // TODO: Better type handling
         if (type !== 'application/x-subrip') return toast.warn(`Only .srt supported for now`, toastOpts)
         if (size / 1024 / 1024 > MAXIMUM_SUBTITLES_SIZE) return this.sizeWarn();
