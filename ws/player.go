@@ -27,7 +27,7 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 
 			h.broadcast <- createPacket(playerEvent, eTypePause, nil)
 			sendFeedBack(conn, &feedback{
-				Message: "Video was be successful paused",
+				Message: "Success",
 			})
 			h.syncer.isPause = true
 		}
@@ -48,7 +48,7 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 
 			h.broadcast <- createPacket(playerEvent, eTypeResume, nil)
 			sendFeedBack(conn, &feedback{
-				Message: "Video was be successful resumed",
+				Message: "Success",
 			})
 			h.syncer.isPause = false
 		}
@@ -73,7 +73,7 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 			}
 			h.syncer.rewind <- req.Body.Event.Data.RewindTime
 			sendFeedBack(conn, &feedback{
-				Message: "Video was be successful rewinded",
+				Message: "Success",
 			})
 		}
 	}
