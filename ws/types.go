@@ -76,6 +76,7 @@ type syncer struct {
 	rewind           chan int
 	close            chan struct{}
 	move             chan struct{}
+	duration         int
 	rewindAfterPause int
 	currentVideoID   string
 	elapsed          int

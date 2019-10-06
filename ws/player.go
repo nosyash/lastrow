@@ -65,19 +65,31 @@ func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 				})
 				return
 			}
+			rewindLock.Lock()
 
-			if h.syncer.isPause {
-				rewindLock.Lock()
-				h.syncer.rewindAfterPause = req.Body.Event.Data.RewindTime
-				rewindLock.Unlock()
+			if req.Body.Event.Data.RewindTime >= 0 && req.Body.Event.Data.RewindTime <= h.syncer.duration {
+				var ep elapsedTime
 
-				break
+				ep.ID = h.syncer.currentVideoID
+				ep.Duration = h.syncer.duration
+				ep.ElapsedTime = req.Body.Event.Data.RewindTime
+
+				h.broadcast <- createPacket(playerEvent, eTypeTicker, &data{
+					Ticker: &ep,
+				})
+
+				if h.syncer.isPause {
+					h.syncer.rewindAfterPause = req.Body.Event.Data.RewindTime + syncPeriod
+				} else {
+					h.syncer.rewind <- req.Body.Event.Data.RewindTime + syncPeriod
+				}
+
+				sendFeedBack(conn, &feedback{
+					Message: "success",
+				})
 			}
-			h.syncer.rewind <- req.Body.Event.Data.RewindTime
 
-			sendFeedBack(conn, &feedback{
-				Message: "success",
-			})
+			rewindLock.Unlock()
 		}
 	}
 }

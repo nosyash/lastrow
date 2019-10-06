@@ -140,7 +140,9 @@ func (h *hub) syncElapsedTime() {
 		}
 
 		video := h.cache.Playlist.TakeHeadElement()
+
 		h.syncer.currentVideoID = video.ID
+		h.syncer.duration = video.Duration
 
 		if video.Iframe || video.LiveStream {
 			if r := h.handleIframeOrStream(video.ID); r {
@@ -199,7 +201,6 @@ func (h *hub) handleIframeOrStream(id string) bool {
 func (h *hub) elapsedTicker(video *cache.Video) int {
 	var ep elapsedTime
 	var d data
-	var elapsed int
 	var ticker = time.Tick(syncPeriod * time.Second)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(video.Duration+sleepBeforeStart)*time.Second)
@@ -210,28 +211,22 @@ func (h *hub) elapsedTicker(video *cache.Video) int {
 		case <-ticker:
 			ep.ID = video.ID
 			ep.Duration = video.Duration
-			ep.ElapsedTime = elapsed
+			ep.ElapsedTime = h.syncer.elapsed
 
 			d.Ticker = &ep
 
 			h.broadcast <- createPacket(playerEvent, eTypeTicker, &d)
 
-			elapsed += syncPeriod
-			h.syncer.elapsed = elapsed
+			h.syncer.elapsed += syncPeriod
 		case <-h.syncer.pause:
 			if r := h.pauseTicker(); r {
 				cancel()
 				return exitClosed
 			}
-			if h.syncer.rewindAfterPause > 0 && h.syncer.rewindAfterPause < video.Duration {
-				elapsed = h.syncer.rewindAfterPause
-			}
-			ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration-elapsed+sleepBeforeStart)*time.Second))
+			ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration-h.syncer.elapsed+sleepBeforeStart)*time.Second))
 		case e := <-h.syncer.rewind:
-			if e >= 0 && e < video.Duration {
-				elapsed = e
-				ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration-elapsed+sleepBeforeStart)*time.Second))
-			}
+			h.syncer.elapsed = e
+			ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration-h.syncer.elapsed+sleepBeforeStart)*time.Second))
 		case <-h.syncer.skip:
 			cancel()
 			return exitNormal
