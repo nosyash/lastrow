@@ -110,7 +110,7 @@ export const GET_ERROR = (string: string) => {
 //     }
 // }
 
-export const SEND_MEDIA_TO_PLAYLIST = ({ url, subtitles = {}, uuid }: { url: string, uuid?: string, subtitles?: any }) => {
+export const SEND_MEDIA_TO_PLAYLIST = ({ url, subtitles = {}, uuid }: { url: string; uuid?: string; subtitles?: any }) => {
     const request = {
         action: 'playlist_event',
         body: {
@@ -128,7 +128,7 @@ export const SEND_MEDIA_TO_PLAYLIST = ({ url, subtitles = {}, uuid }: { url: str
     return JSON.stringify(request);
 };
 
-export const DELETE_VIDEO_FROM_PLAYLIST = ({ __id, uuid }: { __id: string, uuid?: string }) => {
+export const DELETE_VIDEO_FROM_PLAYLIST = ({ __id, uuid }: { __id: string; uuid?: string }) => {
     const request = {
         action: 'playlist_event',
         body: {
@@ -145,15 +145,32 @@ export const DELETE_VIDEO_FROM_PLAYLIST = ({ __id, uuid }: { __id: string, uuid?
     return JSON.stringify(request);
 };
 
-export const REORDER_MEDIA = ({ __id, index }: { __id: string, index: number }) => {
+export const REORDER_MEDIA = ({ __id, index }: { __id: string; index: number }) => {
     const request = {
-        action: "playlist_event",
+        action: 'playlist_event',
         body: {
             event: {
-                type: "move",
+                type: 'move',
                 data: {
                     __id: __id,
                     index: index
+                }
+            }
+        },
+        jwt: getCookie('jwt'),
+    }
+
+    return JSON.stringify(request)
+}
+
+export const REWIND_MEDIA = ({ time }: { time: number }) => {
+    const request = {
+        action: 'player_event',
+        body: {
+            event: {
+                type:'rewind',
+                data: {
+                    time,
                 }
             }
         },
@@ -178,9 +195,9 @@ const getEmoteName = (name: string) =>
 
 export const ADD_EMOTE = ({ name, type, base64, room_uuid }: AddEmoteRequest) => {
     const request = {
-        action: "room_update",
+        action: 'room_update',
         body: {
-            type: "add_emoji",
+            type: 'add_emoji',
             data: {
                 name: getEmoteName(name),
                 type,
@@ -195,9 +212,9 @@ export const ADD_EMOTE = ({ name, type, base64, room_uuid }: AddEmoteRequest) =>
 
 export const REMOVE_EMOTE = ({ name, room_uuid }) => {
     const request = {
-        action: "room_update",
+        action: 'room_update',
         body: {
-            type: "del_emoji",
+            type: 'del_emoji',
             data: {
                 name,
             }
@@ -211,9 +228,9 @@ export const REMOVE_EMOTE = ({ name, room_uuid }) => {
 
 export const RENAME_EMOTE = ({ name, newname, room_uuid }) => {
     const request = {
-        action: "room_update",
+        action: 'room_update',
         body: {
-            type: "change_emoji_name",
+            type: 'change_emoji_name',
             data: {
                 name,
                 new_name: newname
