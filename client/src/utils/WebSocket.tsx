@@ -93,12 +93,13 @@ class Socket implements SocketInterface {
             const data = JSON.parse(receivedData);
             if (get(data, 'body.event.type') !== messageTypeToGet) return;
 
-            const { message, error } = get(data, 'body.event.data.feedback');
+            const { message, error } = get(data, 'body.event.data.feedback') || {}
 
             this.removeEvent('message', onMessageLocal);
             clearTimeout(timeout);
 
-            if (message && message === 'success')
+            // if (message && message === 'success')
+            if (message)
                 return cb(true, null);
             else
                 return cb(null, error)
@@ -183,6 +184,12 @@ class Socket implements SocketInterface {
                 const payload = { ...message, roomID: this.room_uuid };
                 return dispatch({ type: types.ADD_MESSAGE, payload });
             }
+            case 'resume': {
+                return dispatch({ type: types.SET_REMOTE_PLAYING });
+            }
+            case 'pause': {
+                return dispatch({ type: types.SET_REMOTE_PAUSED });
+            }
             case 'update_playlist': {
                 const playlistData = get(parsedData, 'body.event.data') as UpdatePlaylistData;
 
@@ -214,6 +221,7 @@ class Socket implements SocketInterface {
                     stopAddMediaPending()
                     toast.warn(feedback.error, toastOpts);
                 }
+                return;
             }
 
             default:

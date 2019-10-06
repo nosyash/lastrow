@@ -16,13 +16,13 @@ import { getRandom } from './utils';
 import { store } from './store';
 
 const RoomSuspended = (props) =>
-    <Suspense fallback={<div></div>}>
+    <Suspense fallback={<div />}>
         <RoomBase {...props} />
     </Suspense>
 
 
 const RoomListSuspended = (props) =>
-    <Suspense fallback={<div></div>}>
+    <Suspense fallback={<div />}>
         <RoomList {...props} />
     </Suspense>
 

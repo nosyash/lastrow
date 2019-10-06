@@ -37,8 +37,8 @@ export const ADD_TO_PLAYLIST = 'ADD_TO_PLAYLIST';
 export const TOGGLE_SYNC = 'TOGGLE_SYNC';
 export const SET_ADD_MEDIA_PENDING = 'SET_ADD_MEDIA_PENDING';
 
-export const SET_PLAY = 'SET_PLAY';
-export const SET_PAUSE = 'SET_PAUSE';
+export const SET_REMOTE_PLAYING = 'SET_REMOTE_PLAYING';
+export const SET_REMOTE_PAUSED = 'SET_REMOTE_PAUSED';
 
 // Popups
 export const ADD_POPUP = 'ADD_POPUP';

@@ -23,7 +23,7 @@ export const webSocketConnect = ({ room_uuid }: { room_uuid: string }) => {
 
 export const isConnectingSameRoom = (room_uuid: string) => (socket ? room_uuid === socket.room_uuid : false);
 
-export const webSocketSend = (data: string, messageTypeToGet?: string, cb?: () => void) => {
+export const webSocketSend = (data: string, messageTypeToGet?: string, cb?: (...args) => void) => {
     return socket.sendMessage(data, messageTypeToGet, cb);
 };
 
@@ -54,7 +54,7 @@ export const requestAddEmote = (params: api.AddEmoteRequest) => async (dispatch:
         .catch(() => toast.error('There was an error loading emote...', toastOpts))
 };
 
-export const requestEmoteRename = (params: { name: string, newname: string }) => {
+export const requestEmoteRename = (params: { name: string; newname: string }) => {
     const { uuid } = store.getState().mainStates;
 
     http.post(api.API_ROOMS(), api.RENAME_EMOTE({ ...params, room_uuid: uuid }))

@@ -170,8 +170,36 @@ export const REWIND_MEDIA = ({ time }: { time: number }) => {
             event: {
                 type:'rewind',
                 data: {
-                    time,
+                    time: parseInt(time.toString(), 10),
                 }
+            }
+        },
+        jwt: getCookie('jwt'),
+    }
+
+    return JSON.stringify(request)
+}
+
+export const PAUSE_MEDIA = () => {
+    const request = {
+        action: 'player_event',
+        body: {
+            event: {
+                type:'pause',
+            }
+        },
+        jwt: getCookie('jwt'),
+    }
+
+    return JSON.stringify(request)
+}
+
+export const RESUME_MEDIA = () => {
+    const request = {
+        action: 'player_event',
+        body: {
+            event: {
+                type:'resume',
             }
         },
         jwt: getCookie('jwt'),
