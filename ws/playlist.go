@@ -156,12 +156,16 @@ func (h *hub) syncElapsedTime() {
 		case exitClosed:
 			return
 		case exitNormal:
+			h.syncer.elapsed = 0
 			h.syncer.isPause = false
 			h.syncer.currentVideoID = ""
 			h.cache.Playlist.DelVideo <- video.ID
 			<-h.cache.Playlist.DelFeedBack
 		case exitUpdateHead:
-			continue
+			println("before", h.syncer.isPause)
+			h.syncer.elapsed = 0
+			h.syncer.isPause = false
+			println("after", h.syncer.isPause)
 		}
 	}
 }
@@ -219,11 +223,19 @@ func (h *hub) elapsedTicker(video *cache.Video) int {
 
 			h.syncer.elapsed += syncPeriod
 		case <-h.syncer.pause:
-			if r := h.pauseTicker(); r {
+			exitResult := h.pauseTicker()
+			if exitResult == exitClosed || exitResult == exitUpdateHead {
 				cancel()
-				return exitClosed
+				return exitResult
 			}
+
+			// h.syncer.rewindAfterPause never be zero
+			// because we set h.syncer.rewindAfterPause how rewind time + syncPeriod
 			if h.syncer.rewindAfterPause != 0 {
+				ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration-h.syncer.rewindAfterPause+sleepBeforeStart)*time.Second))
+				h.syncer.elapsed = h.syncer.rewindAfterPause
+			} else {
+				// Reset context after pause
 				ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration-h.syncer.elapsed+sleepBeforeStart)*time.Second))
 			}
 		case e := <-h.syncer.rewind:
@@ -245,13 +257,15 @@ func (h *hub) elapsedTicker(video *cache.Video) int {
 	}
 }
 
-func (h *hub) pauseTicker() bool {
+func (h *hub) pauseTicker() int {
 	for {
 		select {
 		case <-h.syncer.resume:
-			return false
+			return exitNormal
+		case <-h.syncer.move:
+			return exitUpdateHead
 		case <-h.syncer.close:
-			return true
+			return exitClosed
 		}
 	}
 }
