@@ -225,15 +225,11 @@ func (h *hub) elapsedTicker(video *cache.Video) int {
 				return exitResult
 			}
 
-			// h.syncer.rewindAfterPause never be zero
-			// because we set h.syncer.rewindAfterPause how rewind time + syncPeriod
+			// h.syncer.rewindAfterPause never be zero. Because we always set rewindAfterPause + syncPeriod
 			if h.syncer.rewindAfterPause != 0 {
-				ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration-h.syncer.rewindAfterPause+sleepBeforeStart)*time.Second))
 				h.syncer.elapsed = h.syncer.rewindAfterPause
-			} else {
-				// Reset context after pause
-				ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration-h.syncer.elapsed+sleepBeforeStart)*time.Second))
 			}
+			ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration-h.syncer.elapsed+sleepBeforeStart)*time.Second))
 		case e := <-h.syncer.rewind:
 			h.syncer.elapsed = e
 			ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(time.Duration(video.Duration-h.syncer.elapsed+sleepBeforeStart)*time.Second))
