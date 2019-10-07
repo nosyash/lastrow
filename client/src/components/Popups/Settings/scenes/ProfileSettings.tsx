@@ -28,7 +28,7 @@ class ProfileSettings extends Form {
         name: {
             name: Joi.string()
                 .min(1)
-                .max(15)
+                .max(20)
                 .label('Name'),
         },
 
@@ -243,7 +243,7 @@ const RenderForm = props => {
                                     className="button button-cancel"
                                 >
                                     Cancel
-                            </button>
+                                </button>
                             </React.Fragment>
                         )}
                     </div>
