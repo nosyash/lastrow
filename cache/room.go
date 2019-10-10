@@ -79,3 +79,14 @@ func (room *Room) updatePermissions(uuid string) {
 
 	room.Permissions = permission.ToMap()
 }
+
+func (room *Room) updateSubtitlesOffset(offset int) {
+	if offset >= 0 && offset != room.SubtitlesOffset {
+		room.SubtitlesOffset = offset
+		room.UpdateSubtitlesOffsetFeedBack <- offset
+
+		return
+	}
+
+	room.UpdateSubtitlesOffsetFeedBack <- -1
+}

@@ -39,6 +39,7 @@ func (db Database) CreateNewRoom(title, path, userUUID, roomUUID, password strin
 			ChangeEmojiName:  4,
 			AddRole:          3,
 			ChangePermission: 4,
+			SubtitlesOffset:  4,
 		},
 		PlaylistEvent: playlistEvent{
 			Add:  1,
@@ -229,6 +230,7 @@ func (p Permissions) ToMap() map[string]int {
 	permissions["playlist_add"] = p.PlaylistEvent.Add
 	permissions["playlist_del"] = p.PlaylistEvent.Del
 	permissions["move"] = p.PlaylistEvent.Move
+	permissions["subtitles_offset"] = p.RoomUpdate.SubtitlesOffset
 
 	permissions["pause"] = p.PlayerEvent.Pause
 	permissions["resume"] = p.PlayerEvent.Resume

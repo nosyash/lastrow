@@ -208,6 +208,8 @@ func (h *hub) read(conn *websocket.Conn) {
 			go h.handlePlaylistEvent(req, conn)
 		case playerEvent:
 			go h.handlePlayerEvent(req, conn)
+		case roomUpdateEvent:
+			go h.handleRoomUpdateEven(req, conn)
 		default:
 			go sendError(conn, errors.New("Unknown action type"))
 		}
