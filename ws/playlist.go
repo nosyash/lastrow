@@ -160,7 +160,9 @@ func (h *hub) syncElapsedTime() {
 			h.cache.Playlist.DelVideo <- video.ID
 			<-h.cache.Playlist.DelFeedBack
 		case exitUpdateHead:
-			h.broadcast <- createPacket(playerEvent, eTypeResume, nil)
+			if h.syncer.isPause {
+				h.broadcast <- createPacket(playerEvent, eTypeResume, nil)
+			}
 		}
 
 		h.syncer.elapsed = 0
