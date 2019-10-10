@@ -138,7 +138,7 @@ func (h hub) updateRole(role cache.NewRole) {
 		}))
 	}
 
-	h.cache.Room.UpdateRoles(h.id)
+	h.cache.Room.UpdateRoles <- h.id
 }
 
 func (h hub) kickUser(conn *websocket.Conn, p *packet) {

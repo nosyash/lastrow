@@ -172,8 +172,8 @@ func (pl *playlist) addIframe(ifurl string) {
 }
 
 func (pl *playlist) addDirect(video *NewVideo) {
-	ext := filepath.Ext(video.URL)
-
+	url, _ := url.Parse(video.URL)
+	ext := filepath.Ext(url.EscapedPath())
 	if ext == "" {
 		pl.AddFeedBack <- ErrUnsupportedHost
 		return

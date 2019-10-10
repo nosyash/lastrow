@@ -57,6 +57,7 @@ func New(id string) *Cache {
 		Room{
 			make(chan string),
 			make(chan struct{}),
+			make(chan string),
 			permission.ToMap(),
 			roles,
 			db,
@@ -86,6 +87,8 @@ func (cache *Cache) HandleCacheEvents() {
 			cache.Messages.addMessage(message)
 		case <-cache.Room.UpdatePermissions:
 			cache.Room.updatePermissions(cache.ID)
+		case id := <-cache.Room.UpdateRoles:
+			cache.Room.updateRoles(id)
 		case <-cache.Close:
 			return
 		}
