@@ -64,20 +64,17 @@ func (h hub) HandleActions() {
 		select {
 		case user := <-h.register:
 			deadlineLocker.Lock()
-			println("h.closeDeadline", h.closeDeadline)
 			if h.closeDeadline {
 				h.cancelChan <- struct{}{}
 				h.closeDeadline = false
 			}
 			deadlineLocker.Unlock()
-			println("before add")
 			h.add(user)
 			go h.read(user.Conn)
 			go h.ping(user.Conn)
 			go h.pong(user.Conn)
 		case conn := <-h.unregister:
 			h.remove(conn)
-			println("after remove")
 		case message := <-h.broadcast:
 			h.send(message)
 		case <-h.cache.Users.UpdateUsers:
@@ -139,22 +136,20 @@ func (h *hub) remove(conn *websocket.Conn) {
 		}
 	}
 
-	println("uuid ", uuid)
-
 	if uuid != "" {
-		println("before del user")
 		_, _ = h.deleteAndClose(uuid)
-		println("after del and close")
 		h.cache.Users.DelUser <- uuid
-		println("after del user")
+		go func() {
+			if len(h.hub) > 0 {
+				h.cache.Users.UpdateUsers <- struct{}{}
+			}
+		}()
 
 		if len(h.hub) == 0 {
 			if h.cache.Playlist.Size() == 0 && h.cache.Messages.Size() == 0 {
-				println("remove(): close without deadline")
 				h.closeStorage <- struct{}{}
 				h.syncer.close <- struct{}{}
 				closeRoom <- h.id
-				println("remove(): close without deadline - ok")
 				return
 			}
 
@@ -167,9 +162,6 @@ func (h *hub) remove(conn *websocket.Conn) {
 				if !h.syncer.isSleep && !h.syncer.isStreamOrFrame {
 					elapsed = h.syncer.elapsed
 				}
-
-				println("remove(): close with deadline")
-				println(h.cache.Playlist.Size(), h.cache.Messages.Size())
 
 			loop:
 				for {
