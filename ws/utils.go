@@ -55,12 +55,13 @@ func writeMessage(conn *websocket.Conn, messageType int, message []byte) error {
 	sendLocker.Lock()
 	defer sendLocker.Unlock()
 
-	if err := conn.WriteMessage(messageType, message); err != nil {
-		conn.Close()
-		return err
-	}
+	// if err := conn.WriteMessage(messageType, message); err != nil {
+	// 	conn.Close()
+	// 	return err
+	// }
+	// return nil
 
-	return nil
+	return conn.WriteMessage(messageType, message)
 }
 
 func createPacket(action, eType string, d *data) []byte {
