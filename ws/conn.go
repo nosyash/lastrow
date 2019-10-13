@@ -140,7 +140,10 @@ func (h *hub) remove(conn *websocket.Conn) {
 	}
 
 	if uuid != "" {
-		_, _ = h.deleteAndClose(uuid)
+		conn, _ := h.hub[uuid]
+		conn.Close()
+
+		delete(h.hub, uuid)
 		h.cache.Users.DelUser <- uuid
 
 		if len(h.hub) == 0 {
