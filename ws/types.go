@@ -102,7 +102,7 @@ type data struct {
 	IP              string        `json:"ip,omitempty"`
 	JWT             string        `json:"jwt,omitempty"`
 	BanType         string        `json:"ban_type,omitempty"`
-	SubtitlesOffset int           `json:"subtitles_offset`
+	SubtitlesOffset int           `json:"subtitles_offset,omitempty"`
 	Users           []*cache.User `json:"users,omitempty"`
 	Ticker          *elapsedTime  `json:"ticker,omitempty"`
 	Emoji           []db.Emoji    `json:"emoji,omitempty"`

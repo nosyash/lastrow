@@ -119,10 +119,8 @@ func (h hub) add(user *user) {
 		h.cache.Users.AddUser <- user.Payload
 		h.hub[user.Payload.UUID] = user.Conn
 	}
-	go func() {
-		// h.wg.Add(1)
-		h.updatesTo(user.Conn)
-	}()
+
+	go h.updatesTo(user.Conn)
 }
 
 func (h *hub) remove(conn *websocket.Conn) {

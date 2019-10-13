@@ -5,8 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -71,7 +69,7 @@ func (server Server) checkPermissions(eType, uuid string, payload *jwt.Payload) 
 	var err error
 
 	if permission, err = server.db.GetAllPermissions(uuid); err != nil {
-		log.Println(fmt.Errorf("Couldn't get permissions for %s -> %v", uuid, err))
+		server.errLogger.Printf("Couldn't get permissions for %s -> %v", uuid, err)
 		return false
 	}
 
@@ -79,7 +77,7 @@ func (server Server) checkPermissions(eType, uuid string, payload *jwt.Payload) 
 		return level >= rule
 	}
 
-	log.Printf("server.go:checkPermissions() -> Unknown event type: %s\n", eType)
+	server.errLogger.Printf("Unknown event type: %s\n", eType)
 	return false
 }
 
