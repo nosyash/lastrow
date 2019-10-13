@@ -142,8 +142,10 @@ func (h *hub) remove(conn *websocket.Conn) {
 	println("uuid ", uuid)
 
 	if uuid != "" {
+		println("before del user")
 		_, _ = h.deleteAndClose(uuid)
 		h.cache.Users.DelUser <- uuid
+		println("after del user")
 
 		if len(h.hub) == 0 {
 			if h.cache.Playlist.Size() == 0 && h.cache.Messages.Size() == 0 {
