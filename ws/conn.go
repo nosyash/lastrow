@@ -3,7 +3,6 @@ package ws
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"sync"
@@ -98,6 +97,8 @@ func (h hub) HandleActions() {
 func (h hub) add(user *user) {
 	var uuid string
 
+	println("in add")
+
 	for key := range h.hub {
 		if user.Payload != nil {
 			uuid = user.Payload.UUID
@@ -124,7 +125,7 @@ func (h hub) add(user *user) {
 		h.cache.Users.AddUser <- user.Payload
 		h.hub[user.Payload.UUID] = user.Conn
 	}
-
+	println("send updatesTo")
 	go h.updatesTo(user.Conn)
 }
 
@@ -198,8 +199,6 @@ func (h *hub) read(conn *websocket.Conn) {
 	for {
 		req, err := readPacket(conn)
 		if err != nil {
-			fmt.Println(err)
-			fmt.Println("Client will be closed")
 			break
 		}
 
