@@ -17,6 +17,7 @@ import { Video } from '../../../../utils/types';
 import { Media } from '../../../../reducers/media';
 import { webSocketSend } from '../../../../actions';
 import PlayerUI from './components/PlayerUI';
+import { PermissionsMap, Permissions } from '../../../../reducers/rooms';
 
 let minimizeTimer = null;
 let remoteControlTimeRewind = null;
@@ -28,6 +29,8 @@ interface PlayerProps {
     playlist: Video[];
     remotePlaying: boolean;
     cinemaMode: boolean;
+    permissionLevel: PermissionsMap;
+    currentPermissions: Permissions;
     updatePlayer: (payload: any) => void;
     resetMedia: () => void;
     switchMute: () => void;
@@ -221,7 +224,7 @@ function Player(props: PlayerProps) {
     }
 
     function RenderPlayer() {
-        const { media } = props;
+        const { media, permissionLevel, currentPermissions } = props;
         const url = getCurrentUrl();
         const nextVideo = getNextVideo();
         const direct = isDirect();
@@ -251,15 +254,22 @@ function Player(props: PlayerProps) {
                     <div dangerouslySetInnerHTML={{ __html: url }} style={{ width: '100%' }} className="player-inner" />
                 }
                 {isDirectLink() && <div className="video-overlay" />}
-                <PlayerGlobalMessages onToggleSync={toggleSynced} synced={synced} remotelyPaused={!media.remotePlaying} />
+                <PlayerGlobalMessages
+                    remotelyPaused={!media.remotePlaying}
+                    permissionLevel={permissionLevel}
+                    currentPermissions={currentPermissions}
+                />
                 <PlayerGlobalControls
+                    onToggleSync={toggleSynced}
+                    synced={synced}
                     showRemoteRewind={remoteControlRewind}
                     showRemotePlayback={remoteControlPlaying}
                     onRemoteRewind={handleRemoteRewind}
                     onRemotePlaying={handleRemotePlaybackChange}
                     playing={playing}
                     remotePlaying={props.remotePlaying}
-                    synced={synced}
+                    permissionLevel={permissionLevel}
+                    currentPermissions={currentPermissions}
                 />
                 {<PreloadMedia nextVideo={nextVideo} />}
             </React.Fragment>
@@ -409,6 +419,8 @@ const mapStateToProps = (state: any): ReactRedux.MapStateToProps<any, any, any> 
     playlist: (state.media as Media).playlist,
     remotePlaying: (state.media as Media).remotePlaying,
     cinemaMode: state.mainStates.cinemaMode,
+    permissionLevel: state.profile.currentLevel,
+    currentPermissions: state.rooms.currentPermissions,
 } as any);
 
 const mapDispatchToProps = {

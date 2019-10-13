@@ -50,11 +50,31 @@ export const requestColorUpdate = (color: string) => async (dispatch: any) => {
     return Promise.resolve();
 };
 
+export const requestRoom = async () =>  {
+    const { roomID } = store.getState().mainStates;
+    const { data } = await http.get(api.API_ROOM(roomID), { validateStatus: () => true });
+
+    if (!data) return Promise.resolve();
+
+    const { permissions } = data;
+
+    const emojiList = get(data, 'emoji') || []
+    emojiList.sort((a, b) => a.name > b.name ? 1 : -1);
+
+    store.dispatch({ type: types.UPDATE_MAIN_STATES, payload: { uuid: data.uuid } })
+    store.dispatch({ type: types.ADD_EMOJIS, payload: emojiList })
+    store.dispatch({ type: types.SET_PERMISSIONS, payload: permissions })
+
+    document.title = data.title;
+
+    return Promise.resolve(data);
+};
+
 export const requestAddEmote = (params: api.AddEmoteRequest) => async (dispatch: any) => {
     const { uuid } = store.getState().mainStates;
     http.post(api.API_ROOMS(), api.ADD_EMOTE({ ...params, room_uuid: uuid }))
         .then(() => toast.success('Emote successfully upload', toastOpts))
-        .then(() => requestRoom()(dispatch))
+        .then(() => requestRoom())
         .catch(() => toast.error('There was an error loading emote...', toastOpts))
 };
 
@@ -62,7 +82,7 @@ export const requestEmoteRename = (params: { name: string; newname: string }) =>
     const { uuid } = store.getState().mainStates;
 
     http.post(api.API_ROOMS(), api.RENAME_EMOTE({ ...params, room_uuid: uuid }))
-        .then(() => requestRoom()(store.dispatch))
+        .then(() => requestRoom())
         .then(() => toast.success('Emote successfully renamed', toastOpts))
 }
 
@@ -70,27 +90,11 @@ export const requestEmoteDelete = (params: { name: string }) => {
     const { uuid } = store.getState().mainStates;
 
     http.post(api.API_ROOMS(), api.REMOVE_EMOTE({ ...params, room_uuid: uuid }))
-        .then(() => requestRoom()(store.dispatch))
+        .then(() => requestRoom())
         .then(() => toast.success('Emote was removed', toastOpts))
 }
 
-export const requestRoom = () => async (dispatch: any) => {
-    const { roomID } = store.getState().mainStates;
-    const { data } = await http.get(api.API_ROOM(roomID), { validateStatus: () => true });
 
-    if (!data)
-        return Promise.resolve(false);
-
-    const emojiList = get(data, 'emoji') || []
-    emojiList.sort((a, b) => a.name > b.name ? 1 : -1);
-
-    store.dispatch({ type: types.UPDATE_MAIN_STATES, payload: { uuid: data.uuid } })
-    store.dispatch({ type: types.ADD_EMOJIS, payload: emojiList })
-
-    document.title = data.title;
-
-    return Promise.resolve(data);
-};
 
 const roomInstance = Axios.create();
 export const requestRoomWithOmitError = async (id: string) => {

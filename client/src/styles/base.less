@@ -1238,15 +1238,23 @@ body {
     color: @link;
     display: flex;
     flex-direction: column;
+    &__admin {
+
+    }
     &__item {
         .player-minimized & {
             display: none;
         }
         background-color: rgba(37, 39, 40, 0.9);
         backdrop-filter: saturate(500%) blur(18px);
-        padding: 5px 30px 3px;
-        margin: 2px auto;
+        padding: 8px 40px 6px;
+        margin: 4px auto;
         border-radius: 4px;
+        position: relative;
+        &.global-controls__admin {
+            background-color: rgba(30, 127, 95, 0.9);
+            color: white;
+        }
         .hover();
         .fa {
             font-size: 0.7em;
@@ -1254,7 +1262,14 @@ body {
         }
         .fa-pause {
             font-size: 0.7em;
-            vertical-align: 1px;
+        }
+        .fa-bullhorn {
+            display: none;
+            margin-left: 10px;
+            position: absolute;
+            top: 7px;
+            right: 8px;
+            color: rgba(255, 255, 255, 0.25);
         }
     }
 }
@@ -1273,6 +1288,7 @@ body {
         max-width: 360px;
         background-color: rgba(37, 39, 40, 0.9);
         backdrop-filter: saturate(500%) blur(18px);
+        color: #ffffff87;
         padding: 5px 30px 3px;
         margin: 2px 0;
         border-radius: 4px;

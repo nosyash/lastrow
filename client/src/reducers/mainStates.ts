@@ -1,11 +1,18 @@
 import * as types from '../constants/actionTypes';
 
+export interface MainStates {
+    cinemaMode: boolean;
+    roomID: string;
+    uuid: string;
+    chatWidth: number;
+}
+
 const initialState = {
     cinemaMode: false,
     roomID: '',
     uuid: '',
     chatWidth: parseInt(localStorage.chatWidth) || 300,
-};
+} as MainStates;
 
 const mainStates = (state = initialState, action: any) => {
     if (action.type === types.UPDATE_MAIN_STATES) {

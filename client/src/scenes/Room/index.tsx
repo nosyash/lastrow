@@ -9,7 +9,8 @@ import { webSocketConnect, webSocketDisconnect, requestRoom } from '../../action
 import notifications from '../../utils/notifications';
 import { GUEST_AUTH, PROFILE_SETTINGS, PLAYLIST } from '../../constants';
 import { Emoji } from '../../reducers/emojis';
-import { Permissions } from '../../reducers/rooms';
+import { Role } from '../../reducers/profile';
+import { PermissionsMap } from '../../reducers/rooms';
 
 // Authorize before render room
 function RoomBaseWrapper(props) {
@@ -30,15 +31,15 @@ interface RoomBaseProps {
     cinemaMode: boolean;
     connected: boolean;
     room_uuid: string;
+    roles: Role[];
     clearPopups: () => void;
     clearUsers: () => void;
     updateMainStates: (...args: any) => any;
     updateProfile: (...args: any) => void;
     addEmojis: (emojis: Emoji[]) => void;
     removePopup: (popup: string) => void;
-    setRoomsPermissions: (payload: Permissions) => void;
     togglePopup: (popup: string) => void;
-    getRoom: () => Promise<any>;
+    setCurrentLevel: (level: PermissionsMap) => void;
 }
 
 class RoomBase extends Component<RoomBaseProps, any> {
@@ -108,24 +109,27 @@ class RoomBase extends Component<RoomBaseProps, any> {
     }
 
     init = async () => {
-        const { match, history, updateMainStates, getRoom, setRoomsPermissions } = this.props;
+        const { match, history, updateMainStates } = this.props;
         const { id: roomID } = match.params;
 
         // Check for room
         updateMainStates({ roomID })
-        const res = await getRoom();
-        if (!res) return history.push('/');
+        if (!await requestRoom()) return history.push('/');
 
-        const { permissions } = res;
-        setRoomsPermissions(permissions as Permissions)
         notifications.setCurrentTitle(document.title);
         this.setState({ exists: true }, () => this.initStore(this.initWebsocket));
+        this.saveCurrentRoles()
     };
 
-    initWebsocket = () => {
-        const { room_uuid } = this.props;
-        webSocketConnect({ room_uuid });
-    };
+    saveCurrentRoles() {
+        const { room_uuid, roles, setCurrentLevel } = this.props;
+        if (!roles.length) return;
+
+        const currentRoles = roles.find(role => role.room_uuid === room_uuid)
+        setCurrentLevel(currentRoles.Level)
+    }
+
+    initWebsocket = () => webSocketConnect({ room_uuid: this.props.room_uuid });;
 
     initStore = callback => {
         const { updateMainStates } = this.props;
@@ -199,6 +203,7 @@ const mapStateToProps = state => ({
     emojiList: state.emojis.list,
     userList: state.chat.users,
     profile: state.profile,
+    roles: state.profile.roles,
 });
 
 const mapDispatchToProps = {
@@ -215,8 +220,7 @@ const mapDispatchToProps = {
     addPopup: payload => ({ type: types.ADD_POPUP, payload }),
     clearPopups: () => ({ type: types.CLEAR_POPUPS }),
     updateProfile: payload => ({ type: types.UPDATE_PROFILE, payload }),
-    setRoomsPermissions: payload => ({ type: types.SET_PERMISSIONS, payload }),
-    getRoom: payload => requestRoom()
+    setCurrentLevel: payload => ({ type: types.SET_CURRENT_LEVEL, payload })
 };
 
 export default connect(

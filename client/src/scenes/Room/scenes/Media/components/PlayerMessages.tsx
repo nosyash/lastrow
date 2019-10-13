@@ -1,10 +1,11 @@
 import React from 'react';
+import { PermissionsMap, Permissions } from '../../../../../reducers/rooms';
 
 interface PlayerGlobalMessagesProps {
     remotelyPaused: boolean;
-    synced: boolean;
+    permissionLevel: PermissionsMap;
+    currentPermissions: Permissions;
 
-    onToggleSync: () => void;
 }
 
 function PlayerGlobalMessages(props: PlayerGlobalMessagesProps) {
@@ -19,15 +20,6 @@ function PlayerGlobalMessages(props: PlayerGlobalMessagesProps) {
                         Video is remotely paused
                     </div>
                 }
-                {!props.synced &&
-                    <div
-                        onClick={props.onToggleSync}
-                        title="Turn on"
-                        className="global-messages__item global-messages__sync-off is-clickable"
-                    >
-                        <i className="fa fa-sync mr-1" />
-                        Synchronization is turned off
-                    </div>}
             </div>
         )
     }

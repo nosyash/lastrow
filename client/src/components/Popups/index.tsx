@@ -106,12 +106,6 @@ export class CustomAnimation extends React.Component<any, any> {
 
     div = React.createRef() as React.RefObject<HTMLDivElement>
 
-    componentDidMount() {
-        if (!this.div.current) return;
-        this.div.current.addEventListener('transitionend', () => console.log('123'))
-        document.addEventListener('transitionend', () => console.log('docu 123'))
-    }
-
     componentDidUpdate({ show }: any) {
         const { show: shouldBeShown, duration } = this.props;
         if (shouldBeShown === show) return

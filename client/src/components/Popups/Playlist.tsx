@@ -1,17 +1,22 @@
-import React, { Component, useState, useEffect, useRef } from 'react';
-import { connect } from 'react-redux';
-import { formatTime } from '../../utils';
+import React, { Component, useState } from 'react';
+import { connect, useSelector } from 'react-redux';
+import { formatTime, isPermit } from '../../utils';
 import { webSocketSend } from '../../actions';
 import * as api from '../../constants/apiActions';
 import AddMedia from './AddMedia';
 import { Video } from '../../utils/types';
 import { SortableContainer, SortableElement } from 'react-sortable-hoc';
+import { Profile } from '../../reducers/profile';
+import { Permissions, PermissionsMap } from '../../reducers/rooms';
+import { State } from '../../reducers';
 
 
 interface PlaylistProps {
     uuid: string;
     guest: boolean;
-    playlist: Video[]
+    playlist: Video[];
+    currentPermissions: Permissions;
+    currentLevel: PermissionsMap;
 }
 
 const SortableItem = SortableElement(({ element, handleDelete, deletable }) =>
@@ -51,29 +56,19 @@ class Playlist extends Component<PlaylistProps> {
     }
 
     render() {
-        const { playlist, guest } = this.props;
+        const { playlist, currentLevel, currentPermissions: perms } = this.props;
+        const permit = isPermit(currentLevel)
         return (
             <div className="popup-element playlist_container">
                 {<AddMedia />}
-                <SortableList distance={2}
+                <SortableList distance={permit(perms.playlist_event.move) ? 2 : 10000}
                     transitionDuration={100}
                     items={playlist}
-                    deletable={!guest}
+                    deletable={permit(perms.playlist_event.playlist_del)}
                     handleDelete={this.handleDelete}
                     onSortStart={this.onSortStart}
                     onSortEnd={this.onSortEnd}
                 />
-                {/* {!!playlist.length && (
-                    <div className="playlist_inner">
-                        {playlist.map(element =>
-                            <PlaylistElement
-                                element={element}
-                                key={element.__id}
-                                onDelete={() => this.handleDelete(element)}
-                            />
-                        )}
-                    </div>
-                )} */}
             </div>
         );
     }
@@ -81,6 +76,7 @@ class Playlist extends Component<PlaylistProps> {
 
 function PlaylistElement({ element, onDelete, deletable }) {
     const [deleted, setDeleted] = useState(false);
+
     const liveStream = element.live_stream;
     const handleDelete = () => {
         if (!deleted) {
@@ -107,10 +103,12 @@ function PlaylistElement({ element, onDelete, deletable }) {
     )
 }
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state: State) => ({
     playlist: state.media.playlist,
     guest: state.profile.guest,
     uuid: state.profile.uuid,
+    currentLevel: state.profile.currentLevel,
+    currentPermissions: state.rooms.currentPermissions,
 });
 
 export default connect(mapStateToProps)(Playlist);

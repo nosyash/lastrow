@@ -19,6 +19,7 @@ export interface Profile extends UserInterface {
     id: number;
     image: string;
     roles: Role[];
+    currentLevel: PermissionsMap;
 }
 
 const profile = {
@@ -32,14 +33,22 @@ const profile = {
     id: 0,
     image: '',
     roles: [],
+    currentLevel: 0,
 } as Profile;
 
 const Profile = (state = profile, action: any) => {
-    if (action.type === types.UPDATE_PROFILE) {
-        return { ...state, ...action.payload };
-    }
+    switch (action.type) {
+        case types.UPDATE_PROFILE:
+            return { ...state, ...action.payload };
 
-    return state;
+        case types.SET_ROLES:
+            return { ...state, roles: action.payload }
+
+        case types.SET_CURRENT_LEVEL:
+            return { ...state, currentLevel: action.payload }
+    
+        default: return state
+    }
 };
 
 export default Profile;

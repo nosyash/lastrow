@@ -3,14 +3,13 @@ import * as types from '../constants/actionTypes';
 import { Room } from '../utils/types';
 
 export enum PermissionsMap {
-    Guest = 0,
-    User = 1,
-    PlaylistManager = 2,
-    Moderator = 3,
-    SeniorModerator = 4,
-    Coowner = 5,
-    Owner = 6,
-
+    Guest,
+    User,
+    PlaylistManager,
+    Moderator,
+    SeniorModerator,
+    Coowner,
+    Owner,
 }
 
 export interface RoomUpdatePermissions {
@@ -80,10 +79,15 @@ const DefaultPermissions = {
     }
 } as Permissions;
 
+export interface Rooms {
+    list: Room[];
+    currentPermissions: Permissions;
+}
+
 const InitialState = {
     list: [] as Room[],
     currentPermissions: DefaultPermissions,
-};
+} as Rooms;
 
 const Rooms = (state = InitialState, action: any) => {
     if (action.type === types.UPDATE_ROOMLIST) {
@@ -91,7 +95,7 @@ const Rooms = (state = InitialState, action: any) => {
     }
 
     if (action.type === types.SET_PERMISSIONS) {
-        return { ...state, permissions: { ...state.currentPermissions, ...action.payload }}
+        return { ...state, currentPermissions: { ...state.currentPermissions, ...action.payload }}
     }
 
     return state;

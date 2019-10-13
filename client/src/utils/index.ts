@@ -1,4 +1,5 @@
 import { Video } from './types';
+import { PermissionsMap } from '../reducers/rooms';
 
 /* eslint-disable no-new */
 export function toggleUserSelect() {
@@ -170,4 +171,8 @@ export function parseJwt (token: string) {
 export function getJWTBody(jwt: string){
     const [_, jwtBody] = jwt.split('.')
     return JSON.parse(atob(jwtBody))
+}
+
+export const isPermit = (level: PermissionsMap) => (actionLevel: any) => {
+    return level >= actionLevel;
 }

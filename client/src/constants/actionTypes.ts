@@ -18,6 +18,7 @@ export const UPDATE_POPULAR_EMOTE = 'UPDATE_POPULAR_EMOTE';
 // User
 export const UPDATE_PROFILE = 'UPDATE_PROFILE';
 export const SET_ROLES = 'SET_ROLES'
+export const SET_CURRENT_LEVEL = 'SET_CURRENT_LEVEL'
 
 // Media
 export const UPDATE_MEDIA = 'UPDATE_MEDIA';

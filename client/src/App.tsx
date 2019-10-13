@@ -37,13 +37,13 @@ function App(props: any) {
     }, []);
 
     async function handleProfile() {
-        const { updateProfile } = props;
+        const { updateProfile, setRoles } = props;
         const profile = await getProfile();
 
         if (profile) {
             updateProfile({ ...profile.data, logged: true });
-            const JWTBody = getJWTBody(getCookie('jwt'));
-            console.log(JWTBody);
+            const { Roles } = getJWTBody(getCookie('jwt'));
+            setRoles(Roles);
         } else {
             const uuid = getRandom(64);
             updateProfile({ logged: false, uuid, guest: true });
@@ -77,6 +77,7 @@ function App(props: any) {
 const mapDispatchToProps = {
     updateProfile: (payload: any) => ({ type: types.UPDATE_PROFILE, payload }),
     addPopup: (payload: any) => ({ type: types.ADD_POPUP, payload }),
+    setRoles: (payload: any) => ({ type: types.SET_ROLES, payload })
 };
 
 const mapStateToProps = (state: any) => ({

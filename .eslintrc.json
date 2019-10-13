@@ -47,6 +47,7 @@
     "@typescript-eslint/explicit-function-return-type": 0,
     "@typescript-eslint/no-use-before-define": ["warn", { "functions": false, "classes": false }],
     "react/jsx-indent": ["warn", 4],
+    "@typescript-eslint/camelcase": 0,
     "no-await-in-loop": 0,
     "no-return-assign": ["error", "except-parens"],
     "no-restricted-syntax": [

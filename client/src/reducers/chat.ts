@@ -12,12 +12,20 @@ export interface RoomMessage {
     id: number;
 }
 
+export interface Chat {
+    roomsMessages: RoomMessage[];
+    history: any[];
+    users: User[];
+    connected: boolean;
+    error: boolean;
+}
+
 const initialState = {
     roomsMessages: [] as RoomMessage[],
     history: [] as any[],
     users: [] as User[],
-    connected: false as Boolean,
-    error: false as Boolean,
+    connected: false as boolean,
+    error: false as boolean,
 };
 
 // list: [{ roomID: 'kek', messages: []}]
