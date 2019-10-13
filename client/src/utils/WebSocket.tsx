@@ -229,7 +229,7 @@ class Socket implements SocketInterface {
         }
     };
 
-    private handleMediaChange(data: any, dispatch: (...args: any) => void) {
+    private handleMediaChange(data: any, dispatch_: (...args: any) => void) {
         const state = getState();
         const mediaBefore = get(state, 'media.playlist[0]');
         const mediaAfter = get(data, 'videos[0]');
@@ -242,9 +242,11 @@ class Socket implements SocketInterface {
 
         const changed = videoIdCurrent !== videoIdNew;
         if (changed) document.dispatchEvent(mediaBeforeChange);
-        dispatch();
-        // Maybe wait for the next tick?
-        if (changed) document.dispatchEvent(mediaAfterChange);
+        dispatch_();
+        if (changed) {
+            dispatch({ type: types.UPDATE_MEDIA, payload: { actualTime: 0 } });
+            document.dispatchEvent(mediaAfterChange);
+        }
     }
 
     private handleError = () => {

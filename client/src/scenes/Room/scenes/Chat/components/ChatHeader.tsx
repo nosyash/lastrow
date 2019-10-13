@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import MiniProfile from '../../../components/MiniProfile';
 import { User } from '../../../../../utils/types';
 import { Profile } from '../../../../../reducers/profile';
+import { CustomAnimation } from '../../../../../components/Popups';
 
 
 interface ChatHeaderProps {
@@ -39,9 +40,9 @@ function ChatHeader({ userList }: ChatHeaderProps) {
 
     return (
         <div className="chat-header">
-            {showProfile && !currentProfile.guest && (
+            <CustomAnimation show={showProfile && !currentProfile.guest} classes={['mini-profile-animation']} duration={110}>
                 <MiniProfile hideProfile={handleHideProfile} currentProfile={currentProfile} />
-            )}
+            </CustomAnimation>
             <div className="chat-header_userlist">
                 {userList.map((userProfile, index) => (
                     <UserIcon

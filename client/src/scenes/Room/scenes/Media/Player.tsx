@@ -51,6 +51,7 @@ function Player(props: PlayerProps) {
     const lastTime = useRef(0);
     const minimizedRef = useRef(false);
     const playerRef = useRef(null);
+
     let volume = 0.3;
 
     useEffect(() => {
@@ -65,6 +66,7 @@ function Player(props: PlayerProps) {
     useEffect(() => {
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mediaafterchange', watchPlaylist);
+        document.addEventListener('mediabeforechange', beforeMediaChange);
 
         return () => {
             clearTimeout(remoteControlTimeRewind)
@@ -72,22 +74,27 @@ function Player(props: PlayerProps) {
             clearTimeout(minimizeTimer)
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mediaafterchange', watchPlaylist);
+            document.removeEventListener('mediabeforechange', beforeMediaChange);
         }
     }, []);
 
     useEffect(() => { syncWithRemote() }, [props.media.actualTime, props.media.remotePlaying, synced]);
 
     useEffect(() => {
-        if (Math.abs(currentTime - lastTime.current) > 3) {
-            if (Math.abs(props.media.actualTime - currentTime) > 3) {
-                if (props.media.actualTime > 0) {
-                    if (lastTime.current > 0)
-                        onProgressChangeLazy()
-                }
-            }
-        }
-        lastTime.current = currentTime;
+        requestAnimationFrame(() => { lastTime.current = currentTime })
+
+        if (Math.abs(currentTime - lastTime.current) < 7) return
+        if (Math.abs(props.media.actualTime - currentTime) < 7) return
+        if (props.media.actualTime < 1) return
+        if (lastTime.current < 1) return
+        onProgressChangeLazy()
+
     }, [currentTime]);
+
+    function beforeMediaChange() {
+        // We're doing it so onProgressChangeLazy does not trigger on media change
+        setCurrentTime(0)
+    }
 
     // useEffect(() => { console.log(props.media.actualTime); }, [props.media.actualTime]);
 
@@ -95,8 +102,11 @@ function Player(props: PlayerProps) {
         const liveStream = get(detail, 'mediaAfter.live_stream') as boolean;
         const iframe = get(detail, 'mediaAfter.iframe') as boolean;
 
+
         if (!liveStream && !iframe) {
+            // setTimeout(() => {
             safelySeekTo(0);
+            // }, 0);
             setSynced(true);
         }
         props.hideSubs();
@@ -348,6 +358,7 @@ function Player(props: PlayerProps) {
                 <PlayerUI
                     synced={synced}
                     playing={playing}
+                    hasSubs={!!props.media.subs.raw}
                     showSubs={props.media.showSubs}
                     remotePlaying={props.media.remotePlaying}
                     videoEl={playerRef.current.getInternalPlayer()}

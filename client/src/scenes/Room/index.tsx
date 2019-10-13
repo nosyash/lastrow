@@ -55,6 +55,7 @@ class RoomBase extends Component<RoomBaseProps, any> {
 
     state = {
         exists: false,
+        visible: false,
     };
 
     componentDidMount() {
@@ -63,6 +64,10 @@ class RoomBase extends Component<RoomBaseProps, any> {
         clearPopups();
         clearUsers();
         this.init();
+
+        setTimeout(() => {
+            this.setState({ visible: true })
+        }, 100);
     }
 
     componentWillUnmount() {
@@ -149,7 +154,7 @@ class RoomBase extends Component<RoomBaseProps, any> {
 
     render() {
         const { cinemaMode, connected } = this.props;
-        const { exists } = this.state;
+        const { exists, visible } = this.state;
         return (
             exists && (
                 <RenderRoom
@@ -157,6 +162,7 @@ class RoomBase extends Component<RoomBaseProps, any> {
                     divider={this.divider}
                     video={this.video}
                     chat={this.chat}
+                    visible={visible}
                 />
             )
         );
@@ -168,10 +174,11 @@ interface RenderRoomProps {
     divider: React.RefObject<any>;
     video: React.RefObject<any>;
     chat: React.RefObject<any>;
+    visible: boolean;
 }
 
-const RenderRoom = ({ connected, divider, video, chat }: RenderRoomProps) => (
-    <div className={cn(['room-container', { 'room-container_disconected': !connected }])}>
+const RenderRoom = ({ connected, divider, video, chat, visible }: RenderRoomProps) => (
+    <div className={cn(['room-container', { 'room-container_disconected': !connected, 'is-visible': visible }])}>
         <ChatContainer connected={connected} divider={divider} video={video} chat={chat} />
         {/* {!cinemaMode && <div className="custom-divider" ref={divider} />} */}
         <Divider />

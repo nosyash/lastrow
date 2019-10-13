@@ -29,6 +29,7 @@ interface PlayerUIProps {
     minimized: boolean;
     muted: boolean;
     volume: number;
+    hasSubs: boolean;
 
     onToggleSynced: () => void;
     onToggleSubs: () => void;
@@ -74,13 +75,13 @@ export default function PlayerUI(props: PlayerUIProps) {
                 <div title="Toggle playback" onClick={props.onTogglePlay} className="control play-button">
                     <i className={`fa fa-${playing ? 'pause' : 'play'}`} />
                 </div>
-                <div
+                {props.hasSubs && <div
                     onClick={props.onToggleSubs}
                     className={cn('control', 'toggle-subtitles', { 'subs-off': !props.showSubs })}
                     title="Toggle subtitles"
                 >
                     <i className="fas fa-closed-captioning" />
-                </div>
+                </div>}
                 {/* <div
                     onClick={props.onToggleSynced}
                     title={synced ? 'Playback is synchronized' : 'Playback is not synchronized'}
