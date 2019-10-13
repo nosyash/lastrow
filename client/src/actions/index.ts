@@ -31,6 +31,11 @@ export const webSocketDisconnect = () => {
     if (socket) socket.destroy();
 };
 
+export const isWebsocketOpened = () => {
+    if (socket) return socket.isOpened();
+    return false;
+}
+
 export const requestColorUpdate = (color: string) => async (dispatch: any) => {
     // const { updateProfile } = this.props;
     const { name } = store.getState().profile;
@@ -40,7 +45,6 @@ export const requestColorUpdate = (color: string) => async (dispatch: any) => {
         toast.error('There was an error updating your color...', toastOpts);
         return;
     }
-    toast.success('Color successfully changed', toastOpts);
 
     dispatch({ type: types.UPDATE_PROFILE, payload: { ...res.data } });
     return Promise.resolve();

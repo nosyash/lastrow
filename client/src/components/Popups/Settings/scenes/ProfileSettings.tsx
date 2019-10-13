@@ -96,7 +96,6 @@ class ProfileSettings extends Form {
         if (!res.data) {
             return;
         }
-        toast.success('Color successfully changed', toastOpts);
         updateProfile({ ...res.data });
         this.handleFormReset();
     };
@@ -111,10 +110,6 @@ class ProfileSettings extends Form {
             const name = data.name || profile.name;
             const res = await http.post(api.API_USER(), api.UPDATE_USER(name));
             updateProfile({ ...profile, ...res.data });
-
-            if (res.data) {
-                toast.success('Name successfully changed', toastOpts);
-            }
         }
 
         if (data.password && data.passwordNew) {
@@ -133,10 +128,6 @@ class ProfileSettings extends Form {
             const res = await http.post(api.API_USER(), api.UPDATE_IMAGE(data.image));
             const imgSrc = res.data.image ? `/uploads/${res.data.image}` : '';
             updateProfile({ ...profile, ...res.data, image: imgSrc });
-
-            if (res.data) {
-                toast.success('Profile image successfully changed', toastOpts);
-            }
         }
 
         this.setState({ data: {}, editing: '' });

@@ -5,7 +5,7 @@ import * as types from '../../../../../constants/actionTypes';
 import * as keys from '../../../../../constants/keys';
 import { MAX_MESSAGE_LENGTH, MAXIMUM_RECENT_EMOTES } from '../../../../../constants';
 import * as api from '../../../../../constants/apiActions';
-import { webSocketSend } from '../../../../../actions';
+import { webSocketSend, isWebsocketOpened } from '../../../../../actions';
 import { reverse, mod } from '../../../../../utils';
 import ls from 'local-storage';
 import { Emoji } from '../../../../../reducers/emojis';
@@ -70,6 +70,7 @@ function ChatInput(props) {
             e.preventDefault();
             const newValue = inputValue.trim();
             if (!socketState || !newValue) return;
+            if (!isWebsocketOpened()) return;
             webSocketSend(api.SEND_MESSAGE(newValue, profile.uuid));
             setInputValue('');
             return;

@@ -62,6 +62,13 @@ class Socket implements SocketInterface {
         this.listen();
     };
 
+    public isOpened = () => {
+        if (!this.instance) return false;
+        const { readyState } = this.instance;
+        console.log(this.getReadyState(readyState));
+        return this.getReadyState(readyState) === 'OPEN'
+    }
+
     public state = () => {
         return new Promise((resolve, reject) => {
             this.timer = setInterval(() => {
