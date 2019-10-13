@@ -34,7 +34,12 @@ func (u *Users) addGuest(user *User) {
 
 // DelUser delete a user from the cache
 func (u *Users) delUser(uuid string) {
+	println("cache()->delUser()")
+
 	delete(u.users, uuid)
+	println("cache()->delUser() after delete")
+
+	println("cache()->delUser() | ", len(u.users))
 	if len(u.users) > 0 {
 		u.UpdateUsers <- struct{}{}
 	}
