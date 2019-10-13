@@ -139,11 +139,6 @@ func (h *hub) remove(conn *websocket.Conn) {
 	if uuid != "" {
 		_, _ = h.deleteAndClose(uuid)
 		h.cache.Users.DelUser <- uuid
-		go func() {
-			if len(h.hub) > 0 {
-				h.cache.Users.UpdateUsers <- struct{}{}
-			}
-		}()
 
 		if len(h.hub) == 0 {
 			if h.cache.Playlist.Size() == 0 && h.cache.Messages.Size() == 0 {
@@ -182,6 +177,8 @@ func (h *hub) remove(conn *websocket.Conn) {
 				}
 				return
 			}()
+		} else {
+			h.updateUserList()
 		}
 	}
 }
