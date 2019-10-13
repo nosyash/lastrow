@@ -3,6 +3,7 @@ package ws
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"sync"
@@ -197,6 +198,8 @@ func (h *hub) read(conn *websocket.Conn) {
 	for {
 		req, err := readPacket(conn)
 		if err != nil {
+			fmt.Println(err)
+			fmt.Println("Client will be closed")
 			break
 		}
 
