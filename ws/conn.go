@@ -62,8 +62,12 @@ func (h hub) HandleActions() {
 	for {
 		select {
 		case user := <-h.register:
+			println(h.closeDeadline)
 			if h.closeDeadline {
+				println("before cancel")
 				h.cancelChan <- struct{}{}
+				println("after cancel")
+
 			}
 			h.add(user)
 			go h.read(user.Conn)
