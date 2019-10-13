@@ -204,6 +204,7 @@ func (h *hub) read(conn *websocket.Conn) {
 	for {
 		req, err := readPacket(conn)
 		if err != nil {
+			h.errLogger.Printf("[%s:%s|%s] -> readPacket(): %v\n", conn.RemoteAddr().String(), uuid[:16], h.id[:16], err)
 			break
 		}
 
