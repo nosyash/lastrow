@@ -179,10 +179,11 @@ func (h *hub) remove(conn *websocket.Conn) {
 				return
 			}()
 		} else {
-			// FIXME:
-			// Possible, unregister channel handle first instead of broadcast
-
-			go h.updateUserList()
+			for _, u := range h.hub {
+				writeMessage(u, websocket.TextMessage, createPacket(userEvent, eTypeUpdUserList, &data{
+					Users: h.cache.Users.GetAllUsers(),
+				}))
+			}
 		}
 	}
 }
