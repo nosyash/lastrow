@@ -46,8 +46,6 @@ func (room Room) CheckPermissions(eType, uuid string, payload *jwt.Payload) bool
 				log.Printf("cache.go:CheckPermissions() -> Unknown event type: %s\n", eType)
 			}
 		}
-
-		return false
 	}
 
 	if permssion, ok := room.Permissions[eType]; ok {

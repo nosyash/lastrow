@@ -219,6 +219,9 @@ func (db Database) UnbanAddress(roomUUID, ipAddress string) error {
 func (p Permissions) ToMap() map[string]int {
 	var permissions = make(map[string]int)
 
+	// FIXME:
+	// Not comfortable to add a new permissions
+
 	permissions["change_title"] = p.RoomUpdate.ChangeTitle
 	permissions["change_path"] = p.RoomUpdate.ChangePath
 	permissions["add_emoji"] = p.RoomUpdate.AddEmoji
