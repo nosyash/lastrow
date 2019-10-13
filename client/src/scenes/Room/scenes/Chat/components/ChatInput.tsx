@@ -9,6 +9,7 @@ import { webSocketSend } from '../../../../../actions';
 import { reverse, mod } from '../../../../../utils';
 import ls from 'local-storage';
 import { Emoji } from '../../../../../reducers/emojis';
+import { CustomAnimation } from '../../../../../components/Popups';
 
 const KEY_A = 97;
 const KEY_Z = 122;
@@ -221,29 +222,32 @@ function ChatInput(props) {
                 onClick={name => pasteEmoteByName(name, true)}
                 popularEmotes={props.popularEmotes}
                 emotes={props.emotesList}
-                toggleShowEmotes={() => setShowEmotes(!showEmotes)} />
-            <div className="emote-search">
-                {emoteQuery.map((emote, index) => (
-                    <span
-                        onClick={() => pasteEmoteByName(emote.name)}
-                        key={emote.name}
-                        className={cn([
-                            'emote-search__emote',
-                            { 'emote-search__emote_selected': currentEmote === index },
-                        ])}
-                    >
-                        <img src={emote.path} alt={emote.name} title={emote.name} className="emote" />
-                        <span>:{emote.name}:</span>
-                    </span>
-                ))}
-            </div>
-            {showEmotes && (
+                toggleShowEmotes={() => setShowEmotes(!showEmotes)}
+            />
+            <CustomAnimation show={!!emoteQuery.length} classes={['emote-search']}>
+                <div className="emote-search">
+                    {emoteQuery.map((emote, index) => (
+                        <span
+                            onClick={() => pasteEmoteByName(emote.name)}
+                            key={emote.name}
+                            className={cn([
+                                'emote-search__emote',
+                                { 'emote-search__emote_selected': currentEmote === index },
+                            ])}
+                        >
+                            <img src={emote.path} alt={emote.name} title={emote.name} className="emote" />
+                            <span>:{emote.name}:</span>
+                        </span>
+                    ))}
+                </div>
+            </CustomAnimation>
+            <CustomAnimation show={showEmotes} classes={['emote-menu']} duration={1100}>
                 <EmoteMenu
                     onHideMenu={() => setShowEmotes(false)}
                     list={props.emotesList}
                     onClick={name => pasteEmoteByName(name, true)}
                 />
-            )}
+            </CustomAnimation>
         </div>
     );
 }

@@ -56,6 +56,16 @@ body {
     height: 100%;
     max-height: 100%;
     position: relative;
+
+    will-change: opacity;
+    opacity: 0;
+    transform: scale(0.1);
+    transition: 0.15s;
+    transition-timing-function: cubic-bezier(0, 0, 0.13, 1);
+    &.is-visible {
+        transform: unset;
+        opacity: 1;
+    }
 }
 
 .top-nav {
@@ -408,7 +418,7 @@ body {
 
 .chat-avatar {
     border-radius: 7px;
-    transition: 0.5s background-image;
+    transition: 0.2s background-image;
     overflow: hidden;
     width: 42px;
     height: 42px;
@@ -440,7 +450,7 @@ body {
     cursor: pointer;
     user-select: none;
 
-    transition: 0.5s;
+    transition: 0.2s;
 
     &:hover {
         opacity: 0.8;
@@ -456,7 +466,7 @@ body {
     // padding-top: 12px;
     background: #343434;
     padding: 8px 10px;
-    border-radius: 5px;
+    // border-radius: 5px;
 }
 
 .chat-message.highlight .chat-message_header {
@@ -1642,7 +1652,7 @@ body {
     cursor: move;
     user-select: none;
     background: @darkSecond;
-    background: rgba(48, 48, 48, 0.9);
+    background: rgba(38, 38, 38, 0.9);
     display: flex;
 
     .controls-container {
@@ -1651,6 +1661,12 @@ body {
         i {
             vertical-align: middle;
         }
+    }
+}
+
+.guestAuth {
+    .popup-header {
+        background: #303030;
     }
 }
 
@@ -1820,7 +1836,7 @@ body {
 
 // Playlist
 .playlist_container {
-    background: rgba(48, 48, 48, 0.9);
+    background: rgba(38, 38, 38, 0.9);
     // height: 100%;
     box-shadow: none;
 
@@ -1937,4 +1953,20 @@ body {
     // width: unset;
     display: inline-block;
     height: 35px;
+}
+
+
+.custom-animation {
+    transition: 0.2s;
+    position: initial;
+    display: initial;
+    will-change: opacity;
+    opacity: 0;
+    &.is-visible {
+        opacity: 1;
+    }
+}
+.popup-animation, .mini-profile-animation, .emote-menu {
+    transition: 0.1s;
+    z-index: 10;
 }
