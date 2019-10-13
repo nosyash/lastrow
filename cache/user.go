@@ -41,7 +41,9 @@ func (u *Users) delUser(uuid string) {
 
 	println("cache()->delUser() | ", len(u.users))
 	if len(u.users) > 0 {
+		println("before u.UpdateUsers <- struct{}{}")
 		u.UpdateUsers <- struct{}{}
+		println("after u.UpdateUsers <- struct{}{}")
 	}
 }
 
