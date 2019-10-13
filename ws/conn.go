@@ -142,15 +142,17 @@ func (h *hub) remove(conn *websocket.Conn) {
 	if uuid != "" {
 		conn, _ := h.hub[uuid]
 		conn.Close()
-
 		delete(h.hub, uuid)
+
 		h.cache.Users.DelUser <- uuid
 
 		if len(h.hub) == 0 {
 			if h.cache.Playlist.Size() == 0 && h.cache.Messages.Size() == 0 {
+				println("remove(): close without deadline")
 				h.closeStorage <- struct{}{}
 				h.syncer.close <- struct{}{}
 				closeRoom <- h.id
+				println("remove(): close without deadline - ok")
 				return
 			}
 
