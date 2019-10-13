@@ -201,6 +201,7 @@ func (h *hub) read(conn *websocket.Conn) {
 	for {
 		req, err := readPacket(conn)
 		if err != nil {
+			fmt.Println(err)
 			break
 		}
 
