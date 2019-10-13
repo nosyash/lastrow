@@ -3,6 +3,7 @@ package ws
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"sync"
@@ -64,9 +65,12 @@ func (h hub) HandleActions() {
 		select {
 		case user := <-h.register:
 			eeeBoi.Lock()
+			println(h.closeDeadline)
 			if h.closeDeadline {
+				println("before h.cancelChan <- struct{}{}")
 				h.cancelChan <- struct{}{}
 				h.closeDeadline = false
+				fmt.Printf("after h.cancelChan <- struct{}{} | %v", h.closeDeadline)
 			}
 			eeeBoi.Unlock()
 			h.add(user)
