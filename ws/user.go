@@ -50,14 +50,14 @@ func (h hub) handleMessage(p *packet) {
 	}
 
 	if user, ok := h.cache.Users.GetUserByUUID(uuid); ok {
-		h.cache.Messages.AddMessage <- cache.Message{
-			Message: p.Body.Event.Data.Message,
-			Name:    user.Name,
-			Color:   user.Color,
-			Image:   user.Image,
-			ID:      user.ID,
-			Guest:   user.Guest,
-		}
+		// h.cache.Messages.AddMessage <- cache.Message{
+		// 	Message: p.Body.Event.Data.Message,
+		// 	Name:    user.Name,
+		// 	Color:   user.Color,
+		// 	Image:   user.Image,
+		// 	ID:      user.ID,
+		// 	Guest:   user.Guest,
+		// }
 
 		h.broadcast <- createPacket(chatEvent, eTypeMsg, &data{
 			Message: p.Body.Event.Data.Message,

@@ -48,7 +48,6 @@ func NewServer(address, uplPath, pofImgPath, emojiImgPath, hmacKey, originHost s
 				if r.Host == address || r.Host == originHost {
 					return true
 				}
-				println("[DEV]: wrong host")
 				return false
 			},
 		},
@@ -122,8 +121,6 @@ func (server Server) logAndServe(handler http.Handler) http.Handler {
 		if r.Host == server.originHost {
 			server.reqLogger.Printf("[%s] -> %s %s %s\n", r.RemoteAddr, r.Method, r.URL, r.UserAgent())
 			handler.ServeHTTP(w, r)
-		} else {
-			println("[DEV]: wrong host")
 		}
 	})
 }
