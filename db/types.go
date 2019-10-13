@@ -71,6 +71,7 @@ type roomUpdate struct {
 	ChangePath       int `json:"change_path" bson:"update_path"`
 	AddEmoji         int `json:"add_emoji" bson:"add_emoji"`
 	DelEmoji         int `json:"del_emoji" bson:"del_emoji"`
+	SubtitlesOffset  int `json:"subtitles_offset" bson:"subtitles_offset"`
 	ChangeEmojiName  int `json:"change_emoji_name" bson:"change_emoji_name"`
 	AddRole          int `json:"add_role" bson:"add_role"`
 	ChangePermission int `json:"change_permission" bson:"change_permission"`

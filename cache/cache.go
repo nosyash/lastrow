@@ -58,7 +58,10 @@ func New(id string) *Cache {
 			make(chan string),
 			make(chan struct{}),
 			make(chan string),
+			make(chan int),
+			make(chan int),
 			permission.ToMap(),
+			0,
 			roles,
 			db,
 		},
@@ -89,6 +92,8 @@ func (cache *Cache) HandleCacheEvents() {
 			cache.Room.updatePermissions(cache.ID)
 		case id := <-cache.Room.UpdateRoles:
 			cache.Room.updateRoles(id)
+		case offset := <-cache.Room.UpdateSubtitlesOffset:
+			cache.Room.updateSubtitlesOffset(offset)
 		case <-cache.Close:
 			return
 		}

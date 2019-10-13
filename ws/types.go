@@ -83,29 +83,30 @@ type syncer struct {
 }
 
 type data struct {
-	Message       string        `json:"message,omitempty"`
-	Error         string        `json:"error,omitempty"`
-	Color         string        `json:"color,omitempty"`
-	Image         string        `json:"image,omitempty"`
-	Name          string        `json:"name,omitempty"`
-	Guest         bool          `json:"guest,omitempty"`
-	Title         string        `json:"title,omitempty"`
-	Subtitles     string        `json:"subtitles,omitempty"`
-	SubtitlesURL  string        `json:"subs_url,omitempty"`
-	SubtitlesType string        `json:"subs_type,omitempty"`
-	Duration      int           `json:"duration,omitempty"`
-	RewindTime    int           `json:"time,omitempty"`
-	URL           string        `json:"url,omitempty"`
-	Index         int           `json:"index,omitempty"`
-	ID            string        `json:"__id,omitempty"`
-	UUID          string        `json:"uuid,omitempty"`
-	IP            string        `json:"ip,omitempty"`
-	JWT           string        `json:"jwt,omitempty"`
-	BanType       string        `json:"ban_type,omitempty"`
-	Users         []*cache.User `json:"users,omitempty"`
-	Ticker        *elapsedTime  `json:"ticker,omitempty"`
-	Emoji         []db.Emoji    `json:"emoji,omitempty"`
-	FeedBack      *feedback     `json:"feedback,omitempty"`
+	Message         string        `json:"message,omitempty"`
+	Error           string        `json:"error,omitempty"`
+	Color           string        `json:"color,omitempty"`
+	Image           string        `json:"image,omitempty"`
+	Name            string        `json:"name,omitempty"`
+	Guest           bool          `json:"guest,omitempty"`
+	Title           string        `json:"title,omitempty"`
+	Subtitles       string        `json:"subtitles,omitempty"`
+	SubtitlesURL    string        `json:"subs_url,omitempty"`
+	SubtitlesType   string        `json:"subs_type,omitempty"`
+	Duration        int           `json:"duration,omitempty"`
+	RewindTime      int           `json:"time,omitempty"`
+	URL             string        `json:"url,omitempty"`
+	Index           int           `json:"index,omitempty"`
+	ID              string        `json:"__id,omitempty"`
+	UUID            string        `json:"uuid,omitempty"`
+	IP              string        `json:"ip,omitempty"`
+	JWT             string        `json:"jwt,omitempty"`
+	BanType         string        `json:"ban_type,omitempty"`
+	SubtitlesOffset int           `json:"subtitles_offset`
+	Users           []*cache.User `json:"users,omitempty"`
+	Ticker          *elapsedTime  `json:"ticker,omitempty"`
+	Emoji           []db.Emoji    `json:"emoji,omitempty"`
+	FeedBack        *feedback     `json:"feedback,omitempty"`
 }
 
 type elapsedTime struct {
@@ -163,6 +164,8 @@ const (
 	eTypeUpdateJWT   = "update_jwt"
 	eTypePlaylistUpd = "update_playlist"
 	eTypeEmojiUpdate = "emoji_update"
+
+	eTypeSubtitlesOffset = "subtitles_offset"
 
 	eTypeFeedBack = "feedback"
 	eTypeTicker   = "ticker"
