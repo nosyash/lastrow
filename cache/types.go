@@ -22,6 +22,7 @@ type Users struct {
 	AddGuest    chan *User
 	UpdateRole  chan NewRole
 	DelUser     chan string
+	DelFeedback chan struct{}
 	UpdateUsers chan struct{}
 	db          *db.Database
 }

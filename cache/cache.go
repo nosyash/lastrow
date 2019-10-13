@@ -37,6 +37,7 @@ func New(id string) *Cache {
 			make(chan NewRole),
 			make(chan string),
 			make(chan struct{}),
+			make(chan struct{}),
 			db,
 		},
 		playlist{
