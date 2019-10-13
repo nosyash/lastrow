@@ -3,7 +3,6 @@ package ws
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"sync"
@@ -59,20 +58,17 @@ func (h hub) HandleActions() {
 	go h.cache.HandleCacheEvents()
 	go h.syncElapsedTime()
 	go storage.Add(h.cache, h.closeStorage)
-	var eeeBoi sync.Mutex
+	var deadlineLocker sync.Mutex
 
 	for {
 		select {
 		case user := <-h.register:
-			eeeBoi.Lock()
-			println(h.closeDeadline)
+			deadlineLocker.Lock()
 			if h.closeDeadline {
-				println("before h.cancelChan <- struct{}{}")
 				h.cancelChan <- struct{}{}
 				h.closeDeadline = false
-				fmt.Printf("after h.cancelChan <- struct{}{} | %v", h.closeDeadline)
 			}
-			eeeBoi.Unlock()
+			deadlineLocker.Unlock()
 			h.add(user)
 			go h.read(user.Conn)
 			go h.ping(user.Conn)
@@ -201,7 +197,6 @@ func (h *hub) read(conn *websocket.Conn) {
 	for {
 		req, err := readPacket(conn)
 		if err != nil {
-			fmt.Println(err)
 			break
 		}
 
