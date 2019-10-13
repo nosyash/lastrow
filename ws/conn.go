@@ -179,7 +179,7 @@ func (h *hub) remove(conn *websocket.Conn) {
 			}()
 		} else {
 			println("before h.updateUserList()")
-			h.updateUserList()
+			go h.updateUserList()
 			println("after h.updateUserList()")
 		}
 	}
