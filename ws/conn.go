@@ -64,6 +64,7 @@ func (h hub) HandleActions() {
 		select {
 		case user := <-h.register:
 			deadlineLocker.Lock()
+			println("h.closeDeadline ", h.closeDeadline)
 			if h.closeDeadline {
 				h.cancelChan <- struct{}{}
 				h.closeDeadline = false

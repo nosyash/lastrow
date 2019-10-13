@@ -80,7 +80,7 @@ func (h hub) updatesTo(conn *websocket.Conn) {
 	if !h.syncer.isSleep && h.syncer.isPause {
 		writeMessage(conn, websocket.TextMessage, createPacket(playerEvent, eTypePause, nil))
 	}
-	println("after pause")
+	println("before pause")
 
 	// And messages cache
 	for _, m := range h.cache.Messages.GetAllMessages() {
@@ -93,7 +93,7 @@ func (h hub) updatesTo(conn *websocket.Conn) {
 			Guest:   m.Guest,
 		}))
 	}
-	println("after message cache")
+	println("before message cache")
 
 	// Send playlist to user.Conn
 	if pl := h.cache.Playlist.GetAllPlaylist(); pl != nil {
@@ -112,7 +112,9 @@ func (h hub) updatesTo(conn *websocket.Conn) {
 		data, _ := json.Marshal(&packet)
 		writeMessage(conn, websocket.TextMessage, data)
 	}
-	println("after playlist cache")
+
+	println("before playlist cache")
+
 }
 
 func (h hub) updateRole(role cache.NewRole) {
