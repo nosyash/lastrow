@@ -18,11 +18,12 @@ import (
 // Timeout in seconds, when cache for this room will be closed
 const closeDeadlineTimeout = 120
 
-// Ping timeout
-const pingTimeout = 30
+// Ping piriod
+const pingPeriod = 30
 
 // Pong timeout
-const pongTimeout = pingTimeout * 2
+// I'm not sure for this timeout
+const pingTimeout = pingPeriod * 2
 
 func NewRoomHub(id string, db *db.Database) *hub {
 	return &hub{
@@ -242,7 +243,7 @@ func (h hub) send(msg []byte) {
 }
 
 func (h hub) ping(conn *websocket.Conn) {
-	ticker := time.NewTicker(pingTimeout * time.Second)
+	ticker := time.NewTicker(pingPeriod * time.Second)
 
 	defer func() {
 		ticker.Stop()
@@ -252,7 +253,7 @@ func (h hub) ping(conn *websocket.Conn) {
 	for {
 		select {
 		case <-ticker.C:
-			conn.SetWriteDeadline(time.Now().Add(pongTimeout * time.Second))
+			conn.SetWriteDeadline(time.Now().Add(pingTimeout * time.Second))
 
 			if err := writeMessage(conn, websocket.PingMessage, nil); err != nil {
 				return
@@ -262,9 +263,9 @@ func (h hub) ping(conn *websocket.Conn) {
 }
 
 func (h hub) pong(conn *websocket.Conn) {
-	conn.SetReadDeadline(time.Now().Add(pongTimeout * time.Second))
+	conn.SetReadDeadline(time.Now().Add(pingTimeout * time.Second))
 	conn.SetPongHandler(func(string) error {
-		conn.SetReadDeadline(time.Now().Add(pongTimeout * time.Second))
+		conn.SetReadDeadline(time.Now().Add(pingTimeout * time.Second))
 		return nil
 	})
 }
