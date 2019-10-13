@@ -52,6 +52,8 @@ func (rh *roomsHub) registerNewConn(conn *websocket.Conn) {
 		return
 	}
 
+	println("connect to ", roomUUID)
+
 	if user == nil {
 		conn.Close()
 		return
@@ -119,5 +121,8 @@ func (rh *roomsHub) registerNewConn(conn *websocket.Conn) {
 	rh.rhub[roomUUID] = hub
 
 	go rh.rhub[roomUUID].HandleActions()
+
+	println("before register <- user")
 	rh.rhub[roomUUID].register <- user
+	println("after register <- user")
 }
