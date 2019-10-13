@@ -36,7 +36,7 @@ func handleRegRequest(conn *websocket.Conn) (*user, string, error) {
 }
 
 func handleGuestRegister(conn *websocket.Conn, room, name, uuid string) (*user, string, error) {
-	if name != "" && len(name) > minGuestNameLength && len(name) < maxGuestNameLength && len(uuid) == 64 {
+	if name != "" && len(name) >= minGuestNameLength && len(name) <= maxGuestNameLength && len(uuid) == 64 {
 		return &user{
 				Conn:  conn,
 				Name:  name,
