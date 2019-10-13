@@ -17,6 +17,7 @@ export const UPDATE_POPULAR_EMOTE = 'UPDATE_POPULAR_EMOTE';
 
 // User
 export const UPDATE_PROFILE = 'UPDATE_PROFILE';
+export const SET_ROLES = 'SET_ROLES'
 
 // Media
 export const UPDATE_MEDIA = 'UPDATE_MEDIA';
@@ -48,3 +49,4 @@ export const TOGGLE_POPUP = 'TOGGLE_POPUP';
 
 // Roomlist
 export const UPDATE_ROOMLIST = 'UPDATE_ROOMLIST';
+export const SET_PERMISSIONS = 'SET_PERMISSIONS';

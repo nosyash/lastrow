@@ -65,7 +65,6 @@ class Socket implements SocketInterface {
     public isOpened = () => {
         if (!this.instance) return false;
         const { readyState } = this.instance;
-        console.log(this.getReadyState(readyState));
         return this.getReadyState(readyState) === 'OPEN'
     }
 

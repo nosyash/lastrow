@@ -12,7 +12,7 @@ const RoomList = lazy(() => import(/* webpackChunkName: "home-page" */ './scenes
 import Popups from './components/Popups';
 import * as types from './constants/actionTypes';
 import { getProfile } from './utils/apiRequests';
-import { getRandom } from './utils';
+import { getRandom, getCookie, getJWTBody } from './utils';
 import { store } from './store';
 
 const RoomSuspended = (props) =>
@@ -42,6 +42,8 @@ function App(props: any) {
 
         if (profile) {
             updateProfile({ ...profile.data, logged: true });
+            const JWTBody = getJWTBody(getCookie('jwt'));
+            console.log(JWTBody);
         } else {
             const uuid = getRandom(64);
             updateProfile({ logged: false, uuid, guest: true });

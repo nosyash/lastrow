@@ -1,7 +1,14 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import * as types from '../constants/actionTypes';
-import { User } from '../utils/types';
+import { User as UserInterface } from '../utils/types';
+import { PermissionsMap } from './rooms';
 
-export interface Profile extends User {
+export interface Role {
+    Level: PermissionsMap;
+    room_uuid: string;
+}
+
+export interface Profile extends UserInterface {
     logged: boolean;
     guest: boolean;
     name: string;
@@ -11,6 +18,7 @@ export interface Profile extends User {
     uuid: string;
     id: number;
     image: string;
+    roles: Role[];
 }
 
 const profile = {
@@ -23,7 +31,8 @@ const profile = {
     uuid: '',
     id: 0,
     image: '',
-};
+    roles: [],
+} as Profile;
 
 const Profile = (state = profile, action: any) => {
     if (action.type === types.UPDATE_PROFILE) {

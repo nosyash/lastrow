@@ -166,3 +166,8 @@ export function parseJwt (token: string) {
 
     return JSON.parse(jsonPayload);
 }
+
+export function getJWTBody(jwt: string){
+    const [_, jwtBody] = jwt.split('.')
+    return JSON.parse(atob(jwtBody))
+}

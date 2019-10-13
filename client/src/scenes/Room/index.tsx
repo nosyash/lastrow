@@ -3,13 +3,13 @@ import { connect } from 'react-redux';
 import cn from 'classnames';
 import ChatContainer from './scenes/Chat/index';
 import VideoContainer from './scenes/Media/index';
-import getEmojiList from '../../utils/InitEmojis';
 import * as types from '../../constants/actionTypes';
 import Divider from './components/Divider';
 import { webSocketConnect, webSocketDisconnect, requestRoom } from '../../actions';
 import notifications from '../../utils/notifications';
 import { GUEST_AUTH, PROFILE_SETTINGS, PLAYLIST } from '../../constants';
 import { Emoji } from '../../reducers/emojis';
+import { Permissions } from '../../reducers/rooms';
 
 // Authorize before render room
 function RoomBaseWrapper(props) {
@@ -36,6 +36,7 @@ interface RoomBaseProps {
     updateProfile: (...args: any) => void;
     addEmojis: (emojis: Emoji[]) => void;
     removePopup: (popup: string) => void;
+    setRoomsPermissions: (payload: Permissions) => void;
     togglePopup: (popup: string) => void;
     getRoom: () => Promise<any>;
 }
@@ -107,14 +108,16 @@ class RoomBase extends Component<RoomBaseProps, any> {
     }
 
     init = async () => {
-        const { match, history, updateMainStates, getRoom } = this.props;
+        const { match, history, updateMainStates, getRoom, setRoomsPermissions } = this.props;
         const { id: roomID } = match.params;
 
         // Check for room
         updateMainStates({ roomID })
         const res = await getRoom();
-        if (!res)
-            return history.push('/');
+        if (!res) return history.push('/');
+
+        const { permissions } = res;
+        setRoomsPermissions(permissions as Permissions)
         notifications.setCurrentTitle(document.title);
         this.setState({ exists: true }, () => this.initStore(this.initWebsocket));
     };
@@ -212,6 +215,7 @@ const mapDispatchToProps = {
     addPopup: payload => ({ type: types.ADD_POPUP, payload }),
     clearPopups: () => ({ type: types.CLEAR_POPUPS }),
     updateProfile: payload => ({ type: types.UPDATE_PROFILE, payload }),
+    setRoomsPermissions: payload => ({ type: types.SET_PERMISSIONS, payload }),
     getRoom: payload => requestRoom()
 };
 
