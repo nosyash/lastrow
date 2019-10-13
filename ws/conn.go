@@ -123,6 +123,7 @@ func (h hub) add(user *user) {
 		h.cache.Users.AddUser <- user.Payload
 		h.hub[user.Payload.UUID] = user.Conn
 	}
+
 	go h.updatesTo(user.Conn)
 }
 
@@ -178,9 +179,10 @@ func (h *hub) remove(conn *websocket.Conn) {
 				return
 			}()
 		} else {
-			println("before h.updateUserList()")
+			// FIXME:
+			// Possible, unregister channel handle first instead of broadcast
+
 			go h.updateUserList()
-			println("after h.updateUserList()")
 		}
 	}
 }
