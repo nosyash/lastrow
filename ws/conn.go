@@ -18,6 +18,12 @@ import (
 // Timeout in seconds, when cache for this room will be closed
 const closeDeadlineTimeout = 120
 
+// Ping timeout
+const pingTimeout = 30
+
+// Pong timeout
+const pongTimeout = pingTimeout * 2
+
 func NewRoomHub(id string, db *db.Database) *hub {
 	return &hub{
 		db,
@@ -236,7 +242,7 @@ func (h hub) send(msg []byte) {
 }
 
 func (h hub) ping(conn *websocket.Conn) {
-	ticker := time.NewTicker(30 * time.Second)
+	ticker := time.NewTicker(pingTimeout * time.Second)
 
 	defer func() {
 		ticker.Stop()
@@ -246,7 +252,7 @@ func (h hub) ping(conn *websocket.Conn) {
 	for {
 		select {
 		case <-ticker.C:
-			conn.SetWriteDeadline(time.Now().Add(45 * time.Second))
+			conn.SetWriteDeadline(time.Now().Add(pongTimeout * time.Second))
 
 			if err := writeMessage(conn, websocket.PingMessage, nil); err != nil {
 				return
@@ -256,9 +262,9 @@ func (h hub) ping(conn *websocket.Conn) {
 }
 
 func (h hub) pong(conn *websocket.Conn) {
-	conn.SetReadDeadline(time.Now().Add(45 * time.Second))
+	conn.SetReadDeadline(time.Now().Add(pongTimeout * time.Second))
 	conn.SetPongHandler(func(string) error {
-		conn.SetReadDeadline(time.Now().Add(45 * time.Second))
+		conn.SetReadDeadline(time.Now().Add(pongTimeout * time.Second))
 		return nil
 	})
 }
