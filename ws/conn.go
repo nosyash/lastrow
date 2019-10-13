@@ -64,7 +64,6 @@ func (h hub) HandleActions() {
 		select {
 		case user := <-h.register:
 			deadlineLocker.Lock()
-			println("h.closeDeadline ", h.closeDeadline)
 			if h.closeDeadline {
 				h.cancelChan <- struct{}{}
 				h.closeDeadline = false
@@ -98,8 +97,6 @@ func (h hub) HandleActions() {
 func (h hub) add(user *user) {
 	var uuid string
 
-	println("in add")
-
 	for key := range h.hub {
 		if user.Payload != nil {
 			uuid = user.Payload.UUID
@@ -126,7 +123,6 @@ func (h hub) add(user *user) {
 		h.cache.Users.AddUser <- user.Payload
 		h.hub[user.Payload.UUID] = user.Conn
 	}
-	println("send updatesTo")
 	go h.updatesTo(user.Conn)
 }
 
