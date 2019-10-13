@@ -77,6 +77,7 @@ func (h hub) HandleActions() {
 			go h.pong(user.Conn)
 		case conn := <-h.unregister:
 			h.remove(conn)
+			println("before remove")
 		case message := <-h.broadcast:
 			h.send(message)
 		case <-h.cache.Users.UpdateUsers:
