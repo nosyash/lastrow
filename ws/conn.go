@@ -203,9 +203,10 @@ func (h *hub) read(conn *websocket.Conn) {
 
 	for {
 		req, err := readPacket(conn)
-		if err != nil {
-			h.errLogger.Printf("[%s:%s|%s] -> readPacket(): %v\n", conn.RemoteAddr().String(), uuid[:16], h.id[:16], err)
+		if websocket.IsCloseError(err, websocket.CloseNoStatusReceived, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
 			break
+		} else if err != nil {
+			h.errLogger.Printf("[%s:%s|%s] -> %v\n", conn.RemoteAddr().String(), uuid[:16], h.id[:16], err)
 		}
 
 		h.reqLogger.Printf("[%s:%s|%s] -> [%s:%s]\n", conn.RemoteAddr().String(), uuid[:16], h.id[:16], req.Action, req.Body.Event.Type)
