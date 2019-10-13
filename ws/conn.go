@@ -144,6 +144,7 @@ func (h *hub) remove(conn *websocket.Conn) {
 	if uuid != "" {
 		println("before del user")
 		_, _ = h.deleteAndClose(uuid)
+		println("after del and close")
 		h.cache.Users.DelUser <- uuid
 		println("after del user")
 
