@@ -77,7 +77,7 @@ func (h hub) HandleActions() {
 			go h.pong(user.Conn)
 		case conn := <-h.unregister:
 			h.remove(conn)
-			println("before remove")
+			println("after remove")
 		case message := <-h.broadcast:
 			h.send(message)
 		case <-h.cache.Users.UpdateUsers:
@@ -140,10 +140,7 @@ func (h *hub) remove(conn *websocket.Conn) {
 	}
 
 	if uuid != "" {
-		conn, _ := h.hub[uuid]
-		conn.Close()
-		delete(h.hub, uuid)
-
+		_, _ = h.deleteAndClose(uuid)
 		h.cache.Users.DelUser <- uuid
 
 		if len(h.hub) == 0 {
@@ -166,6 +163,9 @@ func (h *hub) remove(conn *websocket.Conn) {
 					elapsed = h.syncer.elapsed
 				}
 
+				println("remove(): close with deadline")
+				println(h.cache.Playlist.Size(), h.cache.Messages.Size())
+
 			loop:
 				for {
 					select {
@@ -178,8 +178,8 @@ func (h *hub) remove(conn *websocket.Conn) {
 					case <-ctx.Done():
 						h.closeStorage <- struct{}{}
 						h.syncer.close <- struct{}{}
-						cancel()
 						closeRoom <- h.id
+						cancel()
 						break loop
 					}
 				}
