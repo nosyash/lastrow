@@ -58,17 +58,17 @@ func (h hub) HandleActions() {
 	go h.cache.HandleCacheEvents()
 	go h.syncElapsedTime()
 	go storage.Add(h.cache, h.closeStorage)
+	var eeeBoi sync.Mutex
 
 	for {
 		select {
 		case user := <-h.register:
-			println(h.closeDeadline)
+			eeeBoi.Lock()
 			if h.closeDeadline {
-				println("before cancel")
 				h.cancelChan <- struct{}{}
-				println("after cancel")
-
+				h.closeDeadline = false
 			}
+			eeeBoi.Unlock()
 			h.add(user)
 			go h.read(user.Conn)
 			go h.ping(user.Conn)
@@ -176,7 +176,6 @@ func (h *hub) remove(conn *websocket.Conn) {
 						break loop
 					}
 				}
-				h.closeDeadline = false
 				return
 			}()
 		}
