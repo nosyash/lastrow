@@ -204,7 +204,9 @@ func (h *hub) read(conn *websocket.Conn) {
 	for {
 		req, err := readPacket(conn)
 		if err != nil {
-			h.errLogger.Printf("[%s:%s|%s] -> %v\n", conn.RemoteAddr().String(), uuid[:16], h.id[:16], err)
+			if !websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseNoStatusReceived, websocket.CloseAbnormalClosure, websocket.CloseGoingAway) {
+				h.errLogger.Printf("[%s:%s|%s] -> %v\n", conn.RemoteAddr().String(), uuid[:16], h.id[:16], err)
+			}
 			break
 		}
 
@@ -234,7 +236,7 @@ func (h hub) send(msg []byte) {
 }
 
 func (h hub) ping(conn *websocket.Conn) {
-	ticker := time.NewTicker(54 * time.Second)
+	ticker := time.NewTicker(30 * time.Second)
 
 	defer func() {
 		ticker.Stop()
@@ -254,9 +256,9 @@ func (h hub) ping(conn *websocket.Conn) {
 }
 
 func (h hub) pong(conn *websocket.Conn) {
-	conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+	conn.SetReadDeadline(time.Now().Add(45 * time.Second))
 	conn.SetPongHandler(func(string) error {
-		conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+		conn.SetReadDeadline(time.Now().Add(45 * time.Second))
 		return nil
 	})
 }
