@@ -2,8 +2,10 @@ package ws
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
+	"log"
+	"os"
+	"sync"
 	"time"
 
 	"github.com/nosyash/backrow/cache"
@@ -13,16 +15,18 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-const (
-	// Timeout in seconds, when cache for this room will be closed
-	closeDeadlineTimeout = 120
-)
+// Timeout in seconds, when cache for this room will be closed
+const closeDeadlineTimeout = 120
 
-var (
-	// Indicating whether to cancel the context or not
-	closeDeadline = false
-	cancelChan    = make(chan struct{})
-)
+// Ping piriod
+const pingPeriod = 30
+
+// Pong timeout
+// I'm not sure for this timeout
+const pingTimeout = 45
+
+// Write timeout
+const writeTimeout = 10
 
 func NewRoomHub(id string, db *db.Database) *hub {
 	return &hub{
@@ -46,10 +50,16 @@ func NewRoomHub(id string, db *db.Database) *hub {
 			make(chan struct{}),
 			make(chan struct{}),
 			0,
+			0,
 			"",
 			0,
 		},
 		id,
+		false,
+		log.New(os.Stdout, "[WS]:   ", log.Llongfile),
+		log.New(os.Stdout, "[WS]:   ", log.LstdFlags),
+		make(chan struct{}),
+		&sync.WaitGroup{},
 	}
 }
 
@@ -58,13 +68,17 @@ func (h hub) HandleActions() {
 	go h.cache.HandleCacheEvents()
 	go h.syncElapsedTime()
 	go storage.Add(h.cache, h.closeStorage)
+	var deadlineLocker sync.Mutex
 
 	for {
 		select {
 		case user := <-h.register:
-			if closeDeadline {
-				cancelChan <- struct{}{}
+			deadlineLocker.Lock()
+			if h.closeDeadline {
+				h.cancelChan <- struct{}{}
+				h.closeDeadline = false
 			}
+			deadlineLocker.Unlock()
 			h.add(user)
 			go h.read(user.Conn)
 			go h.ping(user.Conn)
@@ -77,6 +91,8 @@ func (h hub) HandleActions() {
 			go h.updateUserList()
 		case path := <-h.cache.Room.UpdateEmojis:
 			go h.updateEmojis(path)
+		case role := <-h.cache.Users.UpdateRole:
+			go h.updateRole(role)
 		case <-h.cache.Playlist.UpdatePlaylist:
 			go h.updatePlaylist()
 			if h.syncer.isSleep && h.cache.Playlist.Size() > 0 {
@@ -89,16 +105,16 @@ func (h hub) HandleActions() {
 }
 
 func (h hub) add(user *user) {
-	for u := range h.hub {
-		var uuid string
+	var uuid string
 
+	for key := range h.hub {
 		if user.Payload != nil {
 			uuid = user.Payload.UUID
 		} else {
 			uuid = user.UUID
 		}
 
-		if u == uuid {
+		if key == uuid {
 			sendError(user.Conn, errors.New("You already connected to this room"))
 			user.Conn.Close()
 			return
@@ -109,36 +125,19 @@ func (h hub) add(user *user) {
 			Name:  user.Name,
 			Guest: true,
 			UUID:  user.UUID,
-			ID:    getHashOfString(user.UUID[:8]),
+			ID:    getHashOfString(user.UUID[:16]),
 		}
 
 		h.hub[user.UUID] = user.Conn
 	} else {
-		h.cache.Users.AddUser <- user.Payload.UUID
+		h.cache.Users.AddUser <- user.Payload
 		h.hub[user.Payload.UUID] = user.Conn
 	}
 
-	pl := h.cache.Playlist.GetAllPlaylist()
-
-	if pl != nil {
-		packet := playlist{
-			Action: playlistEvent,
-			Body: plBody{
-				Event: plEvent{
-					Type: eTypePlaylistUpd,
-					Data: plData{
-						Playlist: pl,
-					},
-				},
-			},
-		}
-
-		data, _ := json.Marshal(&packet)
-		writeMessage(user.Conn, websocket.TextMessage, data)
-	}
+	go h.updatesTo(user.Conn)
 }
 
-func (h hub) remove(conn *websocket.Conn) {
+func (h *hub) remove(conn *websocket.Conn) {
 	var uuid string
 
 	for u, c := range h.hub {
@@ -149,12 +148,12 @@ func (h hub) remove(conn *websocket.Conn) {
 	}
 
 	if uuid != "" {
-		delete(h.hub, uuid)
+		_, _ = h.deleteAndClose(uuid)
 		h.cache.Users.DelUser <- uuid
+		<-h.cache.Users.DelFeedback
 
 		if len(h.hub) == 0 {
-
-			if h.cache.Playlist.Size() == 0 {
+			if h.cache.Playlist.Size() == 0 && h.cache.Messages.Size() == 0 {
 				h.closeStorage <- struct{}{}
 				h.syncer.close <- struct{}{}
 				closeRoom <- h.id
@@ -164,18 +163,18 @@ func (h hub) remove(conn *websocket.Conn) {
 			go func() {
 				var elapsed int
 
-				closeDeadline = true
+				h.closeDeadline = true
 				ctx, cancel := context.WithTimeout(context.Background(), closeDeadlineTimeout*time.Second)
 
-				if !h.syncer.isStreamOrFrame {
+				if !h.syncer.isSleep && !h.syncer.isStreamOrFrame {
 					elapsed = h.syncer.elapsed
 				}
 
 			loop:
 				for {
 					select {
-					case <-cancelChan:
-						if !h.syncer.isStreamOrFrame {
+					case <-h.cancelChan:
+						if !h.syncer.isSleep && !h.syncer.isStreamOrFrame {
 							h.syncer.rewind <- elapsed
 						}
 						cancel()
@@ -183,14 +182,19 @@ func (h hub) remove(conn *websocket.Conn) {
 					case <-ctx.Done():
 						h.closeStorage <- struct{}{}
 						h.syncer.close <- struct{}{}
-						cancel()
 						closeRoom <- h.id
+						cancel()
 						break loop
 					}
 				}
-				closeDeadline = false
 				return
 			}()
+		} else {
+			for _, u := range h.hub {
+				writeMessage(u, websocket.TextMessage, createPacket(userEvent, eTypeUpdUserList, &data{
+					Users: h.cache.Users.GetAllUsers(),
+				}))
+			}
 		}
 	}
 }
@@ -200,21 +204,33 @@ func (h *hub) read(conn *websocket.Conn) {
 		h.unregister <- conn
 	}()
 
+	var uuid string
+	for u, c := range h.hub {
+		if c == conn {
+			uuid = u
+		}
+	}
+
 	for {
 		req, err := readPacket(conn)
 		if err != nil {
-			if websocket.IsCloseError(err) || websocket.IsUnexpectedCloseError(err) {
-				break
+			if !websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseNoStatusReceived, websocket.CloseAbnormalClosure, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				h.errLogger.Printf("[%s:%s|%s] -> %v\n", conn.RemoteAddr().String(), uuid[:16], h.id[:16], err)
 			}
-			conn.Close()
 			break
 		}
+
+		h.reqLogger.Printf("[%s:%s|%s] -> [%s:%s]\n", conn.RemoteAddr().String(), uuid[:16], h.id[:16], req.Action, req.Body.Event.Type)
 
 		switch req.Action {
 		case userEvent:
 			go h.handleUserEvent(req, conn)
+		case playlistEvent:
+			go h.handlePlaylistEvent(req, conn)
 		case playerEvent:
 			go h.handlePlayerEvent(req, conn)
+		case roomUpdateEvent:
+			go h.handleRoomUpdateEven(req, conn)
 		default:
 			go sendError(conn, errors.New("Unknown action type"))
 		}
@@ -223,14 +239,16 @@ func (h *hub) read(conn *websocket.Conn) {
 
 func (h hub) send(msg []byte) {
 	for _, conn := range h.hub {
-		if err := writeMessage(conn, websocket.TextMessage, msg); err != nil {
-			conn.Close()
-		}
+		go func(conn *websocket.Conn) {
+			if err := writeMessage(conn, websocket.TextMessage, msg); err != nil {
+				conn.Close()
+			}
+		}(conn)
 	}
 }
 
 func (h hub) ping(conn *websocket.Conn) {
-	ticker := time.NewTicker(30 * time.Second)
+	ticker := time.NewTicker(pingPeriod * time.Second)
 
 	defer func() {
 		ticker.Stop()
@@ -240,7 +258,7 @@ func (h hub) ping(conn *websocket.Conn) {
 	for {
 		select {
 		case <-ticker.C:
-			conn.SetWriteDeadline(time.Now().Add(45 * time.Second))
+			conn.SetWriteDeadline(time.Now().Add(writeTimeout * time.Second))
 
 			if err := writeMessage(conn, websocket.PingMessage, nil); err != nil {
 				return
@@ -250,9 +268,9 @@ func (h hub) ping(conn *websocket.Conn) {
 }
 
 func (h hub) pong(conn *websocket.Conn) {
-	conn.SetReadDeadline(time.Now().Add(45 * time.Second))
+	conn.SetReadDeadline(time.Now().Add(pingTimeout * time.Second))
 	conn.SetPongHandler(func(string) error {
-		conn.SetReadDeadline(time.Now().Add(45 * time.Second))
+		conn.SetReadDeadline(time.Now().Add(pingTimeout * time.Second))
 		return nil
 	})
 }

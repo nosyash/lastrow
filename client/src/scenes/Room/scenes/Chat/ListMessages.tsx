@@ -16,7 +16,11 @@ function ListMessages(props) {
         event = () => handleManualScroll();
         messagesEl.current.addEventListener('wheel', event);
         handleAutoScroll();
-    }, [props.roomsMessages]);
+
+        return () => {
+            messagesEl.current.removeEventListener('wheel', event);
+        }
+    }, [props.roomsMessages, props.users]);
 
     function handleManualScroll() {
         const scrolledUp = currentScroll() < amountOfPixelsToBeAtBottom();
@@ -112,7 +116,7 @@ const mapStateToProps = state => ({
     roomsMessages: state.chat.roomsMessages,
     users: state.chat.users,
     selfName: state.profile.name,
-    roomID: state.mainStates.roomID,
+    roomID: state.mainStates.uuid,
 });
 
 export default connect(mapStateToProps)(ListMessages);

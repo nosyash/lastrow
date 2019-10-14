@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -65,7 +64,7 @@ func (server Server) register(w http.ResponseWriter, uname, passwd, email, name 
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
 	if err != nil {
-		log.Printf("bcrypt.GenerateFromPassword(): %v", err)
+		server.errLogger.Println(err)
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Couldn't create new account",
 		})
@@ -74,7 +73,7 @@ func (server Server) register(w http.ResponseWriter, uname, passwd, email, name 
 
 	result, err := server.db.CreateNewUser(uname, uname, hex.EncodeToString(hash[:]), strings.TrimSpace(email), uuid)
 	if err != nil {
-		log.Printf("server.db.CreateNewUser(): %v", err)
+		server.errLogger.Println(err)
 		sendJSON(w, http.StatusInternalServerError, message{
 			Error: "Couldn't create new account",
 		})
@@ -107,7 +106,7 @@ func (server Server) login(w http.ResponseWriter, uname, passwd string) {
 	}
 
 	if err != nil {
-		log.Printf("server.db.GetUserByUname(): %v", err)
+		server.errLogger.Println(err)
 		sendJSON(w, http.StatusInternalServerError, message{
 			Error: "Internal server error while trying to login",
 		})
@@ -116,7 +115,7 @@ func (server Server) login(w http.ResponseWriter, uname, passwd string) {
 
 	dHash, err := hex.DecodeString(user.Hash)
 	if err != nil {
-		log.Printf("hex.DecodeString(): %v", err)
+		server.errLogger.Println(err)
 		sendJSON(w, http.StatusInternalServerError, message{
 			Error: "Internal server error while trying to login",
 		})
@@ -134,48 +133,22 @@ func (server Server) login(w http.ResponseWriter, uname, passwd string) {
 }
 
 func (server Server) setUpAuthSession(w http.ResponseWriter, uuid string) {
-	isAdmin, err := server.db.IsAdmin(uuid)
-	if err != nil {
-		log.Printf("server.db.IsAdmin(): %v", err)
-		sendJSON(w, http.StatusBadRequest, message{
-			Error: "Couldn't create auth session",
-		})
-		return
-	}
-
-	roomList, err := server.db.WhereUserOwner(uuid)
-	if err != nil {
-		log.Printf("server.db.WhereUserOwner(): %v", err)
-		sendJSON(w, http.StatusBadRequest, message{
-			Error: "Couldn't create auth session",
-		})
-		return
-	}
-
 	var header jwt.Header
-	var payload jwt.Payload
-	var owner = make([]jwt.Owner, len(roomList))
-	var timeNow = time.Now().Add(1 * 365 * 24 * time.Hour)
-
-	for i, r := range roomList {
-		owner[i].RoomID = r.UUID
-		for _, r := range r.Owners {
-			if r.UUID == uuid {
-				owner[i].Permissions = r.Permissions
-			}
-		}
-	}
+	var time = time.Now().Add(1 * 365 * 24 * time.Hour)
 
 	header.Aig = "HS512"
-
-	payload.UUID = uuid
-	payload.IsAdmin = isAdmin
-	payload.Owner = owner
-	payload.Exp = timeNow.UnixNano()
+	payload, err := server.getPayload(uuid, time)
+	if err != nil {
+		server.errLogger.Println(err)
+		sendJSON(w, http.StatusBadRequest, message{
+			Error: "Couldn't create auth session",
+		})
+		return
+	}
 
 	token, err := jwt.GenerateNewToken(header, payload, server.hmacKey)
 	if err != nil {
-		log.Printf("jwt.GenerateNewToken(): %v", err)
+		server.errLogger.Println(err)
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Couldn't create auth session",
 		})
@@ -186,6 +159,6 @@ func (server Server) setUpAuthSession(w http.ResponseWriter, uuid string) {
 		Name:    "jwt",
 		Value:   token,
 		Path:    "/",
-		Expires: timeNow,
+		Expires: time,
 	})
 }

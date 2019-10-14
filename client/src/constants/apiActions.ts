@@ -58,17 +58,17 @@ export const UPDATE_PASSWORD = ({ cur_passwd, new_passwd }: PasswordChange) =>
 // ####################
 //      WebSocket
 // ####################
-export const USER_REGISTER = (room_id: string, user_uuid?: string) =>
+export const USER_REGISTER = (room_uuid: string, user_uuid?: string) =>
     JSON.stringify({
         action: 'user_register',
-        room_id,
+        room_uuid,
         jwt: getCookie('jwt'),
     } as WebSocketRegister);
 
-export const GUEST_REGISTER = (room_id: string, user_uuid: string, name: string) =>
+export const GUEST_REGISTER = (room_uuid: string, user_uuid: string, name: string) =>
     JSON.stringify({
         action: 'guest_register',
-        room_id,
+        room_uuid,
         name,
         user_uuid,
     } as WebSocketGuestRegister);
@@ -110,9 +110,9 @@ export const GET_ERROR = (string: string) => {
 //     }
 // }
 
-export const SEND_MEDIA_TO_PLAYLIST = ({ url, subtitles = {}, uuid }: { url: string, uuid?: string, subtitles?: any }) => {
+export const SEND_MEDIA_TO_PLAYLIST = ({ url, subtitles = {}, uuid }: { url: string; uuid?: string; subtitles?: any }) => {
     const request = {
-        action: 'player_event',
+        action: 'playlist_event',
         body: {
             event: {
                 type: 'playlist_add',
@@ -128,9 +128,9 @@ export const SEND_MEDIA_TO_PLAYLIST = ({ url, subtitles = {}, uuid }: { url: str
     return JSON.stringify(request);
 };
 
-export const DELETE_VIDEO_FROM_PLAYLIST = ({ __id, uuid }: { __id: string, uuid?: string }) => {
+export const DELETE_VIDEO_FROM_PLAYLIST = ({ __id, uuid }: { __id: string; uuid?: string }) => {
     const request = {
-        action: 'player_event',
+        action: 'playlist_event',
         body: {
             event: {
                 type: 'playlist_del',
@@ -145,12 +145,12 @@ export const DELETE_VIDEO_FROM_PLAYLIST = ({ __id, uuid }: { __id: string, uuid?
     return JSON.stringify(request);
 };
 
-export const REORDER_MEDIA = ({ __id, index }: { __id: string, index: number }) => {
+export const REORDER_MEDIA = ({ __id, index }: { __id: string; index: number }) => {
     const request = {
-        action: "player_event",
+        action: 'playlist_event',
         body: {
             event: {
-                type: "move",
+                type: 'move',
                 data: {
                     __id: __id,
                     index: index
@@ -163,11 +163,56 @@ export const REORDER_MEDIA = ({ __id, index }: { __id: string, index: number }) 
     return JSON.stringify(request)
 }
 
+export const REWIND_MEDIA = ({ time }: { time: number }) => {
+    const request = {
+        action: 'player_event',
+        body: {
+            event: {
+                type:'rewind',
+                data: {
+                    time: parseInt(time.toString(), 10),
+                }
+            }
+        },
+        jwt: getCookie('jwt'),
+    }
+
+    return JSON.stringify(request)
+}
+
+export const PAUSE_MEDIA = () => {
+    const request = {
+        action: 'player_event',
+        body: {
+            event: {
+                type:'pause',
+            }
+        },
+        jwt: getCookie('jwt'),
+    }
+
+    return JSON.stringify(request)
+}
+
+export const RESUME_MEDIA = () => {
+    const request = {
+        action: 'player_event',
+        body: {
+            event: {
+                type:'resume',
+            }
+        },
+        jwt: getCookie('jwt'),
+    }
+
+    return JSON.stringify(request)
+}
+
 export interface AddEmoteRequest {
     name: string;
     type: 'png' | 'gif';
     base64: string;
-    roomId?: string;
+    room_uuid?: string;
 }
 
 const getEmoteName = (name: string) =>
@@ -176,50 +221,50 @@ const getEmoteName = (name: string) =>
         .replace(/\.\w+$/, '')
         .replace(/[^a-z0-9_]/gi, '') || 'emote' + Math.round(Math.random() * 10000)
 
-export const ADD_EMOTE = ({ name, type, base64, roomId }: AddEmoteRequest) => {
+export const ADD_EMOTE = ({ name, type, base64, room_uuid }: AddEmoteRequest) => {
     const request = {
-        action: "room_update",
+        action: 'room_update',
         body: {
-            type: "add_emoji",
+            type: 'add_emoji',
             data: {
                 name: getEmoteName(name),
                 type,
                 raw_img: base64.replace(/^data:.+;base64,/, ''),
             }
         },
-        room_id: roomId,
+        room_uuid,
 
     }
     return JSON.stringify(request);
 }
 
-export const REMOVE_EMOTE = ({ name, roomId }) => {
+export const REMOVE_EMOTE = ({ name, room_uuid }) => {
     const request = {
-        action: "room_update",
+        action: 'room_update',
         body: {
-            type: "del_emoji",
+            type: 'del_emoji',
             data: {
                 name,
             }
         },
-        room_id: roomId,
+        room_uuid,
     }
     return JSON.stringify(request);
 }
 
 
 
-export const RENAME_EMOTE = ({ name, newname, roomId }) => {
+export const RENAME_EMOTE = ({ name, newname, room_uuid }) => {
     const request = {
-        action: "room_update",
+        action: 'room_update',
         body: {
-            type: "change_emoji_name",
+            type: 'change_emoji_name',
             data: {
                 name,
                 new_name: newname
             }
         },
-        room_id: roomId
+        room_uuid
     }
 
     return JSON.stringify(request);

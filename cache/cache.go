@@ -1,9 +1,12 @@
 package cache
 
 import (
+	"fmt"
+	"log"
 	"os"
 
 	"github.com/nosyash/backrow/db"
+	"github.com/nosyash/backrow/jwt"
 )
 
 // New create new cache
@@ -14,12 +17,26 @@ func New(id string) *Cache {
 		uploadPath = "./"
 	}
 
+	permission, err := db.GetAllPermissions(id)
+	if err != nil {
+		log.Println(fmt.Errorf("cache.go:New() -> Couldn't get permissions for %s -> %v", id, err))
+		return nil
+	}
+
+	roles, err := db.GetAllRoles(id)
+	if err != nil {
+		log.Println(fmt.Errorf("cache.go:New() -> Couldn't get roles for %s -> %v", id, err))
+		return nil
+	}
+
 	return &Cache{
 		Users{
 			make(map[string]*User),
-			make(chan string),
+			make(chan *jwt.Payload),
 			make(chan *User),
+			make(chan NewRole),
 			make(chan string),
+			make(chan struct{}),
 			make(chan struct{}),
 			db,
 		},
@@ -34,8 +51,19 @@ func New(id string) *Cache {
 			make(chan int),
 			uploadPath,
 		},
-		room{
+		Messages{
+			make([]Message, 0),
+			make(chan Message),
+		},
+		Room{
 			make(chan string),
+			make(chan struct{}),
+			make(chan string),
+			make(chan int),
+			make(chan int),
+			permission.ToMap(),
+			0,
+			roles,
 			db,
 		},
 		id,
@@ -47,8 +75,8 @@ func New(id string) *Cache {
 func (cache *Cache) HandleCacheEvents() {
 	for {
 		select {
-		case user := <-cache.Users.AddUser:
-			cache.Users.addUser(user)
+		case payload := <-cache.Users.AddUser:
+			cache.Users.addUser(payload)
 		case guest := <-cache.Users.AddGuest:
 			cache.Users.addGuest(guest)
 		case uuid := <-cache.Users.DelUser:
@@ -59,6 +87,14 @@ func (cache *Cache) HandleCacheEvents() {
 			cache.Playlist.delVideo(id)
 		case mv := <-cache.Playlist.MoveVideo:
 			cache.Playlist.moveVideo(mv.Index, mv.ID)
+		case message := <-cache.Messages.AddMessage:
+			cache.Messages.addMessage(message)
+		case <-cache.Room.UpdatePermissions:
+			cache.Room.updatePermissions(cache.ID)
+		case id := <-cache.Room.UpdateRoles:
+			cache.Room.updateRoles(id)
+		case offset := <-cache.Room.UpdateSubtitlesOffset:
+			cache.Room.updateSubtitlesOffset(offset)
 		case <-cache.Close:
 			return
 		}

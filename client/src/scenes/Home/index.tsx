@@ -17,7 +17,7 @@ function RoomListBase(props) {
         document.title = 'Backrow'
 
         props.clearPopups();
-        props.updateMainStates({ roomID: '', ID: '' })
+        props.updateMainStates({ roomID: '', uuid: '' })
         getRoomList();
 
         if (props.guest) {

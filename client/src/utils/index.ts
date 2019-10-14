@@ -1,4 +1,5 @@
 import { Video } from './types';
+import { PermissionsMap } from '../reducers/rooms';
 
 /* eslint-disable no-new */
 export function toggleUserSelect() {
@@ -152,7 +153,26 @@ function handleNotifyClose(n: Notification) {
 }
 
 export function getCookie(name) {
-    var value = "; " + document.cookie;
-    var parts = value.split("; " + name + "=");
-    if (parts.length == 2) return parts.pop().split(";").shift();
-  }
+    const value = '; ' + document.cookie;
+    const parts = value.split('; ' + name + '=');
+    if (parts.length == 2) return parts.pop().split(';').shift();
+}
+
+export function parseJwt (token: string) {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    return JSON.parse(jsonPayload);
+}
+
+export function getJWTBody(jwt: string){
+    const [_, jwtBody] = jwt.split('.')
+    return JSON.parse(atob(jwtBody))
+}
+
+export const isPermit = (level: PermissionsMap) => (actionLevel: any) => {
+    return level >= actionLevel;
+}

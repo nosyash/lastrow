@@ -3,6 +3,7 @@ package api
 import (
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -26,6 +27,8 @@ type Server struct {
 	uploadServer UploadServer
 	hmacKey      string
 	originHost   string
+	errLogger    *log.Logger
+	reqLogger    *log.Logger
 }
 
 // NewServer create and return a new instance of API Server
@@ -55,6 +58,8 @@ func NewServer(address, uplPath, pofImgPath, emojiImgPath, hmacKey, originHost s
 		},
 		hmacKey,
 		originHost,
+		log.New(os.Stdout, "[HTTP]: ", log.Llongfile),
+		log.New(os.Stdout, "[HTTP]: ", log.LstdFlags),
 	}
 }
 
@@ -63,8 +68,9 @@ func (server Server) RunServer() error {
 	r := mux.NewRouter()
 	go ws.HandleWsConnection(server.db)
 
-	r.HandleFunc("/api/room", server.roomsHandler).Methods("GET", "POST")
-	r.HandleFunc("/api/r/{roomPath}", server.roomInnerHandler).Methods("GET")
+	r.HandleFunc("/api/room", server.roomHandler).Methods("GET", "POST")
+	r.HandleFunc("/api/r/{roomPath}", server.getRoom).Methods("GET")
+	r.HandleFunc("/api/r/{roomPath}/banned", server.bannedList).Methods("GET")
 	r.HandleFunc("/api/user", server.userHandler).Methods("GET", "POST")
 	r.HandleFunc("/api/auth", server.authHandler).Methods("POST")
 	r.HandleFunc("/api/ws", server.acceptWebsocket).Methods("GET")
@@ -113,7 +119,7 @@ func (server Server) acceptWebsocket(w http.ResponseWriter, r *http.Request) {
 func (server Server) logAndServe(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Host == server.originHost {
-			log.Printf("%s -> %s %s %s\n", r.RemoteAddr, r.Method, r.URL, r.UserAgent())
+			server.reqLogger.Printf("[%s] -> %s %s %s\n", r.RemoteAddr, r.Method, r.URL, r.UserAgent())
 			handler.ServeHTTP(w, r)
 		}
 	})

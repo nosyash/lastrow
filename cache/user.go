@@ -1,21 +1,26 @@
 package cache
 
-import "log"
+import (
+	"log"
+
+	"github.com/nosyash/backrow/jwt"
+)
 
 // AddUser read information about user from Database and add the user to the user cache
-func (u *Users) addUser(uuid string) {
-	userProfile, err := u.db.GetUserByUUID(uuid)
+func (u *Users) addUser(payload *jwt.Payload) {
+	userProfile, err := u.db.GetUserByUUID(payload.UUID)
 	if err != nil {
 		log.Printf("u.db.GetUserByUUID(): %v", err)
 		return
 	}
 
-	u.users[uuid] = &User{
-		Name:  userProfile.Name,
-		Color: userProfile.Color,
-		Image: userProfile.Image,
-		Guest: false,
-		ID:    getHashOfString(uuid[:8]),
+	u.users[payload.UUID] = &User{
+		Name:    userProfile.Name,
+		Color:   userProfile.Color,
+		Image:   userProfile.Image,
+		Payload: payload,
+		Guest:   false,
+		ID:      getHashOfString(payload.UUID[:16]),
 	}
 
 	u.UpdateUsers <- struct{}{}
@@ -30,9 +35,7 @@ func (u *Users) addGuest(user *User) {
 // DelUser delete a user from the cache
 func (u *Users) delUser(uuid string) {
 	delete(u.users, uuid)
-	if len(u.users) > 0 {
-		u.UpdateUsers <- struct{}{}
-	}
+	u.DelFeedback <- struct{}{}
 }
 
 // GetUserByUUID return user object by UUID
@@ -41,15 +44,15 @@ func (u Users) GetUserByUUID(uuid string) (*User, bool) {
 	return user, ok
 }
 
-// GetUserByID return user object by ID
-func (u Users) GetUserByID(id string) *User {
-	for _, user := range u.users {
+// GetUUIDByID return user UUID by ID
+func (u Users) GetUUIDByID(id string) string {
+	for uuid, user := range u.users {
 		if user.ID == id {
-			return user
+			return uuid
 		}
 	}
 
-	return nil
+	return ""
 }
 
 // UpdateUser update user in cache, image, nickname, color etc.
@@ -59,9 +62,7 @@ func (u *Users) UpdateUser(uuid string) {
 		log.Printf("u.db.GetUserByUUID(): %v", err)
 	}
 
-	user, ok := u.GetUserByUUID(uuid)
-
-	if ok {
+	if user, ok := u.GetUserByUUID(uuid); ok {
 		user.Name = userProfile.Name
 		user.Color = userProfile.Color
 		user.Image = userProfile.Image

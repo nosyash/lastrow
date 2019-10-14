@@ -6,12 +6,14 @@ import (
 	"encoding/json"
 	"errors"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/nosyash/backrow/jwt"
 )
 
 var sendLocker sync.Mutex
+var delUserLocker sync.Mutex
 var hmacKey string
 
 func readPacket(conn *websocket.Conn) (*packet, error) {
@@ -30,6 +32,14 @@ func readPacket(conn *websocket.Conn) (*packet, error) {
 	return request, err
 }
 
+func (p packet) getUserUUID() string {
+	if p.Payload != nil {
+		return p.Payload.UUID
+	}
+
+	return p.UUID
+}
+
 func sendError(conn *websocket.Conn, msg error) error {
 	return writeMessage(conn, websocket.TextMessage, createPacket(errorEvent, errorEvent, &data{
 		Error: msg.Error(),
@@ -45,7 +55,13 @@ func sendFeedBack(conn *websocket.Conn, fb *feedback) {
 func writeMessage(conn *websocket.Conn, messageType int, message []byte) error {
 	sendLocker.Lock()
 	defer sendLocker.Unlock()
-	return conn.WriteMessage(messageType, message)
+
+	conn.SetWriteDeadline(time.Now().Add(writeTimeout * time.Second))
+	if err := conn.WriteMessage(messageType, message); err != nil {
+		conn.Close()
+		return err
+	}
+	return nil
 }
 
 func createPacket(action, eType string, d *data) []byte {
@@ -79,4 +95,21 @@ func extractPayload(token string) (*jwt.Payload, error) {
 	}
 
 	return jwt.UnmarshalPayload(token)
+}
+
+func (h hub) deleteAndClose(uuid string) (string, bool) {
+	delUserLocker.Lock()
+	defer delUserLocker.Unlock()
+
+	var addr string
+	conn, ok := h.hub[uuid]
+	if ok {
+		addr = conn.RemoteAddr().String()
+		conn.Close()
+	} else {
+		return addr, false
+	}
+
+	delete(h.hub, uuid)
+	return addr, true
 }

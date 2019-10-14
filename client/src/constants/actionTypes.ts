@@ -17,6 +17,8 @@ export const UPDATE_POPULAR_EMOTE = 'UPDATE_POPULAR_EMOTE';
 
 // User
 export const UPDATE_PROFILE = 'UPDATE_PROFILE';
+export const SET_ROLES = 'SET_ROLES'
+export const SET_CURRENT_LEVEL = 'SET_CURRENT_LEVEL'
 
 // Media
 export const UPDATE_MEDIA = 'UPDATE_MEDIA';
@@ -27,6 +29,7 @@ export const SWITCH_MUTE = 'SWITCH_MUTE';
 export const SET_VOLUME = 'SET_VOLUME';
 export const SET_SUBS = 'SET_SUBS';
 export const SET_CURRENT_SUBS = 'SET_CURRENT_SUBS';
+export const SET_RAW_SUBS = 'SET_RAW_SUBS';
 export const SET_SUBS_URL = 'SET_SUBS_URL';
 export const SHOW_SUBS = 'SHOW_SUBS';
 export const HIDE_SUBS = 'HIDE_SUBS';
@@ -36,8 +39,8 @@ export const ADD_TO_PLAYLIST = 'ADD_TO_PLAYLIST';
 export const TOGGLE_SYNC = 'TOGGLE_SYNC';
 export const SET_ADD_MEDIA_PENDING = 'SET_ADD_MEDIA_PENDING';
 
-export const SET_PLAY = 'SET_PLAY';
-export const SET_PAUSE = 'SET_PAUSE';
+export const SET_REMOTE_PLAYING = 'SET_REMOTE_PLAYING';
+export const SET_REMOTE_PAUSED = 'SET_REMOTE_PAUSED';
 
 // Popups
 export const ADD_POPUP = 'ADD_POPUP';
@@ -47,3 +50,4 @@ export const TOGGLE_POPUP = 'TOGGLE_POPUP';
 
 // Roomlist
 export const UPDATE_ROOMLIST = 'UPDATE_ROOMLIST';
+export const SET_PERMISSIONS = 'SET_PERMISSIONS';

@@ -12,17 +12,17 @@ const RoomList = lazy(() => import(/* webpackChunkName: "home-page" */ './scenes
 import Popups from './components/Popups';
 import * as types from './constants/actionTypes';
 import { getProfile } from './utils/apiRequests';
-import { getRandom } from './utils';
+import { getRandom, getCookie, getJWTBody } from './utils';
 import { store } from './store';
 
 const RoomSuspended = (props) =>
-    <Suspense fallback={<div></div>}>
+    <Suspense fallback={<div />}>
         <RoomBase {...props} />
     </Suspense>
 
 
 const RoomListSuspended = (props) =>
-    <Suspense fallback={<div></div>}>
+    <Suspense fallback={<div />}>
         <RoomList {...props} />
     </Suspense>
 
@@ -37,11 +37,13 @@ function App(props: any) {
     }, []);
 
     async function handleProfile() {
-        const { updateProfile } = props;
+        const { updateProfile, setRoles } = props;
         const profile = await getProfile();
 
         if (profile) {
             updateProfile({ ...profile.data, logged: true });
+            const { Roles } = getJWTBody(getCookie('jwt'));
+            setRoles(Roles);
         } else {
             const uuid = getRandom(64);
             updateProfile({ logged: false, uuid, guest: true });
@@ -75,6 +77,7 @@ function App(props: any) {
 const mapDispatchToProps = {
     updateProfile: (payload: any) => ({ type: types.UPDATE_PROFILE, payload }),
     addPopup: (payload: any) => ({ type: types.ADD_POPUP, payload }),
+    setRoles: (payload: any) => ({ type: types.SET_ROLES, payload })
 };
 
 const mapStateToProps = (state: any) => ({

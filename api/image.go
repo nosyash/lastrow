@@ -128,7 +128,7 @@ func (i image) createImage(path, iType string) error {
 		return errors.New("Emoji size should be no bigger than 128x128 and no less than 32x32")
 
 	default:
-		return errors.New("Unknown image file extension")
+		return errors.New("Unknown image file type")
 	}
 
 	return nil

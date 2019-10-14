@@ -1,11 +1,14 @@
-/* eslint-disable jsx-a11y/label-has-for */
 import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
+import { connect, useSelector } from 'react-redux';
 import { set, get as lsGet } from 'local-storage';
+import { get } from 'lodash';
 import * as types from '../../../constants/actionTypes';
 import SettingsMenu from './components/SettingsMenu'
 import SettingsScenes from './scenes/index'
 import './style.less'
+import { Profile } from '../../../reducers/profile';
+import { isPermit } from '../../../utils';
+import { Permissions } from '../../../reducers/rooms';
 
 const _items = [
     {
@@ -34,11 +37,18 @@ function ProfileSettings(props: ProfileSettings) {
     const [active, setActive] = useState('Account')
     const [items, setItems] = useState(_items);
 
+    const level = useSelector((state: any) => (state.profile as Profile).currentLevel)
+    const perms = useSelector((state: any) => state.rooms.currentPermissions) as Permissions
+    const permit = isPermit(level)
+
+    const canChangeRoomSettings = permit(get(perms, 'room_update.add_emoji'))
+
     useEffect(() => {
-        if (!props.roomID)
+        if (!props.roomID || !canChangeRoomSettings) {
             setItems([_items[0]])
-        else
+        } else {
             setItems(_items)
+        }
     }, [props.roomID])
 
     return (

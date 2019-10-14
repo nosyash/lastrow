@@ -24,10 +24,12 @@ import NewRoom from './NewRoom';
 import Playlist from './Playlist';
 import Settings from './Settings/index';
 
+
 interface WrapperProps {
     popup: ReactElement;
     name: string;
-    opts?: { fixed?: boolean; esc?: boolean; };
+    opts?: { fixed?: boolean; esc?: boolean };
+    show: boolean;
 }
 
 function Popups({ popups, removePopup }) {
@@ -64,32 +66,74 @@ function Popups({ popups, removePopup }) {
     const p = popups;
     return (
         <div className="popups_container">
-            {p.colorPicker && wrapper({ popup: <ColorPicker />, name: COLOR_PICKER })}
-            {p.guestAuth && wrapper({ popup: <GuestAuth />, name: GUEST_AUTH })}
-            {p.imagePicker && wrapper({ popup: <ImagePicker />, name: IMAGE_PICKER })}
-            {p.logForm && wrapper({ popup: <LogForm />, name: LOG_FORM })}
-            {p.newRoom && wrapper({ popup: <NewRoom />, name: NEW_ROOM })}
-            {p.playlist && wrapper({ popup: <Playlist />, name: PLAYLIST })}
-            {p.settings && wrapper({ popup: <Settings />, name: SETTINGS, opts: { fixed: true, esc: true } })}
+            {wrapper({ popup: <ColorPicker />, name: COLOR_PICKER, show: p.colorPicker })}
+            {wrapper({ popup: <GuestAuth />, name: GUEST_AUTH, show: p.guestAuth })}
+            {wrapper({ popup: <ImagePicker />, name: IMAGE_PICKER, show: p.imagePicker })}
+            {wrapper({ popup: <LogForm />, name: LOG_FORM, show: p.logForm })}
+            {wrapper({ popup: <NewRoom />, name: NEW_ROOM, show: p.newRoom })}
+            {wrapper({ popup: <Playlist />, name: PLAYLIST, show: p.playlist })}
+            {wrapper({ popup: <Settings />, name: SETTINGS, show: p.settings, opts: { fixed: true, esc: true } })}
         </div>
     );
 
-    function wrapper({ popup, name, opts = {} }: WrapperProps) {
+    function wrapper({ popup, name, show, opts = {} }: WrapperProps) {
         const { fixed, esc } = opts;
         return (
-            <Popup
-                fixed={fixed}
-                esc={esc}
-                removePopup={() => removePopup(name)}
-                popupElement={popup}
-                name={name}
-            />
+            <CustomAnimation show={show} classes={['popup-animation']} duration={110} >
+                <Popup
+                    fixed={fixed}
+                    esc={esc}
+                    removePopup={() => removePopup(name)}
+                    popupElement={popup}
+                    name={name}
+                />
+            </CustomAnimation>
         );
     }
 }
 
 let clientX = null;
 let clientY = null;
+
+export class CustomAnimation extends React.Component<any, any> {
+    state = {
+        visible: this.props.show,
+        pseudoVisible: this.props.show,
+    }
+
+    timer = null as any;
+    timer2 = null as any;
+
+    div = React.createRef() as React.RefObject<HTMLDivElement>
+
+    componentDidUpdate({ show }: any) {
+        const { show: shouldBeShown, duration } = this.props;
+        if (shouldBeShown === show) return
+
+        clearTimeout(this.timer)
+        clearTimeout(this.timer2)
+        if (shouldBeShown) {
+            this.setState({ visible: true })
+            this.timer = setTimeout(() => this.setState({ pseudoVisible: true }), 0);
+        } else {
+            this.setState({ pseudoVisible: false })
+            this.timer2 = setTimeout(() => this.setState({ visible: false }), duration || 150);
+        }
+    }
+
+    render() {
+        const { visible, pseudoVisible } = this.state;
+        const { children, classes: classesProps } = this.props;
+        if (!visible) return null;
+        const classes = cn(['custom-animation', { 'is-visible': pseudoVisible }, ...classesProps || []])
+        return (
+            <div ref={this.div} className={classes}>
+                {children}
+            </div>
+        )
+    }
+}
+
 
 function Popup(props) {
     const [width, setWidth] = useState(getPosition('width') || 0);
@@ -221,6 +265,7 @@ function Popup(props) {
             ref={popupEl}
             style={{ ...getStyles() }}
             className={cn(['popup', name])}
+
         >
             <div data-id={0} onMouseDown={handleMouseDown} className="popup-header">
                 <h3 className="popup-title">{getTitle()}</h3>

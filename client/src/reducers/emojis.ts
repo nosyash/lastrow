@@ -6,6 +6,11 @@ export interface Emoji {
     path: string;
 }
 
+export interface Emojis {
+    list: Emoji[];
+    popularEmotes: any[];
+}
+
 const initialState = {
     list: [] as Emoji[],
     popularEmotes: ls('popularEmotes') as any || [],

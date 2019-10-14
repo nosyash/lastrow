@@ -105,6 +105,8 @@ func (youtube Youtube) GetVideoDetails(id string) (int, string, bool, error) {
 }
 
 // GetPlaylistDetails extract all video from playlist and return
+// This func is not complete and is not working
+// Since we use free Google account, API quotas is to small, so handling multiple playlists may run out of limits quotas
 func (youtube Youtube) GetPlaylistDetails(id string) ([]*PlaylistItems, error) {
 	var playlist []*PlaylistItems
 	var urlQuery string

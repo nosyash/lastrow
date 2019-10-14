@@ -15,9 +15,10 @@ type authRequest struct {
 }
 
 type roomRequest struct {
-	Action string   `json:"action"`
-	Body   roomBody `json:"body"`
-	RoomID string   `json:"room_id"`
+	Action   string   `json:"action"`
+	Body     roomBody `json:"body"`
+	RoomUUID string   `json:"room_uuid"`
+	RoomPath string   `json:"room_path"`
 }
 
 type userRequest struct {
@@ -46,6 +47,9 @@ type roomBody struct {
 	Path       string    `json:"path"`
 	Hidden     bool      `json:"hidden"`
 	Password   string    `json:"passwd"`
+	ID         string    `json:"id"`
+	Level      int       `json:"level"`
+	Action     string    `json:"action"`
 	Data       imageBody `json:"data"`
 }
 
@@ -57,9 +61,15 @@ type authBody struct {
 }
 
 type roomView struct {
-	Title string     `json:"title,omitempty"`
-	ID    string     `json:"ID,omitempty"`
-	Emoji []db.Emoji `json:"emoji,omitempty"`
+	Title       string         `json:"title,omitempty"`
+	UUID        string         `json:"uuid,omitempty"`
+	Emoji       []db.Emoji     `json:"emoji,omitempty"`
+	Permissions db.Permissions `json:"permissions"`
+}
+
+type bannedList struct {
+	BannedUsers []db.BannedUsers `json:"users"`
+	BannedIps   []db.BannedIps   `json:"ips"`
 }
 
 const (
@@ -73,13 +83,19 @@ const (
 	eTypeRoomCreate = "room_create"
 	eTypeRoomUpdate = "room_update"
 	eTypeRoomDelete = "room_delete"
+	eTypeAuthInRoom = "room_auth"
 )
 
 const (
-	eTypeUpdateTitle   = "update_title"
-	eTypeAddEmoji      = "add_emoji"
-	eTypeDelEmoji      = "del_emoji"
-	eTypeChangeEmojnam = "change_emoji_name"
+	eTypeChangeTitle    = "change_title"
+	eTypeChangePath     = "change_path"
+	eTypeDeleteRoom     = "delete_room"
+	eTypeAddEmoji       = "add_emoji"
+	eTypeDelEmoji       = "del_emoji"
+	eTypeChangeEmojname = "change_emoji_name"
+
+	eTypeAddRole          = "add_role"
+	eTypeChangePermission = "change_permission"
 )
 
 const (
@@ -87,6 +103,16 @@ const (
 	eTypeUserDeleteImg  = "user_delete_img"
 	eTypeUserUpdatePer  = "user_update_per"
 	eTypeUserUpdatePswd = "user_update_pswd"
+)
+
+const (
+	ownerLevel      = 6
+	coOwnerLevel    = 5
+	moderatorLevel  = 4
+	jModeratorLevel = 3
+	djUser          = 2
+	user            = 1
+	guest           = 0
 )
 
 const (

@@ -6,7 +6,7 @@ import { SEEK_SEL } from '../../../../../constants';
 interface ProgressBarProps {
     onWheelClick?: () => void;
     onProgressChange?: (number: number) => void;
-    subProgress?: { start: number, end: number }[]
+    subProgress?: { start: number; end: number }[];
     value: number;
     wheel?: boolean;
     classes?: string;
@@ -180,7 +180,6 @@ class ProgressBar extends Component<ProgressBarProps, ProgressBarState> {
 const mapStateToProps = state => ({
     media: state.media,
     subs: state.media.subs,
-    playing: state.media.playing,
     mainStates: state.mainStates,
     cinemaMode: state.mainStates.cinemaMode,
 });

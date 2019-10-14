@@ -18,6 +18,8 @@ import (
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 // Header information in JWT
@@ -27,16 +29,23 @@ type Header struct {
 
 // Payload information in JWT about user
 type Payload struct {
-	UUID    string
-	IsAdmin bool `json:"is_admin"`
-	Owner   []Owner
-	Exp     int64
+	UUID      string
+	IsAdmin   bool `json:"is_admin"`
+	Roles     []Role
+	AuthRooms []AuthRoom `json:"auth_rooms"`
+	Exp       int64
 }
 
-// Owner describes information about where user is owner and what is him Permissions
-type Owner struct {
-	RoomID      string `json:"room_id"`
-	Permissions int
+// Role describes information about where user is owner and what is him Permissions
+type Role struct {
+	UUID  string `json:"room_uuid"`
+	Level int
+}
+
+// AuthRoom is a list where user authorized
+type AuthRoom struct {
+	UUID   string `json:"uuid"`
+	Passwd string `json:"passwd"`
 }
 
 // Required length in bytes of a HMAC-512SHA key
@@ -55,7 +64,7 @@ var (
 )
 
 // GenerateNewToken generate and return new JWT
-func GenerateNewToken(header Header, payload Payload, key string) (string, error) {
+func GenerateNewToken(header Header, payload *Payload, key string) (string, error) {
 	if utf8.RuneCountInString(key) != requiredKeySize {
 		return "", ErrKeyLength
 	}
@@ -133,4 +142,67 @@ func calcHash(key string, value string) string {
 	h.Write([]byte(value))
 
 	return hex.EncodeToString(h.Sum(nil))
+}
+
+// GetLevel return permissions level for a room
+func (p Payload) GetLevel(uuid string) (int, bool) {
+	for _, r := range p.Roles {
+		if r.UUID == uuid {
+			return r.Level, true
+		}
+	}
+
+	return 0, false
+}
+
+// SetLevel set up new permissions level for a room
+func (p *Payload) SetLevel(uuid string, level int) {
+	if _, r := p.GetLevel(uuid); !r {
+		p.Roles = append(p.Roles, Role{
+			UUID:  uuid,
+			Level: level,
+		})
+		return
+	}
+
+	for i, r := range p.Roles {
+		if r.UUID == uuid {
+			p.Roles[i].Level = level
+		}
+	}
+}
+
+// CheckAuthStatus check auth status in room
+func (p Payload) CheckAuthStatus(uuid string, hash []byte) error {
+	for _, r := range p.AuthRooms {
+		if r.UUID == uuid {
+			passwd, err := hex.DecodeString(r.Passwd)
+			if err != nil {
+				return errors.New("Couldn't read authorized session for this room")
+			}
+
+			if err := bcrypt.CompareHashAndPassword(hash, passwd); err != nil {
+				return errors.New("Password invalid")
+			}
+
+			return nil
+		}
+	}
+
+	return errors.New("You're not logged in this room")
+}
+
+// SetAuthStatus set up new auth session for a room
+func (p *Payload) SetAuthStatus(uuid, passwd string) {
+	for i, r := range p.AuthRooms {
+		if r.UUID == uuid {
+			p.AuthRooms[i].Passwd = passwd
+			return
+		}
+	}
+
+	p.AuthRooms = append(p.AuthRooms, AuthRoom{
+		UUID:   uuid,
+		Passwd: passwd,
+	})
 }

@@ -26,7 +26,7 @@ export const MAXIMUM_RECENT_EMOTES = 7;
 
 export const MAXIMUM_SUBTITLES_SIZE = 15;
 
-export const MAX_VIDEO_SYNC_OFFSET = 7; // sec
+export const MAX_VIDEO_SYNC_OFFSET = 6; // sec
 // export const PIXELS_TO_DISABLE_AUTOSCROLL = 40;
 
 // API

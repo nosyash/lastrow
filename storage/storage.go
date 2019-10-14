@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"fmt"
+
 	"github.com/nosyash/backrow/cache"
 )
 
@@ -41,23 +43,57 @@ func UpdateUser(userUUID string) {
 }
 
 // UpdateEmojiList in room
-func UpdateEmojiList(roomPath string) {
-	if c, ok := storage.cs[roomPath]; ok {
-		c.Room.UpdateEmojis <- roomPath
+func UpdateEmojiList(roomUUID string) {
+	if c, ok := storage.cs[roomUUID]; ok {
+		c.Room.UpdateEmojis <- roomUUID
+	}
+}
+
+// UpdateRole add a new role for a user in a cache and update a roles cache
+func UpdateRole(id, roomUUID string, level int) {
+	if c, ok := storage.cs[roomUUID]; ok {
+		c.Users.UpdateRole <- cache.NewRole{
+			ID:    id,
+			Level: level,
+		}
+	}
+}
+
+// UpdatePermissions update permissions in a room
+func UpdatePermissions(id, roomUUID string, level int) {
+	if c, ok := storage.cs[roomUUID]; ok {
+		c.Room.UpdatePermissions <- struct{}{}
 	}
 }
 
 // GetUsersCount return users count in room by roomPath
-func GetUsersCount(roomPath string) int {
-	if c, ok := storage.cs[roomPath]; ok {
+func GetUsersCount(roomUUID string) int {
+	if c, ok := storage.cs[roomUUID]; ok {
 		return c.Users.UsersCount()
 	}
 	return 0
 }
 
+// GetUserUUIDByID search in all caches user with userID and return his UUID
+func GetUserUUIDByID(userID, roomUUID string) (string, bool, error) {
+	if c, ok := storage.cs[roomUUID]; ok {
+		uuid := c.Users.GetUUIDByID(userID)
+		if uuid != "" {
+			user, ok := c.Users.GetUserByUUID(uuid)
+			if ok {
+				return uuid, user.Guest, nil
+			}
+		}
+
+		return "", false, fmt.Errorf("User with %s ID was not be found", userID)
+	}
+
+	return "", false, fmt.Errorf("Cache for %s was not be found", roomUUID)
+}
+
 // GetCurrentVideoTitle return current video title by roomPath
-func GetCurrentVideoTitle(roomPath string) string {
-	if c, ok := storage.cs[roomPath]; ok {
+func GetCurrentVideoTitle(roomUUID string) string {
+	if c, ok := storage.cs[roomUUID]; ok {
 		if c.Playlist.Size() == 0 {
 			return "-"
 		}
