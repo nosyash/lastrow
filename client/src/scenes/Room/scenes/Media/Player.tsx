@@ -85,7 +85,6 @@ function Player(props: PlayerProps) {
 
     useEffect(() => {
         requestAnimationFrame(() => { lastTime.current = currentTime })
-
         if (Math.abs(currentTime - lastTime.current) < 7) return
         if (Math.abs(props.media.actualTime - currentTime) < 7) return
         if (props.media.actualTime < 1) return
@@ -192,10 +191,17 @@ function Player(props: PlayerProps) {
     }
 
     const handlePlay = () => {
+        if (!playing) setPlaying(true)
+        handleAutoRemoteControl()
+        // setRemoteControlPlaying(true)
         // const e = new Event('videoplay');
         // document.dispatchEvent(e);
     };
     const handlePause = () => {
+        if (playing) setPlaying(false)
+        setSynced(false)
+        handleAutoRemoteControl()
+        // setRemoteControlPlaying(true)
         // const e = new Event('videopause');
         // document.dispatchEvent(e);
     };
@@ -299,13 +305,10 @@ function Player(props: PlayerProps) {
         if (!playing) webSocketSend(api.PAUSE_MEDIA(), 'pause', afterPause)
         else webSocketSend(api.RESUME_MEDIA(), 'resume', afterResume)
 
-        setRemoteControlPlaying(false)
-
-
+        // setRemoteControlPlaying(false)
     }
 
     function handleProgressChange(percent: number) {
-
         safelySeekTo(percent / 100, 'fraction')
     }
 
@@ -315,9 +318,10 @@ function Player(props: PlayerProps) {
     }
 
     function handleRewinded() {
-        if (!remoteControlRewind) setRemoteControlRewind(true);
+        
+        setRemoteControlRewind(true);
         clearTimeout(remoteControlTimeRewind)
-        remoteControlTimeRewind = setTimeout(() => setRemoteControlRewind(false), 4000);
+        remoteControlTimeRewind = setTimeout(() => setRemoteControlRewind(false), 5000);
     }
 
     function toggleSynced() {
@@ -329,10 +333,15 @@ function Player(props: PlayerProps) {
         if (synced) setSynced(false);
         setPlaying(!playing);
 
+        // handleAutoRemoteControl()
+    }
+
+    function handleAutoRemoteControl() {
         if (!remoteControlPlaying) setRemoteControlPlaying(true)
         clearTimeout(remoteControlTimePlayback)
-        remoteControlTimePlayback = setTimeout(() => setRemoteControlPlaying(false), 4000);
+        remoteControlTimePlayback = setTimeout(() => setRemoteControlPlaying(false), 5000);
     }
+
 
     function toggleSubs() {
         props.toggleSubs();

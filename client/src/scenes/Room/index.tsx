@@ -126,6 +126,8 @@ class RoomBase extends Component<RoomBaseProps, any> {
         if (!roles.length) return;
 
         const currentRoles = roles.find(role => role.room_uuid === room_uuid)
+
+        if (!currentRoles) return;
         setCurrentLevel(currentRoles.Level)
     }
 

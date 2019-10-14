@@ -12,10 +12,10 @@ showdown.setOption('simpleLineBreaks', false)
 
 let postAuthorName = '';
 
-const escapeMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;', '#': '\\#' };
+const escapeMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;', '#': '\\#', '-': '\\-' };
 const unescapeMap = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&apos;': "'", };
 
-showdown.extension('escapeMap', () => [{ type: 'lang', regex: /([&<>"'#])/g, replace: (s, match) => escapeMap[match] }]);
+showdown.extension('escapeMap', () => [{ type: 'lang', regex: /([&<>"'#-])/g, replace: (s, match) => escapeMap[match] }]);
 
 showdown.extension('spoiler', () => [{ type: 'lang', regex: /%%(.+?)%%/gs, replace: `<del class="markup--spoiler">$1</del>` }]);
 showdown.extension('bold', () => [{ type: 'lang', regex: /\*\*(.+)\*\*/gs, replace: `<strong class="markup--bold">$1</strong>` }]);
