@@ -1237,20 +1237,29 @@ body {
     font-size: 1em;
     color: @link;
     display: flex;
-    flex-direction: column;
-    &__admin {
+    flex-direction: row;
+    margin: auto;
+    max-width: 800px;
 
-    }
     &__item {
-        .player-minimized & {
-            display: none;
-        }
+        // .player-minimized & {
+        //     display: none;
+        // }
         background-color: rgba(37, 39, 40, 0.9);
-        backdrop-filter: saturate(500%) blur(18px);
-        padding: 8px 40px 6px;
+        backdrop-filter: unset;
+        padding: 5px 20px 3px;
         margin: 4px auto;
         border-radius: 4px;
         position: relative;
+        pointer-events: none;
+        visibility: hidden;
+        cursor: default;
+        &.is-visible {
+            pointer-events: auto;
+            visibility: visible;
+            cursor: pointer;
+            backdrop-filter: saturate(500%) blur(18px);
+        }
         &.global-controls__admin {
             background-color: rgba(30, 127, 95, 0.9);
             color: white;
@@ -1985,4 +1994,23 @@ body {
 .popup-animation, .mini-profile-animation, .emote-menu {
     transition: 0.1s;
     z-index: 10;
+}
+
+
+.example-eneter {
+    opacity: 0.01;
+}
+
+.example-enter.example-enter-active {
+    opacity: 1;
+    transition: opacity 300ms ease-in;
+}
+
+.example-leave {
+    opacity: 1;
+}
+
+.example-leave.example-leave-active {
+    opacity: 0.01;
+    transition: opacity 300ms ease-in;
 }

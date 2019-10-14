@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { connect, useSelector } from 'react-redux';
 import { set, get as lsGet } from 'local-storage';
+import { get } from 'lodash';
 import * as types from '../../../constants/actionTypes';
 import SettingsMenu from './components/SettingsMenu'
 import SettingsScenes from './scenes/index'
@@ -40,7 +41,7 @@ function ProfileSettings(props: ProfileSettings) {
     const perms = useSelector((state: any) => state.rooms.currentPermissions) as Permissions
     const permit = isPermit(level)
 
-    const canChangeRoomSettings = permit(perms.room_update.add_emoji)
+    const canChangeRoomSettings = permit(get(perms, 'room_update.add_emoji'))
 
     useEffect(() => {
         if (!props.roomID || !canChangeRoomSettings) {

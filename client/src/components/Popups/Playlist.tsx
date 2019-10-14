@@ -4,6 +4,7 @@ import { formatTime, isPermit } from '../../utils';
 import { webSocketSend } from '../../actions';
 import * as api from '../../constants/apiActions';
 import AddMedia from './AddMedia';
+import { get } from 'lodash';
 import { Video } from '../../utils/types';
 import { SortableContainer, SortableElement } from 'react-sortable-hoc';
 import { Profile } from '../../reducers/profile';
@@ -61,10 +62,10 @@ class Playlist extends Component<PlaylistProps> {
         return (
             <div className="popup-element playlist_container">
                 {<AddMedia />}
-                <SortableList distance={permit(perms.playlist_event.move) ? 2 : 10000}
+                <SortableList distance={permit(get(perms, 'playlist_event.move')) ? 2 : 10000}
                     transitionDuration={100}
                     items={playlist}
-                    deletable={permit(perms.playlist_event.playlist_del)}
+                    deletable={permit(get(perms, 'playlist_event.playlist_del'))}
                     handleDelete={this.handleDelete}
                     onSortStart={this.onSortStart}
                     onSortEnd={this.onSortEnd}
