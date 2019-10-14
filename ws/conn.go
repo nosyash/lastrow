@@ -236,9 +236,11 @@ func (h *hub) read(conn *websocket.Conn) {
 
 func (h hub) send(msg []byte) {
 	for _, conn := range h.hub {
-		if err := writeMessage(conn, websocket.TextMessage, msg); err != nil {
-			conn.Close()
-		}
+		go func(conn *websocket.Conn) {
+			if err := writeMessage(conn, websocket.TextMessage, msg); err != nil {
+				conn.Close()
+			}
+		}(conn)
 	}
 }
 
