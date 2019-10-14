@@ -23,7 +23,10 @@ const pingPeriod = 30
 
 // Pong timeout
 // I'm not sure for this timeout
-const pingTimeout = pingPeriod * 2
+const pingTimeout = 45
+
+// Write timeout
+const writeTimeout = 10
 
 func NewRoomHub(id string, db *db.Database) *hub {
 	return &hub{
@@ -211,7 +214,7 @@ func (h *hub) read(conn *websocket.Conn) {
 	for {
 		req, err := readPacket(conn)
 		if err != nil {
-			if !websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseNoStatusReceived, websocket.CloseAbnormalClosure, websocket.CloseGoingAway) {
+			if !websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseNoStatusReceived, websocket.CloseAbnormalClosure, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				h.errLogger.Printf("[%s:%s|%s] -> %v\n", conn.RemoteAddr().String(), uuid[:16], h.id[:16], err)
 			}
 			break
@@ -255,7 +258,7 @@ func (h hub) ping(conn *websocket.Conn) {
 	for {
 		select {
 		case <-ticker.C:
-			conn.SetWriteDeadline(time.Now().Add(pingTimeout * time.Second))
+			conn.SetWriteDeadline(time.Now().Add(writeTimeout * time.Second))
 
 			if err := writeMessage(conn, websocket.PingMessage, nil); err != nil {
 				return

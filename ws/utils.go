@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/nosyash/backrow/jwt"
@@ -55,6 +56,7 @@ func writeMessage(conn *websocket.Conn, messageType int, message []byte) error {
 	sendLocker.Lock()
 	defer sendLocker.Unlock()
 
+	conn.SetWriteDeadline(time.Now().Add(writeTimeout * time.Second))
 	if err := conn.WriteMessage(messageType, message); err != nil {
 		conn.Close()
 		return err
