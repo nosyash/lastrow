@@ -18,6 +18,16 @@ import (
 // Timeout in seconds, when cache for this room will be closed
 const closeDeadlineTimeout = 120
 
+// Ping piriod
+const pingPeriod = 30
+
+// Pong timeout
+// I'm not sure for this timeout
+const pingTimeout = 45
+
+// Write timeout
+const writeTimeout = 10
+
 func NewRoomHub(id string, db *db.Database) *hub {
 	return &hub{
 		db,
@@ -123,6 +133,7 @@ func (h hub) add(user *user) {
 		h.cache.Users.AddUser <- user.Payload
 		h.hub[user.Payload.UUID] = user.Conn
 	}
+
 	go h.updatesTo(user.Conn)
 }
 
@@ -139,6 +150,7 @@ func (h *hub) remove(conn *websocket.Conn) {
 	if uuid != "" {
 		_, _ = h.deleteAndClose(uuid)
 		h.cache.Users.DelUser <- uuid
+		<-h.cache.Users.DelFeedback
 
 		if len(h.hub) == 0 {
 			if h.cache.Playlist.Size() == 0 && h.cache.Messages.Size() == 0 {
@@ -178,9 +190,11 @@ func (h *hub) remove(conn *websocket.Conn) {
 				return
 			}()
 		} else {
-			println("before h.updateUserList()")
-			go h.updateUserList()
-			println("after h.updateUserList()")
+			for _, u := range h.hub {
+				writeMessage(u, websocket.TextMessage, createPacket(userEvent, eTypeUpdUserList, &data{
+					Users: h.cache.Users.GetAllUsers(),
+				}))
+			}
 		}
 	}
 }
@@ -200,6 +214,9 @@ func (h *hub) read(conn *websocket.Conn) {
 	for {
 		req, err := readPacket(conn)
 		if err != nil {
+			if !websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseNoStatusReceived, websocket.CloseAbnormalClosure, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				h.errLogger.Printf("[%s:%s|%s] -> %v\n", conn.RemoteAddr().String(), uuid[:16], h.id[:16], err)
+			}
 			break
 		}
 
@@ -222,14 +239,16 @@ func (h *hub) read(conn *websocket.Conn) {
 
 func (h hub) send(msg []byte) {
 	for _, conn := range h.hub {
-		if err := writeMessage(conn, websocket.TextMessage, msg); err != nil {
-			conn.Close()
-		}
+		go func(conn *websocket.Conn) {
+			if err := writeMessage(conn, websocket.TextMessage, msg); err != nil {
+				conn.Close()
+			}
+		}(conn)
 	}
 }
 
 func (h hub) ping(conn *websocket.Conn) {
-	ticker := time.NewTicker(30 * time.Second)
+	ticker := time.NewTicker(pingPeriod * time.Second)
 
 	defer func() {
 		ticker.Stop()
@@ -239,7 +258,7 @@ func (h hub) ping(conn *websocket.Conn) {
 	for {
 		select {
 		case <-ticker.C:
-			conn.SetWriteDeadline(time.Now().Add(45 * time.Second))
+			conn.SetWriteDeadline(time.Now().Add(writeTimeout * time.Second))
 
 			if err := writeMessage(conn, websocket.PingMessage, nil); err != nil {
 				return
@@ -249,9 +268,9 @@ func (h hub) ping(conn *websocket.Conn) {
 }
 
 func (h hub) pong(conn *websocket.Conn) {
-	conn.SetReadDeadline(time.Now().Add(45 * time.Second))
+	conn.SetReadDeadline(time.Now().Add(pingTimeout * time.Second))
 	conn.SetPongHandler(func(string) error {
-		conn.SetReadDeadline(time.Now().Add(45 * time.Second))
+		conn.SetReadDeadline(time.Now().Add(pingTimeout * time.Second))
 		return nil
 	})
 }

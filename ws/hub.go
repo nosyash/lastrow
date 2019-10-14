@@ -111,7 +111,6 @@ func (rh *roomsHub) registerNewConn(conn *websocket.Conn) {
 	for room := range rh.rhub {
 		if room == roomUUID {
 			rh.rhub[roomUUID].register <- user
-			println("after register")
 			return
 		}
 	}
