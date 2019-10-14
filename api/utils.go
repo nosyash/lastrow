@@ -50,6 +50,10 @@ func (server Server) checkPermissions(eType, uuid string, payload *jwt.Payload) 
 	var result bool
 
 	if payload != nil {
+		if payload.IsAdmin {
+			return true
+		}
+
 		if level, result = payload.GetLevel(uuid); !result {
 			level = 1
 		}

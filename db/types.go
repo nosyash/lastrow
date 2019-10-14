@@ -37,7 +37,7 @@ type User struct {
 	Name    string `json:"name"`
 	Color   string `json:"color"`
 	Image   string `json:"image"`
-	IsAdmin bool   `json:"admin"`
+	IsAdmin bool   `json:"admin" bson:"is_admin"`
 	Uname   string `json:"uname"`
 	Hash    string `json:"hash"`
 	Email   string `json:"email"`
