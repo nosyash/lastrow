@@ -215,7 +215,7 @@ func (h *hub) read(conn *websocket.Conn) {
 		req, err := readPacket(conn)
 		if err != nil {
 			if !websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseNoStatusReceived, websocket.CloseAbnormalClosure, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				h.errLogger.Printf("[%s:%s|%s] -> %v\n", conn.RemoteAddr().String(), uuid[:16], h.id[:16], err)
+				h.errLogger.Printf("%s -> %v\n", conn.RemoteAddr().String(), err)
 			}
 			break
 		}
