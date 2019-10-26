@@ -27,26 +27,26 @@ type userRequest struct {
 }
 
 type userBody struct {
-	Name      string    `json:"name"`
-	Color     string    `json:"color"`
-	CurPasswd string    `json:"cur_passwd"`
-	NewPasswd string    `json:"new_passwd"`
+	Name      string    `json:"name,omitempty" min:"1" max:"20" events:"user_update_per"`
+	Color     string    `json:"color,omitempty" events:"user_update_per" regexp:"#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"`
+	CurPasswd string    `json:"cur_passwd" min:"8" max:"32" events:"user_update_pswd"`
+	NewPasswd string    `json:"new_passwd" min:"8" max:"32" events:"user_update_pswd"`
 	Image     imageBody `json:"image"`
 }
 
 type imageBody struct {
 	Img     string `json:"raw_img"`
-	Type    string `json:"type"`
-	Name    string `json:"name"`
-	NewName string `json:"new_name,omitempty"`
+	Type    string `json:"type" regexp:"png$" events:"add_emoji"`
+	Name    string `json:"name" min:"2" max:"15" regexp:"[a-zA-Z0-9-_]$" events:"add_emoji,del_emoji,change_emoji_name"`
+	NewName string `json:"new_name" min:"2" max:"15" regexp:"[a-zA-Z0-9-_]$" events:"change_emoji_name"`
 }
 
 type roomBody struct {
 	UpdateType string    `json:"type"`
-	Title      string    `json:"title"`
-	Path       string    `json:"path"`
+	Title      string    `json:"title" min:"4" max:"30" events:"room_create"`
+	Path       string    `json:"path" min:"4" max:"15" events:"room_create"`
 	Hidden     bool      `json:"hidden"`
-	Password   string    `json:"passwd"`
+	Password   string    `json:"passwd,omitempty" min:"8" max:"32" events:"room_create"`
 	ID         string    `json:"id"`
 	Level      int       `json:"level"`
 	Action     string    `json:"action"`
@@ -54,16 +54,15 @@ type roomBody struct {
 }
 
 type authBody struct {
-	Uname  string `json:"uname"`
-	Passwd string `json:"passwd"`
-	Name   string `json:"name"`
-	Email  string `json:"email"`
+	Uname  string `json:"uname" min:"3" max:"20" regexp:"[a-zA-Z0-9-_]$" events:"register,login"`
+	Passwd string `json:"passwd" min:"8" max:"32" events:"register,login"`
+	Email  string `json:"email" events:"register"`
 }
 
 type roomView struct {
-	Title       string         `json:"title,omitempty"`
-	UUID        string         `json:"uuid,omitempty"`
-	Emoji       []db.Emoji     `json:"emoji,omitempty"`
+	Title       string         `json:"title"`
+	UUID        string         `json:"uuid"`
+	Emoji       []db.Emoji     `json:"emoji"`
 	Permissions db.Permissions `json:"permissions"`
 }
 
@@ -73,23 +72,22 @@ type bannedList struct {
 }
 
 const (
-	eTypeAccountRegistration = "register"
-	eTypeAccountLogin        = "login"
-	eTypeAccountLogout       = "logout"
-	eTypeAccountUpdate       = "update"
+	eTypeRegister      = "register"
+	eTypeLogin         = "login"
+	eTypeAccountLogout = "logout"
+	eTypeAccountUpdate = "update"
 )
 
 const (
 	eTypeRoomCreate = "room_create"
 	eTypeRoomUpdate = "room_update"
-	eTypeRoomDelete = "room_delete"
 	eTypeAuthInRoom = "room_auth"
 )
 
 const (
 	eTypeChangeTitle    = "change_title"
 	eTypeChangePath     = "change_path"
-	eTypeDeleteRoom     = "delete_room"
+	eTypeRoomDelete     = "delete_room"
 	eTypeAddEmoji       = "add_emoji"
 	eTypeDelEmoji       = "del_emoji"
 	eTypeChangeEmojname = "change_emoji_name"

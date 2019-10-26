@@ -42,6 +42,8 @@ func (server Server) extractPayload(w http.ResponseWriter, r *http.Request) (*jw
 		return nil, jwt.ErrCorruptedToken
 	}
 
+	// TODO: Also, be great if we check a user UUID
+
 	return jwt.UnmarshalPayload(token.Value)
 }
 

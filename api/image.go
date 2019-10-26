@@ -31,8 +31,11 @@ func (i image) replaceImage(oldPath, newPath, iType string) error {
 }
 
 func (i image) createImage(path, iType string) error {
-	path, name := filepath.Split(path)
+	if len(*i.image) == 0 {
+		return errors.New("Image buffer is empty")
+	}
 
+	path, name := filepath.Split(path)
 	dec, err := base64.StdEncoding.DecodeString(*i.image)
 	if err != nil {
 		return err
