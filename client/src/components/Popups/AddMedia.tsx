@@ -8,6 +8,7 @@ import { toastOpts } from '../../conf';
 import { toast } from 'react-toastify';
 import { MAXIMUM_SUBTITLES_SIZE } from '../../constants';
 import { get } from 'lodash';
+import { isSrt } from '../../utils/subtitles';
 
 // import * as types from '../../constants/ActionTypes';
 
@@ -103,16 +104,27 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
         this.subs64 = '';
 
         const file = get(target, 'files[0]');
-        if (!file) return;
+        if (!file) {
+            
+        }
         const { name, type, size } = file;
-        // TODO: Better type handling
-        if (type !== 'application/x-subrip') return toast.warn(`Only .srt supported for now`, toastOpts)
-        if (size / 1024 / 1024 > MAXIMUM_SUBTITLES_SIZE) return this.sizeWarn();
+                
+        // if (type !== 'application/x-subrip' || type !== 'text/srt') {
+        //     return toast.warn(`Only .srt supported for now`, toastOpts)
+        // }
+
+        if (size / 1024 / 1024 > MAXIMUM_SUBTITLES_SIZE) {
+            return this.sizeWarn();
+        }
 
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = () => {
-            const base64 = reader.result;
+            const base64 = reader.result.toString().replace(/data:.+base64,/, '');
+            if (!isSrt(atob(base64))) {
+                return toast.warn(`Only .srt supported for now`, toastOpts)
+            }
+
             this.subs64 = (base64 as string).replace(/data:.+base64,/, '');
             this.setState({ subtitlesName: name })
         };
