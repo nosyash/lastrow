@@ -188,10 +188,6 @@ export function getJWTBody(jwt = ''): JWT {
     } catch (_) {}
 }
 
-export const isPermit = (level: PermissionsMap) => (actionLevel: any) => {
-    return level >= actionLevel;
-}
-
 export const wait = (number = 1000) => new Promise(resolve => setTimeout(() => resolve(), number))
 
 export const safelyParseJson = (input: string): any => {

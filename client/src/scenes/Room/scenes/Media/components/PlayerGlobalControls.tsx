@@ -1,8 +1,8 @@
 import React from 'react';
 import { PermissionsMap, Permissions } from '../../../../../reducers/rooms';
-import { isPermit } from '../../../../../utils';
 import { get } from 'lodash'
 import cn from 'classnames'
+import { isPermit } from '../../../../../utils/storeUtils';
 
 interface PlayerGlobalControlsProps {
     showRemoteRewind: boolean;
@@ -10,10 +10,6 @@ interface PlayerGlobalControlsProps {
     playing: boolean;
     remotePlaying: boolean;
     synced: boolean;
-    permissionLevel: PermissionsMap;
-    currentPermissions: Permissions;
-
-
     onRemoteRewind: () => void;
     onRemotePlaying: () => void;
 
@@ -24,12 +20,10 @@ const remoteIcon = <i title="This is a remote action" className="fa fa-bullhorn 
 
 function PlayerGlobalControls(props: PlayerGlobalControlsProps) {
     function renderControls() {
-        const perms = props.currentPermissions;
-        const permit = isPermit(props.permissionLevel)
         return (
             <div className="global-controls">
-                {permit(get(perms, 'player_event.rewind')) && renderRewindButton(props.showRemoteRewind)}
-                {permit(get(perms, 'player_event.pause')) && renderPlaybackButton(props.showRemotePlayback)}
+                {isPermit('player_event.rewind') && renderRewindButton(props.showRemoteRewind)}
+                {isPermit('player_event.pause') && renderPlaybackButton(props.showRemotePlayback)}
                 {renderSyncButton(!props.synced)}
             </div>
         )

@@ -112,23 +112,30 @@ class RoomBase extends Component<RoomBaseProps, any> {
         const { match, history, updateMainStates } = this.props;
         const { id: roomID } = match.params;
 
-        // Check for room
+        // Check for room existence
         updateMainStates({ roomID })
-        if (!await requestRoom()) return history.push('/');
+        if (!await requestRoom()) {
+            return history.push('/');
+        }
 
         notifications.setCurrentTitle(document.title);
         this.setState({ exists: true }, () => this.initStore(this.initWebsocket));
-        this.saveCurrentRoles()
+        this.saveCurrentLevel()
     };
 
-    saveCurrentRoles() {
-        const { room_uuid, roles, setCurrentLevel } = this.props;
-        if (!roles.length) return;
+    saveCurrentLevel() {
+        const { room_uuid, roles, setCurrentLevel, profile } = this.props;
+        if (profile.guest) {
+            setCurrentLevel(0)
+            return
+        }
 
-        const currentRoles = roles.find(role => role.room_uuid === room_uuid)
-
-        if (!currentRoles) return;
-        setCurrentLevel(currentRoles.Level)
+        const currentRole = roles.find(role => role.room_uuid === room_uuid)
+        if (currentRole) {
+            setCurrentLevel(currentRole.Level)
+            return
+        }
+        setCurrentLevel(1)
     }
 
     initWebsocket = () => webSocketConnect({ room_uuid: this.props.room_uuid });;

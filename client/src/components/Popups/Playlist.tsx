@@ -1,6 +1,6 @@
 import React, { Component, useState } from 'react';
 import { connect, useSelector } from 'react-redux';
-import { formatTime, isPermit } from '../../utils';
+import { formatTime } from '../../utils';
 import { webSocketSend } from '../../actions';
 import * as api from '../../constants/apiActions';
 import AddMedia from './AddMedia';
@@ -10,14 +10,13 @@ import { SortableContainer, SortableElement } from 'react-sortable-hoc';
 import { Profile } from '../../reducers/profile';
 import { Permissions, PermissionsMap } from '../../reducers/rooms';
 import { State } from '../../reducers';
+import { isPermit } from '../../utils/storeUtils';
 
 
 interface PlaylistProps {
     uuid: string;
     guest: boolean;
     playlist: Video[];
-    currentPermissions: Permissions;
-    currentLevel: PermissionsMap;
 }
 
 const SortableItem = SortableElement(({ element, handleDelete, deletable }) =>
@@ -57,15 +56,14 @@ class Playlist extends Component<PlaylistProps> {
     }
 
     render() {
-        const { playlist, currentLevel, currentPermissions: perms } = this.props;
-        const permit = isPermit(currentLevel)
+        const { playlist } = this.props;        
         return (
             <div className="popup-element playlist_container">
                 {<AddMedia />}
-                <SortableList distance={permit(get(perms, 'playlist_event.move')) ? 2 : 10000}
+                <SortableList distance={isPermit('playlist_event.move') ? 2 : 10000}
                     transitionDuration={100}
                     items={playlist}
-                    deletable={permit(get(perms, 'playlist_event.playlist_del'))}
+                    deletable={isPermit('playlist_event.playlist_del')}
                     handleDelete={this.handleDelete}
                     onSortStart={this.onSortStart}
                     onSortEnd={this.onSortEnd}
@@ -108,8 +106,6 @@ const mapStateToProps = (state: State) => ({
     playlist: state.media.playlist,
     guest: state.profile.guest,
     uuid: state.profile.uuid,
-    currentLevel: state.profile.currentLevel,
-    currentPermissions: state.rooms.currentPermissions,
 });
 
 export default connect(mapStateToProps)(Playlist);

@@ -260,11 +260,7 @@ function Player(props: PlayerProps) {
                     <div dangerouslySetInnerHTML={{ __html: url }} style={{ width: '100%' }} className="player-inner" />
                 }
                 {isDirectLink() && <div className="video-overlay" />}
-                <PlayerGlobalMessages
-                    remotelyPaused={!media.remotePlaying}
-                    permissionLevel={permissionLevel}
-                    currentPermissions={currentPermissions}
-                />
+                <PlayerGlobalMessages remotelyPaused={!media.remotePlaying} />
                 <PlayerGlobalControls
                     onToggleSync={toggleSynced}
                     synced={synced}
@@ -274,8 +270,6 @@ function Player(props: PlayerProps) {
                     onRemotePlaying={handleRemotePlaybackChange}
                     playing={playing}
                     remotePlaying={props.remotePlaying}
-                    permissionLevel={permissionLevel}
-                    currentPermissions={currentPermissions}
                 />
                 {<PreloadMedia nextVideo={nextVideo} />}
             </React.Fragment>

@@ -37,7 +37,9 @@ class NewRoom extends Form {
             return;
         }
         removePopup(id);
-        history.push(`/r/${path}`);
+
+        // Reload page so roles got updated
+        window.location.href = `/r/${path}`
     };
 
     handleClose = () => {

@@ -57,16 +57,8 @@ const RenderPlaylister = ({ onClick, logged, upNext }: any) => (
     </div>
 );
 
-const getUpNextUrl = (upnext: Video) => {
-    if (upnext) return upnext.url;
-    return '';
-};
-
-const getUpNextTitle = (upnext: Video) => {
-    if (!upnext) return '';
-    if (upnext.title) return upnext.title;
-    if (upnext.url) return upnext.url;
-};
+const getUpNextUrl = (upnext: Video) => upnext ? upnext.url : '';
+const getUpNextTitle = (upnext: Video) => upnext ? upnext.title || upnext.url : '';
 
 const RenderItem = ({ classes, onClick, dataId, text }: any) => (
     <div>
