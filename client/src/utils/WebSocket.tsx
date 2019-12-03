@@ -161,7 +161,7 @@ class Socket implements SocketInterface {
     };
 
     private handleOpen = () => {
-        console.log('WebSocket connection opened');
+        console.log('WebSocket: opened');
         this.handleHandshake();
     };
 
@@ -275,7 +275,7 @@ class Socket implements SocketInterface {
     };
 
     private handleClose = () => {
-        console.log('WebSocket connection closed');
+        console.log('WebSocket: closed');
         this.handleReconnect();
     };
 
