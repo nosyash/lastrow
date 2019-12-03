@@ -34,11 +34,19 @@ function setToken(token) {
     axios.defaults.headers.common['x-auth-token'] = token;
 }
 
+// axios instance without interceptors
+const silentAxios = axios.create();
+
 export default {
     get: axios.get,
     post: axios.post,
     put: axios.put,
     delete: axios.delete,
+
+    silentGet: silentAxios.get,
+    silentPost: silentAxios.post,
+    silentPut: silentAxios.put,
+    silentDelete: silentAxios.delete,
 };
 
 export { setToken };

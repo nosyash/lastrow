@@ -5,7 +5,7 @@ import ChatContainer from './scenes/Chat/index';
 import VideoContainer from './scenes/Media/index';
 import * as types from '../../constants/actionTypes';
 import Divider from './components/Divider';
-import { webSocketConnect, webSocketDisconnect, requestRoom } from '../../actions';
+import { webSocketConnect, webSocketDisconnect, setRoomData } from '../../actions';
 import notifications from '../../utils/notifications';
 import { GUEST_AUTH, PROFILE_SETTINGS, PLAYLIST } from '../../constants';
 import { Emoji } from '../../reducers/emojis';
@@ -114,13 +114,13 @@ class RoomBase extends Component<RoomBaseProps, any> {
 
         // Check for room existence
         updateMainStates({ roomID })
-        if (!await requestRoom()) {
-            return history.push('/');
-        }
-
-        notifications.setCurrentTitle(document.title);
-        this.setState({ exists: true }, () => this.initStore(this.initWebsocket));
-        this.saveCurrentLevel()
+        setRoomData()
+            .then(() => {
+                notifications.setCurrentTitle(document.title);
+                this.setState({ exists: true }, () => this.initStore(this.initWebsocket));
+                this.saveCurrentLevel()
+            })
+            .catch(() => history.push('/'))
     };
 
     saveCurrentLevel() {

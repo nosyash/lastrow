@@ -15,6 +15,7 @@ import * as types from './constants/actionTypes';
 import { getProfile } from './utils/apiRequests';
 import { getRandom, getCookie, getJWTBody } from './utils';
 import { store } from './store';
+import { Profile } from './reducers/profile';
 
 const RoomSuspended = (props) =>
     <Suspense fallback={<div />}>
@@ -33,31 +34,39 @@ function App(props: any) {
     const [loaded, setLoaded] = useState(false);
 
     useEffect(() => {
-        handleProfile();
-        if (!lsGet('notifications-requested')) Notification.requestPermission();
+        initProfile();
+
+        if (!lsGet('notifications-requested')) {
+            Notification.requestPermission();
+        }
     }, []);
 
-    async function handleProfile() {
+    function initProfile() {
+        getProfile()
+            .then(handleUserProfile)
+            .catch(handleAnonymousProfile)
+            .finally(() => setLoaded(true))
+    }
+
+    function handleUserProfile(profile: Profile) {
         const { updateProfile, setRoles, setCurrentLevel } = props;
-        const profile = await getProfile();
 
-        if (profile) {
-            updateProfile({ ...profile.data, logged: true });
-            const jwt = getJWTBody(getCookie('jwt'));
-            const roles = get(jwt, 'roles', [])
-            
-            if (roles.length === 0) {
-                setCurrentLevel(1)
-            }
-
-            setRoles(roles);
-
-        } else {
-            const uuid = getRandom(64);
-            updateProfile({ logged: false, uuid, guest: true });
+        updateProfile({ ...profile, logged: true });
+        const jwt = getJWTBody(getCookie('jwt'));
+        const roles = get(jwt, 'roles', [])
+        
+        if (roles.length === 0) {
+            setCurrentLevel(1)
         }
 
-        setLoaded(true);
+        setRoles(roles);
+    }
+
+    function handleAnonymousProfile() {
+        const { updateProfile } = props;
+
+        const uuid = getRandom(64);
+        updateProfile({ logged: false, uuid, guest: true });
     }
 
     return (
@@ -67,10 +76,7 @@ function App(props: any) {
                     <ToastContainer />
                     <Popups />
                     <div className="top-nav">
-                        {/* <BreadCrumbs /> */}
-                        {/* <h1 className="room_movie-name">190303 우주소녀 보나 콘서트 해피 HAPPY WJSN BONA</h1> */}
                     </div>
-                    {/* <NavBar /> */}
                     <Switch>
                         <Route path="/r/:id" component={RoomSuspended} />
                         <Route exact path="/" component={RoomListSuspended} />
