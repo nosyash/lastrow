@@ -72,17 +72,17 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
         const subs = subtitles ? { subtitles: this.subs64, subs_type: 'srt' } : {}
         const data = { url: inputValue, uuid, subtitles: subs }
         const message = api.SEND_MEDIA_TO_PLAYLIST(data);
-        webSocketSend(message, 'feedback', onSuccess as any);
-        const self = this;
-        function onSuccess(result: any, error: any) {
-            if (error)
-                console.warn('error while adding to playlist:', error);
-            if (result) {
-                self.setState({ inputValue: '', subtitlesName: '' });
-                const inputExists = get(self.subsInputEl, 'current.value')
-                if (inputExists) { self.subsInputEl.current.value = ''; }
+        webSocketSend(message, 'feedback')
+            .then(onSuccess)
+            .catch((error) => console.warn('error while adding to playlist:', error))
+            .finally(() => setToDone())
+
+        function onSuccess() {
+            this.setState({ inputValue: '', subtitlesName: '' });
+            const inputExists = get(this.subsInputEl, 'current.value')
+            if (inputExists) {
+                this.subsInputEl.current.value = '';
             }
-            setToDone();
         }
         setToPending();
     };

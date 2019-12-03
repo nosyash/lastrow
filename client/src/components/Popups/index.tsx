@@ -78,17 +78,16 @@ function Popups({ popups, removePopup }) {
 
     function wrapper({ popup, name, show, opts = {} }: WrapperProps) {
         const { fixed, esc } = opts;
-        return (
-            <CustomAnimation show={show} classes={['popup-animation']} duration={110} >
-                <Popup
-                    fixed={fixed}
-                    esc={esc}
-                    removePopup={() => removePopup(name)}
-                    popupElement={popup}
-                    name={name}
-                />
-            </CustomAnimation>
-        );
+        return show && (<Popup
+            fixed={fixed}
+            esc={esc}
+            removePopup={() => removePopup(name)}
+            popupElement={popup}
+            name={name}
+        />)
+            // <CustomAnimation show={show} classes={['popup-animation']} duration={110} >
+            // </CustomAnimation>
+    ;
     }
 }
 

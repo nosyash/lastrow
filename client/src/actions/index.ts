@@ -23,8 +23,8 @@ export const webSocketConnect = ({ room_uuid }: { room_uuid: string }) => {
 
 export const isConnectingSameRoom = (room_uuid: string) => (socket ? room_uuid === socket.room_uuid : false);
 
-export const webSocketSend = (data: string, messageTypeToGet?: string, cb?: (...args) => void) => {
-    return socket.sendMessage(data, messageTypeToGet, cb);
+export const webSocketSend = (data: string, messageTypeToGet?: string) => {
+    return socket.sendMessage(data, messageTypeToGet);
 };
 
 export const webSocketDisconnect = () => {
@@ -32,7 +32,9 @@ export const webSocketDisconnect = () => {
 };
 
 export const isWebsocketOpened = () => {
-    if (socket) return socket.isOpened();
+    if (socket) {
+        return socket.isOpened();
+    }
     return false;
 }
 

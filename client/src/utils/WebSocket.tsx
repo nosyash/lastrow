@@ -20,6 +20,7 @@ import { Emoji } from '../reducers/emojis';
 import httpServices from './httpServices';
 import { parseAndDispatchSubtitles } from './subtitles';
 import { workerRequest } from '../worker/index';
+import { wait, safelyParseJson } from '.';
 
 const { dispatch, getState } = store as Store;
 
@@ -63,7 +64,9 @@ class Socket implements SocketInterface {
     };
 
     public isOpened = () => {
-        if (!this.instance) return false;
+        if (!this.instance) {
+            return false;
+        }
         const { readyState } = this.instance;
         return this.getReadyState(readyState) === 'OPEN'
     }
@@ -92,44 +95,41 @@ class Socket implements SocketInterface {
         });
     };
 
-    public sendMessage = (dataToSend: string, messageTypeToGet: string, cb: (result: any, error: any) => void) => {
-        let timeout: NodeJS.Timeout = null;
-
-        const onMessageLocal = ({ data: receivedData }: any) => {
-            const data = JSON.parse(receivedData);
-            if (get(data, 'body.event.type') !== messageTypeToGet) return;
-
-            const { message, error } = get(data, 'body.event.data.feedback') || {}
-
-            this.removeEvent('message', onMessageLocal);
-            clearTimeout(timeout);
-
-            // if (message && message === 'success')
-            if (message)
-                return cb(true, null);
-            else
-                return cb(null, error)
-        };
-
-        if (messageTypeToGet) {
-            this.instance.addEventListener('message', onMessageLocal);
-            timeout = setTimeout(() => {
-                this.removeEvent('message', onMessageLocal);
-                return cb(null, true);
-            }, 15000);
-        }
-
-        this.instance.send(dataToSend);
+    public sendMessage = async (data: string, expectedType?: string): Promise<void> => {
+        return new Promise(async (resolve, reject) => {
+            this.instance.send(data);
+            if (expectedType) {
+                this.instance.addEventListener('message', onMessage, { once: true });
+                await wait(15000)
+                this.instance.removeEventListener('message', onMessage);
+                return reject()
+            }
+            
+            function onMessage({ data: receivedData }: any) {
+                const data = safelyParseJson(receivedData);
+                const type = get(data, 'body.event.type')
+                const { message, error } = get(data, 'body.event.data.feedback', {})
+    
+                if (type !== expectedType) {
+                    return;
+                }
+    
+                // if (message && message === 'success')
+                if (message) {
+                    resolve()
+                } else {
+                    reject(error)
+                }
+            };
+        })
     };
 
     public destroy = () => {
         this.unsubscribeEvents();
-        if (this.instance) this.instance.close();
+        if (this.instance) {
+            this.instance.close();
+        }
         this.resetStates();
-    };
-
-    private removeEvent = (event: string, callback: (...args: any) => void) => {
-        this.instance.removeEventListener(event, callback);
     };
 
     private getReadyState = (readyState: number) => {
@@ -161,7 +161,7 @@ class Socket implements SocketInterface {
     };
 
     private handleOpen = () => {
-        console.log('WebSocket conection opened');
+        console.log('WebSocket connection opened');
         this.handleHandshake();
     };
 
@@ -176,8 +176,7 @@ class Socket implements SocketInterface {
     }
 
     private handleMessage = ({ data }: MessageEvent) => {
-        const parsedData = JSON.parse(data) as Message;
-        // console.log(JSON.stringify(parsedData, null, 4));
+        const parsedData: Message = safelyParseJson(data)
         const messageType = get(parsedData, 'body.event.type') as MessageType;
 
         switch (messageType) {
@@ -185,44 +184,57 @@ class Socket implements SocketInterface {
                 const data = get(parsedData, 'body.event.data') as UpdateUsersData;
                 return dispatch({ type: types.UPDATE_USERLIST, payload: moveGuestsToTheEnd(data.users) });
             }
+
             case 'message': {
                 const message = get(parsedData, 'body.event.data') as ChatMessage;
                 const payload = { ...message, roomID: this.room_uuid };
                 return dispatch({ type: types.ADD_MESSAGE, payload });
             }
+
             case 'resume': {
                 return dispatch({ type: types.SET_REMOTE_PLAYING });
             }
+
             case 'pause': {
                 return dispatch({ type: types.SET_REMOTE_PAUSED });
             }
+
             case 'update_playlist': {
                 const playlistData = get(parsedData, 'body.event.data') as UpdatePlaylistData;
 
                 const subtitlesUrl = get(playlistData, 'videos[0].subs') as string;
-                if (subtitlesUrl) httpServices.get(subtitlesUrl)
-                    .then(handleSubtitles)
-                    .catch(() => toast.error('Could not fetch subtitles'))
+                if (subtitlesUrl) {
+                    httpServices
+                        .get(subtitlesUrl)
+                        .then(handleSubtitles)
+                        .catch(() => toast.error('Could not fetch subtitles'))
+                }
 
                 const dispatchAction = () => dispatch({ type: types.ADD_TO_PLAYLIST, payload: playlistData.videos });
                 return this.handleMediaChange(playlistData, dispatchAction);
             }
+
             case 'ticker': {
                 const { ticker } = get(parsedData, 'body.event.data') as TickerData;
                 return dispatch({ type: types.UPDATE_MEDIA, payload: { actualTime: ticker.elapsed_time } });
             }
+
             case 'emoji_update': {
                 const emoji = get(parsedData, 'body.event.data.emoji') as Emoji[];
                 return dispatch({ type: types.ADD_EMOJIS, payload: emoji || [] });
             }
+
             case 'error': {
                 const error = get(parsedData, 'body.event.data.error') as string;
                 return toast.error(error, toastOpts);
             }
+
             case 'feedback': {
-                const { feedback } = get(parsedData, 'body.event.data') as FeedbackData;
-                if (feedback.message === 'success')
+                const { feedback } = get(parsedData, 'body.event.data', {}) as FeedbackData;
+                if (feedback.message === 'success') {
                     return setAddMediaToSuccess();
+                }
+
                 if (feedback.error) {
                     stopAddMediaPending()
                     toast.warn(feedback.error, toastOpts);
@@ -247,7 +259,10 @@ class Socket implements SocketInterface {
         const mediaAfterChange = new CustomEvent('mediaafterchange', { 'detail': { mediaBefore, mediaAfter } });
 
         const changed = videoIdCurrent !== videoIdNew;
-        if (changed) document.dispatchEvent(mediaBeforeChange);
+        if (changed) {
+            document.dispatchEvent(mediaBeforeChange);
+        }
+
         dispatch_();
         if (changed) {
             dispatch({ type: types.UPDATE_MEDIA, payload: { actualTime: 0 } });
@@ -260,7 +275,7 @@ class Socket implements SocketInterface {
     };
 
     private handleClose = () => {
-        console.log('WebSocket conection closed');
+        console.log('WebSocket connection closed');
         this.handleReconnect();
     };
 

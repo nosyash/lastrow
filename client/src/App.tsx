@@ -1,8 +1,9 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
-import { Route, Switch, BrowserRouter } from 'react-router-dom';
+import { Route, Switch, Redirect, BrowserRouter } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { connect, Provider } from 'react-redux';
 import { get as lsGet } from 'local-storage';
+import { get } from 'lodash'
 // import RoomBase from './scenes/Room';
 // import RoomListBase from './scenes/Home/index';
 const RoomBase = lazy(() => import(/* webpackChunkName: "room" */ './scenes/Room/index'));
@@ -37,13 +38,20 @@ function App(props: any) {
     }, []);
 
     async function handleProfile() {
-        const { updateProfile, setRoles } = props;
+        const { updateProfile, setRoles, setCurrentLevel } = props;
         const profile = await getProfile();
 
         if (profile) {
             updateProfile({ ...profile.data, logged: true });
-            const { Roles } = getJWTBody(getCookie('jwt'));
-            setRoles(Roles);
+            const jwt = getJWTBody(getCookie('jwt'));
+            const roles = get(jwt, 'roles', [])
+            
+            if (roles.length === 0) {
+                setCurrentLevel(1)
+            }
+
+            setRoles(roles);
+
         } else {
             const uuid = getRandom(64);
             updateProfile({ logged: false, uuid, guest: true });
@@ -66,7 +74,7 @@ function App(props: any) {
                     <Switch>
                         <Route path="/r/:id" component={RoomSuspended} />
                         <Route exact path="/" component={RoomListSuspended} />
-                        <Route path="/" render={() => <h1>404</h1>} />
+                        <Route path="/"><Redirect to="/" /></Route>
                     </Switch>
                 </React.Fragment>
             )}
@@ -77,7 +85,8 @@ function App(props: any) {
 const mapDispatchToProps = {
     updateProfile: (payload: any) => ({ type: types.UPDATE_PROFILE, payload }),
     addPopup: (payload: any) => ({ type: types.ADD_POPUP, payload }),
-    setRoles: (payload: any) => ({ type: types.SET_ROLES, payload })
+    setRoles: (payload: any) => ({ type: types.SET_ROLES, payload }),
+    setCurrentLevel: (payload: any) => ({ type: types.SET_CURRENT_LEVEL, payload }),
 };
 
 const mapStateToProps = (state: any) => ({

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, KeyboardEvent } from 'react';
 import { connect } from 'react-redux';
 import cn from 'classnames';
 import * as types from '../../../../../constants/actionTypes';
@@ -47,8 +47,8 @@ function ChatInput(props) {
             document.removeEventListener('click', handleClick);
         };
     });
-    function handleClick(e) {
-        const target = e.target.closest('.reply-trigger');
+    function handleClick(e: MouseEvent) {
+        const target: HTMLElement = (e.target as HTMLElement).closest('.reply-trigger');
         if (target) {
             const { name } = target.dataset;
             if (name) {
@@ -59,7 +59,7 @@ function ChatInput(props) {
         }
     }
 
-    function onKeyDown(e) {
+    function onKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
         const { socketState, profile } = props;
 
         if (e.keyCode === KEY_ESC) {
@@ -68,15 +68,20 @@ function ChatInput(props) {
 
         if (e.keyCode === keys.ENTER && !e.shiftKey && !emoteQuery.length) {
             e.preventDefault();
+            if (!isWebsocketOpened()) return;
+
             const newValue = inputValue.trim();
             if (!socketState || !newValue) return;
-            if (!isWebsocketOpened()) return;
+
             webSocketSend(api.SEND_MESSAGE(newValue, profile.uuid));
             setInputValue('');
             return;
         }
 
-        if (!emoteQuery) return;
+        if (emoteQuery.length === 0) {
+            return
+        }
+
         const last = emoteQuery.length;
         let cur = currentEmote;
 
@@ -112,7 +117,9 @@ function ChatInput(props) {
         const len = body.length;
         const nextCh = pos < len ? body.charCodeAt(pos) : 0;
 
-        if (nextCh && nextCh !== KEY_SPC && nextCh !== KEY_NL) return null;
+        if (nextCh && nextCh !== KEY_SPC && nextCh !== KEY_NL) {
+            return null;
+        }
 
         let i = pos - 1;
         let chunk = '';
@@ -133,10 +140,16 @@ function ChatInput(props) {
         }
 
         setQueryLen(chunk ? chunk.length : 0);
-        if (!colon) return null;
-        if (chunk.length < 2) return null;
+        if (!colon) {
+            return null;
+        }
+        if (chunk.length < 2) {
+            return null;
+        }
         const prevCh = i > 0 ? body.charCodeAt(i - 1) : 0;
-        if (prevCh && prevCh !== KEY_SPC && prevCh !== KEY_NL) return null;
+        if (prevCh && prevCh !== KEY_SPC && prevCh !== KEY_NL) {
+            return null;
+        }
 
         chunk = reverse(chunk);
         const matches = emotesList.filter(_emote => _emote.name.includes(chunk));
@@ -145,17 +158,23 @@ function ChatInput(props) {
 
     function selectCurrent() {
         const currentEmoteName = emoteQuery[currentEmote];
-        if (!currentEmoteName) return;
+        if (!currentEmoteName) {
+            return;
+        }
         pasteEmoteByName(currentEmoteName.name);
     }
 
     function pasteEmoteByName(name: string, inPlace?: boolean) {
         const { selectionEnd } = inputEl.current;
         let inputStart = inputValue.substr(0, selectionEnd - queryLen - 1).trim();
-        if (inPlace) inputStart = inputValue.substr(0, selectionEnd).trim();
+        if (inPlace) {
+            inputStart = inputValue.substr(0, selectionEnd).trim();
+        }
         const inputEnd = inputValue.substr(selectionEnd).trim();
         // if we're not at the beginning, manually add space before emote;
-        if (inputStart) inputStart += ' ';
+        if (inputStart) {
+            inputStart += ' ';
+        }
 
         handlePopularEmote(name);
 
@@ -225,30 +244,30 @@ function ChatInput(props) {
                 emotes={props.emotesList}
                 toggleShowEmotes={() => setShowEmotes(!showEmotes)}
             />
-            <CustomAnimation show={!!emoteQuery.length} classes={['emote-search']}>
-                <div className="emote-search">
-                    {emoteQuery.map((emote, index) => (
-                        <span
-                            onClick={() => pasteEmoteByName(emote.name)}
-                            key={emote.name}
-                            className={cn([
-                                'emote-search__emote',
-                                { 'emote-search__emote_selected': currentEmote === index },
-                            ])}
-                        >
-                            <img src={emote.path} alt={emote.name} title={emote.name} className="emote" />
-                            <span>:{emote.name}:</span>
-                        </span>
-                    ))}
-                </div>
-            </CustomAnimation>
-            <CustomAnimation show={showEmotes} classes={['emote-menu']} duration={1100}>
-                <EmoteMenu
-                    onHideMenu={() => setShowEmotes(false)}
-                    list={props.emotesList}
-                    onClick={name => pasteEmoteByName(name, true)}
-                />
-            </CustomAnimation>
+            {/* <CustomAnimation show={!!emoteQuery.length} classes={['emote-search']}> */}
+            {!!emoteQuery.length && <div className="emote-search">
+                {emoteQuery.map((emote, index) => (
+                    <span
+                        onClick={() => pasteEmoteByName(emote.name)}
+                        key={emote.name}
+                        className={cn([
+                            'emote-search__emote',
+                            { 'emote-search__emote_selected': currentEmote === index },
+                        ])}
+                    >
+                        <img src={emote.path} alt={emote.name} title={emote.name} className="emote" />
+                        <span>:{emote.name}:</span>
+                    </span>
+                ))}
+            </div>}
+            {/* </CustomAnimation> */}
+            {/* <CustomAnimation show={showEmotes} classes={['emote-menu']} duration={1100}> */}
+            {showEmotes && <EmoteMenu
+                onHideMenu={() => setShowEmotes(false)}
+                list={props.emotesList}
+                onClick={name => pasteEmoteByName(name, true)}
+            />}
+            {/* </CustomAnimation> */}
         </div>
     );
 }

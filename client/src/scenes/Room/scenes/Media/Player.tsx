@@ -282,12 +282,11 @@ function Player(props: PlayerProps) {
         );
     }
 
-
     function handleRemoteRewind() {
         const [_, time] = safelyGetTimeAndDuration()
-        webSocketSend(api.REWIND_MEDIA({ time }), 'ticker', () => {
-            setSynced(true)
-        })
+        webSocketSend(api.REWIND_MEDIA({ time }), 'ticker')
+            .then(() => setSynced(true))
+
         setRemoteControlRewind(false);
     }
 
@@ -302,8 +301,13 @@ function Player(props: PlayerProps) {
             setPlaying(true)
         }
 
-        if (!playing) webSocketSend(api.PAUSE_MEDIA(), 'pause', afterPause)
-        else webSocketSend(api.RESUME_MEDIA(), 'resume', afterResume)
+        if (playing) {
+            webSocketSend(api.RESUME_MEDIA(), 'resume')
+                .then(afterResume)
+        } else {
+            webSocketSend(api.PAUSE_MEDIA(), 'pause')
+                .then(afterPause)
+        }
 
         // setRemoteControlPlaying(false)
     }
@@ -313,12 +317,14 @@ function Player(props: PlayerProps) {
     }
 
     function onProgressChangeLazy() {
-        if (synced) setSynced(false);
+        if (synced) {
+            setSynced(false);
+        }
+
         handleRewinded()
     }
 
     function handleRewinded() {
-        
         setRemoteControlRewind(true);
         clearTimeout(remoteControlTimeRewind)
         remoteControlTimeRewind = setTimeout(() => setRemoteControlRewind(false), 5000);
@@ -330,14 +336,20 @@ function Player(props: PlayerProps) {
     }
 
     function togglePlay() {
-        if (synced) setSynced(false);
+        if (synced) {
+            setSynced(false);
+        }
+
         setPlaying(!playing);
 
         // handleAutoRemoteControl()
     }
 
     function handleAutoRemoteControl() {
-        if (!remoteControlPlaying) setRemoteControlPlaying(true)
+        if (!remoteControlPlaying) {
+            setRemoteControlPlaying(true)
+        }
+        
         clearTimeout(remoteControlTimePlayback)
         remoteControlTimePlayback = setTimeout(() => setRemoteControlPlaying(false), 5000);
     }

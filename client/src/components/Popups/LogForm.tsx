@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FormEvent } from 'react';
 import Joi from 'joi-browser';
 import { toast } from 'react-toastify';
 import { connect } from 'react-redux';
@@ -43,7 +43,7 @@ class LogForm extends Form {
 
     schema = this.signin;
 
-    handleSubmit = async e => {
+    handleSubmit = async (e: FormEvent) => {
         const { signIn, data } = this.state as any;
         const { password: passwd, username: uname, email } = data;
         // const { updateProfile } = this.props as any;
