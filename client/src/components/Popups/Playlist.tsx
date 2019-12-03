@@ -1,14 +1,11 @@
 import React, { Component, useState } from 'react';
-import { connect, useSelector } from 'react-redux';
+import { connect } from 'react-redux';
 import { formatTime } from '../../utils';
 import { webSocketSend } from '../../actions';
 import * as api from '../../constants/apiActions';
 import AddMedia from './AddMedia';
-import { get } from 'lodash';
 import { Video } from '../../utils/types';
 import { SortableContainer, SortableElement } from 'react-sortable-hoc';
-import { Profile } from '../../reducers/profile';
-import { Permissions, PermissionsMap } from '../../reducers/rooms';
 import { State } from '../../reducers';
 import { isPermit } from '../../utils/storeUtils';
 

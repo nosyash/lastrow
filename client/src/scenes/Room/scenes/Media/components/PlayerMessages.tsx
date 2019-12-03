@@ -1,5 +1,4 @@
 import React from 'react';
-import { PermissionsMap, Permissions } from '../../../../../reducers/rooms';
 
 interface PlayerGlobalMessagesProps {
     remotelyPaused: boolean;

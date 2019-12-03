@@ -1,17 +1,13 @@
-import React, { useState, useRef, useEffect, Dispatch, Component } from 'react';
-import ReactRedux, { connect, MapStateToProps } from 'react-redux';
+import React, { useState, useRef, useEffect } from 'react';
+import ReactRedux, { connect } from 'react-redux';
 import ReactPlayer from 'react-player';
 import cn from 'classnames';
 import { get } from 'lodash';
 import * as types from '../../../../constants/actionTypes';
-import { formatTime, requestFullscreen } from '../../../../utils';
 import { PLAYER_MINIMIZE_TIMEOUT, MAX_VIDEO_SYNC_OFFSET } from '../../../../constants';
 import * as api from '../../../../constants/apiActions'
 import PlayerGlobalControls from './components/PlayerGlobalControls'
 import PlayerGlobalMessages from './components/PlayerMessages'
-
-import ProgressBar from './components/ProgressBar';
-import Subtitles from './components/Subtitles';
 import { playerConf } from '../../../../conf';
 import { Video } from '../../../../utils/types';
 import { Media } from '../../../../reducers/media';

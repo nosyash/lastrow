@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { connect, useSelector } from 'react-redux';
-import { set, get as lsGet } from 'local-storage';
-import { get } from 'lodash';
+import { connect } from 'react-redux';
 import * as types from '../../../constants/actionTypes';
 import SettingsMenu from './components/SettingsMenu'
 import SettingsScenes from './scenes/index'
 import './style.less'
-import { Profile } from '../../../reducers/profile';
-import { Permissions } from '../../../reducers/rooms';
 import { isPermit } from '../../../utils/storeUtils';
 
 const _items = [

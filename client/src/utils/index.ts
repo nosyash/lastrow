@@ -1,5 +1,4 @@
 import { Video } from './types';
-import { PermissionsMap } from '../reducers/rooms';
 import { Role } from '../reducers/profile';
 
 /* eslint-disable no-new */

@@ -1,6 +1,4 @@
 import React from 'react';
-import { PermissionsMap, Permissions } from '../../../../../reducers/rooms';
-import { get } from 'lodash'
 import cn from 'classnames'
 import { isPermit } from '../../../../../utils/storeUtils';
 

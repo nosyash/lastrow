@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import * as types from '../constants/actionTypes';
-import { PROFILE_SETTINGS, PLAYLIST, SETTINGS } from '../constants';
+import { PLAYLIST, SETTINGS } from '../constants';
 import { Video } from '../utils/types';
 
 function ControlPanel(props: any) {
