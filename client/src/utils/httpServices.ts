@@ -1,20 +1,19 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { toast } from 'react-toastify';
 import { toastOpts } from '../conf';
 
 axios.defaults.withCredentials = false;
-
 axios.interceptors.response.use(res => handleResponse(res), error => handleError(error));
 
-const handleResponse = res => {
+function handleResponse(res: AxiosResponse<any>) {
     const { data } = res;
     const { error } = data;
     if (error) toast.error(error, toastOpts);
     if (error) return Promise.resolve(error);
     return Promise.resolve(res);
-};
+}
 
-const handleError = error => {
+function handleError(error: any) {
     if (!error.response) return;
     const { data } = error.response;
     if (!toast.isActive(error.response.status)) {
@@ -28,10 +27,6 @@ const handleError = error => {
         }
     }
     return Promise.reject(error);
-};
-
-function setToken(token) {
-    axios.defaults.headers.common['x-auth-token'] = token;
 }
 
 // axios instance without interceptors
@@ -48,5 +43,3 @@ export default {
     silentPut: silentAxios.put,
     silentDelete: silentAxios.delete,
 };
-
-export { setToken };
