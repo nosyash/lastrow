@@ -1,4 +1,4 @@
-import React, { Component, Props, ChangeEvent } from 'react';
+import React, { Component, ChangeEvent } from 'react';
 import { connect } from 'react-redux';
 import Joi from 'joi-browser';
 import * as api from '../../constants/apiActions';
@@ -69,6 +69,11 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
         e.preventDefault();
 
         const { inputValue, subtitles } = this.state;
+        const reg = new RegExp(/^(http(s)?:.+)|(<iframe.+)/)
+        if (!reg.test(inputValue)) {
+            toast.error('Invalid url or iframe code', toastOpts)
+            return
+        }
 
         const subs = subtitles ? { subtitles: this.subs64, subs_type: 'srt' } : {}
         const data = { url: inputValue, uuid, subtitles: subs }
@@ -128,7 +133,7 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
             this.subs64 = (base64 as string).replace(/data:.+base64,/, '');
             this.setState({ subtitlesName: name })
         };
-        reader.onerror = () => this.convertingErrorWarn();
+        reader.onerror = this.convertingErrorWarn;
     }
 
     sizeWarn() {
