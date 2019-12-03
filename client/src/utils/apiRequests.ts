@@ -9,7 +9,6 @@ export const getProfile = async () => {
 };
 
 export const getRoom = async (roomId: string) => {
-    http.silentGet(api.API_ROOM(roomId)).then(room => console.log(room))
     return http.silentGet(api.API_ROOM(roomId))
         .then(res => res.data as Room)
 };
