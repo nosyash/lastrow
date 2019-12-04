@@ -28,7 +28,7 @@ import Settings from './Settings/index';
 import ChatContainer from '../../scenes/Room/scenes/Chat';
 import { MainStates } from '../../reducers/mainStates';
 import { Rooms } from '../../reducers/rooms';
-
+import ResizeObserver from 'resize-observer-polyfill'
 
 interface WrapperProps {
     popup: ReactElement;
@@ -143,7 +143,10 @@ function Popup(props) {
     const [left, setLeft] = useState(getPosition('left') || 0);
     const [moving, setMoving] = useState(false);
     const [show, setShow] = useState(false);
-    const popupEl = useRef(null);
+    const popupEl = useRef(null) as React.MutableRefObject<HTMLDivElement>
+
+    const timer = useRef(null)
+    const timer2 = useRef(null)
 
     useEffect(() => {
         if (!getPosition('left')) {
@@ -153,7 +156,11 @@ function Popup(props) {
         setShow(true);
 
         document.addEventListener('keydown', handleKeyDown);
+        watchPopupDimensionsChange()
+
+        
         return () => {
+            clearInterval(timer2.current)
             document.removeEventListener('keydown', handleKeyDown);
         }
     }, []);
@@ -166,11 +173,21 @@ function Popup(props) {
         };
     }, [width, top, left, moving]);
 
+    function watchPopupDimensionsChange() {
+        const resizeObserver = new ResizeObserver(() => {
+            clearTimeout(timer.current )
+            timer.current = requestAnimationFrame(() => { updatePosition() });
+        });
+
+        timer2.current = setInterval(() => { updatePosition() }, 3000);
+        resizeObserver.observe(popupEl.current);
+    }
+
     function setStates(states) {
-        if (states.width) setWidth(states.width);
-        if (states.top) setTop(states.top);
-        if (states.left) setLeft(states.left);
-        if (states.moving) setMoving(states.moving);
+        if (typeof states.width === 'number') setWidth(states.width);
+        if (typeof states.top === 'number') setTop(states.top);
+        if (typeof states.left === 'number') setLeft(states.left);
+        if (typeof states.moving === 'number') setMoving(states.moving);
     }
 
     function handleKeyDown({ code }) {
@@ -199,15 +216,35 @@ function Popup(props) {
         }
     }
 
-    function handleMouseMove(e) {
-        if (!moving) return;
+    function updatePosition({ left, top, rect } = {} as { left?: number; top?: number, rect?: DOMRect }) {
+        if (!popupEl.current) {
+            return
+        }
 
-        const { clientX: clientX_, clientY: clientY_ } = e;
+        const windowWidth = window.innerWidth
+        const windowHeight = window.innerHeight
 
-        const { left: left_, top: top_ } = popupEl.current.getBoundingClientRect();
+        const popupRect = rect || popupEl.current.getBoundingClientRect();
+        const { left: elLeft, top: elTop, width: elWidth, height: elHeight } = popupRect
+
+        const leftBound = Math.min(windowWidth - elWidth, Math.max(0, left || elLeft))
+        const topBound = Math.min(windowHeight - elHeight, Math.max(0, top || elTop))
+
+        setStates({ left: leftBound, top: topBound });
+    }
+
+    function handleMouseMove(e = {} as MouseEvent) {
+        if (!moving) return;        
+
+        const rect = popupEl.current.getBoundingClientRect() as DOMRect;
+        const { left: left_, top: top_ } = rect;
+
+        const { clientX: clientX_ = left_, clientY: clientY_ = top_ } = e;
+
         const offsetX = left_ + (clientX_ - (left_ + clientX));
         const offsetY = top_ + (clientY_ - (top_ + clientY));
-        setStates({ left: offsetX, top: offsetY });
+
+        updatePosition({ left: offsetX, top: offsetY, rect })
     }
 
     function savePosition() {

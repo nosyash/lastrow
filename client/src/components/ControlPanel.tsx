@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { connect } from 'react-redux';
 import * as types from '../constants/actionTypes';
-import { PLAYLIST, SETTINGS } from '../constants';
+import { PLAYLIST, SETTINGS, CONTROL_PANEL_EXPAND_DELAY } from '../constants';
 import { Video } from '../utils/types';
 import { State } from '../reducers';
 import { Media } from '../reducers/media';
@@ -14,20 +14,29 @@ type ControlPanelProps = MapState & MapDispatch & {
 
 function ControlPanel(props: ControlPanelProps) {
     const [collapsed, setCollapsed] = useState(props.cinemaMode)
-
-    // const setCollapsed = (pos: boolean) => props.cinemaMode ? setCollapsed_(pos) : setCollapsed_(false)
+    const timer = useRef(null)
 
     function handleClick(id: string) {
         if (id === "showPlaylist") props.togglePopup(PLAYLIST);
+    }
+
+    const delayedExpand = () => {
+        clearTimeout(timer.current)
+        timer.current = setTimeout(() => setCollapsed(false), CONTROL_PANEL_EXPAND_DELAY);
+    }
+
+    const delayedCollapse = () => {
+        clearTimeout(timer.current)
+        setCollapsed(true)
     }
 
     const { profile, playlist } = props;
     const upNext = playlist[1];
     const { logged } = profile;
     return (
-        <div onMouseLeave={() => setCollapsed(true)}  className="control-panel_container">
-            <div onMouseEnter={() => setCollapsed(false)} className="control-panel__expander">
-                <i className="fa fa-angle-down" />
+        <div onMouseLeave={delayedCollapse}  className="control-panel_container">
+            <div onMouseEnter={delayedExpand} className="control-panel__expander">
+                <i className={`fa fa-angle-${collapsed ? 'up' : 'down'}`} />
             </div>
             {!collapsed && (
                 <div className="control-panel__collapsible-items">

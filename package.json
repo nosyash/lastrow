@@ -82,6 +82,7 @@
     "redux": "^4.0.1",
     "redux-devtools-extension": "^2.13.8",
     "redux-thunk": "^2.3.0",
+    "resize-observer-polyfill": "^1.5.1",
     "resolve": "1.10.0",
     "safely-set-inner-html": "^0.1.0",
     "sass-loader": "7.1.0",
