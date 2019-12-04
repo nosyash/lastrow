@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import * as types from '../../../constants/actionTypes';
 import SettingsMenu from './components/SettingsMenu'
 import SettingsScenes from './scenes/index'
-import './style.less'
+import './index.less'
 import { isPermit } from '../../../utils/storeUtils';
 
 const _items = [
