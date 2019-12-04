@@ -5,13 +5,13 @@ import emojis, { Emojis } from './emojis';
 import profile, { Profile } from './profile';
 import media, { Media } from './media';
 import rooms, { Rooms } from './rooms';
-import popups from './popups';
+import popups, { Popups } from './popups';
 
 export interface State {
     mainStates: MainStates;
     chat: Chat;
     emojis: Emojis;
-    popups: any;
+    popups: Popups;
     profile: Profile;
     media: Media;
     rooms: Rooms;

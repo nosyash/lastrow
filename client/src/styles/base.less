@@ -62,6 +62,7 @@ body {
     transform: scale(0.1);
     transition: 0.15s;
     transition-timing-function: cubic-bezier(0, 0, 0.13, 1);
+
     &.is-visible {
         transform: unset;
         opacity: 1;
@@ -172,6 +173,9 @@ body {
 //   border-radius: 100px 100px 0 0;
 //   box-shadow: inset 0 0 20px 20px hsla(0, 0%, 24%, 0.07);
 // }
+.popup.chatFloat {
+    backdrop-filter: unset;
+}
 
 .chat-container {
     flex-shrink: 0;
@@ -184,6 +188,29 @@ body {
     z-index: 10;
     margin-right: 10px;
     will-change: scroll-position;
+
+    &.cinema-mode {
+        width: 100% !important;
+        height: 100% !important;
+        // position: fixed;
+        margin-right: 0;
+
+        .chat-inner {
+            height: 100%;
+            max-height: 90vh;
+            border-radius: 4px 4px 0 0;
+        }
+
+        .chat-message_header {
+            background: rgba(52, 52, 52, 0.21);
+        }
+
+        .chat-inner {
+            background: rgba(0, 3, 6, 0.5);
+            backdrop-filter: blur(6px);
+        }
+    }
+
 }
 
 .chat-container.collapsed {
@@ -230,6 +257,7 @@ body {
 .chat-inner {
     display: flex;
     flex-direction: column;
+    min-height: 300px;
     height: 100%; // cursor: e-resize;
     // border-bottom: 5px solid @darkSecond;
     background: @darkMain;
@@ -237,89 +265,6 @@ body {
     overflow: hidden;
     position: relative;
     box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
-}
-
-.control-panel_container {
-    border-radius: 5px;
-    margin-top: 10px;
-    // height: 100px;
-    background: @darkMain;
-    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
-
-    .chat-name {
-        margin: 0;
-    }
-
-    .mini-profile {
-        position: unset;
-        box-shadow: none;
-        margin: 0;
-        background: transparent;
-        height: unset;
-        padding: 5px 10px 10px 10px;
-
-        .chat-avatar {
-            width: 42px;
-            height: 42px;
-        }
-    }
-
-    .mini-profile_second-section {
-        margin-left: 10px;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .control {
-        margin-right: 5px;
-    }
-}
-
-.playlister {
-    padding: 5px 5px 0 5px;
-
-    .control-svg {
-        background-repeat: no-repeat;
-        background-size: 100%;
-        background-position: 50%;
-        height: 16px;
-        width: 16px;
-        display: inline-block;
-        vertical-align: middle;
-        margin: 0 7px 0 0;
-    }
-
-    .show-playlist-icon {
-        background-image: @playlistShow;
-    }
-
-    .add-to-playlist-icon {
-        background-image: @playlistAdd;
-        height: 18px;
-        width: 18px;
-        margin: 0 4px 0 0;
-    }
-
-    .item {
-        margin-left: 7px;
-        word-break: keep-all;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-
-        .fa {
-            height: 16px;
-            width: 16px;
-            margin: 0 5px 0 5px;
-        }
-    }
-
-    >div {
-        word-break: keep-all;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-    }
 }
 
 
@@ -599,7 +544,9 @@ body {
 
 .emote-menu {
     transition: 0.1s;
-    position: fixed;
+    position: absolute;
+    left: 0 !important;
+    bottom: 100% !important;
     overflow-x: auto;
     background: hsla(0, 0%, 23%, 0.9);
     backdrop-filter: blur(5px);
@@ -1254,24 +1201,30 @@ body {
         pointer-events: none;
         visibility: hidden;
         cursor: default;
+
         &.is-visible {
             pointer-events: auto;
             visibility: visible;
             cursor: pointer;
             backdrop-filter: saturate(500%) blur(18px);
         }
+
         &.global-controls__admin {
             background-color: rgba(30, 127, 95, 0.9);
             color: white;
         }
+
         .hover();
+
         .fa {
             font-size: 0.7em;
             vertical-align: 2px;
         }
+
         .fa-pause {
             font-size: 0.7em;
         }
+
         .fa-bullhorn {
             display: none;
             margin-left: 10px;
@@ -1292,6 +1245,7 @@ body {
     display: flex;
     align-items: center;
     flex-direction: column;
+
     &__item {
         text-align: center;
         max-width: 360px;
@@ -1301,20 +1255,24 @@ body {
         padding: 5px 30px 3px;
         margin: 2px 0;
         border-radius: 4px;
+
         &.is-clickable {
             // font-weight: 700;
             color: @link;
             .hover();
             cursor: pointer;
         }
+
         .fa {
             font-size: 0.7em;
             vertical-align: 1px;
         }
+
         .fa-pause {
             font-size: 0.7em;
             vertical-align: 1px;
         }
+
         .fa-play {
             font-size: 0.6em;
             vertical-align: 1px;
@@ -1595,11 +1553,6 @@ body {
     text-align: center;
 }
 
-// Cinema mode
-.cinema-mode .chat-inner {
-    background: @darkMainCinema;
-}
-
 .cinema-mode .chat-message_body {
     color: rgba(255, 255, 255, 0.8);
     text-shadow: 0 0 1px black;
@@ -1627,30 +1580,35 @@ body {
 }
 
 
-.cinema-mode .chat-input {
-    background: @darkSecondCinema;
-}
-
-.cinema-mode .chat-header {
-    background: @darkSecondCinema + rgba(0, 0, 0, 0.6);
-    cursor: move;
-}
-
-.cinema-mode .chat-input textarea {
-    height: 70px;
-}
-
-.cinema-mode .chat-container {
-    border: 5px solid transparent;
-}
-
 .cinema-mode {
 
-    .control-panel_container,
-    .go-back {
-        display: none;
+    .chat-input,
+    .chat-input__topbar {
+        background: @darkSecondCinema;
+    }
+
+    .chat-header {
+        background: @darkSecondCinema;
+        cursor: move;
+    }
+
+    .chat-input textarea {
+        height: 70px;
+    }
+
+    .chat-container {
+        border: 5px solid transparent;
     }
 }
+
+
+// .cinema-mode {
+
+//     .control-panel_container,
+//     .go-back {
+//         display: none;
+//     }
+// }
 
 .Toastify__toast {
     border-radius: 4px;
@@ -1987,11 +1945,15 @@ body {
     display: initial;
     will-change: opacity;
     opacity: 0;
+
     &.is-visible {
         opacity: 1;
     }
 }
-.popup-animation, .mini-profile-animation, .emote-menu {
+
+.popup-animation,
+.mini-profile-animation,
+.emote-menu {
     transition: 0.1s;
     z-index: 10;
 }

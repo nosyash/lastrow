@@ -10,7 +10,11 @@ import {
     SETTINGS,
 } from '../constants';
 
-const initialState = {
+export interface Popups {
+    [key: string]: boolean;
+}
+
+const initialState: Popups = {
     [COLOR_PICKER]: false,
     [GUEST_AUTH]: false,
     [IMAGE_PICKER]: false,
@@ -26,7 +30,6 @@ const Popups = (state = initialState as any, action: any) => {
         case types.ADD_POPUP: {
             return { ...state, [action.payload]: true };
         }
-        // }
 
         case types.REMOVE_POPUP: {
             return { ...state, [action.payload]: false };

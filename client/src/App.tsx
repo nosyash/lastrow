@@ -16,6 +16,7 @@ import { getProfile } from './utils/apiRequests';
 import { getRandom, getCookie, getJWTBody } from './utils';
 import { store } from './store';
 import { Profile } from './reducers/profile';
+import { State } from './reducers';
 
 const RoomSuspended = (props) =>
     <Suspense fallback={<div />}>
@@ -95,7 +96,7 @@ const mapDispatchToProps = {
     setCurrentLevel: (payload: any) => ({ type: types.SET_CURRENT_LEVEL, payload }),
 };
 
-const mapStateToProps = (state: any) => ({
+const mapStateToProps = (state: State) => ({
     profile: state.profile,
 });
 

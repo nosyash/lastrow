@@ -67,3 +67,6 @@ export const NEW_ROOM = 'newRoom';
 export const PLAYLIST = 'playlist';
 export const PROFILE_SETTINGS = 'profileSettings';
 export const SETTINGS = 'settings';
+export const CHAT_FLOAT = 'chatFloat';
+
+export const DEBUG = process.env.NODE_ENV !== 'production'

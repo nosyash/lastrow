@@ -5,7 +5,6 @@ import { store } from '../store';
 import { toast } from 'react-toastify';
 import { toastOpts } from '../conf';
 import {
-    UpdateUsers,
     Message,
     ChatMessage,
     TickerData,
@@ -21,6 +20,8 @@ import httpServices from './httpServices';
 import { parseAndDispatchSubtitles } from './subtitles';
 import { workerRequest } from '../worker/index';
 import { wait, safelyParseJson } from '.';
+import { DEBUG } from '../constants';
+import { UPDATE_PLAYLIST_WS_DEBUG_MESSAGE, PAUSE_MEDIA_WS_DEBUG_MESSAGE, TICKER_WS_DEBUG_MESSAGE, DEBUG_EXPOSE, RESUME_MEDIA_WS_DEBUG_MESSAGE } from './__DEBUG__';
 
 const { dispatch, getState } = store as Store;
 
@@ -54,6 +55,8 @@ class Socket implements SocketInterface {
         this.timer = null;
         this.reconnectTimer = null;
         this.initWebSocket();
+
+        DEBUG_EXPOSE('WEBSOCKET', this)
     }
 
     public initWebSocket = () => {
@@ -287,7 +290,10 @@ class Socket implements SocketInterface {
     };
 
     private unsubscribeEvents = () => {
-        if (!this.instance) return;
+        if (!this.instance) {
+            return;
+        }
+
         this.instance.onopen = () => null;
         this.instance.onmessage = () => null;
         this.instance.onerror = () => null;
@@ -301,6 +307,34 @@ class Socket implements SocketInterface {
     //     if (!this.pending) this._webSocketReconnect();
     //   }, WEBSOCKET_TIMEOUT);
     // };
+
+    get __DEBUG__() {
+        if (!DEBUG) {
+            return
+        }
+
+        return {
+            addVideoAndPause: (n = 5000) => {
+                this.__DEBUG__.addMedia();
+                this.__DEBUG__.updateTicker(0);
+                setTimeout(() => {
+                    console.log('DEBUG: paused');
+                    this.__DEBUG__.remotelyPauseVideo()
+                }, n)
+            },
+            addMedia: (params?: any) => this.handleMessage(({ data: JSON.stringify(UPDATE_PLAYLIST_WS_DEBUG_MESSAGE(params)) }) as MessageEvent),
+            remotelyPauseVideo: () => this.handleMessage(({ data: JSON.stringify(PAUSE_MEDIA_WS_DEBUG_MESSAGE()) }) as MessageEvent),
+            remotelyResumeVideo: () => this.handleMessage(({ data: JSON.stringify(RESUME_MEDIA_WS_DEBUG_MESSAGE()) }) as MessageEvent),
+            updateTicker: (n = 100) => this.handleMessage(({ data: JSON.stringify(TICKER_WS_DEBUG_MESSAGE(n)) }) as MessageEvent),
+            runTicker: () => {
+                let n = 0;
+                setInterval(() => {
+                    n += 5
+                    this.__DEBUG__.updateTicker(n)
+                }, 5000)
+            }
+        }
+    }
 }
 
 function subtitlesUpdateEvent() {

@@ -7,7 +7,7 @@ export const playerConf = {
             controls: 1,
             origin: 'https://www.youtube.com',
         },
-        preload: false,
+        preload: true,
     },
 };
 

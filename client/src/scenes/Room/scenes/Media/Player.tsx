@@ -13,7 +13,7 @@ import { Video } from '../../../../utils/types';
 import { Media } from '../../../../reducers/media';
 import { webSocketSend } from '../../../../actions';
 import PlayerUI from './components/PlayerUI';
-import { PermissionsMap, Permissions } from '../../../../reducers/rooms';
+import { State } from '../../../../reducers';
 
 let minimizeTimer = null;
 let remoteControlTimeRewind = null;
@@ -25,8 +25,6 @@ interface PlayerProps {
     playlist: Video[];
     remotePlaying: boolean;
     cinemaMode: boolean;
-    permissionLevel: PermissionsMap;
-    currentPermissions: Permissions;
     updatePlayer: (payload: any) => void;
     resetMedia: () => void;
     switchMute: () => void;
@@ -34,22 +32,28 @@ interface PlayerProps {
     toggleCinemaMode: () => void;
     toggleSync: () => void;
     toggleSubs: () => void;
-    getSubs: (payload: any) => void;
     hideSubs: () => void;
 }
 
+let t1: NodeJS.Timeout = null
 function Player(props: PlayerProps) {
     const [minimized, setMinimized] = useState(false);
     const [synced, setSynced] = useState(true);
     const [playing, setPlaying] = useState(true);
+    // const setPlaying = (willPlaying: boolean) => playing !== willPlaying ? setPlaying_(willPlaying) : null
+
     const [remoteControlRewind, setRemoteControlRewind] = useState(false)
     const [remoteControlPlaying, setRemoteControlPlaying] = useState(false)
-    // We only use currentTime to update player time.
-    // In other case we get time directly from video element.
+
+    // We only use currentTime to update time in player user interface.
+    // In other cases we get time directly from video element for perfomance reason
     const [currentTime, setCurrentTime] = useState(0);
+
     const lastTime = useRef(0);
     const minimizedRef = useRef(false);
     const playerRef = useRef(null);
+
+    const changingStateRemotely = useRef(false)
 
     let volume = 0.3;
 
@@ -63,7 +67,7 @@ function Player(props: PlayerProps) {
     }, []);
 
     useEffect(() => {
-        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mousemove', handleMouseMove, { passive: true });
         document.addEventListener('mediaafterchange', watchPlaylist);
         document.addEventListener('mediabeforechange', beforeMediaChange);
 
@@ -77,7 +81,7 @@ function Player(props: PlayerProps) {
         }
     }, []);
 
-    useEffect(() => { syncWithRemote() }, [props.media.actualTime, props.media.remotePlaying, synced]);
+    useEffect(() => { syncRemoteStates() }, [props.media.actualTime, props.media.remotePlaying, synced]);
 
     useEffect(() => {
         requestAnimationFrame(() => { lastTime.current = currentTime })
@@ -85,6 +89,7 @@ function Player(props: PlayerProps) {
         if (Math.abs(props.media.actualTime - currentTime) < 7) return
         if (props.media.actualTime < 1) return
         if (lastTime.current < 1) return
+        if (changingStateRemotely.current) return
         onProgressChangeLazy()
 
     }, [currentTime]);
@@ -94,17 +99,13 @@ function Player(props: PlayerProps) {
         setCurrentTime(0)
     }
 
-    // useEffect(() => { console.log(props.media.actualTime); }, [props.media.actualTime]);
-
     function watchPlaylist({ detail }: CustomEvent) {
         const liveStream = get(detail, 'mediaAfter.live_stream') as boolean;
         const iframe = get(detail, 'mediaAfter.iframe') as boolean;
 
 
         if (!liveStream && !iframe) {
-            // setTimeout(() => {
             safelySeekTo(0);
-            // }, 0);
             setSynced(true);
         }
         props.hideSubs();
@@ -115,22 +116,22 @@ function Player(props: PlayerProps) {
     }
 
     function init() {
-        // TODO: fix volume parser later
+        // TODO: fix volume parser
         try {
             const { updatePlayer } = props;
             // eslint-disable-next-line prefer-destructuring
             volume = localStorage.volume;
             volume = JSON.parse(volume as any || 1);
             updatePlayer({ volume });
-        } catch (error) { return }
+        } catch (_) { }
     }
 
-    function handleReady() {
+    function handleReady(): void {
         updateTime();
         // handleMouseMove();
     }
 
-    function updateTime() {
+    function updateTime(): void {
         const [duration, curTime] = safelyGetTimeAndDuration();
         videoEl = playerRef.current.getInternalPlayer();
         props.updatePlayer({ duration });
@@ -142,91 +143,94 @@ function Player(props: PlayerProps) {
             const duration = playerRef.current.getDuration() as number;
             const curTime = playerRef.current.getCurrentTime() as number;
             return [duration, curTime]
-        } catch (error) {
+        } catch (_) {
             return [0, 0]
         }
     }
 
-    function safelySeekTo(n: number, type = 'seconds') {
+    function safelySeekTo(n: number, type = 'seconds'): void {
         try {
             playerRef.current.seekTo(n, type);
-        } catch (error) { return; }
+        } catch (_) {}
     }
 
-    function syncWithRemote() {
-        if (!synced) return;
-        const { actualTime, remotePlaying } = props.media;
+    function syncRemoteStates() {
+        if (!synced) {
+            return;
+        }
 
+        const { remotePlaying, actualTime } = props.media
         const shouldSeek = Math.abs(actualTime - currentTime) > MAX_VIDEO_SYNC_OFFSET;
+        const shouldTogglePlaying = playing !== remotePlaying
 
-        if (shouldSeek) safelySeekTo(actualTime);
+        if (shouldTogglePlaying || shouldSeek) {
+            changingStateRemotely.current = true;
+        }
 
-        if (remotePlaying) setPlaying(true)
-        if (!remotePlaying) setPlaying(false)
+        if (shouldSeek) {
+            safelySeekTo(actualTime);
+        }
+
+        if (shouldTogglePlaying) {
+            setPlaying(remotePlaying)
+        }
+
+        clearTimeout(t1)
+        t1 = setTimeout(() => {
+            changingStateRemotely.current = false;
+        }, 100);
     }
 
     function handlePlaying({ playedSeconds }) {
         setCurrentTime(playedSeconds)
     }
 
-    function handleMouseMove({ target }) {
+    function handleMouseMove({ target }): void {
         clearTimeout(minimizeTimer);
-        if (target.closest('.video-player')) return;
-        if (minimizedRef.current) return;
+        
+        if (target.closest('.video-player') || minimizedRef.current) {
+            return;
+        }
+
         minimizeTimer = setTimeout(setMinimizedTrue, PLAYER_MINIMIZE_TIMEOUT);
     }
 
-    function setMinimizedFalse() {
+    function setMinimizedFalse(): void {
         minimizedRef.current = false;
         setMinimized(false)
     }
-
-    function setMinimizedTrue() {
+    function setMinimizedTrue(): void {
         minimizedRef.current = true;
         setMinimized(true)
     }
 
-    const handlePlay = () => {
-        if (!playing) setPlaying(true)
+    function handlePlay(): void {
+        setPlaying(true)
+
+        if (!changingStateRemotely.current) {
+            setSynced(false)
+        }
+
         handleAutoRemoteControl()
-        // setRemoteControlPlaying(true)
-        // const e = new Event('videoplay');
-        // document.dispatchEvent(e);
     };
-    const handlePause = () => {
-        if (playing) setPlaying(false)
-        setSynced(false)
+    function handlePause(): void {
+        setPlaying(false)
+
+        if (!changingStateRemotely.current) {
+            setSynced(false)
+        }
+
         handleAutoRemoteControl()
-        // setRemoteControlPlaying(true)
-        // const e = new Event('videopause');
-        // document.dispatchEvent(e);
     };
 
-    function getCurrentVideo(): Video {
-        return get(props.playlist, '[0]')
-    }
-
-    function getNextVideo(): Video {
-        return get(props.playlist, '[1]')
-    }
-
-    function getCurrentUrl() {
-        const currentVideo = getCurrentVideo();
-        return get(currentVideo, 'url') || '';
-    }
-
-    function isDirect() {
-        const currentVideo = getCurrentVideo();
-        return get(currentVideo, 'direct') || false;
-    }
-
-    function isIframe() {
-        const currentVideo = getCurrentVideo();
-        return get(currentVideo, 'iframe') || false;
-    }
+    const getCurrentVideo = () => get(props.playlist, '[0]') as Video
+    const getNextVideo = () => get(props.playlist, '[1]') as Video
+    const getCurrentUrl = () => get(getCurrentVideo(), 'url', '')
+    const isDirect = () => get(getCurrentVideo(), 'direct', false)
+    const isIframe = () => get(getCurrentVideo(), 'iframe', false)
 
     function RenderPlayer() {
-        const { media, permissionLevel, currentPermissions } = props;
+        const { media } = props;
         const url = getCurrentUrl();
         const nextVideo = getNextVideo();
         const direct = isDirect();
@@ -321,7 +325,9 @@ function Player(props: PlayerProps) {
     }
 
     function toggleSynced() {
-        setSynced(!synced)
+        if (!changingStateRemotely.current) {
+            setSynced(!synced)
+        }
         // if (!synced) safelySeekTo(props.media.actualTime);
     }
 
@@ -403,15 +409,15 @@ function Player(props: PlayerProps) {
 
 
 function PreloadMedia({ nextVideo }: { nextVideo: Video | null }) {
-    if (!nextVideo) return null;
-    if (nextVideo.iframe) return null;
+    if (!nextVideo || nextVideo.iframe) {
+        return null;
+    }
 
     return (
         <ReactPlayer
             className="preload-player"
             width="0px"
             height="0px"
-            // TODO: Maybe just set to display: none?
             style={{ visibility: 'hidden', display: 'none' }}
             config={playerConf}
             controls={false}
@@ -425,14 +431,12 @@ function PreloadMedia({ nextVideo }: { nextVideo: Video | null }) {
     );
 }
 
-const mapStateToProps = (state: any): ReactRedux.MapStateToProps<any, any, any> => ({
-    media: state.media as Media,
-    playlist: (state.media as Media).playlist,
-    remotePlaying: (state.media as Media).remotePlaying,
+const mapStateToProps = (state: State) => ({
+    media: state.media,
+    playlist: state.media.playlist,
+    remotePlaying: state.media.remotePlaying,
     cinemaMode: state.mainStates.cinemaMode,
-    permissionLevel: state.profile.currentLevel,
-    currentPermissions: state.rooms.currentPermissions,
-} as any);
+});
 
 const mapDispatchToProps = {
     updatePlayer: (payload: any) => ({ type: types.UPDATE_MEDIA, payload }),
@@ -443,12 +447,9 @@ const mapDispatchToProps = {
     toggleSync: () => ({ type: types.TOGGLE_SYNC }),
     hideSubs: () => ({ type: types.HIDE_SUBS }),
     toggleSubs: () => ({ type: types.TOGGLE_SUBS }),
-} as any;
+};
 
 export default connect(
     mapStateToProps,
     mapDispatchToProps
 )(Player);
-
-// export default Player;
-// export default createConsumer(Player);

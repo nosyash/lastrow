@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState, CSSProperties, ReactElement } from 'react';
+import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { throttle } from 'lodash';
 import cn from 'classnames';
@@ -15,6 +16,7 @@ import {
     PLAYLIST,
     PROFILE_SETTINGS,
     SETTINGS,
+    CHAT_FLOAT,
 } from '../../constants';
 import ColorPicker from './ColorPicker';
 import GuestAuth from './GuestAuth';
@@ -23,16 +25,19 @@ import LogForm from './LogForm';
 import NewRoom from './NewRoom';
 import Playlist from './Playlist';
 import Settings from './Settings/index';
+import ChatContainer from '../../scenes/Room/scenes/Chat';
+import { MainStates } from '../../reducers/mainStates';
+import { Rooms } from '../../reducers/rooms';
 
 
 interface WrapperProps {
     popup: ReactElement;
     name: string;
-    opts?: { fixed?: boolean; esc?: boolean };
+    opts?: { fixed?: boolean; esc?: boolean; hideClose?: boolean };
     show: boolean;
 }
 
-function Popups({ popups, removePopup }) {
+function Popups({ popups, cinemaMode, removePopup, insideOfRoom }) {
     const handleResizeTh = throttle(handleResize, 16);
     useEffect(() => {
         addEvents();
@@ -73,21 +78,20 @@ function Popups({ popups, removePopup }) {
             {wrapper({ popup: <NewRoom />, name: NEW_ROOM, show: p.newRoom })}
             {wrapper({ popup: <Playlist />, name: PLAYLIST, show: p.playlist })}
             {wrapper({ popup: <Settings />, name: SETTINGS, show: p.settings, opts: { fixed: true, esc: true } })}
+            {wrapper({ popup: <ChatContainer />, name: CHAT_FLOAT, show: cinemaMode && insideOfRoom, opts: { hideClose: true } })}
         </div>
     );
 
     function wrapper({ popup, name, show, opts = {} }: WrapperProps) {
-        const { fixed, esc } = opts;
+        const { fixed, esc, hideClose } = opts;
         return show && (<Popup
             fixed={fixed}
+            hideClose={hideClose}
             esc={esc}
             removePopup={() => removePopup(name)}
             popupElement={popup}
             name={name}
         />)
-            // <CustomAnimation show={show} classes={['popup-animation']} duration={110} >
-            // </CustomAnimation>
-    ;
     }
 }
 
@@ -132,7 +136,6 @@ export class CustomAnimation extends React.Component<any, any> {
         )
     }
 }
-
 
 function Popup(props) {
     const [width, setWidth] = useState(getPosition('width') || 0);
@@ -269,9 +272,11 @@ function Popup(props) {
             <div data-id={0} onMouseDown={handleMouseDown} className="popup-header">
                 <h3 className="popup-title">{getTitle()}</h3>
                 <div className="header-controls controls-container">
-                    <span onClick={() => removePopup()} className="control">
-                        <i className="fas fa-times" />
-                    </span>
+                    {!props.hideClose && (
+                        <span onClick={() => removePopup()} className="control">
+                            <i className="fas fa-times" />
+                        </span>
+                    )}
                 </div>
             </div>
             {popupElement}
@@ -281,6 +286,8 @@ function Popup(props) {
 
 const mapStateToProps = state => ({
     popups: state.popups,
+    cinemaMode: (state.mainStates as MainStates).cinemaMode,
+    insideOfRoom: !!(state.rooms as Rooms).currentPermissions
 });
 
 const mapDispatchToProps = {

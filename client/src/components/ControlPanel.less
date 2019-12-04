@@ -1,0 +1,100 @@
+@import "../styles/main.less";
+
+.cinema-mode {
+    .control-panel_container {
+        margin-top: 0;
+        border-radius: 0;
+
+        .control-panel__expander {
+            text-align: center;
+        }
+    }
+}
+
+.control-panel_container {
+    border-radius: 5px;
+    margin-top: 10px;
+    // height: 100px;
+    background: @darkMain;
+    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
+
+    &__expander {
+        padding: 4px 0;
+    }
+
+    .chat-name {
+        margin: 0;
+    }
+
+    .mini-profile {
+        position: unset;
+        box-shadow: none;
+        margin: 0;
+        background: transparent;
+        height: unset;
+        padding: 5px 10px 10px 10px;
+
+        .chat-avatar {
+            width: 42px;
+            height: 42px;
+        }
+    }
+
+    .mini-profile_second-section {
+        margin-left: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .control {
+        margin-right: 5px;
+    }
+
+
+    .playlister {
+        padding: 5px 5px 0 5px;
+
+        .control-svg {
+            background-repeat: no-repeat;
+            background-size: 100%;
+            background-position: 50%;
+            height: 16px;
+            width: 16px;
+            display: inline-block;
+            vertical-align: middle;
+            margin: 0 7px 0 0;
+        }
+
+        .show-playlist-icon {
+            background-image: @playlistShow;
+        }
+
+        .add-to-playlist-icon {
+            background-image: @playlistAdd;
+            height: 18px;
+            width: 18px;
+            margin: 0 4px 0 0;
+        }
+
+        .item {
+            margin-left: 7px;
+            word-break: keep-all;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+
+            .fa {
+                height: 16px;
+                width: 16px;
+                margin: 0 5px 0 5px;
+            }
+        }
+
+        >div {
+            word-break: keep-all;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+    }
+}

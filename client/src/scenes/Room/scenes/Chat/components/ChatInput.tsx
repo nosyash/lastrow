@@ -263,6 +263,7 @@ function ChatInput(props) {
             {/* </CustomAnimation> */}
             {/* <CustomAnimation show={showEmotes} classes={['emote-menu']} duration={1100}> */}
             {showEmotes && <EmoteMenu
+                cinemaMode={props.cinemaMode}
                 onHideMenu={() => setShowEmotes(false)}
                 list={props.emotesList}
                 onClick={name => pasteEmoteByName(name, true)}
@@ -295,7 +296,7 @@ function InputTopBar({ toggleShowEmotes, onClick, popularEmotes, emotes }) {
     )
 }
 
-function EmoteMenu({ list, onClick, onHideMenu }) {
+function EmoteMenu({ list, onClick, onHideMenu, cinemaMode }) {
     document.removeEventListener('mousedown', handleClick)
     document.addEventListener('mousedown', handleClick)
     function handleClick(e: MouseEvent) {
@@ -309,6 +310,7 @@ function EmoteMenu({ list, onClick, onHideMenu }) {
     const { left, width, height, bottom: b } = chatEl.getBoundingClientRect();
     const innerHeight = window.innerHeight;
     const bottom = innerHeight - b + height + 10;
+
     return (
         <div style={{ left, width, bottom }} className="emote-menu">
             <div className="emote-menu__scroll">
@@ -330,6 +332,7 @@ const mapStateToProps = state => ({
     profile: state.profile,
     history: state.chat.history,
     roomID: state.mainStates.roomID,
+    cinemaMode: state.mainStates.cinemaMode,
     socketState: state.chat.connected,
     emotesList: state.emojis.list,
     popularEmotes: state.emojis.popularEmotes,

@@ -11,6 +11,7 @@ import { GUEST_AUTH, PROFILE_SETTINGS, PLAYLIST } from '../../constants';
 import { Emoji } from '../../reducers/emojis';
 import { Role } from '../../reducers/profile';
 import { PermissionsMap } from '../../reducers/rooms';
+import { State } from '../../reducers';
 
 // Authorize before render room
 function RoomBaseWrapper(props) {
@@ -43,15 +44,9 @@ interface RoomBaseProps {
 }
 
 class RoomBase extends Component<RoomBaseProps, any> {
-    chat: React.RefObject<any>;
-    video: React.RefObject<any>;
-    divider: React.RefObject<any>;
     timer: NodeJS.Timeout;
     constructor(props: RoomBaseProps) {
         super(props);
-        this.chat = React.createRef();
-        this.video = React.createRef();
-        this.divider = React.createRef();
         this.timer = null;
     }
 
@@ -145,9 +140,7 @@ class RoomBase extends Component<RoomBaseProps, any> {
         const { match, profile } = this.props;
         const { id: roomID } = match.params;
 
-        let { cinemaMode } = localStorage;
-        if (cinemaMode) cinemaMode = JSON.parse(cinemaMode);
-        updateMainStates({ cinemaMode, roomID });
+        updateMainStates({ roomID });
 
         if (!profile.logged) {
             return this.handleNicknamePopup();
@@ -174,10 +167,8 @@ class RoomBase extends Component<RoomBaseProps, any> {
         return (
             exists && (
                 <RenderRoom
+                    cinemaMode={cinemaMode}
                     connected={connected}
-                    divider={this.divider}
-                    video={this.video}
-                    chat={this.chat}
                     visible={visible}
                 />
             )
@@ -187,25 +178,22 @@ class RoomBase extends Component<RoomBaseProps, any> {
 
 interface RenderRoomProps {
     connected: boolean;
-    divider: React.RefObject<any>;
-    video: React.RefObject<any>;
-    chat: React.RefObject<any>;
     visible: boolean;
+    cinemaMode: boolean;
 }
 
-const RenderRoom = ({ connected, divider, video, chat, visible }: RenderRoomProps) => (
+const RenderRoom = ({ connected, visible, cinemaMode }: RenderRoomProps) => (
     <div className={cn(['room-container', { 'room-container_disconected': !connected, 'is-visible': visible }])}>
-        <ChatContainer connected={connected} divider={divider} video={video} chat={chat} />
+        {!cinemaMode && <ChatContainer />}
         {/* {!cinemaMode && <div className="custom-divider" ref={divider} />} */}
-        <Divider />
-        <VideoContainer videoRef={video} />
+        {!cinemaMode && <Divider />}
+        <VideoContainer />
     </div>
 );
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state: State) => ({
     mainStates: state.mainStates,
     connected: state.chat.connected,
-    currentRoomID: state.chat.currentRoomID,
     cinemaMode: state.mainStates.cinemaMode,
     roomID: state.mainStates.roomID,
     room_uuid: state.mainStates.uuid,

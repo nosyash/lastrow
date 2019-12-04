@@ -1,33 +1,46 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import * as types from '../constants/actionTypes';
 import { PLAYLIST, SETTINGS } from '../constants';
 import { Video } from '../utils/types';
+import { State } from '../reducers';
+import { Media } from '../reducers/media';
+import { Profile } from '../reducers/profile';
+import './ControlPanel.less'
 
-function ControlPanel(props: any) {
+type ControlPanelProps = MapState & MapDispatch & {
+    cinemaMode: boolean;
+}
+
+function ControlPanel(props: ControlPanelProps) {
+    const [collapsed, setCollapsed] = useState(props.cinemaMode)
+
+    // const setCollapsed = (pos: boolean) => props.cinemaMode ? setCollapsed_(pos) : setCollapsed_(false)
+
     function handleClick(id: string) {
-        switch (id) {
-            case 'showPlaylist':
-                return props.togglePopup(PLAYLIST);
-
-            default:
-                break;
-        }
+        if (id === "showPlaylist") props.togglePopup(PLAYLIST);
     }
 
     const { profile, playlist } = props;
     const upNext = playlist[1];
     const { logged } = profile;
     return (
-        <div className="control-panel_container">
-            <RenderPlaylister upNext={upNext} logged={logged} onClick={handleClick} />
-            <div className="divider" />
-            {logged && (
-                <RenderProfile
-                    logged={logged}
-                    onSettings={() => props.togglePopup(SETTINGS)}
-                    profile={profile}
-                />
+        <div onMouseLeave={() => setCollapsed(true)}  className="control-panel_container">
+            <div onMouseEnter={() => setCollapsed(false)} className="control-panel__expander">
+                <i className="fa fa-angle-down" />
+            </div>
+            {!collapsed && (
+                <div className="control-panel__collapsible-items">
+                    <RenderPlaylister upNext={upNext} logged={logged} onClick={handleClick} />
+                    <div className="divider" />
+                    {logged && (
+                        <RenderProfile
+                            logged={logged}
+                            onSettings={() => props.togglePopup(SETTINGS)}
+                            profile={profile}
+                        />
+                    )}
+                </div>
             )}
         </div>
     );
@@ -92,17 +105,25 @@ const RenderProfile = ({ profile, onSettings }: any) => {
     );
 };
 
-const mapStateToProps = (state: any) => ({
+
+interface MapState {
+    profile: Profile;
+    playlist: Media['playlist']
+}
+interface MapDispatch {
+    togglePopup: (name: string) => void;
+}
+
+const mapStateToProps = (state: State) => ({
     profile: state.profile,
     playlist: state.media.playlist,
 });
 
 const mapDispatchToProps = {
-    addPopup: (payload: string) => ({ type: types.ADD_POPUP, payload }),
     togglePopup: (payload: string) => ({ type: types.TOGGLE_POPUP, payload }),
 };
 
-export default connect(
+export default connect<MapState, typeof mapDispatchToProps>(
     mapStateToProps,
     mapDispatchToProps
 )(ControlPanel);

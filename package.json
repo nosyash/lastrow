@@ -38,6 +38,7 @@
     "dompurify": "^2.0.3",
     "dotenv": "6.0.0",
     "dotenv-expand": "4.2.0",
+    "extract-text-webpack-plugin": "^3.0.2",
     "file-loader": "2.0.0",
     "font-awesome": "^4.7.0",
     "fork-ts-checker-webpack-plugin-alt": "0.4.14",
@@ -70,7 +71,7 @@
     "react-dom": "^16.8.3",
     "react-easy-crop": "^1.10.0",
     "react-easy-emoji": "^1.2.0",
-    "react-player": "^1.9.3",
+    "react-player": "1.14.2",
     "react-process-string": "^1.2.0",
     "react-redux": "^7.1.1",
     "react-router-dom": "^5.0.1",
@@ -138,6 +139,7 @@
     "prettier": "^1.16.4",
     "react-less-watcher": "^1.1.4",
     "spritesmith-cli": "^1.1.2",
+    "text-transform-loader": "^2.0.0",
     "worker-loader": "^2.0.0"
   },
   "jest": {

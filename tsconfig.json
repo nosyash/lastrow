@@ -4,7 +4,7 @@
     "compilerOptions": {
         // TODO: Declare all types and set to true
         "noImplicitAny": false,
-
+        "target": "ES5",
         "isolatedModules": false,
         "skipLibCheck": true,
         "removeComments": true,
