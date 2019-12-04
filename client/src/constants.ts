@@ -70,6 +70,6 @@ export const SETTINGS = 'settings';
 export const CHAT_FLOAT = 'chatFloat';
 
 // control panel
-export const CONTROL_PANEL_EXPAND_DELAY = 64 // ms
+export const CONTROL_PANEL_EXPAND_DELAY = 200 // ms
 
 export const DEBUG = process.env.NODE_ENV !== 'production'
