@@ -18,15 +18,19 @@ function ControlPanel(props: ControlPanelProps) {
     const timer = useRef(null)
 
     function handleClick(id: string) {
-        if (id === "showPlaylist") props.togglePopup(PLAYLIST);
+        if (id === 'showPlaylist') props.togglePopup(PLAYLIST);
     }
 
     const delayedExpand = () => {
+        if (!props.cinemaMode) return
+
         clearTimeout(timer.current)
         timer.current = setTimeout(() => setCollapsed(false), CONTROL_PANEL_EXPAND_DELAY);
     }
 
     const delayedCollapse = () => {
+        if (!props.cinemaMode) return
+
         clearTimeout(timer.current)
         timer.current = setTimeout(() => setCollapsed(true), CONTROL_PANEL_COLLAPSE_DELAY);
     }
@@ -34,13 +38,22 @@ function ControlPanel(props: ControlPanelProps) {
     const { profile, playlist } = props;
     const upNext = playlist[1];
     const { logged } = profile;
-    const classes = cn(["control-panel_container", { "control-panel_container--expanded": !collapsed }])
-    const itemsClasses = cn(["control-panel__collapsible-items", { "control-panel__collapsible-items--collapsed": collapsed }])
+    const classes = cn([
+        'control-panel_container',
+        { 'control-panel_container--expanded': !collapsed }
+    ])
+    const itemsClasses = cn([
+        'control-panel__collapsible-items',
+        { 'control-panel__collapsible-items--collapsed': collapsed }
+    ])
+
     return (
-        <div onMouseLeave={delayedCollapse}  className={classes}>
-            <div onMouseEnter={delayedExpand} className="control-panel__expander">
-                <i className={`fa fa-angle-up`} />
-            </div>
+        <div onMouseLeave={delayedCollapse} className={classes}>
+            {props.cinemaMode && (
+                <div onMouseEnter={delayedExpand} className="control-panel__expander">
+                    <i className={`fa fa-angle-up`} />
+                </div>
+            )}
             <div className={itemsClasses}>
                 <RenderPlaylister upNext={upNext} logged={logged} onClick={handleClick} />
                 <div className="divider" />
@@ -118,7 +131,7 @@ const RenderProfile = ({ profile, onSettings }: any) => {
 
 interface MapState {
     profile: Profile;
-    playlist: Media['playlist']
+    playlist: Media['playlist'];
 }
 interface MapDispatch {
     togglePopup: (name: string) => void;

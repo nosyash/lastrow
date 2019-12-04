@@ -50,7 +50,7 @@ const InitialState = {
         raw: '',
     } as Subtitles,
     url: '',
-    volume: 50,
+    volume: JSON.parse(localStorage.volume || '0.3'),
 } as Media;
 
 const Player = (state = InitialState, action: any): Media => {

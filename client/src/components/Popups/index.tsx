@@ -35,7 +35,7 @@ import { State } from '../../reducers';
 interface WrapperProps {
     popup: ReactElement;
     name: string;
-    opts?: { fixed?: boolean; esc?: boolean; hideClose?: boolean };
+    opts?: { fixed?: boolean; esc?: boolean; hideClose?: boolean; resizable?: boolean };
     show: boolean;
 }
 
@@ -82,17 +82,14 @@ function Popups({ popups, cinemaMode, removePopup, insideOfRoom }) {
             {wrapper({ popup: <NewRoom />, name: NEW_ROOM, show: p.newRoom })}
             {wrapper({ popup: <Playlist />, name: PLAYLIST, show: p.playlist })}
             {wrapper({ popup: <Settings />, name: SETTINGS, show: p.settings, opts: { fixed: true, esc: true } })}
-            {wrapper({ popup: <ChatContainer />, name: CHAT_FLOAT, show: cinemaMode && insideOfRoom, opts: { hideClose: true } })}
+            {wrapper({ popup: <ChatContainer />, name: CHAT_FLOAT, show: cinemaMode && insideOfRoom, opts: { hideClose: true, resizable: true } })}
         </div>
     );
 
     function wrapper({ popup, name, show, opts = {} }: WrapperProps) {
-        const { fixed, esc, hideClose } = opts;
         return show && (
             <Popup
-                fixed={fixed}
-                hideClose={hideClose}
-                esc={esc}
+                {...opts}
                 removePopup={() => removePopup(name)}
                 popupElement={popup}
                 name={name}
@@ -147,6 +144,7 @@ interface PopupProps {
     fixed?: boolean;
     hideClose?: boolean;
     esc?: boolean;
+    resizable?: boolean;
     removePopup: () => void;
     popupElement: React.ReactElement;
     name: string;
@@ -154,10 +152,11 @@ interface PopupProps {
 
 function Popup(props: PopupProps) {
     const [width, setWidth] = useState(getPosition('width') || 0);
+    const [height, setHeight] = useState(getPosition('height') || '');
     const [top, setTop] = useState(getPosition('top') || 0);
     const [left, setLeft] = useState(getPosition('left') || 0);
     const [moving, setMoving] = useState(false);
-    const [resizing, setResizing] = useState(false);
+    // const [resizing, setResizing] = useState(false);
     const [show, setShow] = useState(false);
 
     const popupEl = useRef(null) as React.MutableRefObject<HTMLDivElement>
@@ -165,6 +164,19 @@ function Popup(props: PopupProps) {
 
     const timer = useRef(null)
     const timer2 = useRef(null)
+
+    const resizing = useRef(false)
+
+    useEffect(() => {
+        const videoContainer = document.getElementById('video-container')
+        if (!videoContainer) {
+            return
+        }
+        videoContainer.style.pointerEvents = moving || resizing.current ? 'none' : ''
+        document.body.style.userSelect = moving || resizing.current ? 'none' : ''
+
+
+    }, [moving, resizing.current])
 
     useEffect(() => {
         if (!getPosition('left')) {
@@ -192,7 +204,7 @@ function Popup(props: PopupProps) {
 
     function watchPopupDimensionsChange() {
         const resizeObserver = new ResizeObserver(() => {
-            clearTimeout(timer.current )
+            clearTimeout(timer.current)
             timer.current = requestAnimationFrame(() => { updatePosition() });
         });
 
@@ -202,6 +214,7 @@ function Popup(props: PopupProps) {
 
     function setStates(states) {
         if (typeof states.width === 'number') setWidth(states.width);
+        if (typeof states.height === 'number') setHeight(states.height);
         if (typeof states.top === 'number') setTop(states.top);
         if (typeof states.left === 'number') setLeft(states.left);
         if (typeof states.moving === 'number') setMoving(states.moving);
@@ -226,7 +239,7 @@ function Popup(props: PopupProps) {
     }
 
     function handleMouseDown(e) {
-        if (moving || resizing) {
+        if (moving || resizing.current) {
             return;
         }
 
@@ -241,11 +254,14 @@ function Popup(props: PopupProps) {
             setMoving(true);
         }
         if (target.closest(POPUP_SURFACE)) {
-            setResizing(true);
+            resizing.current = true
         }
     }
 
-    function updatePosition({ left, top, rect } = {} as { left?: number; top?: number, rect?: DOMRect }) {
+    function updatePosition({ left, top, rect, width, height } = {} as {
+        left?: number; top?: number; width?: number; height?: number; rect?: DOMRect;
+    }) {
+
         if (!popupEl.current) {
             return
         }
@@ -257,34 +273,44 @@ function Popup(props: PopupProps) {
 
         const leftBound = Math.min(windowWidth - elWidth, Math.max(0, left || elLeft))
         const topBound = Math.min(windowHeight - elHeight, Math.max(0, top || elTop))
-
         setStates({ left: leftBound, top: topBound });
     }
 
     function handleMouseMove(e: MouseEvent) {
-        if (moving || resizing) {
+        // TODO: make resizing optional
+        // TODO: "user-select: none" while resizing/moving
+        // TODO: make "moving" Ref
+        if (moving || resizing.current) {
             const rect = popupEl.current.getBoundingClientRect() as DOMRect;
-        
+
             const newLeft = rect.left + (e.clientX - (rect.left + offsetX));
             const newTop = rect.top + (e.clientY - (rect.top + offsetY));
-    
-            updatePosition({ left: newLeft, top: newTop })
+
+            if (resizing.current) {
+                // TODO: make min sizes optional
+                const newWidth = Math.max(100, rect.width + e.clientX - (rect.left + rect.width));
+                const newHeight = Math.max(100, rect.height + e.clientY - (rect.top + rect.height));
+                setStates({ width: newWidth, height: newHeight });
+            } else {
+                updatePosition({ left: newLeft, top: newTop })
+            }
+
         }
     }
 
     function savePosition(): void {
-        localStorage[props.name+'Popup'] = JSON.stringify({ width, top, left })
+        localStorage[props.name + 'Popup'] = JSON.stringify({ width, top, left })
     }
 
     function getPosition(key: string) {
-        const item = JSON.parse((localStorage[props.name+'Popup'] || 'null'))
-        
+        const item = JSON.parse((localStorage[props.name + 'Popup'] || 'null'))
+
         return get(item, key)
     }
 
-    function handleMouseUp() {        
+    function handleMouseUp() {
         setMoving(false);
-        setResizing(false);
+        resizing.current = false
         savePosition();
     }
 
@@ -306,14 +332,15 @@ function Popup(props: PopupProps) {
         }
         const visibility = show ? 'visible' : 'hidden';
         return {
-            width: width || 'auto',
-            top: top || 'auto',
-            left: left || 'auto',
+            width: width || '',
+            height: height || '',
+            top: top || '',
+            left: left || '',
             visibility,
         } as CSSProperties;
     }
 
-    const { removePopup, popupElement, name } = props;
+    const { removePopup, popupElement, name, resizable } = props;
     return (
         <div
             ref={popupEl}
@@ -321,9 +348,11 @@ function Popup(props: PopupProps) {
             className={cn(['popup', name])}
 
         >
-            <div ref={surfaceEl} onMouseDown={handleMouseDown} className="popup__surface">
-                <i className="fa fa-angle-down" />
-            </div>
+            {resizable && (
+                <div ref={surfaceEl} onMouseDown={handleMouseDown} className="popup__surface">
+                    <i className="fa fa-angle-down" />
+                </div>
+            )}
             <div data-id={0} onMouseDown={handleMouseDown} className="popup-header">
                 <h3 className="popup-title">{getTitle()}</h3>
                 <div className="header-controls controls-container">
