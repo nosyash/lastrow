@@ -293,8 +293,6 @@ function Popup(props: PopupProps) {
     }
 
     function handleMouseMove(e: MouseEvent) {
-        // TODO: make resizing optional
-        // TODO: "user-select: none" while resizing/moving
         // TODO: make "moving" Ref
         if (moving || resizing.current) {
             const rect = popupEl.current.getBoundingClientRect() as DOMRect;
@@ -303,7 +301,6 @@ function Popup(props: PopupProps) {
             const newTop = rect.top + (e.clientY - (rect.top + offsetY));
 
             if (resizing.current) {
-                // TODO: make min sizes optional
                 const newWidth = Math.max((props.minWidth || 150), rect.width + e.clientX - (rect.left + rect.width));
                 const newHeight = Math.max((props.minHeight || 150), rect.height + e.clientY - (rect.top + rect.height));
                 setStates({ width: newWidth, height: newHeight });
