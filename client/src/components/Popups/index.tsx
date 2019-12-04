@@ -84,14 +84,16 @@ function Popups({ popups, cinemaMode, removePopup, insideOfRoom }) {
 
     function wrapper({ popup, name, show, opts = {} }: WrapperProps) {
         const { fixed, esc, hideClose } = opts;
-        return show && (<Popup
-            fixed={fixed}
-            hideClose={hideClose}
-            esc={esc}
-            removePopup={() => removePopup(name)}
-            popupElement={popup}
-            name={name}
-        />)
+        return show && (
+            <Popup
+                fixed={fixed}
+                hideClose={hideClose}
+                esc={esc}
+                removePopup={() => removePopup(name)}
+                popupElement={popup}
+                name={name}
+            />
+        )
     }
 }
 
@@ -137,12 +139,22 @@ export class CustomAnimation extends React.Component<any, any> {
     }
 }
 
-function Popup(props) {
+interface PopupProps {
+    fixed?: boolean;
+    hideClose?: boolean;
+    esc?: boolean;
+    removePopup: () => void;
+    popupElement: React.ReactElement;
+    name: string;
+}
+
+function Popup(props: PopupProps) {
     const [width, setWidth] = useState(getPosition('width') || 0);
     const [top, setTop] = useState(getPosition('top') || 0);
     const [left, setLeft] = useState(getPosition('left') || 0);
     const [moving, setMoving] = useState(false);
     const [show, setShow] = useState(false);
+
     const popupEl = useRef(null) as React.MutableRefObject<HTMLDivElement>
 
     const timer = useRef(null)
@@ -158,7 +170,6 @@ function Popup(props) {
         document.addEventListener('keydown', handleKeyDown);
         watchPopupDimensionsChange()
 
-        
         return () => {
             clearInterval(timer2.current)
             document.removeEventListener('keydown', handleKeyDown);
@@ -179,7 +190,7 @@ function Popup(props) {
             timer.current = requestAnimationFrame(() => { updatePosition() });
         });
 
-        timer2.current = setInterval(() => { updatePosition() }, 3000);
+        timer2.current = setInterval(() => { updatePosition() }, 2000);
         resizeObserver.observe(popupEl.current);
     }
 
@@ -221,8 +232,7 @@ function Popup(props) {
             return
         }
 
-        const windowWidth = window.innerWidth
-        const windowHeight = window.innerHeight
+        const { innerWidth: windowWidth, innerHeight: windowHeight } = window;
 
         const popupRect = rect || popupEl.current.getBoundingClientRect();
         const { left: elLeft, top: elTop, width: elWidth, height: elHeight } = popupRect
@@ -230,7 +240,10 @@ function Popup(props) {
         const leftBound = Math.min(windowWidth - elWidth, Math.max(0, left || elLeft))
         const topBound = Math.min(windowHeight - elHeight, Math.max(0, top || elTop))
 
-        setStates({ left: leftBound, top: topBound });
+        if (left !== leftBound || top !== topBound) {
+            setStates({ left: leftBound, top: topBound });
+        }
+
     }
 
     function handleMouseMove(e = {} as MouseEvent) {
