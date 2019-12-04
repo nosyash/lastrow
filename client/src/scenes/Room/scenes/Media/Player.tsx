@@ -55,10 +55,8 @@ function Player(props: PlayerProps) {
 
     const changingStateRemotely = useRef(false)
 
-    let volume = 0.3;
-
     useEffect(() => {
-        init();
+        // init();
 
         return () => {
             resetRefs();
@@ -115,16 +113,16 @@ function Player(props: PlayerProps) {
         videoEl = null;
     }
 
-    function init() {
-        // TODO: fix volume parser
-        try {
-            const { updatePlayer } = props;
-            // eslint-disable-next-line prefer-destructuring
-            volume = localStorage.volume;
-            volume = JSON.parse(volume as any || 1);
-            updatePlayer({ volume });
-        } catch (_) { }
-    }
+    // function init() {
+    //     // TODO: fix volume parser
+    //     try {
+    //         const { updatePlayer } = props;
+    //         // eslint-disable-next-line prefer-destructuring
+    //         volume = localStorage.volume;
+    //         volume = JSON.parse(volume as any || 1);
+    //         updatePlayer({ volume });
+    //     } catch (_) { }
+    // }
 
     function handleReady(): void {
         updateTime();
@@ -151,7 +149,9 @@ function Player(props: PlayerProps) {
     function safelySeekTo(n: number, type = 'seconds'): void {
         try {
             playerRef.current.seekTo(n, type);
-        } catch (_) {}
+        } catch (_) {
+            return
+        }
     }
 
     function syncRemoteStates() {
@@ -187,7 +187,7 @@ function Player(props: PlayerProps) {
 
     function handleMouseMove({ target }): void {
         clearTimeout(minimizeTimer);
-        
+
         if (target.closest('.video-player') || minimizedRef.current) {
             return;
         }
@@ -212,7 +212,7 @@ function Player(props: PlayerProps) {
         }
 
         handleAutoRemoteControl()
-    };
+    }
     function handlePause(): void {
         setPlaying(false)
 
@@ -221,7 +221,7 @@ function Player(props: PlayerProps) {
         }
 
         handleAutoRemoteControl()
-    };
+    }
 
     const getCurrentVideo = () => get(props.playlist, '[0]') as Video
     const getNextVideo = () => get(props.playlist, '[1]') as Video
@@ -345,7 +345,7 @@ function Player(props: PlayerProps) {
         if (!remoteControlPlaying) {
             setRemoteControlPlaying(true)
         }
-        
+
         clearTimeout(remoteControlTimePlayback)
         remoteControlTimePlayback = setTimeout(() => setRemoteControlPlaying(false), 5000);
     }
@@ -355,9 +355,14 @@ function Player(props: PlayerProps) {
         props.toggleSubs();
     }
 
-
+    const volumeSaveThrottle = useRef(null)
     function handleVolumeChange(percent) {
+        clearTimeout(volumeSaveThrottle.current)
         props.setVolume(percent / 100);
+
+        volumeSaveThrottle.current = setTimeout(() => {
+            localStorage.volume = JSON.stringify(percent / 100)
+        }, 500);
     }
 
     function isDirectLink() {
