@@ -32,10 +32,19 @@ import { Rooms } from '../../reducers/rooms';
 import ResizeObserver from 'resize-observer-polyfill'
 import { State } from '../../reducers';
 
+interface WrapperOpts {
+    fixed?: boolean;
+    esc?: boolean;
+    hideClose?: boolean;
+    resizable?: boolean;
+    minHeight?: number;
+    minWidth?: number;
+}
+
 interface WrapperProps {
     popup: ReactElement;
     name: string;
-    opts?: { fixed?: boolean; esc?: boolean; hideClose?: boolean; resizable?: boolean };
+    opts?: WrapperOpts;
     show: boolean;
 }
 
@@ -82,7 +91,12 @@ function Popups({ popups, cinemaMode, removePopup, insideOfRoom }) {
             {wrapper({ popup: <NewRoom />, name: NEW_ROOM, show: p.newRoom })}
             {wrapper({ popup: <Playlist />, name: PLAYLIST, show: p.playlist })}
             {wrapper({ popup: <Settings />, name: SETTINGS, show: p.settings, opts: { fixed: true, esc: true } })}
-            {wrapper({ popup: <ChatContainer />, name: CHAT_FLOAT, show: cinemaMode && insideOfRoom, opts: { hideClose: true, resizable: true } })}
+            {wrapper({
+                popup: <ChatContainer />,
+                name: CHAT_FLOAT,
+                show: cinemaMode && insideOfRoom,
+                opts: { hideClose: true, resizable: true, minHeight: 325, minWidth: 150 }
+            })}
         </div>
     );
 
@@ -140,11 +154,7 @@ export class CustomAnimation extends React.Component<any, any> {
     }
 }
 
-interface PopupProps {
-    fixed?: boolean;
-    hideClose?: boolean;
-    esc?: boolean;
-    resizable?: boolean;
+interface PopupProps extends WrapperOpts {
     removePopup: () => void;
     popupElement: React.ReactElement;
     name: string;
@@ -167,16 +177,20 @@ function Popup(props: PopupProps) {
 
     const resizing = useRef(false)
 
-    useEffect(() => {
+    function disableUserSelect() {
         const videoContainer = document.getElementById('video-container')
-        if (!videoContainer) {
-            return
+        if (videoContainer) {
+            videoContainer.style.pointerEvents = 'none'
+            document.body.style.userSelect = 'none'
         }
-        videoContainer.style.pointerEvents = moving || resizing.current ? 'none' : ''
-        document.body.style.userSelect = moving || resizing.current ? 'none' : ''
-
-
-    }, [moving, resizing.current])
+    }
+    function enableUserSelect() {
+        const videoContainer = document.getElementById('video-container')
+        if (videoContainer) {
+            videoContainer.style.pointerEvents = ''
+            document.body.style.userSelect = ''
+        }
+    }
 
     useEffect(() => {
         if (!getPosition('left')) {
@@ -250,6 +264,8 @@ function Popup(props: PopupProps) {
         offsetX = clientX_ - left_;
         offsetY = clientY_ - top_;
 
+        disableUserSelect()
+
         if (target.closest(POPUP_HEADER)) {
             setMoving(true);
         }
@@ -288,8 +304,8 @@ function Popup(props: PopupProps) {
 
             if (resizing.current) {
                 // TODO: make min sizes optional
-                const newWidth = Math.max(100, rect.width + e.clientX - (rect.left + rect.width));
-                const newHeight = Math.max(100, rect.height + e.clientY - (rect.top + rect.height));
+                const newWidth = Math.max((props.minWidth || 150), rect.width + e.clientX - (rect.left + rect.width));
+                const newHeight = Math.max((props.minHeight || 150), rect.height + e.clientY - (rect.top + rect.height));
                 setStates({ width: newWidth, height: newHeight });
             } else {
                 updatePosition({ left: newLeft, top: newTop })
@@ -299,7 +315,7 @@ function Popup(props: PopupProps) {
     }
 
     function savePosition(): void {
-        localStorage[props.name + 'Popup'] = JSON.stringify({ width, top, left })
+        localStorage[props.name + 'Popup'] = JSON.stringify({ width, top, left, height })
     }
 
     function getPosition(key: string) {
@@ -312,6 +328,7 @@ function Popup(props: PopupProps) {
         setMoving(false);
         resizing.current = false
         savePosition();
+        enableUserSelect()
     }
 
     function getTitle() {

@@ -174,11 +174,12 @@ body {
 //   box-shadow: inset 0 0 20px 20px hsla(0, 0%, 24%, 0.07);
 // }
 .popup.chatFloat {
+    z-index: 8;
     backdrop-filter: unset;
 }
 
 .chat-container {
-    flex-shrink: 0;
+    // flex-shrink: 0;
     // max-width: 600px;
     // min-width: 140px;
     min-height: 300px;
@@ -426,6 +427,9 @@ body {
     background: #334656;
     border-radius: 4px;
     padding: 4px 6px;
+    .cinema-mode & {
+        background: #33465638;
+    }
 }
 
 .chat-message:not(:first-of-type) .chat-message_header {
@@ -1092,6 +1096,9 @@ body {
             background: hsla(207, 42%, 36%, 0.5);
             padding: 2px 4px;
             border-radius: 2px;
+            .cinema-mode & {
+                background: hsla(207, 42%, 36%, 0.18);
+            }
         }
 
         &--quote {
@@ -1555,7 +1562,6 @@ body {
 
 .cinema-mode .chat-message_body {
     color: rgba(255, 255, 255, 0.8);
-    text-shadow: 0 0 1px black;
 
     pre {
         // background: @darkSecondCinema + rgba(0, 0, 0, 0.6);
@@ -1584,7 +1590,7 @@ body {
 
     .chat-input,
     .chat-input__topbar {
-        background: @darkSecondCinema;
+        background: transparent;
         // height: 48px;
     }
 
@@ -1593,8 +1599,7 @@ body {
     }
 
     .chat-header {
-        background: @darkSecondCinema;
-        cursor: move;
+        background: transparent;
     }
 
     .chat-input textarea {
@@ -1606,13 +1611,11 @@ body {
     }
 }
 
-// .cinema-mode {
-
-//     .control-panel_container,
-//     .go-back {
-//         display: none;
-//     }
-// }
+.cinema-mode {
+    .go-back {
+        display: none;
+    }
+}
 
 .Toastify__toast {
     border-radius: 4px;
@@ -1670,7 +1673,7 @@ body {
 .popup {
     overflow: hidden;
     border-radius: 4px;
-    backdrop-filter: saturate(500%) blur(18px);
+    backdrop-filter: blur(18px);
     box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
     position: fixed;
     left: 0;
