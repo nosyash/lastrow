@@ -10,6 +10,7 @@ export const SEEK_SEL = '.seek-trigger';
 export const VOLUME_SEL = '.volume_trigger';
 export const VIDEO_ELEMENT_SEL = '.video-element';
 export const POPUP_HEADER = '.popup-header';
+export const POPUP_SURFACE = '.popup__surface';
 
 // Misc
 export const RESIZE_OFFSET = 10;
@@ -71,5 +72,6 @@ export const CHAT_FLOAT = 'chatFloat';
 
 // control panel
 export const CONTROL_PANEL_EXPAND_DELAY = 200 // ms
+export const CONTROL_PANEL_COLLAPSE_DELAY = 100 // ms
 
 export const DEBUG = process.env.NODE_ENV !== 'production'

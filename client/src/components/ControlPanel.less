@@ -2,13 +2,33 @@
 
 .cinema-mode {
     .control-panel_container {
-        margin-top: 0;
         border-radius: 0;
-
         position: absolute;
         bottom: 0;
         right: 0;
         left: 0;
+        // margin: 5px;
+        margin-top: 0;
+
+        transform: translateY(calc(100% - 24px));
+        transition: 0.15s transform;
+        transition-timing-function: @bubble;
+        will-change: transform;
+
+        &--expanded {
+            // set to 15px so element don't go out of the bounds on bubble animation
+            transform: translateY(15px);
+            padding-bottom: 15px;
+
+            .control-panel__expander i {
+                transform: rotateZ(180deg);
+            }
+        }
+
+        .control-panel__expander i {
+            transition: 0.5s transform;
+            transition-timing-function: @bubble;
+        }
 
         .control-panel__expander {
             text-align: center;

@@ -1,12 +1,13 @@
 import React, { useState, useRef } from 'react';
 import { connect } from 'react-redux';
 import * as types from '../constants/actionTypes';
-import { PLAYLIST, SETTINGS, CONTROL_PANEL_EXPAND_DELAY } from '../constants';
+import { PLAYLIST, SETTINGS, CONTROL_PANEL_EXPAND_DELAY, CONTROL_PANEL_COLLAPSE_DELAY } from '../constants';
 import { Video } from '../utils/types';
 import { State } from '../reducers';
 import { Media } from '../reducers/media';
 import { Profile } from '../reducers/profile';
 import './ControlPanel.less'
+import cn from 'classnames'
 
 type ControlPanelProps = MapState & MapDispatch & {
     cinemaMode: boolean;
@@ -27,30 +28,30 @@ function ControlPanel(props: ControlPanelProps) {
 
     const delayedCollapse = () => {
         clearTimeout(timer.current)
-        setCollapsed(true)
+        timer.current = setTimeout(() => setCollapsed(true), CONTROL_PANEL_COLLAPSE_DELAY);
     }
 
     const { profile, playlist } = props;
     const upNext = playlist[1];
     const { logged } = profile;
+    const classes = cn(["control-panel_container", { "control-panel_container--expanded": !collapsed }])
+    const itemsClasses = cn(["control-panel__collapsible-items", { "control-panel__collapsible-items--collapsed": collapsed }])
     return (
-        <div onMouseLeave={delayedCollapse}  className="control-panel_container">
+        <div onMouseLeave={delayedCollapse}  className={classes}>
             <div onMouseEnter={delayedExpand} className="control-panel__expander">
-                <i className={`fa fa-angle-${collapsed ? 'up' : 'down'}`} />
+                <i className={`fa fa-angle-up`} />
             </div>
-            {!collapsed && (
-                <div className="control-panel__collapsible-items">
-                    <RenderPlaylister upNext={upNext} logged={logged} onClick={handleClick} />
-                    <div className="divider" />
-                    {logged && (
-                        <RenderProfile
-                            logged={logged}
-                            onSettings={() => props.togglePopup(SETTINGS)}
-                            profile={profile}
-                        />
-                    )}
-                </div>
-            )}
+            <div className={itemsClasses}>
+                <RenderPlaylister upNext={upNext} logged={logged} onClick={handleClick} />
+                <div className="divider" />
+                {logged && (
+                    <RenderProfile
+                        logged={logged}
+                        onSettings={() => props.togglePopup(SETTINGS)}
+                        profile={profile}
+                    />
+                )}
+            </div>
         </div>
     );
 }

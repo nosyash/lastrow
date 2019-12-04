@@ -1682,11 +1682,28 @@ body {
     align-items: center;
     z-index: 10;
     cursor: default;
+    // padding: 5px;
     // transition: 0.1s ease-out;
 
     // &>div:not(.popup-header) {
     //   margin: auto;
     // }
+    &__surface {
+        right: 0;
+        bottom: 0;
+        position: absolute;
+        z-index: 11;
+        cursor: move;
+        width: 18px;
+        height: 18px;
+        text-align: right;
+        .hover();
+
+        i {
+            transform: rotate(-45deg);
+            line-height: 0;
+        }
+    }
 }
 
 .popup.profileSettings {

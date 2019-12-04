@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState, CSSProperties, ReactElement } from 'react';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { throttle } from 'lodash';
+import { throttle, get } from 'lodash';
 import cn from 'classnames';
 import ls from 'local-storage';
 import { getCenteredRect } from '../../utils';
@@ -17,6 +17,7 @@ import {
     PROFILE_SETTINGS,
     SETTINGS,
     CHAT_FLOAT,
+    POPUP_SURFACE,
 } from '../../constants';
 import ColorPicker from './ColorPicker';
 import GuestAuth from './GuestAuth';
@@ -29,6 +30,7 @@ import ChatContainer from '../../scenes/Room/scenes/Chat';
 import { MainStates } from '../../reducers/mainStates';
 import { Rooms } from '../../reducers/rooms';
 import ResizeObserver from 'resize-observer-polyfill'
+import { State } from '../../reducers';
 
 interface WrapperProps {
     popup: ReactElement;
@@ -62,12 +64,14 @@ function Popups({ popups, cinemaMode, removePopup, insideOfRoom }) {
     function handleKey(e) {
         const { keyCode } = e;
         const lastPopup = popups[popups.length - 1];
-        if (keyCode !== 27) return;
-        if (lastPopup) {
-            if (lastPopup.id === 'profile-settings') return;
+        if (keyCode !== 27) {
+            return;
+        }
+        if (lastPopup && lastPopup.id !== 'profile-settings') {
             removePopup(lastPopup.id);
         }
     }
+
     const p = popups;
     return (
         <div className="popups_container">
@@ -97,8 +101,8 @@ function Popups({ popups, cinemaMode, removePopup, insideOfRoom }) {
     }
 }
 
-let clientX = null;
-let clientY = null;
+let offsetX = null;
+let offsetY = null;
 
 export class CustomAnimation extends React.Component<any, any> {
     state = {
@@ -153,9 +157,11 @@ function Popup(props: PopupProps) {
     const [top, setTop] = useState(getPosition('top') || 0);
     const [left, setLeft] = useState(getPosition('left') || 0);
     const [moving, setMoving] = useState(false);
+    const [resizing, setResizing] = useState(false);
     const [show, setShow] = useState(false);
 
     const popupEl = useRef(null) as React.MutableRefObject<HTMLDivElement>
+    const surfaceEl = useRef(null) as React.MutableRefObject<HTMLDivElement>
 
     const timer = useRef(null)
     const timer2 = useRef(null)
@@ -202,28 +208,40 @@ function Popup(props: PopupProps) {
     }
 
     function handleKeyDown({ code }) {
-        if (!props.esc) return;
-        if (code === 'Escape') props.removePopup()
+        if (!props.esc) {
+            return;
+        }
+        if (code === 'Escape') {
+            props.removePopup()
+        }
     }
 
     function addEvents() {
-        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mousemove', handleMouseMove, { passive: true });
         document.addEventListener('mouseup', handleMouseUp);
     }
-
     function removeEvents() {
         document.removeEventListener('mousemove', handleMouseMove);
         document.removeEventListener('mouseup', handleMouseUp);
     }
 
     function handleMouseDown(e) {
-        if (moving) return;
+        if (moving || resizing) {
+            return;
+        }
+
         const { left: left_, top: top_ } = popupEl.current.getBoundingClientRect();
-        const { target, clientX: clientX_, clientY: clientY_ } = e;
-        clientX = clientX_ - left_;
-        clientY = clientY_ - top_;
+        const { clientX: clientX_, clientY: clientY_ } = e;
+        const target = e.target as HTMLElement
+
+        offsetX = clientX_ - left_;
+        offsetY = clientY_ - top_;
+
         if (target.closest(POPUP_HEADER)) {
             setMoving(true);
+        }
+        if (target.closest(POPUP_SURFACE)) {
+            setResizing(true);
         }
     }
 
@@ -240,68 +258,52 @@ function Popup(props: PopupProps) {
         const leftBound = Math.min(windowWidth - elWidth, Math.max(0, left || elLeft))
         const topBound = Math.min(windowHeight - elHeight, Math.max(0, top || elTop))
 
-        if (left !== leftBound || top !== topBound) {
-            setStates({ left: leftBound, top: topBound });
+        setStates({ left: leftBound, top: topBound });
+    }
+
+    function handleMouseMove(e: MouseEvent) {
+        if (moving || resizing) {
+            const rect = popupEl.current.getBoundingClientRect() as DOMRect;
+        
+            const newLeft = rect.left + (e.clientX - (rect.left + offsetX));
+            const newTop = rect.top + (e.clientY - (rect.top + offsetY));
+    
+            updatePosition({ left: newLeft, top: newTop })
         }
-
     }
 
-    function handleMouseMove(e = {} as MouseEvent) {
-        if (!moving) return;        
-
-        const rect = popupEl.current.getBoundingClientRect() as DOMRect;
-        const { left: left_, top: top_ } = rect;
-
-        const { clientX: clientX_ = left_, clientY: clientY_ = top_ } = e;
-
-        const offsetX = left_ + (clientX_ - (left_ + clientX));
-        const offsetY = top_ + (clientY_ - (top_ + clientY));
-
-        updatePosition({ left: offsetX, top: offsetY, rect })
+    function savePosition(): void {
+        localStorage[props.name+'Popup'] = JSON.stringify({ width, top, left })
     }
 
-    function savePosition() {
-        (ls as any).set(`${props.name}Popup`, { width, top, left });
+    function getPosition(key: string) {
+        const item = JSON.parse((localStorage[props.name+'Popup'] || 'null'))
+        
+        return get(item, key)
     }
 
-    function getPosition(key) {
-        try {
-            return (ls as any).get(`${props.name}Popup`)[key];
-        } catch (error) { }
-    }
-
-    function handleMouseUp() {
-        if (moving) {
-            setMoving(false);
-            savePosition();
-        }
+    function handleMouseUp() {        
+        setMoving(false);
+        setResizing(false);
+        savePosition();
     }
 
     function getTitle() {
-        switch (name) {
-            case COLOR_PICKER:
-                return 'Color picker';
-            case GUEST_AUTH:
-                return 'Guest authorization';
-            case IMAGE_PICKER:
-                return 'Image picker';
-            case LOG_FORM:
-                return 'Sign in';
-            case NEW_ROOM:
-                return 'New room';
-            case PLAYLIST:
-                return 'Playlist';
-            case PROFILE_SETTINGS:
-                return 'Profile settings';
-            case SETTINGS:
-                return 'Settings';
-            default:
-                return '';
-        }
+        if (name === COLOR_PICKER) return 'Color picker';
+        if (name === GUEST_AUTH) return 'Guest authorization';
+        if (name === IMAGE_PICKER) return 'Image picker';
+        if (name === LOG_FORM) return 'Sign in';
+        if (name === NEW_ROOM) return 'New room';
+        if (name === PLAYLIST) return 'Playlist';
+        if (name === PROFILE_SETTINGS) return 'Profile settings';
+        if (name === SETTINGS) return 'Settings';
+        return ''
     }
 
     function getStyles() {
-        if (props.fixed) return {};
+        if (props.fixed) {
+            return {};
+        }
         const visibility = show ? 'visible' : 'hidden';
         return {
             width: width || 'auto',
@@ -319,6 +321,9 @@ function Popup(props: PopupProps) {
             className={cn(['popup', name])}
 
         >
+            <div ref={surfaceEl} onMouseDown={handleMouseDown} className="popup__surface">
+                <i className="fa fa-angle-down" />
+            </div>
             <div data-id={0} onMouseDown={handleMouseDown} className="popup-header">
                 <h3 className="popup-title">{getTitle()}</h3>
                 <div className="header-controls controls-container">
@@ -334,14 +339,14 @@ function Popup(props: PopupProps) {
     );
 }
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state: State) => ({
     popups: state.popups,
-    cinemaMode: (state.mainStates as MainStates).cinemaMode,
-    insideOfRoom: !!(state.rooms as Rooms).currentPermissions
+    cinemaMode: state.mainStates.cinemaMode,
+    insideOfRoom: !!state.rooms.currentPermissions
 });
 
 const mapDispatchToProps = {
-    removePopup: payload => ({ type: types.REMOVE_POPUP, payload }),
+    removePopup: (payload: string) => ({ type: types.REMOVE_POPUP, payload }),
 };
 
 export default connect(
