@@ -217,13 +217,17 @@ function Popup(props: PopupProps) {
     }, [width, top, left, moving.current, resizing.current]);
 
     function watchPopupDimensionsChange() {
+        const resizeIfNeeded = () => !isMoving() && !isResizing() ? setBoundedSize() : null
+
         const resizeObserver = new ResizeObserver(() => {
             clearTimeout(timer.current)
-            timer.current = setTimeout(() => { setBoundedSize() }, 100);
+            timer.current = setTimeout(resizeIfNeeded, 100);
         });
 
-        timer2.current = setInterval(() => { setBoundedSize() }, 2000);
+        timer2.current = setInterval(resizeIfNeeded, 2000);
         resizeObserver.observe(popupEl.current);
+
+        
     }
 
     function setStates(states) {
