@@ -38,10 +38,7 @@ function ControlPanel(props: ControlPanelProps) {
     const { profile, playlist } = props;
     const upNext = playlist[1];
     const { logged } = profile;
-    const classes = cn([
-        'control-panel__container',
-        { 'control-panel__container--expanded': !collapsed }
-    ])
+    const classes = cn([ 'control-panel', { 'control-panel--expanded': !collapsed } ])
     const itemsClasses = cn([
         'control-panel__collapsible-items',
         { 'control-panel__collapsible-items--collapsed': collapsed }

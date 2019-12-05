@@ -1,7 +1,7 @@
 @import (reference) "../styles/main.less";
 
 .cinema-mode {
-    .control-panel__container {
+    .control-panel {
         border-radius: 0;
         position: absolute;
         bottom: 0;
@@ -25,18 +25,26 @@
             }
         }
 
-        .control-panel__expander i {
+        &__expander i {
             transition: 0.4s transform;
             transition-timing-function: @bubble;
         }
 
-        .control-panel__expander {
+        &__expander {
+            line-height: 1;
             text-align: center;
+
+            opacity: 0.4;
+            transition: 0.1s opacity;
+
+            &:hover {
+                opacity: 1;
+            }
         }
     }
 }
 
-.control-panel__container {
+.control-panel {
     border-radius: 5px;
     margin-top: 10px;
     // height: 100px;

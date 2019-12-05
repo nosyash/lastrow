@@ -99,7 +99,7 @@ body {
 
     .video-container,
     .chat-inner,
-    .control-panel__container {
+    .control-panel {
         opacity: 0.2;
         pointer-events: none;
     }
@@ -1698,15 +1698,19 @@ body {
         position: absolute;
         z-index: 11;
         cursor: move;
-        width: 18px;
+        width: 20px;
         height: 18px;
         text-align: right;
-        .hover();
+        opacity: 0.4;
+        transition: 0.1s opacity;
+
+        &:hover {
+            opacity: 1;
+        }
 
         i {
             transform: rotate(-45deg) scale(0.7);
             line-height: 0;
-            opacity: 0.5;
         }
     }
 }
