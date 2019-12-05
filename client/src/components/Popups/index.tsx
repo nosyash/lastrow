@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { throttle, get } from 'lodash';
 import cn from 'classnames';
 import ls from 'local-storage';
-import { getCenteredRect } from '../../utils';
+import { getCenteredRect, safelyParseJson } from '../../utils';
 import * as types from '../../constants/actionTypes';
 import {
     POPUP_HEADER,
@@ -17,7 +17,7 @@ import {
     PROFILE_SETTINGS,
     SETTINGS,
     CHAT_FLOAT,
-    POPUP_SURFACE,
+    POPUP_RESIZE_HANDLER,
 } from '../../constants';
 import ColorPicker from './ColorPicker';
 import GuestAuth from './GuestAuth';
@@ -162,17 +162,24 @@ function Popup(props: PopupProps) {
     const [height, setHeight] = useState(getPosition('height') || '');
     const [top, setTop] = useState(getPosition('top') || 0);
     const [left, setLeft] = useState(getPosition('left') || 0);
-    const [moving, setMoving] = useState(false);
-    // const [resizing, setResizing] = useState(false);
     const [show, setShow] = useState(false);
 
     const popupEl = useRef(null) as React.MutableRefObject<HTMLDivElement>
-    const surfaceEl = useRef(null) as React.MutableRefObject<HTMLDivElement>
 
-    const timer = useRef(null)
-    const timer2 = useRef(null)
+    const timer = useRef(null);
+    const timer2 = useRef(null);
 
-    const resizing = useRef(false)
+    const moving = useRef(false);
+    const resizing = useRef(false);
+
+    const isResizing = () => resizing.current;
+    const setResizing = (v: boolean) => { resizing.current = v };
+
+    const isMoving = () => moving.current;
+    const setMoving = (v: boolean) => { moving.current = v };
+
+    const minWidth = props.minWidth || 150
+    const minHeight = props.minHeight || 150
 
     function disableUserSelect() {
         const videoContainer = document.getElementById('video-container')
@@ -211,15 +218,15 @@ function Popup(props: PopupProps) {
         return () => {
             removeEvents();
         };
-    }, [width, top, left, moving]);
+    }, [width, top, left, moving.current, resizing.current]);
 
     function watchPopupDimensionsChange() {
         const resizeObserver = new ResizeObserver(() => {
             clearTimeout(timer.current)
-            timer.current = setTimeout(() => { updatePosition() }, 100);
+            timer.current = setTimeout(() => { setBoundedSize() }, 100);
         });
 
-        timer2.current = setInterval(() => { updatePosition() }, 2000);
+        timer2.current = setInterval(() => { setBoundedSize() }, 2000);
         resizeObserver.observe(popupEl.current);
     }
 
@@ -228,7 +235,6 @@ function Popup(props: PopupProps) {
         if (typeof states.height === 'number') setHeight(states.height);
         if (typeof states.top === 'number') setTop(states.top);
         if (typeof states.left === 'number') setLeft(states.left);
-        if (typeof states.moving === 'number') setMoving(states.moving);
     }
 
     function handleKeyDown({ code }) {
@@ -241,7 +247,7 @@ function Popup(props: PopupProps) {
     }
 
     function addEvents() {
-        document.addEventListener('mousemove', handleMouseMove, { passive: true });
+        document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
     }
     function removeEvents() {
@@ -250,7 +256,7 @@ function Popup(props: PopupProps) {
     }
 
     function handleMouseDown(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
-        if (moving || resizing.current) {
+        if (isMoving() || isResizing()) {
             return;
         }
 
@@ -267,46 +273,66 @@ function Popup(props: PopupProps) {
         disableUserSelect()
 
         if (target.closest(POPUP_HEADER)) {
-            setMoving(true);
+            setMoving(true)
         }
-        if (target.closest(POPUP_SURFACE)) {
-            resizing.current = true
+
+        if (target.closest(POPUP_RESIZE_HANDLER)) {
+            setResizing(true)
         }
     }
 
-    type Position = { left?: number; top?: number; width?: number; height?: number; rect?: DOMRect; }
-
-    function updatePosition({ left, top, rect, width, height } = {} as Position) {
+    // fixes window boundings and updates position/dimensions
+    function setBoundedSize(pos = {} as { left?: number; top?: number; width?: number; height?: number; rect?: DOMRect; }) {
         if (!popupEl.current) {
             return
         }
 
         const { innerWidth: windowWidth, innerHeight: windowHeight } = window;
 
-        const popupRect = rect || popupEl.current.getBoundingClientRect();
+        const popupRect = pos.rect || popupEl.current.getBoundingClientRect();
         const { left: elLeft, top: elTop, width: elWidth, height: elHeight } = popupRect
 
-        const leftBound = Math.min(windowWidth - elWidth, Math.max(0, left || elLeft))
-        const topBound = Math.min(windowHeight - elHeight, Math.max(0, top || elTop))
-        setStates({ left: leftBound, top: topBound });
+        if (isMoving()) {
+            const maxLeft = windowWidth - elWidth
+            const maxTop = windowHeight - elHeight
+
+            const leftBound = Math.min(maxLeft, Math.max(0, pos.left || elLeft))
+            const topBound = Math.min(maxTop, Math.max(0, pos.top || elTop))
+
+            setStates({ left: leftBound, top: topBound });
+        }
+
+
+        if (isResizing()) {
+            const maxWidth = windowWidth - popupRect.left
+            const newWidth = Math.min(maxWidth, Math.max(minWidth, pos.width))
+
+            const maxHeight = windowHeight - popupRect.top
+            const newHeight = Math.min(maxHeight, Math.max(minHeight, pos.height))
+
+            setStates({ width: newWidth, height: newHeight });
+        }
     }
 
     function handleMouseMove(e: MouseEvent) {
-        // TODO: make "moving" a ref
-        if (moving || resizing.current) {
-            const rect = popupEl.current.getBoundingClientRect() as DOMRect;
+        if (!isMoving() && !isResizing()) {
+            return
+        }
 
+        const rect = popupEl.current.getBoundingClientRect() as DOMRect;
+        
+        if (isResizing()) {
+            const newWidth = rect.width + (e.clientX - (rect.left + rect.width)) + offsetXRes
+            const newHeight = rect.height + (e.clientY - (rect.top + rect.height)) + offsetYRes
+
+            setBoundedSize({ width: newWidth, height: newHeight, rect });
+        } 
+        
+        if (isMoving()) {
             const newLeft = rect.left + (e.clientX - (rect.left + offsetX));
             const newTop = rect.top + (e.clientY - (rect.top + offsetY));
 
-            if (resizing.current) {
-                const newWidth = Math.max((props.minWidth || 150), rect.width + (e.clientX - (rect.left + rect.width)) + offsetXRes);
-                const newHeight = Math.max((props.minHeight || 150), rect.height + (e.clientY - (rect.top + rect.height)) + offsetYRes);
-                setStates({ width: newWidth, height: newHeight });
-            } else {
-                updatePosition({ left: newLeft, top: newTop })
-            }
-
+            setBoundedSize({ left: newLeft, top: newTop, rect })
         }
     }
 
@@ -315,14 +341,14 @@ function Popup(props: PopupProps) {
     }
 
     function getPosition(key: string) {
-        const item = JSON.parse((localStorage[props.name + 'Popup'] || 'null'))
+        const item = safelyParseJson((localStorage[props.name + 'Popup']))
 
         return get(item, key)
     }
 
     function handleMouseUp() {
-        setMoving(false);
-        resizing.current = false
+        setMoving(false)
+        setResizing(false)
         savePosition();
         enableUserSelect()
     }
@@ -362,7 +388,7 @@ function Popup(props: PopupProps) {
 
         >
             {resizable && (
-                <div ref={surfaceEl} onMouseDown={handleMouseDown} className="popup__surface">
+                <div onMouseDown={handleMouseDown} className="popup__resize-handle">
                     <i className="fa fa-angle-down" />
                 </div>
             )}

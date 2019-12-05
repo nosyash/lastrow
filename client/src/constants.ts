@@ -10,7 +10,7 @@ export const SEEK_SEL = '.seek-trigger';
 export const VOLUME_SEL = '.volume_trigger';
 export const VIDEO_ELEMENT_SEL = '.video-element';
 export const POPUP_HEADER = '.popup-header';
-export const POPUP_SURFACE = '.popup__surface';
+export const POPUP_RESIZE_HANDLER = '.popup__resize-handle';
 
 // Misc
 export const RESIZE_OFFSET = 10;
