@@ -55,7 +55,7 @@ function ControlPanel(props: ControlPanelProps) {
                 </div>
             )}
             <div className={itemsClasses}>
-                <RenderPlaylister upNext={upNext} logged={logged} onClick={handleClick} />
+                <PlaylistInfo upNext={upNext} logged={logged} onClick={handleClick} />
                 <div className="divider" />
                 {logged && (
                     <RenderProfile
@@ -72,7 +72,7 @@ function ControlPanel(props: ControlPanelProps) {
 const getUpNextUrl = (upnext: Video) => upnext ? upnext.url : '';
 const getUpNextTitle = (upnext: Video) => upnext ? upnext.title || upnext.url : '';
 
-const RenderPlaylister = ({ onClick, upNext }: any) => (
+const PlaylistInfo = ({ onClick, upNext }: any) => (
     <div className="playlister">
         <RenderItem
             dataId="showPlaylist"
@@ -95,8 +95,6 @@ const RenderPlaylister = ({ onClick, upNext }: any) => (
         </div>
     </div>
 );
-
-
 
 const RenderItem = ({ classes, onClick, dataId, text }: any) => (
     <div>
