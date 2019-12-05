@@ -28,42 +28,18 @@ import ChatContainer from '../../scenes/Room/scenes/Chat';
 import ResizeObserver from 'resize-observer-polyfill'
 import { State } from '../../reducers';
 
-interface WrapperOpts {
-    fixed?: boolean;
-    esc?: boolean;
-    hideClose?: boolean;
-    resizable?: boolean;
-    minHeight?: number;
-    minWidth?: number;
-}
-
-interface WrapperProps {
-    popup: ReactElement;
-    name: string;
-    opts?: WrapperOpts;
-    show: boolean;
-}
-
-function Popups({ popups, cinemaMode, removePopup, insideOfRoom }) {
+function Popups({ popups: p, cinemaMode, removePopup, insideOfRoom }) {
     useEffect(() => {
-        addEvents();
+        document.addEventListener('keydown', handleKey);
 
         return () => {
-            removeEvents();
+            document.removeEventListener('keydown', handleKey);
         };
     }, []);
 
-    function addEvents() {
-        document.addEventListener('keydown', handleKey);
-    }
-
-    function removeEvents() {
-        document.removeEventListener('keydown', handleKey);
-    }
-
-    function handleKey(e) {
+    function handleKey(e: KeyboardEvent) {
         const { keyCode } = e;
-        const lastPopup = popups[popups.length - 1];
+        const lastPopup = p[p.length - 1];
         if (keyCode !== 27) {
             return;
         }
@@ -72,35 +48,28 @@ function Popups({ popups, cinemaMode, removePopup, insideOfRoom }) {
         }
     }
 
-    const p = popups;
+    const popupsList = [
+        { show: p.colorPicker, name: COLOR_PICKER, element: <ColorPicker />, opts: {} },
+        { show: p.guestAuth, name: COLOR_PICKER, element: <GuestAuth />, opts: {} },
+        { show: p.imagePicker, name: IMAGE_PICKER, element: <ImagePicker />, opts: {} },
+        { show: p.logForm, name: LOG_FORM, element: <LogForm />, opts: {} },
+        { show: p.newRoom, name: NEW_ROOM, element: <NewRoom />, opts: {} },
+        { show: p.playlist, name: PLAYLIST, element: <Playlist />, opts: {} },
+        { show: p.settings, name: SETTINGS, element: <Settings />, opts: { fixed: true, esc: true } },
+        { show: cinemaMode && insideOfRoom,
+            name: CHAT_FLOAT,
+            element: <ChatContainer />,
+            opts: { hideClose: true, resizable: true, minHeight: 325, minWidth: 150 }
+        },
+    ]
+
     return (
         <div className="popups_container">
-            {wrapper({ popup: <ColorPicker />, name: COLOR_PICKER, show: p.colorPicker })}
-            {wrapper({ popup: <GuestAuth />, name: GUEST_AUTH, show: p.guestAuth })}
-            {wrapper({ popup: <ImagePicker />, name: IMAGE_PICKER, show: p.imagePicker })}
-            {wrapper({ popup: <LogForm />, name: LOG_FORM, show: p.logForm })}
-            {wrapper({ popup: <NewRoom />, name: NEW_ROOM, show: p.newRoom })}
-            {wrapper({ popup: <Playlist />, name: PLAYLIST, show: p.playlist })}
-            {wrapper({ popup: <Settings />, name: SETTINGS, show: p.settings, opts: { fixed: true, esc: true } })}
-            {wrapper({
-                popup: <ChatContainer />,
-                name: CHAT_FLOAT,
-                show: cinemaMode && insideOfRoom,
-                opts: { hideClose: true, resizable: true, minHeight: 325, minWidth: 150 }
+            {popupsList.filter(({ show }) => show).map(({ show, name, element, opts }) => {
+                return <Popup key={name} removePopup={removePopup} name={name} {...opts}>{element}</Popup>
             })}
         </div>
     );
-
-    function wrapper({ popup, name, show, opts = {} }: WrapperProps) {
-        return show && (
-            <Popup
-                {...opts}
-                removePopup={() => removePopup(name)}
-                popupElement={popup}
-                name={name}
-            />
-        )
-    }
 }
 
 export class CustomAnimation extends React.Component<any, any> {
@@ -142,10 +111,17 @@ export class CustomAnimation extends React.Component<any, any> {
     }
 }
 
-interface PopupProps extends WrapperOpts {
-    removePopup: () => void;
-    popupElement: React.ReactElement;
+interface PopupProps {
+    removePopup: (name: string) => void;
     name: string;
+    children: React.ReactElement;
+
+    fixed?: boolean;
+    resizable?: boolean;
+    esc?: boolean;
+    hideClose?: boolean;
+    minHeight?: number;
+    minWidth?: number;
 }
 
 let offsetX = 0;
@@ -205,6 +181,8 @@ function Popup(props: PopupProps) {
         return () => {
             clearInterval(timer2.current)
             document.removeEventListener('keydown', handleKeyDown);
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
         }
     }, []);
 
@@ -221,13 +199,20 @@ function Popup(props: PopupProps) {
 
         const resizeObserver = new ResizeObserver(() => {
             clearTimeout(timer.current)
-            timer.current = setTimeout(resizeIfNeeded, 100);
+            timer.current = setTimeout(resizeIfNeeded, 32);
         });
 
         timer2.current = setInterval(resizeIfNeeded, 2000);
         resizeObserver.observe(popupEl.current);
+    }
 
-        
+    function addEvents() {
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    }
+    function removeEvents() {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
     }
 
     function setStates(states) {
@@ -242,17 +227,8 @@ function Popup(props: PopupProps) {
             return;
         }
         if (code === 'Escape') {
-            props.removePopup()
+            props.removePopup(props.name)
         }
-    }
-
-    function addEvents() {
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
-    }
-    function removeEvents() {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
     }
 
     function handleMouseDown(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
@@ -290,25 +266,21 @@ function Popup(props: PopupProps) {
         const { innerWidth: windowWidth, innerHeight: windowHeight } = window;
 
         const popupRect = pos.rect || popupEl.current.getBoundingClientRect();
-        const { left: elLeft, top: elTop, width: elWidth, height: elHeight } = popupRect
 
-        if (isMoving()) {
-            const maxLeft = windowWidth - elWidth
-            const maxTop = windowHeight - elHeight
+        const maxLeft = windowWidth - popupRect.width
+        const maxTop = windowHeight - popupRect.height
 
-            const leftBound = Math.min(maxLeft, Math.max(0, pos.left || elLeft))
-            const topBound = Math.min(maxTop, Math.max(0, pos.top || elTop))
+        const leftBound = Math.min(maxLeft, Math.max(0, pos.left || popupRect.left))
+        const topBound = Math.min(maxTop, Math.max(0, pos.top || popupRect.top))
 
-            setStates({ left: leftBound, top: topBound });
-        }
+        setStates({ left: leftBound, top: topBound });
 
-
-        if (isResizing()) {
+        if (props.resizable) {
             const maxWidth = windowWidth - popupRect.left
-            const newWidth = Math.min(maxWidth, Math.max(minWidth, pos.width))
+            const newWidth = Math.min(maxWidth, Math.max(minWidth, pos.width || popupRect.width))
 
             const maxHeight = windowHeight - popupRect.top
-            const newHeight = Math.min(maxHeight, Math.max(minHeight, pos.height))
+            const newHeight = Math.min(maxHeight, Math.max(minHeight, pos.height || popupRect.height))
 
             setStates({ width: newWidth, height: newHeight });
         }
@@ -337,7 +309,8 @@ function Popup(props: PopupProps) {
     }
 
     function savePosition(): void {
-        localStorage[props.name + 'Popup'] = JSON.stringify({ width, top, left, height })
+        const dims = props.resizable ? { width, height } : {}
+        localStorage[props.name + 'Popup'] = JSON.stringify({ top, left, ...dims })
     }
 
     function getPosition(key: string) {
@@ -347,10 +320,12 @@ function Popup(props: PopupProps) {
     }
 
     function handleMouseUp() {
-        setMoving(false)
-        setResizing(false)
-        savePosition();
-        enableUserSelect()
+        if (isMoving() || isResizing()) {
+            setMoving(false)
+            setResizing(false)
+            savePosition();
+            enableUserSelect()
+        }
     }
 
     function getTitle() {
@@ -379,7 +354,7 @@ function Popup(props: PopupProps) {
         } as CSSProperties;
     }
 
-    const { removePopup, popupElement, name, resizable } = props;
+    const { removePopup, children, name, resizable } = props;
     return (
         <div
             ref={popupEl}
@@ -396,13 +371,13 @@ function Popup(props: PopupProps) {
                 <h3 className="popup-title">{getTitle()}</h3>
                 <div className="header-controls controls-container">
                     {!props.hideClose && (
-                        <span onClick={() => removePopup()} className="control">
+                        <span onClick={() => removePopup(name)} className="control">
                             <i className="fas fa-times" />
                         </span>
                     )}
                 </div>
             </div>
-            {popupElement}
+            {children}
         </div>
     );
 }
