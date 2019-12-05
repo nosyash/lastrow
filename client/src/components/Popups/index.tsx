@@ -49,7 +49,6 @@ interface WrapperProps {
 }
 
 function Popups({ popups, cinemaMode, removePopup, insideOfRoom }) {
-    const handleResizeTh = throttle(handleResize, 16);
     useEffect(() => {
         addEvents();
 
@@ -60,15 +59,11 @@ function Popups({ popups, cinemaMode, removePopup, insideOfRoom }) {
 
     function addEvents() {
         document.addEventListener('keydown', handleKey);
-        window.addEventListener('resize', handleResizeTh);
     }
 
     function removeEvents() {
         document.removeEventListener('keydown', handleKey);
-        window.removeEventListener('resize', handleResizeTh);
     }
-
-    function handleResize() { }
 
     function handleKey(e) {
         const { keyCode } = e;
@@ -111,9 +106,6 @@ function Popups({ popups, cinemaMode, removePopup, insideOfRoom }) {
         )
     }
 }
-
-let offsetX = null;
-let offsetY = null;
 
 export class CustomAnimation extends React.Component<any, any> {
     state = {
@@ -159,6 +151,11 @@ interface PopupProps extends WrapperOpts {
     popupElement: React.ReactElement;
     name: string;
 }
+
+let offsetX = 0;
+let offsetY = 0;
+let offsetXRes = 0;
+let offsetYRes = 0;
 
 function Popup(props: PopupProps) {
     const [width, setWidth] = useState(getPosition('width') || 0);
@@ -219,7 +216,7 @@ function Popup(props: PopupProps) {
     function watchPopupDimensionsChange() {
         const resizeObserver = new ResizeObserver(() => {
             clearTimeout(timer.current)
-            timer.current = requestAnimationFrame(() => { updatePosition() });
+            timer.current = setTimeout(() => { updatePosition() }, 100);
         });
 
         timer2.current = setInterval(() => { updatePosition() }, 2000);
@@ -252,17 +249,20 @@ function Popup(props: PopupProps) {
         document.removeEventListener('mouseup', handleMouseUp);
     }
 
-    function handleMouseDown(e) {
+    function handleMouseDown(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
         if (moving || resizing.current) {
             return;
         }
 
-        const { left: left_, top: top_ } = popupEl.current.getBoundingClientRect();
-        const { clientX: clientX_, clientY: clientY_ } = e;
+        const rect = popupEl.current.getBoundingClientRect();
+        const { clientX: clientX_, clientY: clientY_  } = e;
         const target = e.target as HTMLElement
 
-        offsetX = clientX_ - left_;
-        offsetY = clientY_ - top_;
+        offsetX = clientX_ - rect.left;
+        offsetY = clientY_ - rect.top;
+
+        offsetXRes = rect.left + rect.width - e.clientX
+        offsetYRes = rect.top + rect.height - e.clientY
 
         disableUserSelect()
 
@@ -274,10 +274,9 @@ function Popup(props: PopupProps) {
         }
     }
 
-    function updatePosition({ left, top, rect, width, height } = {} as {
-        left?: number; top?: number; width?: number; height?: number; rect?: DOMRect;
-    }) {
+    type Position = { left?: number; top?: number; width?: number; height?: number; rect?: DOMRect; }
 
+    function updatePosition({ left, top, rect, width, height } = {} as Position) {
         if (!popupEl.current) {
             return
         }
@@ -293,7 +292,7 @@ function Popup(props: PopupProps) {
     }
 
     function handleMouseMove(e: MouseEvent) {
-        // TODO: make "moving" Ref
+        // TODO: make "moving" a ref
         if (moving || resizing.current) {
             const rect = popupEl.current.getBoundingClientRect() as DOMRect;
 
@@ -301,8 +300,8 @@ function Popup(props: PopupProps) {
             const newTop = rect.top + (e.clientY - (rect.top + offsetY));
 
             if (resizing.current) {
-                const newWidth = Math.max((props.minWidth || 150), rect.width + e.clientX - (rect.left + rect.width));
-                const newHeight = Math.max((props.minHeight || 150), rect.height + e.clientY - (rect.top + rect.height));
+                const newWidth = Math.max((props.minWidth || 150), rect.width + (e.clientX - (rect.left + rect.width)) + offsetXRes);
+                const newHeight = Math.max((props.minHeight || 150), rect.height + (e.clientY - (rect.top + rect.height)) + offsetYRes);
                 setStates({ width: newWidth, height: newHeight });
             } else {
                 updatePosition({ left: newLeft, top: newTop })
