@@ -105,30 +105,40 @@ class Socket implements SocketInterface {
     public sendMessage = async (data: string, expectedType?: string): Promise<void> => {
         // eslint-disable-next-line no-async-promise-executor
         return new Promise(async (resolve, reject) => {
+            const removeEvent = () => {
+                if (this.instance) this.instance.removeEventListener('message', onMessage);
+            }
+
             this.instance.send(data);
             if (expectedType) {
-                this.instance.addEventListener('message', onMessage, { once: true });
+                this.instance.addEventListener('message', onMessage);
                 await wait(15000)
-                this.instance.removeEventListener('message', onMessage);
+                removeEvent()
                 return reject()
             }
-            
+
             function onMessage({ data: receivedData }: any) {
                 const _data = safelyParseJson(receivedData);
-                const type = get(_data, 'body.event.type')
+                // const type = get(_data, 'body.event.type')
                 const { message, error } = get(_data, 'body.event.data.feedback', {})
-    
-                if (type !== expectedType) {
-                    return;
-                }
-    
+
+                // if (type !== expectedType) {
+                //     return;
+                // }
+
                 // if (message && message === 'success')
+                if (message || error) {
+                    removeEvent()
+                }
+
                 if (message) {
                     resolve()
-                } else {
+                } else if (error) {
                     reject(error)
                 }
             }
+
+
         })
     };
 

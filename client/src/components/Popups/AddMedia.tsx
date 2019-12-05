@@ -78,18 +78,21 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
         const subs = subtitles ? { subtitles: this.subs64, subs_type: 'srt' } : {}
         const data = { url: inputValue, uuid, subtitles: subs }
         const message = api.SEND_MEDIA_TO_PLAYLIST(data);
+        const onSuccess = () => {
+            this.setState({ inputValue: '', subtitlesName: '' });
+            const inputExists = get(this.subsInputEl, 'current.value')
+            console.log(this.subsInputEl.current);
+            if (inputExists) {
+                this.subsInputEl.current.value = '';
+            }
+        }
+
         webSocketSend(message, 'feedback')
             .then(onSuccess)
             .catch((error) => console.warn('error while adding to playlist:', error))
             .finally(() => setToDone())
 
-        function onSuccess() {
-            this.setState({ inputValue: '', subtitlesName: '' });
-            const inputExists = get(this.subsInputEl, 'current.value')
-            if (inputExists) {
-                this.subsInputEl.current.value = '';
-            }
-        }
+
         setToPending();
     };
 
@@ -110,10 +113,10 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
 
         const file = get(target, 'files[0]');
         if (!file) {
-            
+
         }
         const { name, type, size } = file;
-                
+
         // if (type !== 'application/x-subrip' || type !== 'text/srt') {
         //     return toast.warn(`Only .srt supported for now`, toastOpts)
         // }
