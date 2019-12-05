@@ -57,10 +57,18 @@
       "WithStatement"
     ],
     "no-unused-vars": [
+      "off",
+      {
+        "ignoreSiblings": true,
+        "varsIgnorePattern": "^_"
+      }
+    ],
+    "@typescript-eslint/no-unused-vars": [
       "warn",
       {
         "ignoreSiblings": true,
-        "argsIgnorePattern": "res|next|^err"
+        "argsIgnorePattern": "_.+",
+        "varsIgnorePattern": "^_"
       }
     ],
     "prefer-const": [

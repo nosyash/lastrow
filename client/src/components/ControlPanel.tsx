@@ -69,7 +69,10 @@ function ControlPanel(props: ControlPanelProps) {
     );
 }
 
-const RenderPlaylister = ({ onClick, logged, upNext }: any) => (
+const getUpNextUrl = (upnext: Video) => upnext ? upnext.url : '';
+const getUpNextTitle = (upnext: Video) => upnext ? upnext.title || upnext.url : '';
+
+const RenderPlaylister = ({ onClick, upNext }: any) => (
     <div className="playlister">
         <RenderItem
             dataId="showPlaylist"
@@ -93,8 +96,7 @@ const RenderPlaylister = ({ onClick, logged, upNext }: any) => (
     </div>
 );
 
-const getUpNextUrl = (upnext: Video) => upnext ? upnext.url : '';
-const getUpNextTitle = (upnext: Video) => upnext ? upnext.title || upnext.url : '';
+
 
 const RenderItem = ({ classes, onClick, dataId, text }: any) => (
     <div>

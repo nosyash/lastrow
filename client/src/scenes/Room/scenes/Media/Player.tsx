@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import ReactRedux, { connect } from 'react-redux';
+import { connect } from 'react-redux';
 import ReactPlayer from 'react-player';
 import cn from 'classnames';
 import { get } from 'lodash';
@@ -18,7 +18,6 @@ import { State } from '../../../../reducers';
 let minimizeTimer = null;
 let remoteControlTimeRewind = null;
 let remoteControlTimePlayback = null;
-let videoEl = null;
 
 interface PlayerProps {
     media: Media;
@@ -59,7 +58,6 @@ function Player(props: PlayerProps) {
         // init();
 
         return () => {
-            resetRefs();
             props.resetMedia();
         };
     }, []);
@@ -109,34 +107,18 @@ function Player(props: PlayerProps) {
         props.hideSubs();
     }
 
-    function resetRefs() {
-        videoEl = null;
-    }
-
-    // function init() {
-    //     // TODO: fix volume parser
-    //     try {
-    //         const { updatePlayer } = props;
-    //         // eslint-disable-next-line prefer-destructuring
-    //         volume = localStorage.volume;
-    //         volume = JSON.parse(volume as any || 1);
-    //         updatePlayer({ volume });
-    //     } catch (_) { }
-    // }
-
     function handleReady(): void {
         updateTime();
         // handleMouseMove();
     }
 
     function updateTime(): void {
-        const [duration, curTime] = safelyGetTimeAndDuration();
-        videoEl = playerRef.current.getInternalPlayer();
+        const [duration, curTime] = safelyGetDurationAndTime();
         props.updatePlayer({ duration });
         setCurrentTime(curTime);
     }
 
-    function safelyGetTimeAndDuration(): [number, number] {
+    function safelyGetDurationAndTime(): [number, number] {
         try {
             const duration = playerRef.current.getDuration() as number;
             const curTime = playerRef.current.getCurrentTime() as number;
@@ -277,7 +259,7 @@ function Player(props: PlayerProps) {
     }
 
     function handleRemoteRewind() {
-        const [_, time] = safelyGetTimeAndDuration()
+        const [, time] = safelyGetDurationAndTime()
         webSocketSend(api.REWIND_MEDIA({ time }), 'ticker')
             .then(() => setSynced(true))
 

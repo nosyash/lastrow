@@ -17,11 +17,15 @@ import { User } from './types';
 import { Store } from 'redux';
 import { Emoji } from '../reducers/emojis';
 import httpServices from './httpServices';
-import { parseAndDispatchSubtitles } from './subtitles';
-import { workerRequest } from '../worker/index';
 import { wait, safelyParseJson } from '.';
 import { DEBUG } from '../constants';
-import { UPDATE_PLAYLIST_WS_DEBUG_MESSAGE, PAUSE_MEDIA_WS_DEBUG_MESSAGE, TICKER_WS_DEBUG_MESSAGE, DEBUG_EXPOSE, RESUME_MEDIA_WS_DEBUG_MESSAGE } from './__DEBUG__';
+import {
+    UPDATE_PLAYLIST_WS_DEBUG_MESSAGE,
+    PAUSE_MEDIA_WS_DEBUG_MESSAGE,
+    TICKER_WS_DEBUG_MESSAGE,
+    DEBUG_EXPOSE,
+    RESUME_MEDIA_WS_DEBUG_MESSAGE
+} from './__DEBUG__';
 
 const { dispatch, getState } = store as Store;
 
@@ -99,6 +103,7 @@ class Socket implements SocketInterface {
     };
 
     public sendMessage = async (data: string, expectedType?: string): Promise<void> => {
+        // eslint-disable-next-line no-async-promise-executor
         return new Promise(async (resolve, reject) => {
             this.instance.send(data);
             if (expectedType) {
@@ -109,9 +114,9 @@ class Socket implements SocketInterface {
             }
             
             function onMessage({ data: receivedData }: any) {
-                const data = safelyParseJson(receivedData);
-                const type = get(data, 'body.event.type')
-                const { message, error } = get(data, 'body.event.data.feedback', {})
+                const _data = safelyParseJson(receivedData);
+                const type = get(_data, 'body.event.type')
+                const { message, error } = get(_data, 'body.event.data.feedback', {})
     
                 if (type !== expectedType) {
                     return;
@@ -123,7 +128,7 @@ class Socket implements SocketInterface {
                 } else {
                     reject(error)
                 }
-            };
+            }
         })
     };
 
@@ -184,8 +189,8 @@ class Socket implements SocketInterface {
 
         switch (messageType) {
             case 'update_users': {
-                const data = get(parsedData, 'body.event.data') as UpdateUsersData;
-                return dispatch({ type: types.UPDATE_USERLIST, payload: moveGuestsToTheEnd(data.users) });
+                const _data = get(parsedData, 'body.event.data') as UpdateUsersData;
+                return dispatch({ type: types.UPDATE_USERLIST, payload: moveGuestsToTheEnd(_data.users) });
             }
 
             case 'message': {
@@ -310,7 +315,7 @@ class Socket implements SocketInterface {
 
     get __DEBUG__() {
         if (!DEBUG) {
-            return
+            return null
         }
 
         return {
@@ -337,10 +342,10 @@ class Socket implements SocketInterface {
     }
 }
 
-function subtitlesUpdateEvent() {
-    const subtitlesAftersChanged = new CustomEvent('subtitlesafterchange', { 'detail': {} });
-    document.dispatchEvent(subtitlesAftersChanged);
-}
+// function subtitlesUpdateEvent() {
+//     const subtitlesAftersChanged = new CustomEvent('subtitlesafterchange', { 'detail': {} });
+//     document.dispatchEvent(subtitlesAftersChanged);
+// }
 
 function handleSubtitles({ data }) {
     dispatch({ type: types.SET_RAW_SUBS, payload: data })
@@ -357,13 +362,15 @@ function moveGuestsToTheEnd(users: User[]) {
     return [...notGuests, ...guests]
 }
 
+const stopAddMediaPending = () => {
+    dispatch({ type: types.SET_ADD_MEDIA_PENDING, payload: false });
+};
+
 const setAddMediaToSuccess = () => {
     dispatch({ type: types.REMOVE_POPUP, payload: 'addMedia' });
     stopAddMediaPending();
 };
 
-const stopAddMediaPending = () => {
-    dispatch({ type: types.SET_ADD_MEDIA_PENDING, payload: false });
-};
+
 
 export default Socket;
