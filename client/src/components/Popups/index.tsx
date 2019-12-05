@@ -49,13 +49,13 @@ function Popups({ popups: p, cinemaMode, removePopup, insideOfRoom }) {
     }
 
     const popupsList = [
-        { show: p.colorPicker, name: COLOR_PICKER, element: <ColorPicker />, opts: {} },
-        { show: p.guestAuth, name: COLOR_PICKER, element: <GuestAuth />, opts: {} },
-        { show: p.imagePicker, name: IMAGE_PICKER, element: <ImagePicker />, opts: {} },
-        { show: p.logForm, name: LOG_FORM, element: <LogForm />, opts: {} },
-        { show: p.newRoom, name: NEW_ROOM, element: <NewRoom />, opts: {} },
-        { show: p.playlist, name: PLAYLIST, element: <Playlist />, opts: {} },
-        { show: p.settings, name: SETTINGS, element: <Settings />, opts: { fixed: true, esc: true } },
+        { show: p[COLOR_PICKER], name: COLOR_PICKER, element: <ColorPicker /> },
+        { show: p[GUEST_AUTH], name: GUEST_AUTH, element: <GuestAuth /> },
+        { show: p[IMAGE_PICKER], name: IMAGE_PICKER, element: <ImagePicker /> },
+        { show: p[LOG_FORM], name: LOG_FORM, element: <LogForm /> },
+        { show: p[NEW_ROOM], name: NEW_ROOM, element: <NewRoom /> },
+        { show: p[PLAYLIST], name: PLAYLIST, element: <Playlist /> },
+        { show: p[SETTINGS], name: SETTINGS, element: <Settings />, opts: { fixed: true, esc: true } },
         { show: cinemaMode && insideOfRoom,
             name: CHAT_FLOAT,
             element: <ChatContainer />,
@@ -65,9 +65,12 @@ function Popups({ popups: p, cinemaMode, removePopup, insideOfRoom }) {
 
     return (
         <div className="popups_container">
-            {popupsList.filter(({ show }) => show).map(({ show, name, element, opts }) => {
-                return <Popup key={name} removePopup={removePopup} name={name} {...opts}>{element}</Popup>
-            })}
+            {popupsList
+                .filter(({ show }) => show)
+                .map(({ name, element, opts = {} }) => {
+                    return <Popup key={name} removePopup={removePopup} name={name} {...opts}>{element}</Popup>
+                })
+            }
         </div>
     );
 }
@@ -215,7 +218,7 @@ function Popup(props: PopupProps) {
         document.removeEventListener('mouseup', handleMouseUp);
     }
 
-    function setStates(states) {
+    function setStates(states: { width?: number; height?: number; top?: number; left?: number }) {
         if (typeof states.width === 'number') setWidth(states.width);
         if (typeof states.height === 'number') setHeight(states.height);
         if (typeof states.top === 'number') setTop(states.top);
@@ -223,10 +226,7 @@ function Popup(props: PopupProps) {
     }
 
     function handleKeyDown({ code }) {
-        if (!props.esc) {
-            return;
-        }
-        if (code === 'Escape') {
+        if (code === 'Escape' && props.esc) {
             props.removePopup(props.name)
         }
     }
