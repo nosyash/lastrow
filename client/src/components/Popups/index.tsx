@@ -1,9 +1,7 @@
 import React, { useRef, useEffect, useState, CSSProperties, ReactElement } from 'react';
-import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { throttle, get } from 'lodash';
+import { get } from 'lodash';
 import cn from 'classnames';
-import ls from 'local-storage';
 import { getCenteredRect, safelyParseJson } from '../../utils';
 import * as types from '../../constants/actionTypes';
 import {
@@ -27,8 +25,6 @@ import NewRoom from './NewRoom';
 import Playlist from './Playlist';
 import Settings from './Settings/index';
 import ChatContainer from '../../scenes/Room/scenes/Chat';
-import { MainStates } from '../../reducers/mainStates';
-import { Rooms } from '../../reducers/rooms';
 import ResizeObserver from 'resize-observer-polyfill'
 import { State } from '../../reducers';
 
@@ -282,7 +278,7 @@ function Popup(props: PopupProps) {
     }
 
     // fixes window boundings and updates position/dimensions
-    function setBoundedSize(pos = {} as { left?: number; top?: number; width?: number; height?: number; rect?: DOMRect; }) {
+    function setBoundedSize(pos = {} as { left?: number; top?: number; width?: number; height?: number; rect?: DOMRect }) {
         if (!popupEl.current) {
             return
         }
@@ -354,14 +350,14 @@ function Popup(props: PopupProps) {
     }
 
     function getTitle() {
-        if (name === COLOR_PICKER) return 'Color picker';
-        if (name === GUEST_AUTH) return 'Guest authorization';
-        if (name === IMAGE_PICKER) return 'Image picker';
-        if (name === LOG_FORM) return 'Sign in';
-        if (name === NEW_ROOM) return 'New room';
-        if (name === PLAYLIST) return 'Playlist';
-        if (name === PROFILE_SETTINGS) return 'Profile settings';
-        if (name === SETTINGS) return 'Settings';
+        if (props.name === COLOR_PICKER) return 'Color picker';
+        if (props.name === GUEST_AUTH) return 'Guest authorization';
+        if (props.name === IMAGE_PICKER) return 'Image picker';
+        if (props.name === LOG_FORM) return 'Sign in';
+        if (props.name === NEW_ROOM) return 'New room';
+        if (props.name === PLAYLIST) return 'Playlist';
+        if (props.name === PROFILE_SETTINGS) return 'Profile settings';
+        if (props.name === SETTINGS) return 'Settings';
         return ''
     }
 
