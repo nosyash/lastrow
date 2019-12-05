@@ -196,3 +196,8 @@ export const safelyParseJson = (input: string): any => {
         return {}
     }
 }
+
+export function dispatchCustomEvent(name: string, details = {} as { [key: string]: any }): boolean {
+    const event = new CustomEvent(name, { 'detail': details })
+    return document.dispatchEvent(event);
+}

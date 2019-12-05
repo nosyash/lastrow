@@ -8,6 +8,7 @@ import { Media } from '../reducers/media';
 import { Profile } from '../reducers/profile';
 import './ControlPanel.less'
 import cn from 'classnames'
+import { dispatchCustomEvent } from '../utils';
 
 type ControlPanelProps = MapState & MapDispatch & {
     cinemaMode: boolean;
@@ -38,7 +39,7 @@ function ControlPanel(props: ControlPanelProps) {
     const { profile, playlist } = props;
     const upNext = playlist[1];
     const { logged } = profile;
-    const classes = cn([ 'control-panel', { 'control-panel--expanded': !collapsed } ])
+    const classes = cn(['control-panel', { 'control-panel--expanded': !collapsed }])
     const itemsClasses = cn([
         'control-panel__collapsible-items',
         { 'control-panel__collapsible-items--collapsed': collapsed }
@@ -52,6 +53,7 @@ function ControlPanel(props: ControlPanelProps) {
                 </div>
             )}
             <div className={itemsClasses}>
+                <Controls />
                 <PlaylistInfo upNext={upNext} logged={logged} onClick={handleClick} />
                 <div className="divider" />
                 {logged && (
@@ -68,6 +70,44 @@ function ControlPanel(props: ControlPanelProps) {
 
 const getUpNextUrl = (upnext: Video) => upnext ? upnext.url : '';
 const getUpNextTitle = (upnext: Video) => upnext ? upnext.title || upnext.url : '';
+
+interface ControlsProps {
+    synced?: boolean;
+}
+
+export interface ControlPanelEvent {
+    toggleSync?: boolean;
+}
+
+const Controls = (props: ControlsProps) => {
+
+    function dispatchControlEvent(details = {} as ControlPanelEvent): boolean {
+        return dispatchCustomEvent('controlPanelEvent', details)
+    }
+
+    // const enableSync = () => dispatchControlEvent({ enableSync: true })
+    // const disableSync = () => dispatchControlEvent({ disableSync: true })
+    const toggleSync = () => dispatchControlEvent({ toggleSync: true })
+
+    const controlClass = 'panel-controls__control'
+
+    const syncClass = cn(controlClass, { [controlClass + '--sync']: props.synced })
+
+    return (
+        <div className={cn('panel-controls')}>
+            <div className="panel-controls__control">
+                <i className="fa fa-play" />
+            </div>
+            <div
+                title="Toggle synchronization"
+                onClick={toggleSync}
+                className={cn(['panel-controls__control', 'panel-controls__control--sync'])}
+            >
+                <i className="fa fa-sync" />
+            </div>
+        </div>
+    )
+}
 
 const PlaylistInfo = ({ onClick, upNext }: any) => (
     <div className="playlister">

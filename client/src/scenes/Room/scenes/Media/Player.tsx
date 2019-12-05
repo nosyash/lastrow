@@ -14,9 +14,10 @@ import { Media } from '../../../../reducers/media';
 import { webSocketSend } from '../../../../actions';
 import PlayerUI from './components/PlayerUI';
 import { State } from '../../../../reducers';
+import { ControlPanelEvent } from '../../../../components/ControlPanel';
 
 let minimizeTimer = null;
-let remoteControlTimeRewind = null;
+const remoteControlTimeRewind = null;
 let remoteControlTimePlayback = null;
 
 interface PlayerProps {
@@ -34,7 +35,6 @@ interface PlayerProps {
     hideSubs: () => void;
 }
 
-let t1: NodeJS.Timeout = null
 function Player(props: PlayerProps) {
     const [minimized, setMinimized] = useState(false);
     const [synced, setSynced] = useState(true);
@@ -77,23 +77,43 @@ function Player(props: PlayerProps) {
         }
     }, []);
 
-    useEffect(() => { syncRemoteStates() }, [props.media.actualTime, props.media.remotePlaying, synced]);
+    // mutable listeners! must be removed and added on each corresponding state change
+    useEffect(() => {
+        document.addEventListener('controlPanelEvent', handleControlPanelAction);
+
+        return () => {
+            document.removeEventListener('controlPanelEvent', handleControlPanelAction);
+        }
+    }, [synced])
 
     useEffect(() => {
-        requestAnimationFrame(() => { lastTime.current = currentTime })
-        if (Math.abs(currentTime - lastTime.current) < 7) return
-        if (Math.abs(props.media.actualTime - currentTime) < 7) return
-        if (props.media.actualTime < 1) return
-        if (lastTime.current < 1) return
-        if (changingStateRemotely.current) return
-        onProgressChangeLazy()
+        if (synced) { document.body.classList.add('player-synced') }
+        else { document.body.classList.remove('player-synced') }
+    }, [synced])
 
-    }, [currentTime]);
+    function handleControlPanelAction({ detail }: CustomEvent<ControlPanelEvent>) {
+        console.log(synced);
+        if (detail.toggleSync) setSynced(!synced)
+    }
+
+    useEffect(() => { syncRemoteStates() }, [currentTime, props.media.actualTime, props.media.remotePlaying, synced]);
+
+    // useEffect(() => {
+    //     requestAnimationFrame(() => { lastTime.current = currentTime })
+    //     if (Math.abs(currentTime - lastTime.current) < 7) return
+    //     if (Math.abs(props.media.actualTime - currentTime) < 7) return
+    //     if (props.media.actualTime < 1) return
+    //     if (lastTime.current < 1) return
+    //     if (changingStateRemotely.current) return
+    //     onProgressChangeLazy()
+
+    // }, [currentTime]);
 
     function beforeMediaChange() {
         // We're doing it so onProgressChangeLazy does not trigger on media change
         setCurrentTime(0)
     }
+
 
     function watchPlaylist({ detail }: CustomEvent) {
         const liveStream = get(detail, 'mediaAfter.live_stream') as boolean;
@@ -145,9 +165,9 @@ function Player(props: PlayerProps) {
         const shouldSeek = Math.abs(actualTime - currentTime) > MAX_VIDEO_SYNC_OFFSET;
         const shouldTogglePlaying = playing !== remotePlaying
 
-        if (shouldTogglePlaying || shouldSeek) {
-            changingStateRemotely.current = true;
-        }
+        // if (shouldTogglePlaying || shouldSeek) {
+        //     changingStateRemotely.current = true;
+        // }
 
         if (shouldSeek) {
             safelySeekTo(actualTime);
@@ -156,11 +176,6 @@ function Player(props: PlayerProps) {
         if (shouldTogglePlaying) {
             setPlaying(remotePlaying)
         }
-
-        clearTimeout(t1)
-        t1 = setTimeout(() => {
-            changingStateRemotely.current = false;
-        }, 100);
     }
 
     function handlePlaying({ playedSeconds }) {
@@ -190,7 +205,7 @@ function Player(props: PlayerProps) {
         setPlaying(true)
 
         if (!changingStateRemotely.current) {
-            setSynced(false)
+            // setSynced(false)
         }
 
         handleAutoRemoteControl()
@@ -199,7 +214,7 @@ function Player(props: PlayerProps) {
         setPlaying(false)
 
         if (!changingStateRemotely.current) {
-            setSynced(false)
+            // setSynced(false)
         }
 
         handleAutoRemoteControl()
@@ -292,19 +307,19 @@ function Player(props: PlayerProps) {
         safelySeekTo(percent / 100, 'fraction')
     }
 
-    function onProgressChangeLazy() {
-        if (synced) {
-            setSynced(false);
-        }
+    // function onProgressChangeLazy() {
+    //     if (synced) {
+    //         setSynced(false);
+    //     }
 
-        handleRewinded()
-    }
+    //     handleRewinded()
+    // }
 
-    function handleRewinded() {
-        setRemoteControlRewind(true);
-        clearTimeout(remoteControlTimeRewind)
-        remoteControlTimeRewind = setTimeout(() => setRemoteControlRewind(false), 5000);
-    }
+    // function handleRewinded() {
+    //     setRemoteControlRewind(true);
+    //     clearTimeout(remoteControlTimeRewind)
+    //     remoteControlTimeRewind = setTimeout(() => setRemoteControlRewind(false), 5000);
+    // }
 
     function toggleSynced() {
         if (!changingStateRemotely.current) {
@@ -315,7 +330,7 @@ function Player(props: PlayerProps) {
 
     function togglePlay() {
         if (synced) {
-            setSynced(false);
+            // setSynced(false);
         }
 
         setPlaying(!playing);
