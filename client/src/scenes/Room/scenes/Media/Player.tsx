@@ -92,7 +92,6 @@ function Player(props: PlayerProps) {
     }, [synced])
 
     function handleControlPanelAction({ detail }: CustomEvent<ControlPanelEvent>) {
-        console.log(synced);
         if (detail.toggleSync) setSynced(!synced)
     }
 
