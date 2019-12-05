@@ -64,7 +64,7 @@ function Popups({ popups: p, cinemaMode, removePopup, insideOfRoom }) {
     ]
 
     return (
-        <div className="popups_container">
+        <div className="popups-container">
             {popupsList
                 .filter(({ show }) => show)
                 .map(({ name, element, opts = {} }) => {
@@ -237,11 +237,10 @@ function Popup(props: PopupProps) {
         }
 
         const rect = popupEl.current.getBoundingClientRect();
-        const { clientX: clientX_, clientY: clientY_  } = e;
         const target = e.target as HTMLElement
 
-        offsetX = clientX_ - rect.left;
-        offsetY = clientY_ - rect.top;
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
 
         offsetXRes = rect.left + rect.width - e.clientX
         offsetYRes = rect.top + rect.height - e.clientY
