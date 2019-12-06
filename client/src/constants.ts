@@ -75,3 +75,4 @@ export const CONTROL_PANEL_EXPAND_DELAY = 150 // ms
 export const CONTROL_PANEL_COLLAPSE_DELAY = 300 // ms
 
 export const DEBUG = process.env.NODE_ENV !== 'production'
+export const DEBUG_GRANT_ALL_PERMISSIONS = process.env.NODE_ENV !== 'production'
