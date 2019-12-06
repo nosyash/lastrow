@@ -1,6 +1,5 @@
 import React from 'react';
 import cn from 'classnames'
-import { isPermit } from '../../../../../utils/storeUtils';
 
 interface PlayerGlobalControlsProps {
     showRemoteRewind: boolean;
@@ -8,6 +7,7 @@ interface PlayerGlobalControlsProps {
     playing: boolean;
     remotePlaying: boolean;
     synced: boolean;
+    hasVideo: boolean;
     onRemoteRewind: () => void;
     onRemotePlaying: () => void;
 
@@ -23,7 +23,7 @@ function PlayerGlobalControls(props: PlayerGlobalControlsProps) {
                 {/* TODO: Completely remove buttons and their components  */}
                 {/* {isPermit('player_event.rewind') && renderRewindButton(props.showRemoteRewind)} */}
                 {/* {isPermit('player_event.pause') && renderPlaybackButton(props.showRemotePlayback)} */}
-                {renderSyncButton(!props.synced)}
+                {props.hasVideo && renderSyncButton(!props.synced)}
             </div>
         )
     }

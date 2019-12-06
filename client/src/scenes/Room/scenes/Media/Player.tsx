@@ -260,6 +260,7 @@ function Player(props: PlayerProps) {
                 <PlayerGlobalControls
                     onToggleSync={toggleSynced}
                     synced={synced}
+                    hasVideo={!!url}
                     showRemoteRewind={remoteControlRewind}
                     showRemotePlayback={remoteControlPlaying}
                     onRemoteRewind={handleRemoteRewind}
