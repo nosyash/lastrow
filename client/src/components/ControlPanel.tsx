@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { connect } from 'react-redux';
 import * as types from '../constants/actionTypes';
-import { PLAYLIST, SETTINGS, CONTROL_PANEL_EXPAND_DELAY, CONTROL_PANEL_COLLAPSE_DELAY } from '../constants';
+import { PLAYLIST, SETTINGS, CONTROL_PANEL_EXPAND_DELAY, CONTROL_PANEL_COLLAPSE_DELAY, DEBUG } from '../constants';
 import { Video } from '../utils/types';
 import { State } from '../reducers';
 import { Media } from '../reducers/media';
@@ -9,9 +9,9 @@ import { Profile } from '../reducers/profile';
 import './ControlPanel.less'
 import cn from 'classnames'
 import { dispatchCustomEvent } from '../utils';
+import { isPermit } from '../utils/storeUtils';
 
 type ControlPanelProps = MapState & MapDispatch & {
-    cinemaMode: boolean;
 }
 
 function ControlPanel(props: ControlPanelProps) {
@@ -53,7 +53,7 @@ function ControlPanel(props: ControlPanelProps) {
                 </div>
             )}
             <div className={itemsClasses}>
-                <Controls />
+                <Controls hasVideo={props.hasVideo} toggleCinemaMode={props.toggleCinemaMode} remotePlaying={props.remotePlaying} />
                 <PlaylistInfo upNext={upNext} logged={logged} onClick={handleClick} />
                 <div className="divider" />
                 {logged && (
@@ -72,41 +72,90 @@ const getUpNextUrl = (upnext: Video) => upnext ? upnext.url : '';
 const getUpNextTitle = (upnext: Video) => upnext ? upnext.title || upnext.url : '';
 
 interface ControlsProps {
-    synced?: boolean;
+    remotePlaying: boolean;
+    hasVideo: boolean;
+    toggleCinemaMode: () => void;
 }
 
 export interface ControlPanelEvent {
     toggleSync?: boolean;
+    toggleRemotePlayback?: boolean;
+    remotelyRewind?: boolean;
 }
 
 const Controls = (props: ControlsProps) => {
-
     function dispatchControlEvent(details = {} as ControlPanelEvent): boolean {
         return dispatchCustomEvent('controlPanelEvent', details)
     }
+    
 
-    // const enableSync = () => dispatchControlEvent({ enableSync: true })
-    // const disableSync = () => dispatchControlEvent({ disableSync: true })
     const toggleSync = () => dispatchControlEvent({ toggleSync: true })
-
-    const controlClass = 'panel-controls__control'
-
-    const syncClass = cn(controlClass, { [controlClass + '--sync']: props.synced })
+    const toggleRemotePlaybackStatus = () => dispatchControlEvent({ toggleRemotePlayback: true })
+    const remotelyRewindAtCurrentTime = () => dispatchControlEvent({ remotelyRewind: true })
 
     return (
         <div className={cn('panel-controls')}>
-            <div className="panel-controls__control">
-                <i className="fa fa-play" />
-            </div>
-            <div
-                title="Toggle synchronization"
-                onClick={toggleSync}
-                className={cn(['panel-controls__control', 'panel-controls__control--sync'])}
-            >
-                <i className="fa fa-sync" />
-            </div>
+            <RenderDefaultControls />
+            <RenderAdminControls />
         </div>
     )
+    
+    function RenderDefaultControls() {
+        const syncTitle = 'Toggle synchronization'
+        const cinemaModeTitle = 'Toggle cinema mode'
+        
+        return (
+            <div className={cn('panel-controls__container', 'panel-controls__container--default')}>
+                <div
+                    title={cinemaModeTitle}
+                    onClick={props.toggleCinemaMode}
+                    className="panel-controls__control"
+                >
+                    <i className="fa fa-film" />
+                </div>
+                {props.hasVideo && <div
+                    title={syncTitle}
+                    onClick={toggleSync}
+                    className={cn(['panel-controls__control', 'panel-controls__control--sync'])}
+                >
+                    <i className="fa fa-sync" />
+                </div>}
+            </div>
+        )
+    }
+
+    function RenderAdminControls() {
+        const canPause = isPermit('player_event.pause')
+        const canResume = isPermit('player_event.resume')
+        const canRewind = isPermit('player_event.rewind')
+        
+        // TODO: Remove DEBUG check
+        if (!canPause && !canResume && !canRewind) {
+            return null
+        }
+
+        const playbackClasses = cn('fa', props.remotePlaying ? 'fa-pause' : 'fa-play')
+        const playbackTitle = props.remotePlaying ? 'Remotely pause the video' : 'Remotely resume the video'
+
+        const rewindClasses = cn('fa', 'fa-forward')
+        const rewindTitle = 'Remotely rewind at current time'
+        
+        return (
+            <div className={cn('panel-controls__container', 'panel-controls__container--default')}>
+                {props.hasVideo && canResume && canPause && (
+                    <div onClick={toggleRemotePlaybackStatus} title={playbackTitle} className="panel-controls__control">
+                        <i className={playbackClasses} />
+                    </div>
+                )}
+                {props.hasVideo && canRewind && (
+                    <div onClick={remotelyRewindAtCurrentTime} title={rewindTitle} className="panel-controls__control">
+                        <i className={rewindClasses} />
+                    </div>
+                )}
+            </div>
+        )
+    }
+
 }
 
 const PlaylistInfo = ({ onClick, upNext }: any) => (
@@ -169,18 +218,28 @@ const RenderProfile = ({ profile, onSettings }: any) => {
 interface MapState {
     profile: Profile;
     playlist: Media['playlist'];
+    remotePlaying: boolean;
+    cinemaMode: boolean;
+    hasVideo: boolean;
 }
 interface MapDispatch {
     togglePopup: (name: string) => void;
+    toggleCinemaMode: () => void;
 }
 
 const mapStateToProps = (state: State) => ({
     profile: state.profile,
     playlist: state.media.playlist,
+    // TODO: revert back!!!
+    // hasVideo: !!state.media.playlist[0],
+    hasVideo: true,
+    remotePlaying: state.media.remotePlaying,
+    cinemaMode: state.mainStates.cinemaMode,
 });
 
 const mapDispatchToProps = {
     togglePopup: (payload: string) => ({ type: types.TOGGLE_POPUP, payload }),
+    toggleCinemaMode: () => ({ type: types.TOGGLE_CINEMAMODE })
 };
 
 export default connect<MapState, typeof mapDispatchToProps>(

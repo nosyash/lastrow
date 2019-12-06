@@ -31,7 +31,7 @@ function ChatContainer(props: ChatContainerProps) {
                 {' Back to rooms'}
             </Link>
             <ChatInner />
-            <ControlPanel cinemaMode={cinemaMode} />
+            <ControlPanel />
         </div>
     );
 }

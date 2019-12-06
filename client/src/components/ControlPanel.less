@@ -134,29 +134,37 @@
     }
 
     .panel-controls {
-        padding: 5px 5px 0 5px;
+        padding: 10px 5px 3px 5px;
         display: flex;
         user-select: none;
+
+        &__container {
+            display: flex;
+            flex-basis: 100%;
+            margin: 0 auto;
+        }
+
         &__control {
             .hover();
 
             font-size: 0.8em;
-            
+
             background: @darkSecond;
             padding: 4px 7px;
             cursor: pointer;
-            
+
             &--sync {
                 .player-synced & {
-                    color: #d3123f;
+                    color: #c0183f;
                 }
             }
 
-            &:nth-of-type(1)  {
+            &:nth-of-type(1) {
                 border-radius: 2px 0 0 2px;
                 margin-left: auto;
             }
-            &:nth-last-of-type(1)  {
+
+            &:nth-last-of-type(1) {
                 margin-right: auto;
                 border-radius: 0 2px 2px 0;
             }
