@@ -10,6 +10,7 @@ export const SEEK_SEL = '.seek-trigger';
 export const VOLUME_SEL = '.volume_trigger';
 export const VIDEO_ELEMENT_SEL = '.video-element';
 export const POPUP_HEADER = '.popup-header';
+export const POPUP_RESIZE_HANDLER = '.popup__resize-handle';
 
 // Misc
 export const RESIZE_OFFSET = 10;
@@ -67,3 +68,11 @@ export const NEW_ROOM = 'newRoom';
 export const PLAYLIST = 'playlist';
 export const PROFILE_SETTINGS = 'profileSettings';
 export const SETTINGS = 'settings';
+export const CHAT_FLOAT = 'chatFloat';
+
+// control panel
+export const CONTROL_PANEL_EXPAND_DELAY = 150 // ms
+export const CONTROL_PANEL_COLLAPSE_DELAY = 300 // ms
+
+export const DEBUG = process.env.NODE_ENV !== 'production'
+export const DEBUG_GRANT_ALL_PERMISSIONS = false

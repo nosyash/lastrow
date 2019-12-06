@@ -1,11 +1,15 @@
-import Axios from 'axios';
 import * as api from '../constants/apiActions';
-
-const instance = Axios.create();
+import { Profile } from '../reducers/profile';
+import http from './httpServices';
+import { Room } from './types';
 
 export const getProfile = async () => {
-    instance.interceptors.response.use(null, error => null);
-    const res = await instance.get(api.API_USER());
-    return res;
+    return http.silentGet(api.API_USER())
+        .then(res => res.data as Profile)
+};
+
+export const getRoom = async (roomId: string) => {
+    return http.silentGet(api.API_ROOM(roomId))
+        .then(res => res.data as Room)
 };
 

@@ -1,3 +1,6 @@
+import { Emoji } from '../reducers/emojis';
+import { Permissions } from '../reducers/rooms';
+
 export interface Message {
     action: string;
     body?: {};
@@ -155,6 +158,9 @@ export interface RoomList {
 
 export interface Room {
     title: string;
+    emoji: Emoji[];
+    uuid: string;
+    permissions: Permissions;
     path: string;
     play: string;
     users: string;

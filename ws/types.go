@@ -173,4 +173,14 @@ const (
 	eTypeKick  = "kick"
 	eTypeBan   = "ban"
 	eTypeUnban = "unban"
+
+	eTypeChangeTitle    = "change_title"
+	eTypeChangePath     = "change_path"
+	eTypeRoomDelete     = "delete_room"
+	eTypeAddEmoji       = "add_emoji"
+	eTypeDelEmoji       = "del_emoji"
+	eTypeChangeEmojname = "change_emoji_name"
+
+	eTypeAddRole          = "add_role"
+	eTypeChangePermission = "change_permission"
 )

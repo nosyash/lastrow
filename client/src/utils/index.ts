@@ -1,5 +1,5 @@
 import { Video } from './types';
-import { PermissionsMap } from '../reducers/rooms';
+import { Role } from '../reducers/profile';
 
 /* eslint-disable no-new */
 export function toggleUserSelect() {
@@ -168,11 +168,36 @@ export function parseJwt (token: string) {
     return JSON.parse(jsonPayload);
 }
 
-export function getJWTBody(jwt: string){
-    const [_, jwtBody] = jwt.split('.')
-    return JSON.parse(atob(jwtBody))
+interface JWT {
+    Exp: number;
+    UUID: string;
+    auth_rooms: any;
+    is_admin: boolean;
+    roles?: Role[];
 }
 
-export const isPermit = (level: PermissionsMap) => (actionLevel: any) => {
-    return level >= actionLevel;
+export function getJWTBody(jwt = ''): JWT {
+    try {        
+        const [_, jwtBody] = jwt.split('.')
+        const output = JSON.parse(atob(jwtBody))
+        output.roles = output.Roles
+        delete output.Roles
+        return output;
+    // eslint-disable-next-line no-empty
+    } catch (_) {}
+}
+
+export const wait = (number = 1000) => new Promise(resolve => setTimeout(() => resolve(), number))
+
+export const safelyParseJson = (input: string): any => {
+    try {
+        return JSON.parse(input)
+    } catch (error) {
+        return {}
+    }
+}
+
+export function dispatchCustomEvent(name: string, details = {} as { [key: string]: any }): boolean {
+    const event = new CustomEvent(name, { 'detail': details })
+    return document.dispatchEvent(event);
 }

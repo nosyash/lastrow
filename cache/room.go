@@ -33,6 +33,10 @@ func (room Room) CheckPermissions(eType, uuid string, payload *jwt.Payload) bool
 	var result bool
 
 	if payload != nil {
+		if payload.IsAdmin {
+			return true
+		}
+
 		if level, result = payload.GetLevel(uuid); !result {
 			level = 1
 		}

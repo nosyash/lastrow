@@ -163,7 +163,7 @@ export const REORDER_MEDIA = ({ __id, index }: { __id: string; index: number }) 
     return JSON.stringify(request)
 }
 
-export const REWIND_MEDIA = ({ time }: { time: number }) => {
+export const REWIND_MEDIA = ({ time = 0 }: { time: number }) => {
     const request = {
         action: 'player_event',
         body: {

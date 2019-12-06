@@ -1,0 +1,203 @@
+@import (reference) "../styles/main.less";
+
+// .control-panel-container {
+//     overflow: hidden;
+// }
+.cinema-mode {
+    .control-panel {
+        border-radius: 0;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        // margin: 5px;
+        margin-top: 0;
+
+        transform: translateY(calc(100% - 20px));
+        transition: 0.15s;
+        transition-timing-function: @bubble;
+        will-change: transform;
+
+        background: fadein(@popupHeaderBG, 10%);
+
+        &--expanded {
+            // set to 15px so element doesn't go beyond the boundary on bubble animation
+            transform: translateY(15px);
+            padding-bottom: 15px;
+        }
+
+        .control-panel__collapsible-items {
+            max-height: unset !important;
+        }
+
+        &__expander {
+            padding: 4px 0;
+        }
+    }
+}
+
+.control-panel {
+    border-radius: 5px;
+    margin-top: 10px;
+    // overflow: hidden;
+    // height: 100px;
+    background: @darkMain;
+    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
+
+    .control-panel__collapsible-items {
+        max-height: 0px;
+        transition: 0.25s;
+        transition-timing-function: @bubble;
+        overflow: hidden;
+
+        will-change: height, max-height;
+    }
+
+    &--expanded .control-panel__collapsible-items {
+        max-height: 220px;
+    }
+
+    &--expanded {
+        overflow: unset;
+    }
+
+    &__expander {
+        line-height: 1;
+        text-align: center;
+        padding: 2px 0 1px;
+        opacity: 0.4;
+        transition: 0.1s opacity;
+        cursor: pointer;
+
+        i {
+            transition: 0.4s transform;
+            transition-timing-function: @bubble;
+        }
+
+        .control-panel--expanded & i {
+            transform: rotateZ(180deg);
+        }
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+    .chat-name {
+        margin: 0;
+    }
+
+    .mini-profile {
+        position: unset;
+        box-shadow: none;
+        margin: 0;
+        background: transparent;
+        height: unset;
+        padding: 5px 10px 10px 10px;
+
+        .chat-avatar {
+            width: 42px;
+            height: 42px;
+        }
+    }
+
+    .mini-profile_second-section {
+        margin-left: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .control {
+        margin-right: 5px;
+    }
+
+}
+
+.playlister {
+    padding: 5px 5px 0 5px;
+
+    .control-svg {
+        background-repeat: no-repeat;
+        background-size: 100%;
+        background-position: 50%;
+        height: 16px;
+        width: 16px;
+        display: inline-block;
+        vertical-align: middle;
+        margin: 0 7px 0 0;
+    }
+
+    .show-playlist-icon {
+        background-image: @playlistShow;
+    }
+
+    .add-to-playlist-icon {
+        background-image: @playlistAdd;
+        height: 18px;
+        width: 18px;
+        margin: 0 4px 0 0;
+    }
+
+    .item {
+        margin-left: 7px;
+        word-break: keep-all;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+
+        .fa {
+            height: 16px;
+            width: 16px;
+            margin: 0 5px 0 5px;
+        }
+    }
+
+    >div {
+        word-break: keep-all;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+}
+
+.panel-controls {
+    padding: 10px 5px 3px 5px;
+    display: flex;
+    user-select: none;
+
+    &__container {
+        display: flex;
+        flex-basis: 100%;
+        margin: 0 auto;
+    }
+
+    &--highlight {
+        color: #c0183f;
+
+        &.panel-controls__control--cinema-mode {
+            color: #2672a3;
+        }
+    }
+
+    &__control {
+        .hover();
+
+        font-size: 0.8em;
+
+        background: @darkSecond;
+        padding: 4px 7px;
+        cursor: pointer;
+
+
+
+        &:nth-of-type(1) {
+            border-radius: 2px 0 0 2px;
+            margin-left: auto;
+        }
+
+        &:nth-last-of-type(1) {
+            margin-right: auto;
+            border-radius: 0 2px 2px 0;
+        }
+    }
+}

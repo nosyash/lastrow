@@ -3,13 +3,12 @@ package api
 import (
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
-	"unicode/utf8"
 
 	"github.com/nosyash/backrow/jwt"
+	"github.com/nosyash/backrow/tags"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 )
@@ -27,10 +26,10 @@ func (server Server) authHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch authReq.Action {
-	case eTypeAccountRegistration:
-		server.register(w, authReq.Body.Uname, authReq.Body.Passwd, authReq.Body.Email, authReq.Body.Name)
-	case eTypeAccountLogin:
-		server.login(w, authReq.Body.Uname, authReq.Body.Passwd)
+	case eTypeRegister:
+		server.register(w, authReq)
+	case eTypeLogin:
+		server.login(w, authReq)
 	default:
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Unknown /api/auth action",
@@ -38,31 +37,15 @@ func (server Server) authHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (server Server) register(w http.ResponseWriter, uname, passwd, email, name string) {
-	if len(uname) < minUsernameLength || len(uname) > maxUsernameLength {
-		sendJSON(w, http.StatusBadRequest, message{
-			Error: fmt.Errorf("Username length must be no more than %d characters and at least %d", maxUsernameLength, minUsernameLength).Error(),
+func (server Server) register(w http.ResponseWriter, r authRequest) {
+	if err := tags.ValidateFields(r.Body, "register"); err != nil {
+		sendJSON(w, http.StatusInternalServerError, message{
+			Error: err.Error(),
 		})
 		return
 	}
 
-	if utf8.RuneCountInString(passwd) < minPasswordLength || utf8.RuneCountInString(passwd) > maxPasswordLength {
-		sendJSON(w, http.StatusBadRequest, message{
-			Error: fmt.Errorf("Password length must be no more than %d characters and at least %d", maxPasswordLength, minPasswordLength).Error(),
-		})
-		return
-	}
-
-	if onlyStrAndNum.MatchString(uname) {
-		sendJSON(w, http.StatusBadRequest, message{
-			Error: "Username must contain only string characters and numbers",
-		})
-		return
-	}
-
-	uuid := getRandomUUID()
-
-	hash, err := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(r.Body.Passwd), bcrypt.DefaultCost)
 	if err != nil {
 		server.errLogger.Println(err)
 		sendJSON(w, http.StatusBadRequest, message{
@@ -71,7 +54,8 @@ func (server Server) register(w http.ResponseWriter, uname, passwd, email, name 
 		return
 	}
 
-	result, err := server.db.CreateNewUser(uname, uname, hex.EncodeToString(hash[:]), strings.TrimSpace(email), uuid)
+	uuid := getRandomUUID()
+	result, err := server.db.CreateNewUser(r.Body.Uname, r.Body.Uname, hex.EncodeToString(hash[:]), strings.TrimSpace(r.Body.Email), uuid)
 	if err != nil {
 		server.errLogger.Println(err)
 		sendJSON(w, http.StatusInternalServerError, message{
@@ -89,15 +73,15 @@ func (server Server) register(w http.ResponseWriter, uname, passwd, email, name 
 	server.setUpAuthSession(w, uuid)
 }
 
-func (server Server) login(w http.ResponseWriter, uname, passwd string) {
-	if uname == "" || passwd == "" {
+func (server Server) login(w http.ResponseWriter, r authRequest) {
+	if err := tags.ValidateFields(r.Body, "login"); err != nil {
 		sendJSON(w, http.StatusBadRequest, message{
-			Error: "Username or password are empty",
+			Error: err.Error(),
 		})
 		return
 	}
 
-	user, err := server.db.GetUserByUname(uname)
+	user, err := server.db.GetUserByUname(r.Body.Uname)
 	if err == mgo.ErrNotFound {
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Username or password is invalid",
@@ -122,7 +106,7 @@ func (server Server) login(w http.ResponseWriter, uname, passwd string) {
 		return
 	}
 
-	if err = bcrypt.CompareHashAndPassword(dHash, []byte(passwd)); err != nil {
+	if err = bcrypt.CompareHashAndPassword(dHash, []byte(r.Body.Passwd)); err != nil {
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: "Username or password is invalid",
 		})

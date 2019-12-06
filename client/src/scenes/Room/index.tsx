@@ -5,12 +5,13 @@ import ChatContainer from './scenes/Chat/index';
 import VideoContainer from './scenes/Media/index';
 import * as types from '../../constants/actionTypes';
 import Divider from './components/Divider';
-import { webSocketConnect, webSocketDisconnect, requestRoom } from '../../actions';
+import { webSocketConnect, webSocketDisconnect, setRoomData } from '../../actions';
 import notifications from '../../utils/notifications';
 import { GUEST_AUTH, PROFILE_SETTINGS, PLAYLIST } from '../../constants';
 import { Emoji } from '../../reducers/emojis';
 import { Role } from '../../reducers/profile';
 import { PermissionsMap } from '../../reducers/rooms';
+import { State } from '../../reducers';
 
 // Authorize before render room
 function RoomBaseWrapper(props) {
@@ -43,15 +44,9 @@ interface RoomBaseProps {
 }
 
 class RoomBase extends Component<RoomBaseProps, any> {
-    chat: React.RefObject<any>;
-    video: React.RefObject<any>;
-    divider: React.RefObject<any>;
     timer: NodeJS.Timeout;
     constructor(props: RoomBaseProps) {
         super(props);
-        this.chat = React.createRef();
-        this.video = React.createRef();
-        this.divider = React.createRef();
         this.timer = null;
     }
 
@@ -112,23 +107,30 @@ class RoomBase extends Component<RoomBaseProps, any> {
         const { match, history, updateMainStates } = this.props;
         const { id: roomID } = match.params;
 
-        // Check for room
+        // Check for room existence
         updateMainStates({ roomID })
-        if (!await requestRoom()) return history.push('/');
-
-        notifications.setCurrentTitle(document.title);
-        this.setState({ exists: true }, () => this.initStore(this.initWebsocket));
-        this.saveCurrentRoles()
+        setRoomData()
+            .then(() => {
+                notifications.setCurrentTitle(document.title);
+                this.setState({ exists: true }, () => this.initStore(this.initWebsocket));
+                this.saveCurrentLevel()
+            })
+            .catch(() => history.push('/'))
     };
 
-    saveCurrentRoles() {
-        const { room_uuid, roles, setCurrentLevel } = this.props;
-        if (!roles.length) return;
+    saveCurrentLevel() {
+        const { room_uuid, roles, setCurrentLevel, profile } = this.props;
+        if (profile.guest) {
+            setCurrentLevel(0)
+            return
+        }
 
-        const currentRoles = roles.find(role => role.room_uuid === room_uuid)
-
-        if (!currentRoles) return;
-        setCurrentLevel(currentRoles.Level)
+        const currentRole = roles.find(role => role.room_uuid === room_uuid)
+        if (currentRole) {
+            setCurrentLevel(currentRole.Level)
+            return
+        }
+        setCurrentLevel(1)
     }
 
     initWebsocket = () => webSocketConnect({ room_uuid: this.props.room_uuid });;
@@ -138,9 +140,7 @@ class RoomBase extends Component<RoomBaseProps, any> {
         const { match, profile } = this.props;
         const { id: roomID } = match.params;
 
-        let { cinemaMode } = localStorage;
-        if (cinemaMode) cinemaMode = JSON.parse(cinemaMode);
-        updateMainStates({ cinemaMode, roomID });
+        updateMainStates({ roomID });
 
         if (!profile.logged) {
             return this.handleNicknamePopup();
@@ -167,10 +167,8 @@ class RoomBase extends Component<RoomBaseProps, any> {
         return (
             exists && (
                 <RenderRoom
+                    cinemaMode={cinemaMode}
                     connected={connected}
-                    divider={this.divider}
-                    video={this.video}
-                    chat={this.chat}
                     visible={visible}
                 />
             )
@@ -180,25 +178,22 @@ class RoomBase extends Component<RoomBaseProps, any> {
 
 interface RenderRoomProps {
     connected: boolean;
-    divider: React.RefObject<any>;
-    video: React.RefObject<any>;
-    chat: React.RefObject<any>;
     visible: boolean;
+    cinemaMode: boolean;
 }
 
-const RenderRoom = ({ connected, divider, video, chat, visible }: RenderRoomProps) => (
+const RenderRoom = ({ connected, visible, cinemaMode }: RenderRoomProps) => (
     <div className={cn(['room-container', { 'room-container_disconected': !connected, 'is-visible': visible }])}>
-        <ChatContainer connected={connected} divider={divider} video={video} chat={chat} />
+        {!cinemaMode && <ChatContainer />}
         {/* {!cinemaMode && <div className="custom-divider" ref={divider} />} */}
-        <Divider />
-        <VideoContainer videoRef={video} />
+        {!cinemaMode && <Divider />}
+        <VideoContainer />
     </div>
 );
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state: State) => ({
     mainStates: state.mainStates,
     connected: state.chat.connected,
-    currentRoomID: state.chat.currentRoomID,
     cinemaMode: state.mainStates.cinemaMode,
     roomID: state.mainStates.roomID,
     room_uuid: state.mainStates.uuid,

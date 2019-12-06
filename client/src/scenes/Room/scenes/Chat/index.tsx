@@ -5,22 +5,27 @@ import cn from 'classnames';
 import ChatInner from './ChatInner';
 import { UPDATE_MAIN_STATES } from '../../../../constants/actionTypes';
 import ControlPanel from '../../../../components/ControlPanel';
+import { State } from '../../../../reducers';
 
-function ChatContainer(props) {
-    const { chat, cinemaMode, chatWidth } = props;
+interface ChatContainerProps {
+    cinemaMode: boolean;
+    chatWidth: number;
+}
+
+function ChatContainer(props: ChatContainerProps) {
+    const { cinemaMode, chatWidth } = props;
     const className = cn({ 'cinema-mode': cinemaMode });
 
     return (
         <div
-            ref={chat}
             style={{ width: chatWidth }}
             className={`chat-container ${className}`}
         >
-            {cinemaMode && (
+            {/* {cinemaMode && (
                 <span className="resizer">
                     <i className="fa fa-angle-down" />
                 </span>
-            )}
+            )} */}
             <Link to="/" className="control go-back">
                 <i className="fa fa-arrow-left" />
                 {' Back to rooms'}
@@ -32,10 +37,10 @@ function ChatContainer(props) {
 }
 
 const mapDispatchToProps = {
-    UpdateMainStates: payload => ({ type: UPDATE_MAIN_STATES, payload }),
+    UpdateMainStates: (payload: any) => ({ type: UPDATE_MAIN_STATES, payload }),
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state: State) => ({
     cinemaMode: state.mainStates.cinemaMode,
     chatWidth: state.mainStates.chatWidth,
     wsConnected: state.chat.connected,

@@ -1,11 +1,7 @@
 import React from 'react';
-import { PermissionsMap, Permissions } from '../../../../../reducers/rooms';
 
 interface PlayerGlobalMessagesProps {
     remotelyPaused: boolean;
-    permissionLevel: PermissionsMap;
-    currentPermissions: Permissions;
-
 }
 
 function PlayerGlobalMessages(props: PlayerGlobalMessagesProps) {

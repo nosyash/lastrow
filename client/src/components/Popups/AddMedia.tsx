@@ -1,4 +1,4 @@
-import React, { Component, Props, ChangeEvent } from 'react';
+import React, { Component, ChangeEvent } from 'react';
 import { connect } from 'react-redux';
 import Joi from 'joi-browser';
 import * as api from '../../constants/apiActions';
@@ -8,6 +8,7 @@ import { toastOpts } from '../../conf';
 import { toast } from 'react-toastify';
 import { MAXIMUM_SUBTITLES_SIZE } from '../../constants';
 import { get } from 'lodash';
+import { isSrt } from '../../utils/subtitles';
 
 // import * as types from '../../constants/ActionTypes';
 
@@ -68,22 +69,30 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
         e.preventDefault();
 
         const { inputValue, subtitles } = this.state;
+        const reg = new RegExp(/^(http(s)?:.+)|(<iframe.+)/)
+        if (!reg.test(inputValue)) {
+            toast.error('Invalid url or iframe code', toastOpts)
+            return
+        }
 
         const subs = subtitles ? { subtitles: this.subs64, subs_type: 'srt' } : {}
         const data = { url: inputValue, uuid, subtitles: subs }
         const message = api.SEND_MEDIA_TO_PLAYLIST(data);
-        webSocketSend(message, 'feedback', onSuccess as any);
-        const self = this;
-        function onSuccess(result: any, error: any) {
-            if (error)
-                console.warn('error while adding to playlist:', error);
-            if (result) {
-                self.setState({ inputValue: '', subtitlesName: '' });
-                const inputExists = get(self.subsInputEl, 'current.value')
-                if (inputExists) { self.subsInputEl.current.value = ''; }
+        const onSuccess = () => {
+            this.setState({ inputValue: '', subtitlesName: '' });
+            const inputExists = get(this.subsInputEl, 'current.value')
+            console.log(this.subsInputEl.current);
+            if (inputExists) {
+                this.subsInputEl.current.value = '';
             }
-            setToDone();
         }
+
+        webSocketSend(message, 'feedback')
+            .then(onSuccess)
+            .catch((error) => console.warn('error while adding to playlist:', error))
+            .finally(() => setToDone())
+
+
         setToPending();
     };
 
@@ -103,20 +112,31 @@ class AddMedia extends Component<AddMediaProps, AddMediaStates> {
         this.subs64 = '';
 
         const file = get(target, 'files[0]');
-        if (!file) return;
+        if (!file) {
+
+        }
         const { name, type, size } = file;
-        // TODO: Better type handling
-        if (type !== 'application/x-subrip') return toast.warn(`Only .srt supported for now`, toastOpts)
-        if (size / 1024 / 1024 > MAXIMUM_SUBTITLES_SIZE) return this.sizeWarn();
+
+        // if (type !== 'application/x-subrip' || type !== 'text/srt') {
+        //     return toast.warn(`Only .srt supported for now`, toastOpts)
+        // }
+
+        if (size / 1024 / 1024 > MAXIMUM_SUBTITLES_SIZE) {
+            return this.sizeWarn();
+        }
 
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = () => {
-            const base64 = reader.result;
+            const base64 = reader.result.toString().replace(/data:.+base64,/, '');
+            if (!isSrt(atob(base64))) {
+                return toast.warn(`Only .srt supported for now`, toastOpts)
+            }
+
             this.subs64 = (base64 as string).replace(/data:.+base64,/, '');
             this.setState({ subtitlesName: name })
         };
-        reader.onerror = () => this.convertingErrorWarn();
+        reader.onerror = this.convertingErrorWarn;
     }
 
     sizeWarn() {

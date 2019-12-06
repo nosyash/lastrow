@@ -1,8 +1,9 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
-import { Route, Switch, BrowserRouter } from 'react-router-dom';
+import { Route, Switch, Redirect, BrowserRouter } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { connect, Provider } from 'react-redux';
 import { get as lsGet } from 'local-storage';
+import { get } from 'lodash'
 // import RoomBase from './scenes/Room';
 // import RoomListBase from './scenes/Home/index';
 const RoomBase = lazy(() => import(/* webpackChunkName: "room" */ './scenes/Room/index'));
@@ -14,6 +15,8 @@ import * as types from './constants/actionTypes';
 import { getProfile } from './utils/apiRequests';
 import { getRandom, getCookie, getJWTBody } from './utils';
 import { store } from './store';
+import { Profile } from './reducers/profile';
+import { State } from './reducers';
 
 const RoomSuspended = (props) =>
     <Suspense fallback={<div />}>
@@ -32,24 +35,39 @@ function App(props: any) {
     const [loaded, setLoaded] = useState(false);
 
     useEffect(() => {
-        handleProfile();
-        if (!lsGet('notifications-requested')) Notification.requestPermission();
+        initProfile();
+
+        if (!lsGet('notifications-requested')) {
+            Notification.requestPermission();
+        }
     }, []);
 
-    async function handleProfile() {
-        const { updateProfile, setRoles } = props;
-        const profile = await getProfile();
+    function initProfile() {
+        getProfile()
+            .then(handleUserProfile)
+            .catch(handleAnonymousProfile)
+            .finally(() => setLoaded(true))
+    }
 
-        if (profile) {
-            updateProfile({ ...profile.data, logged: true });
-            const { Roles } = getJWTBody(getCookie('jwt'));
-            setRoles(Roles);
-        } else {
-            const uuid = getRandom(64);
-            updateProfile({ logged: false, uuid, guest: true });
+    function handleUserProfile(profile: Profile) {
+        const { updateProfile, setRoles, setCurrentLevel } = props;
+
+        updateProfile({ ...profile, logged: true });
+        const jwt = getJWTBody(getCookie('jwt'));
+        const roles = get(jwt, 'roles', [])
+        
+        if (roles.length === 0) {
+            setCurrentLevel(1)
         }
 
-        setLoaded(true);
+        setRoles(roles);
+    }
+
+    function handleAnonymousProfile() {
+        const { updateProfile } = props;
+
+        const uuid = getRandom(64);
+        updateProfile({ logged: false, uuid, guest: true });
     }
 
     return (
@@ -59,14 +77,11 @@ function App(props: any) {
                     <ToastContainer />
                     <Popups />
                     <div className="top-nav">
-                        {/* <BreadCrumbs /> */}
-                        {/* <h1 className="room_movie-name">190303 우주소녀 보나 콘서트 해피 HAPPY WJSN BONA</h1> */}
                     </div>
-                    {/* <NavBar /> */}
                     <Switch>
                         <Route path="/r/:id" component={RoomSuspended} />
                         <Route exact path="/" component={RoomListSuspended} />
-                        <Route path="/" render={() => <h1>404</h1>} />
+                        <Route path="/"><Redirect to="/" /></Route>
                     </Switch>
                 </React.Fragment>
             )}
@@ -77,10 +92,11 @@ function App(props: any) {
 const mapDispatchToProps = {
     updateProfile: (payload: any) => ({ type: types.UPDATE_PROFILE, payload }),
     addPopup: (payload: any) => ({ type: types.ADD_POPUP, payload }),
-    setRoles: (payload: any) => ({ type: types.SET_ROLES, payload })
+    setRoles: (payload: any) => ({ type: types.SET_ROLES, payload }),
+    setCurrentLevel: (payload: any) => ({ type: types.SET_CURRENT_LEVEL, payload }),
 };
 
-const mapStateToProps = (state: any) => ({
+const mapStateToProps = (state: State) => ({
     profile: state.profile,
 });
 

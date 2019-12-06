@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Player from './Player';
 
-export default function VideoContainer({ videoRef }) {
+export default function VideoContainer() {
     const [fullscreen, setFullscreen] = useState(false);
     const fs = useRef(false);
     useEffect(() => {
@@ -19,7 +19,6 @@ export default function VideoContainer({ videoRef }) {
 
     return (
         <div
-            ref={videoRef}
             id="video-container"
             style={{ background: fullscreen ? 'black' : '' }}
             className="video-container">

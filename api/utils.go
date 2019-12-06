@@ -42,6 +42,8 @@ func (server Server) extractPayload(w http.ResponseWriter, r *http.Request) (*jw
 		return nil, jwt.ErrCorruptedToken
 	}
 
+	// TODO: Also, be great if we check a user UUID
+
 	return jwt.UnmarshalPayload(token.Value)
 }
 
@@ -50,6 +52,10 @@ func (server Server) checkPermissions(eType, uuid string, payload *jwt.Payload) 
 	var result bool
 
 	if payload != nil {
+		if payload.IsAdmin {
+			return true
+		}
+
 		if level, result = payload.GetLevel(uuid); !result {
 			level = 1
 		}

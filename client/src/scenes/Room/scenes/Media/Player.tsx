@@ -1,73 +1,65 @@
-import React, { useState, useRef, useEffect, Dispatch, Component } from 'react';
-import ReactRedux, { connect, MapStateToProps } from 'react-redux';
+import React, { useState, useRef, useEffect } from 'react';
+import { connect } from 'react-redux';
 import ReactPlayer from 'react-player';
 import cn from 'classnames';
 import { get } from 'lodash';
 import * as types from '../../../../constants/actionTypes';
-import { formatTime, requestFullscreen } from '../../../../utils';
 import { PLAYER_MINIMIZE_TIMEOUT, MAX_VIDEO_SYNC_OFFSET } from '../../../../constants';
 import * as api from '../../../../constants/apiActions'
 import PlayerGlobalControls from './components/PlayerGlobalControls'
 import PlayerGlobalMessages from './components/PlayerMessages'
-
-import ProgressBar from './components/ProgressBar';
-import Subtitles from './components/Subtitles';
 import { playerConf } from '../../../../conf';
 import { Video } from '../../../../utils/types';
 import { Media } from '../../../../reducers/media';
 import { webSocketSend } from '../../../../actions';
 import PlayerUI from './components/PlayerUI';
-import { PermissionsMap, Permissions } from '../../../../reducers/rooms';
+import { State } from '../../../../reducers';
+import { ControlPanelEvent } from '../../../../components/ControlPanel';
 
 let minimizeTimer = null;
-let remoteControlTimeRewind = null;
+const remoteControlTimeRewind = null;
 let remoteControlTimePlayback = null;
-let videoEl = null;
 
 interface PlayerProps {
     media: Media;
     playlist: Video[];
     remotePlaying: boolean;
     cinemaMode: boolean;
-    permissionLevel: PermissionsMap;
-    currentPermissions: Permissions;
+    isSynced: boolean;
     updatePlayer: (payload: any) => void;
     resetMedia: () => void;
     switchMute: () => void;
     setVolume: (payload: any) => void;
     toggleCinemaMode: () => void;
     toggleSync: () => void;
+    setSync: (state: boolean) => void;
     toggleSubs: () => void;
-    getSubs: (payload: any) => void;
     hideSubs: () => void;
 }
 
 function Player(props: PlayerProps) {
     const [minimized, setMinimized] = useState(false);
-    const [synced, setSynced] = useState(true);
     const [playing, setPlaying] = useState(true);
+
     const [remoteControlRewind, setRemoteControlRewind] = useState(false)
     const [remoteControlPlaying, setRemoteControlPlaying] = useState(false)
-    // We only use currentTime to update player time.
-    // In other case we get time directly from video element.
+
+    // We only use currentTime to update time in player user interface.
+    // In other cases we get time directly from video element for perfomance reason
     const [currentTime, setCurrentTime] = useState(0);
-    const lastTime = useRef(0);
+
     const minimizedRef = useRef(false);
     const playerRef = useRef(null);
 
-    let volume = 0.3;
 
     useEffect(() => {
-        init();
-
         return () => {
-            resetRefs();
             props.resetMedia();
         };
     }, []);
 
     useEffect(() => {
-        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mousemove', handleMouseMove, { passive: true });
         document.addEventListener('mediaafterchange', watchPlaylist);
         document.addEventListener('mediabeforechange', beforeMediaChange);
 
@@ -81,24 +73,26 @@ function Player(props: PlayerProps) {
         }
     }, []);
 
-    useEffect(() => { syncWithRemote() }, [props.media.actualTime, props.media.remotePlaying, synced]);
-
+    // mutable listeners! must be removed and added on each corresponding state change
     useEffect(() => {
-        requestAnimationFrame(() => { lastTime.current = currentTime })
-        if (Math.abs(currentTime - lastTime.current) < 7) return
-        if (Math.abs(props.media.actualTime - currentTime) < 7) return
-        if (props.media.actualTime < 1) return
-        if (lastTime.current < 1) return
-        onProgressChangeLazy()
+        document.addEventListener('controlPanelEvent', handleControlPanelAction);
 
-    }, [currentTime]);
+        return () => {
+            document.removeEventListener('controlPanelEvent', handleControlPanelAction);
+        }
+    }, [props.isSynced, playing, currentTime])
+
+    function handleControlPanelAction({ detail }: CustomEvent<ControlPanelEvent>) {
+        if (detail.toggleRemotePlayback) handleRemotePlaybackChange()
+        if (detail.remotelyRewind) handleRemoteRewind()
+    }
+
+    useEffect(() => { syncRemoteStates() }, [currentTime, props.media.actualTime, props.media.remotePlaying, props.isSynced]);
 
     function beforeMediaChange() {
         // We're doing it so onProgressChangeLazy does not trigger on media change
         setCurrentTime(0)
     }
-
-    // useEffect(() => { console.log(props.media.actualTime); }, [props.media.actualTime]);
 
     function watchPlaylist({ detail }: CustomEvent) {
         const liveStream = get(detail, 'mediaAfter.live_stream') as boolean;
@@ -106,131 +100,102 @@ function Player(props: PlayerProps) {
 
 
         if (!liveStream && !iframe) {
-            // setTimeout(() => {
             safelySeekTo(0);
-            // }, 0);
-            setSynced(true);
+            props.setSync(true);
         }
         props.hideSubs();
     }
 
-    function resetRefs() {
-        videoEl = null;
-    }
-
-    function init() {
-        // TODO: fix volume parser later
-        try {
-            const { updatePlayer } = props;
-            // eslint-disable-next-line prefer-destructuring
-            volume = localStorage.volume;
-            volume = JSON.parse(volume as any || 1);
-            updatePlayer({ volume });
-        } catch (error) { return }
-    }
-
-    function handleReady() {
+    function handleReady(): void {
         updateTime();
-        // handleMouseMove();
     }
 
-    function updateTime() {
-        const [duration, curTime] = safelyGetTimeAndDuration();
-        videoEl = playerRef.current.getInternalPlayer();
+    function updateTime(): void {
+        const [duration, curTime] = safelyGetDurationAndTime();
         props.updatePlayer({ duration });
         setCurrentTime(curTime);
     }
 
-    function safelyGetTimeAndDuration(): [number, number] {
+    function safelyGetDurationAndTime(): [number, number] {
         try {
             const duration = playerRef.current.getDuration() as number;
             const curTime = playerRef.current.getCurrentTime() as number;
             return [duration, curTime]
-        } catch (error) {
+        } catch (_) {
             return [0, 0]
         }
     }
 
-    function safelySeekTo(n: number, type = 'seconds') {
+    function safelySeekTo(n: number, type = 'seconds'): void {
         try {
             playerRef.current.seekTo(n, type);
-        } catch (error) { return; }
+        } catch (_) {
+            return
+        }
     }
 
-    function syncWithRemote() {
-        if (!synced) return;
-        const { actualTime, remotePlaying } = props.media;
+    function syncRemoteStates() {
+        // TODO: don't change video if it's remotely over but not over for user with synchronization disabled
+        if (!props.isSynced) {
+            return;
+        }
 
+        const { remotePlaying, actualTime } = props.media
         const shouldSeek = Math.abs(actualTime - currentTime) > MAX_VIDEO_SYNC_OFFSET;
+        const shouldTogglePlaying = playing !== remotePlaying
 
-        if (shouldSeek) safelySeekTo(actualTime);
+        if (shouldSeek) {
+            safelySeekTo(actualTime);
+        }
 
-        if (remotePlaying) setPlaying(true)
-        if (!remotePlaying) setPlaying(false)
+        if (shouldTogglePlaying) {
+            setPlaying(remotePlaying)
+        }
     }
 
     function handlePlaying({ playedSeconds }) {
         setCurrentTime(playedSeconds)
     }
 
-    function handleMouseMove({ target }) {
+    function handleMouseMove({ target }): void {
         clearTimeout(minimizeTimer);
-        if (target.closest('.video-player')) return;
-        if (minimizedRef.current) return;
+
+        if (target.closest('.video-player') || minimizedRef.current) {
+            return;
+        }
+
         minimizeTimer = setTimeout(setMinimizedTrue, PLAYER_MINIMIZE_TIMEOUT);
     }
 
-    function setMinimizedFalse() {
+    function setMinimizedFalse(): void {
         minimizedRef.current = false;
         setMinimized(false)
     }
-
-    function setMinimizedTrue() {
+    function setMinimizedTrue(): void {
         minimizedRef.current = true;
         setMinimized(true)
     }
 
-    const handlePlay = () => {
-        if (!playing) setPlaying(true)
+    function handlePlay(): void {
+        setPlaying(true)
+
+
         handleAutoRemoteControl()
-        // setRemoteControlPlaying(true)
-        // const e = new Event('videoplay');
-        // document.dispatchEvent(e);
-    };
-    const handlePause = () => {
-        if (playing) setPlaying(false)
-        setSynced(false)
+    }
+    function handlePause(): void {
+        setPlaying(false)
+
         handleAutoRemoteControl()
-        // setRemoteControlPlaying(true)
-        // const e = new Event('videopause');
-        // document.dispatchEvent(e);
-    };
-
-    function getCurrentVideo(): Video {
-        return get(props.playlist, '[0]')
     }
 
-    function getNextVideo(): Video {
-        return get(props.playlist, '[1]')
-    }
-
-    function getCurrentUrl() {
-        const currentVideo = getCurrentVideo();
-        return get(currentVideo, 'url') || '';
-    }
-
-    function isDirect() {
-        const currentVideo = getCurrentVideo();
-        return get(currentVideo, 'direct') || false;
-    }
-
-    function isIframe() {
-        const currentVideo = getCurrentVideo();
-        return get(currentVideo, 'iframe') || false;
-    }
+    const getCurrentVideo = () => get(props.playlist, '[0]') as Video
+    const getNextVideo = () => get(props.playlist, '[1]') as Video
+    const getCurrentUrl = () => get(getCurrentVideo(), 'url', '')
+    const isDirect = () => get(getCurrentVideo(), 'direct', false)
+    const isIframe = () => get(getCurrentVideo(), 'iframe', false)
 
     function RenderPlayer() {
-        const { media, permissionLevel, currentPermissions } = props;
+        const { media } = props;
         const url = getCurrentUrl();
         const nextVideo = getNextVideo();
         const direct = isDirect();
@@ -260,50 +225,49 @@ function Player(props: PlayerProps) {
                     <div dangerouslySetInnerHTML={{ __html: url }} style={{ width: '100%' }} className="player-inner" />
                 }
                 {isDirectLink() && <div className="video-overlay" />}
-                <PlayerGlobalMessages
-                    remotelyPaused={!media.remotePlaying}
-                    permissionLevel={permissionLevel}
-                    currentPermissions={currentPermissions}
-                />
+                <PlayerGlobalMessages remotelyPaused={!media.remotePlaying} />
                 <PlayerGlobalControls
-                    onToggleSync={toggleSynced}
-                    synced={synced}
+                    onToggleSync={props.toggleSync}
+                    synced={props.isSynced}
+                    hasVideo={!!url}
                     showRemoteRewind={remoteControlRewind}
                     showRemotePlayback={remoteControlPlaying}
                     onRemoteRewind={handleRemoteRewind}
                     onRemotePlaying={handleRemotePlaybackChange}
                     playing={playing}
                     remotePlaying={props.remotePlaying}
-                    permissionLevel={permissionLevel}
-                    currentPermissions={currentPermissions}
                 />
                 {<PreloadMedia nextVideo={nextVideo} />}
             </React.Fragment>
         );
     }
 
-
     function handleRemoteRewind() {
-        const [_, time] = safelyGetTimeAndDuration()
-        webSocketSend(api.REWIND_MEDIA({ time }), 'ticker', () => {
-            setSynced(true)
-        })
+        const [, time] = safelyGetDurationAndTime()
+        webSocketSend(api.REWIND_MEDIA({ time }), 'ticker')
+            .then(() => props.setSync(true))
+
         setRemoteControlRewind(false);
     }
 
     function handleRemotePlaybackChange() {
         const afterPause = () => {
-            setSynced(true)
+            props.setSync(true)
             setPlaying(false)
         }
 
         const afterResume = () => {
-            setSynced(true)
+            props.setSync(true)
             setPlaying(true)
         }
-
-        if (!playing) webSocketSend(api.PAUSE_MEDIA(), 'pause', afterPause)
-        else webSocketSend(api.RESUME_MEDIA(), 'resume', afterResume)
+        
+        if (!playing) {
+            webSocketSend(api.RESUME_MEDIA(), 'resume')
+                .then(afterResume)
+        } else {
+            webSocketSend(api.PAUSE_MEDIA(), 'pause')
+                .then(afterPause)
+        }
 
         // setRemoteControlPlaying(false)
     }
@@ -312,32 +276,35 @@ function Player(props: PlayerProps) {
         safelySeekTo(percent / 100, 'fraction')
     }
 
-    function onProgressChangeLazy() {
-        if (synced) setSynced(false);
-        handleRewinded()
-    }
+    // function onProgressChangeLazy() {
+    //     if (synced) {
+    //         setSynced(false);
+    //     }
 
-    function handleRewinded() {
-        
-        setRemoteControlRewind(true);
-        clearTimeout(remoteControlTimeRewind)
-        remoteControlTimeRewind = setTimeout(() => setRemoteControlRewind(false), 5000);
-    }
+    //     handleRewinded()
+    // }
 
-    function toggleSynced() {
-        setSynced(!synced)
-        // if (!synced) safelySeekTo(props.media.actualTime);
-    }
+    // function handleRewinded() {
+    //     setRemoteControlRewind(true);
+    //     clearTimeout(remoteControlTimeRewind)
+    //     remoteControlTimeRewind = setTimeout(() => setRemoteControlRewind(false), 5000);
+    // }
 
     function togglePlay() {
-        if (synced) setSynced(false);
+        if (props.isSynced) {
+            // setSynced(false);
+        }
+
         setPlaying(!playing);
 
         // handleAutoRemoteControl()
     }
 
     function handleAutoRemoteControl() {
-        if (!remoteControlPlaying) setRemoteControlPlaying(true)
+        if (!remoteControlPlaying) {
+            setRemoteControlPlaying(true)
+        }
+
         clearTimeout(remoteControlTimePlayback)
         remoteControlTimePlayback = setTimeout(() => setRemoteControlPlaying(false), 5000);
     }
@@ -347,9 +314,14 @@ function Player(props: PlayerProps) {
         props.toggleSubs();
     }
 
-
+    const volumeSaveThrottle = useRef(null)
     function handleVolumeChange(percent) {
+        clearTimeout(volumeSaveThrottle.current)
         props.setVolume(percent / 100);
+
+        volumeSaveThrottle.current = setTimeout(() => {
+            localStorage.volume = JSON.stringify(percent / 100)
+        }, 500);
     }
 
     function isDirectLink() {
@@ -375,7 +347,7 @@ function Player(props: PlayerProps) {
             {RenderPlayer()}
             {isDirectLink() && hasVideo && playerRef.current &&
                 <PlayerUI
-                    synced={synced}
+                    synced={props.isSynced}
                     playing={playing}
                     hasSubs={!!props.media.subs.raw}
                     showSubs={props.media.showSubs}
@@ -388,7 +360,7 @@ function Player(props: PlayerProps) {
                     minimized={minimized}
                     onToggleSubs={toggleSubs}
                     onTogglePlay={togglePlay}
-                    onToggleSynced={toggleSynced}
+                    onToggleSynced={props.toggleSync}
                     muted={props.media.muted}
                     onToggleMute={props.switchMute}
                     volume={props.media.volume}
@@ -401,15 +373,15 @@ function Player(props: PlayerProps) {
 
 
 function PreloadMedia({ nextVideo }: { nextVideo: Video | null }) {
-    if (!nextVideo) return null;
-    if (nextVideo.iframe) return null;
+    if (!nextVideo || nextVideo.iframe) {
+        return null;
+    }
 
     return (
         <ReactPlayer
             className="preload-player"
             width="0px"
             height="0px"
-            // TODO: Maybe just set to display: none?
             style={{ visibility: 'hidden', display: 'none' }}
             config={playerConf}
             controls={false}
@@ -423,14 +395,13 @@ function PreloadMedia({ nextVideo }: { nextVideo: Video | null }) {
     );
 }
 
-const mapStateToProps = (state: any): ReactRedux.MapStateToProps<any, any, any> => ({
-    media: state.media as Media,
-    playlist: (state.media as Media).playlist,
-    remotePlaying: (state.media as Media).remotePlaying,
+const mapStateToProps = (state: State) => ({
+    media: state.media,
+    playlist: state.media.playlist,
+    remotePlaying: state.media.remotePlaying,
     cinemaMode: state.mainStates.cinemaMode,
-    permissionLevel: state.profile.currentLevel,
-    currentPermissions: state.rooms.currentPermissions,
-} as any);
+    isSynced: state.media.isSynced,
+});
 
 const mapDispatchToProps = {
     updatePlayer: (payload: any) => ({ type: types.UPDATE_MEDIA, payload }),
@@ -439,14 +410,12 @@ const mapDispatchToProps = {
     setVolume: (payload: any) => ({ type: types.SET_VOLUME, payload }),
     toggleCinemaMode: () => ({ type: types.TOGGLE_CINEMAMODE }),
     toggleSync: () => ({ type: types.TOGGLE_SYNC }),
+    setSync: (payload: boolean) => ({ type: types.SET_SYNC, payload }),
     hideSubs: () => ({ type: types.HIDE_SUBS }),
     toggleSubs: () => ({ type: types.TOGGLE_SUBS }),
-} as any;
+};
 
 export default connect(
     mapStateToProps,
     mapDispatchToProps
 )(Player);
-
-// export default Player;
-// export default createConsumer(Player);

@@ -1,8 +1,8 @@
-import { store } from "../store";
-import { parse as parseSubtitles } from "subtitle";
+import { store } from '../store';
+import { parse as parseSubtitles } from 'subtitle';
 import striptags from 'striptags';
 import * as types from '../constants/actionTypes'
-import { SubtitlesItem } from "../reducers/media";
+import { SubtitlesItem } from '../reducers/media';
 const PREEMPTIVE_TIME = 30;
 const UPDATE_INTERVAL = 10;
 
@@ -31,10 +31,13 @@ export default class SubtitlesHandler {
     public setCurrentTime(timeMs: number, cb?: (...args) => void) {
         const difference = Math.abs(this.currentTime - timeMs);
         this.currentTime = timeMs + DELAY;
-        if (difference > 200) this.currentTime
+        if (difference > 200) {
             this.updateSubsChunk();
+        }
 
-        if (cb) return cb();
+        if (cb) {
+            return cb();
+        }
     }
 
     public forceUpdateChunk = () => this.updateSubsChunk();
@@ -101,6 +104,14 @@ export default class SubtitlesHandler {
 
     public destroy() {
         clearTimeout(this.timer);
+    }
+}
+
+export function isSrt(data: string): boolean {
+    try {
+        return parseSubtitles(data).length > 1
+    } catch (error) {
+        return false
     }
 }
 

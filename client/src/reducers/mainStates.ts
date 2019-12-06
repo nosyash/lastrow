@@ -1,4 +1,5 @@
 import * as types from '../constants/actionTypes';
+import { get } from 'lodash'
 
 export interface MainStates {
     cinemaMode: boolean;
@@ -7,12 +8,12 @@ export interface MainStates {
     chatWidth: number;
 }
 
-const initialState = {
-    cinemaMode: false,
+const initialState: MainStates = {
+    cinemaMode: JSON.parse(get(localStorage, 'cinemaMode', false)),
     roomID: '',
     uuid: '',
-    chatWidth: parseInt(localStorage.chatWidth) || 300,
-} as MainStates;
+    chatWidth: JSON.parse(get(localStorage, 'chatWidth', 300)),
+};
 
 const mainStates = (state = initialState, action: any) => {
     if (action.type === types.UPDATE_MAIN_STATES) {

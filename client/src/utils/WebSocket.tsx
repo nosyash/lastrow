@@ -5,7 +5,6 @@ import { store } from '../store';
 import { toast } from 'react-toastify';
 import { toastOpts } from '../conf';
 import {
-    UpdateUsers,
     Message,
     ChatMessage,
     TickerData,
@@ -18,8 +17,15 @@ import { User } from './types';
 import { Store } from 'redux';
 import { Emoji } from '../reducers/emojis';
 import httpServices from './httpServices';
-import { parseAndDispatchSubtitles } from './subtitles';
-import { workerRequest } from '../worker/index';
+import { wait, safelyParseJson } from '.';
+import { DEBUG } from '../constants';
+import {
+    UPDATE_PLAYLIST_WS_DEBUG_MESSAGE,
+    PAUSE_MEDIA_WS_DEBUG_MESSAGE,
+    TICKER_WS_DEBUG_MESSAGE,
+    DEBUG_EXPOSE,
+    RESUME_MEDIA_WS_DEBUG_MESSAGE
+} from './__DEBUG__';
 
 const { dispatch, getState } = store as Store;
 
@@ -53,6 +59,8 @@ class Socket implements SocketInterface {
         this.timer = null;
         this.reconnectTimer = null;
         this.initWebSocket();
+
+        DEBUG_EXPOSE('WEBSOCKET', this)
     }
 
     public initWebSocket = () => {
@@ -63,7 +71,9 @@ class Socket implements SocketInterface {
     };
 
     public isOpened = () => {
-        if (!this.instance) return false;
+        if (!this.instance) {
+            return false;
+        }
         const { readyState } = this.instance;
         return this.getReadyState(readyState) === 'OPEN'
     }
@@ -92,44 +102,52 @@ class Socket implements SocketInterface {
         });
     };
 
-    public sendMessage = (dataToSend: string, messageTypeToGet: string, cb: (result: any, error: any) => void) => {
-        let timeout: NodeJS.Timeout = null;
+    public sendMessage = async (data: string, expectedType?: string): Promise<void> => {
+        // eslint-disable-next-line no-async-promise-executor
+        return new Promise(async (resolve, reject) => {
+            const removeEvent = () => {
+                if (this.instance) this.instance.removeEventListener('message', onMessage);
+            }
 
-        const onMessageLocal = ({ data: receivedData }: any) => {
-            const data = JSON.parse(receivedData);
-            if (get(data, 'body.event.type') !== messageTypeToGet) return;
+            this.instance.send(data);
+            if (expectedType) {
+                this.instance.addEventListener('message', onMessage);
+                await wait(15000)
+                removeEvent()
+                return reject()
+            }
 
-            const { message, error } = get(data, 'body.event.data.feedback') || {}
+            function onMessage({ data: receivedData }: any) {
+                const _data = safelyParseJson(receivedData);
+                // const type = get(_data, 'body.event.type')
+                const { message, error } = get(_data, 'body.event.data.feedback', {})
 
-            this.removeEvent('message', onMessageLocal);
-            clearTimeout(timeout);
+                // if (type !== expectedType) {
+                //     return;
+                // }
 
-            // if (message && message === 'success')
-            if (message)
-                return cb(true, null);
-            else
-                return cb(null, error)
-        };
+                // if (message && message === 'success')
+                if (message || error) {
+                    removeEvent()
+                }
 
-        if (messageTypeToGet) {
-            this.instance.addEventListener('message', onMessageLocal);
-            timeout = setTimeout(() => {
-                this.removeEvent('message', onMessageLocal);
-                return cb(null, true);
-            }, 15000);
-        }
+                if (message) {
+                    resolve()
+                } else if (error) {
+                    reject(error)
+                }
+            }
 
-        this.instance.send(dataToSend);
+
+        })
     };
 
     public destroy = () => {
         this.unsubscribeEvents();
-        if (this.instance) this.instance.close();
+        if (this.instance) {
+            this.instance.close();
+        }
         this.resetStates();
-    };
-
-    private removeEvent = (event: string, callback: (...args: any) => void) => {
-        this.instance.removeEventListener(event, callback);
     };
 
     private getReadyState = (readyState: number) => {
@@ -161,7 +179,7 @@ class Socket implements SocketInterface {
     };
 
     private handleOpen = () => {
-        console.log('WebSocket conection opened');
+        console.log('WebSocket: opened');
         this.handleHandshake();
     };
 
@@ -176,53 +194,65 @@ class Socket implements SocketInterface {
     }
 
     private handleMessage = ({ data }: MessageEvent) => {
-        const parsedData = JSON.parse(data) as Message;
-        // console.log(JSON.stringify(parsedData, null, 4));
+        const parsedData: Message = safelyParseJson(data)
         const messageType = get(parsedData, 'body.event.type') as MessageType;
 
         switch (messageType) {
             case 'update_users': {
-                const data = get(parsedData, 'body.event.data') as UpdateUsersData;
-                return dispatch({ type: types.UPDATE_USERLIST, payload: moveGuestsToTheEnd(data.users) });
+                const _data = get(parsedData, 'body.event.data') as UpdateUsersData;
+                return dispatch({ type: types.UPDATE_USERLIST, payload: moveGuestsToTheEnd(_data.users) });
             }
+
             case 'message': {
                 const message = get(parsedData, 'body.event.data') as ChatMessage;
                 const payload = { ...message, roomID: this.room_uuid };
                 return dispatch({ type: types.ADD_MESSAGE, payload });
             }
+
             case 'resume': {
                 return dispatch({ type: types.SET_REMOTE_PLAYING });
             }
+
             case 'pause': {
                 return dispatch({ type: types.SET_REMOTE_PAUSED });
             }
+
             case 'update_playlist': {
                 const playlistData = get(parsedData, 'body.event.data') as UpdatePlaylistData;
 
                 const subtitlesUrl = get(playlistData, 'videos[0].subs') as string;
-                if (subtitlesUrl) httpServices.get(subtitlesUrl)
-                    .then(handleSubtitles)
-                    .catch(() => toast.error('Could not fetch subtitles'))
+                if (subtitlesUrl) {
+                    httpServices
+                        .get(subtitlesUrl)
+                        .then(handleSubtitles)
+                        .catch(() => toast.error('Could not fetch subtitles'))
+                }
 
                 const dispatchAction = () => dispatch({ type: types.ADD_TO_PLAYLIST, payload: playlistData.videos });
                 return this.handleMediaChange(playlistData, dispatchAction);
             }
+
             case 'ticker': {
                 const { ticker } = get(parsedData, 'body.event.data') as TickerData;
                 return dispatch({ type: types.UPDATE_MEDIA, payload: { actualTime: ticker.elapsed_time } });
             }
+
             case 'emoji_update': {
                 const emoji = get(parsedData, 'body.event.data.emoji') as Emoji[];
                 return dispatch({ type: types.ADD_EMOJIS, payload: emoji || [] });
             }
+
             case 'error': {
                 const error = get(parsedData, 'body.event.data.error') as string;
                 return toast.error(error, toastOpts);
             }
+
             case 'feedback': {
-                const { feedback } = get(parsedData, 'body.event.data') as FeedbackData;
-                if (feedback.message === 'success')
+                const { feedback } = get(parsedData, 'body.event.data', {}) as FeedbackData;
+                if (feedback.message === 'success') {
                     return setAddMediaToSuccess();
+                }
+
                 if (feedback.error) {
                     stopAddMediaPending()
                     toast.warn(feedback.error, toastOpts);
@@ -247,7 +277,10 @@ class Socket implements SocketInterface {
         const mediaAfterChange = new CustomEvent('mediaafterchange', { 'detail': { mediaBefore, mediaAfter } });
 
         const changed = videoIdCurrent !== videoIdNew;
-        if (changed) document.dispatchEvent(mediaBeforeChange);
+        if (changed) {
+            document.dispatchEvent(mediaBeforeChange);
+        }
+
         dispatch_();
         if (changed) {
             dispatch({ type: types.UPDATE_MEDIA, payload: { actualTime: 0 } });
@@ -260,7 +293,7 @@ class Socket implements SocketInterface {
     };
 
     private handleClose = () => {
-        console.log('WebSocket conection closed');
+        console.log('WebSocket: closed');
         this.handleReconnect();
     };
 
@@ -272,7 +305,10 @@ class Socket implements SocketInterface {
     };
 
     private unsubscribeEvents = () => {
-        if (!this.instance) return;
+        if (!this.instance) {
+            return;
+        }
+
         this.instance.onopen = () => null;
         this.instance.onmessage = () => null;
         this.instance.onerror = () => null;
@@ -286,12 +322,40 @@ class Socket implements SocketInterface {
     //     if (!this.pending) this._webSocketReconnect();
     //   }, WEBSOCKET_TIMEOUT);
     // };
+
+    get __DEBUG__() {
+        if (!DEBUG) {
+            return null
+        }
+
+        return {
+            addVideoAndPause: (n = 5000) => {
+                this.__DEBUG__.addMedia();
+                this.__DEBUG__.updateTicker(0);
+                setTimeout(() => {
+                    console.log('DEBUG: paused');
+                    this.__DEBUG__.remotelyPauseVideo()
+                }, n)
+            },
+            addMedia: (params?: any) => this.handleMessage(({ data: JSON.stringify(UPDATE_PLAYLIST_WS_DEBUG_MESSAGE(params)) }) as MessageEvent),
+            remotelyPauseVideo: () => this.handleMessage(({ data: JSON.stringify(PAUSE_MEDIA_WS_DEBUG_MESSAGE()) }) as MessageEvent),
+            remotelyResumeVideo: () => this.handleMessage(({ data: JSON.stringify(RESUME_MEDIA_WS_DEBUG_MESSAGE()) }) as MessageEvent),
+            updateTicker: (n = 100) => this.handleMessage(({ data: JSON.stringify(TICKER_WS_DEBUG_MESSAGE(n)) }) as MessageEvent),
+            runTicker: () => {
+                let n = 0;
+                setInterval(() => {
+                    n += 5
+                    this.__DEBUG__.updateTicker(n)
+                }, 5000)
+            }
+        }
+    }
 }
 
-function subtitlesUpdateEvent() {
-    const subtitlesAftersChanged = new CustomEvent('subtitlesafterchange', { 'detail': {} });
-    document.dispatchEvent(subtitlesAftersChanged);
-}
+// function subtitlesUpdateEvent() {
+//     const subtitlesAftersChanged = new CustomEvent('subtitlesafterchange', { 'detail': {} });
+//     document.dispatchEvent(subtitlesAftersChanged);
+// }
 
 function handleSubtitles({ data }) {
     dispatch({ type: types.SET_RAW_SUBS, payload: data })
@@ -308,13 +372,15 @@ function moveGuestsToTheEnd(users: User[]) {
     return [...notGuests, ...guests]
 }
 
+const stopAddMediaPending = () => {
+    dispatch({ type: types.SET_ADD_MEDIA_PENDING, payload: false });
+};
+
 const setAddMediaToSuccess = () => {
     dispatch({ type: types.REMOVE_POPUP, payload: 'addMedia' });
     stopAddMediaPending();
 };
 
-const stopAddMediaPending = () => {
-    dispatch({ type: types.SET_ADD_MEDIA_PENDING, payload: false });
-};
+
 
 export default Socket;
