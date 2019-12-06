@@ -14,15 +14,10 @@ interface PlayerGlobalControlsProps {
     onToggleSync: () => void;
 }
 
-const remoteIcon = <i title="This is a remote action" className="fa fa-bullhorn ml-1" />
-
 function PlayerGlobalControls(props: PlayerGlobalControlsProps) {
     function renderControls() {
         return (
             <div className="global-controls">
-                {/* TODO: Completely remove buttons and their components  */}
-                {/* {isPermit('player_event.rewind') && renderRewindButton(props.showRemoteRewind)} */}
-                {/* {isPermit('player_event.pause') && renderPlaybackButton(props.showRemotePlayback)} */}
                 {props.hasVideo && renderSyncButton(!props.synced)}
             </div>
         )
@@ -37,43 +32,6 @@ function PlayerGlobalControls(props: PlayerGlobalControlsProps) {
             >
                 <i className="fa fa-sync mr-2" />
                 Synchronize media
-            </div>
-        )
-    }
-
-    function renderRewindButton(show: boolean) {
-        const { synced } = props;
-        return (
-            <div
-                onClick={props.onRemoteRewind}
-                className={cn([
-                    'global-controls__item global-controls__rewind global-controls__admin',
-                    { 'is-visible': show && !synced }
-                ])}
-            >
-                <i className="fa fa-forward mr-1" />
-                Remotely rewind
-                {remoteIcon}
-            </div>
-        )
-    }
-
-    function renderPlaybackButton(show: boolean) {
-        const { remotePlaying } = props;
-        const hideRemotePlaying = props.playing === remotePlaying
-        const remoteControlText = props.playing ? 'Remotely play' : 'Remotely pause';
-        const playIcon = props.playing ? <i className="fa fa-play mr-1" /> : <i className="fa fa-pause mr-1" />
-        return (
-            <div
-                onClick={props.onRemotePlaying}
-                className={cn([
-                    'global-controls__item global-controls__playing global-controls__admin',
-                    { 'is-visible': show && !hideRemotePlaying }
-                ])}
-            >
-                {playIcon}
-                {remoteControlText}
-                {remoteIcon}
             </div>
         )
     }
