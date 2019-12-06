@@ -23,23 +23,27 @@ function ControlPanel(props: ControlPanelProps) {
     }
 
     const delayedExpand = () => {
-        if (!props.cinemaMode) return
+        // if (!props.cinemaMode) return
 
-        clearTimeout(timer.current)
-        timer.current = setTimeout(() => setCollapsed(false), CONTROL_PANEL_EXPAND_DELAY);
+        // clearTimeout(timer.current)
+        // timer.current = setTimeout(() => setCollapsed(false), CONTROL_PANEL_EXPAND_DELAY);
     }
 
     const delayedCollapse = () => {
-        if (!props.cinemaMode) return
+        // if (!props.cinemaMode) return
 
-        clearTimeout(timer.current)
-        timer.current = setTimeout(() => setCollapsed(true), CONTROL_PANEL_COLLAPSE_DELAY);
+        // clearTimeout(timer.current)
+        // timer.current = setTimeout(() => setCollapsed(true), CONTROL_PANEL_COLLAPSE_DELAY);
+    }
+
+    const toggleCollapse = () => {
+        setCollapsed(!collapsed)
     }
 
     const { profile, playlist } = props;
     const upNext = playlist[1];
     const { logged } = profile;
-    const classes = cn(['control-panel', { 'control-panel--expanded': !collapsed }])
+    const classes = cn(['control-panel', { 'control-panel--expanded': !collapsed,  'control-panel--collapsed': collapsed }])
     const itemsClasses = cn([
         'control-panel__collapsible-items',
         { 'control-panel__collapsible-items--collapsed': collapsed }
@@ -56,11 +60,11 @@ function ControlPanel(props: ControlPanelProps) {
 
     return (
         <div onMouseLeave={delayedCollapse} className={classes}>
-            {props.cinemaMode && (
-                <div onMouseEnter={delayedExpand} className="control-panel__expander">
-                    <i className={`fa fa-angle-up`} />
-                </div>
-            )}
+            {/* {props.cinemaMode && ( */}
+            <div onClick={toggleCollapse} onMouseEnter={delayedExpand} className="control-panel__expander">
+                <i className={`fa fa-angle-up`} />
+            </div>
+            {/* )} */}
             <div className={itemsClasses}>
                 <Controls {...controlsProps} />
                 <PlaylistInfo upNext={upNext} logged={logged} onClick={handleClick} />

@@ -10,38 +10,21 @@
         // margin: 5px;
         margin-top: 0;
 
-        background: fadein(@popupHeaderBG, 10%);
-
         transform: translateY(calc(100% - 20px));
         transition: 0.15s transform;
         transition-timing-function: @bubble;
         will-change: transform;
 
+        background: fadein(@popupHeaderBG, 10%);
+
         &--expanded {
             // set to 15px so element doesn't go beyond the boundary on bubble animation
             transform: translateY(15px);
             padding-bottom: 15px;
-
-            .control-panel__expander i {
-                transform: rotateZ(180deg);
-            }
-        }
-
-        &__expander i {
-            transition: 0.4s transform;
-            transition-timing-function: @bubble;
         }
 
         &__expander {
-            line-height: 1;
-            text-align: center;
-
-            opacity: 0.4;
-            transition: 0.1s opacity;
-
-            &:hover {
-                opacity: 1;
-            }
+            padding: 4px 0;
         }
     }
 }
@@ -49,12 +32,40 @@
 .control-panel {
     border-radius: 5px;
     margin-top: 10px;
+    overflow: hidden;
     // height: 100px;
     background: @darkMain;
     box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
 
+    .control-panel__collapsible-items {
+        margin-bottom: calc(-100% + 54px);
+        transition: 0.2s;
+
+    }
+
+    &--expanded .control-panel__collapsible-items {
+        margin-bottom: 0px;
+    }
+
     &__expander {
-        padding: 4px 0;
+        line-height: 1;
+        text-align: center;
+        padding: 2px 0 1px;
+        opacity: 0.4;
+        transition: 0.1s opacity;
+
+        i {
+            transition: 0.4s transform;
+            transition-timing-function: @bubble;
+        }
+
+        .control-panel--expanded & i {
+            transform: rotateZ(180deg);
+        }
+
+        &:hover {
+            opacity: 1;
+        }
     }
 
     .chat-name {

@@ -274,12 +274,13 @@ function ChatInput(props) {
 }
 
 function InputTopBar({ toggleShowEmotes, onClick, popularEmotes, emotes }) {
-    const mapEmoteToName = emotes.map(emote => emote.name);
-    const popular = popularEmotes.filter((emote) => mapEmoteToName.includes(emote.name))
-    const popularSliced = popular.slice(0, MAXIMUM_RECENT_EMOTES);
+    // const mapEmoteToName = emotes.map(emote => emote.name);
+    // const popular = popularEmotes.filter((emote) => mapEmoteToName.includes(emote.name))
+    // const popularSliced = popular.slice(0, MAXIMUM_RECENT_EMOTES);
     return (
         <div className="chat-input__topbar">
-            <div className="chat-input__popular-emotes">
+            {/* {TODO: BETTER POPULAR EMOTES HANDLING} */}
+            {/* <div className="chat-input__popular-emotes">
                 {popularSliced.map(emote => <img
                     onClick={() => onClick(emote.name, true)}
                     src={emote.path}
@@ -288,7 +289,7 @@ function InputTopBar({ toggleShowEmotes, onClick, popularEmotes, emotes }) {
                     key={emote.path}
                     className="emote chat-topbar__emote"
                 />)}
-            </div>
+            </div> */}
             <span onClick={toggleShowEmotes} className="control emote-icon">
                 <i className="fa fa-smile" />
             </span>
