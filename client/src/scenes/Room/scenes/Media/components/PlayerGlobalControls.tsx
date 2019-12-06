@@ -20,8 +20,9 @@ function PlayerGlobalControls(props: PlayerGlobalControlsProps) {
     function renderControls() {
         return (
             <div className="global-controls">
-                {isPermit('player_event.rewind') && renderRewindButton(props.showRemoteRewind)}
-                {isPermit('player_event.pause') && renderPlaybackButton(props.showRemotePlayback)}
+                {/* TODO: Completely remove buttons and their components  */}
+                {/* {isPermit('player_event.rewind') && renderRewindButton(props.showRemoteRewind)} */}
+                {/* {isPermit('player_event.pause') && renderPlaybackButton(props.showRemotePlayback)} */}
                 {renderSyncButton(!props.synced)}
             </div>
         )
