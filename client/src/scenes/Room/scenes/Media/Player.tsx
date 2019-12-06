@@ -39,9 +39,7 @@ interface PlayerProps {
 
 function Player(props: PlayerProps) {
     const [minimized, setMinimized] = useState(false);
-    // const [synced, setSynced] = useState(true);
     const [playing, setPlaying] = useState(true);
-    // const setPlaying = (willPlaying: boolean) => playing !== willPlaying ? setPlaying_(willPlaying) : null
 
     const [remoteControlRewind, setRemoteControlRewind] = useState(false)
     const [remoteControlPlaying, setRemoteControlPlaying] = useState(false)
@@ -50,15 +48,11 @@ function Player(props: PlayerProps) {
     // In other cases we get time directly from video element for perfomance reason
     const [currentTime, setCurrentTime] = useState(0);
 
-    // const lastTime = useRef(0);
     const minimizedRef = useRef(false);
     const playerRef = useRef(null);
 
-    const changingStateRemotely = useRef(false)
 
     useEffect(() => {
-        // init();
-
         return () => {
             props.resetMedia();
         };
@@ -88,29 +82,12 @@ function Player(props: PlayerProps) {
         }
     }, [props.isSynced])
 
-    useEffect(() => {
-        // if (props.isSynced) { document.body.classList.add('player-synced') }
-        // else { document.body.classList.remove('player-synced') }
-    }, [props.isSynced])
-
     function handleControlPanelAction({ detail }: CustomEvent<ControlPanelEvent>) {
-        if (detail.toggleSync) props.setSync(!props.isSynced)
         if (detail.toggleRemotePlayback) handleRemotePlaybackChange()
         if (detail.remotelyRewind) handleRemoteRewind()
     }
 
     useEffect(() => { syncRemoteStates() }, [currentTime, props.media.actualTime, props.media.remotePlaying, props.isSynced]);
-
-    // useEffect(() => {
-    //     requestAnimationFrame(() => { lastTime.current = currentTime })
-    //     if (Math.abs(currentTime - lastTime.current) < 7) return
-    //     if (Math.abs(props.media.actualTime - currentTime) < 7) return
-    //     if (props.media.actualTime < 1) return
-    //     if (lastTime.current < 1) return
-    //     if (changingStateRemotely.current) return
-    //     onProgressChangeLazy()
-
-    // }, [currentTime]);
 
     function beforeMediaChange() {
         // We're doing it so onProgressChangeLazy does not trigger on media change
@@ -132,7 +109,6 @@ function Player(props: PlayerProps) {
 
     function handleReady(): void {
         updateTime();
-        // handleMouseMove();
     }
 
     function updateTime(): void {
@@ -167,10 +143,6 @@ function Player(props: PlayerProps) {
         const { remotePlaying, actualTime } = props.media
         const shouldSeek = Math.abs(actualTime - currentTime) > MAX_VIDEO_SYNC_OFFSET;
         const shouldTogglePlaying = playing !== remotePlaying
-
-        // if (shouldTogglePlaying || shouldSeek) {
-        //     changingStateRemotely.current = true;
-        // }
 
         if (shouldSeek) {
             safelySeekTo(actualTime);
@@ -207,18 +179,11 @@ function Player(props: PlayerProps) {
     function handlePlay(): void {
         setPlaying(true)
 
-        if (!changingStateRemotely.current) {
-            // setSynced(false)
-        }
 
         handleAutoRemoteControl()
     }
     function handlePause(): void {
         setPlaying(false)
-
-        if (!changingStateRemotely.current) {
-            // setSynced(false)
-        }
 
         handleAutoRemoteControl()
     }
@@ -278,6 +243,10 @@ function Player(props: PlayerProps) {
     }
 
     function handleRemoteRewind() {
+        if (!getCurrentUrl()) {
+            return
+        }
+
         const [, time] = safelyGetDurationAndTime()
         webSocketSend(api.REWIND_MEDIA({ time }), 'ticker')
             .then(() => props.setSync(true))
@@ -286,6 +255,10 @@ function Player(props: PlayerProps) {
     }
 
     function handleRemotePlaybackChange() {
+        if (!getCurrentUrl()) {
+            return
+        }
+
         const afterPause = () => {
             props.setSync(true)
             setPlaying(false)
@@ -326,9 +299,6 @@ function Player(props: PlayerProps) {
     // }
 
     function toggleSynced() {
-        if (!changingStateRemotely.current) {
-            props.setSync(!props.isSynced)
-        }
         // if (!synced) safelySeekTo(props.media.actualTime);
     }
 

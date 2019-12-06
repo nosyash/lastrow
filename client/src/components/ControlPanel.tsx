@@ -45,6 +45,15 @@ function ControlPanel(props: ControlPanelProps) {
         { 'control-panel__collapsible-items--collapsed': collapsed }
     ])
 
+    const controlsProps: ControlsProps = {
+        cinemaMode: props.cinemaMode,
+        toggleSync: props.toggleSync,
+        isSynced: props.isSynced,
+        hasVideo: props.hasVideo,
+        toggleCinemaMode: props.toggleCinemaMode,
+        remotePlaying: props.remotePlaying,
+    }
+
     return (
         <div onMouseLeave={delayedCollapse} className={classes}>
             {props.cinemaMode && (
@@ -53,7 +62,7 @@ function ControlPanel(props: ControlPanelProps) {
                 </div>
             )}
             <div className={itemsClasses}>
-                <Controls hasVideo={props.hasVideo} toggleCinemaMode={props.toggleCinemaMode} remotePlaying={props.remotePlaying} />
+                <Controls {...controlsProps} />
                 <PlaylistInfo upNext={upNext} logged={logged} onClick={handleClick} />
                 <div className="divider" />
                 {logged && (
@@ -74,11 +83,13 @@ const getUpNextTitle = (upnext: Video) => upnext ? upnext.title || upnext.url : 
 interface ControlsProps {
     remotePlaying: boolean;
     hasVideo: boolean;
+    cinemaMode: boolean;
+    isSynced: boolean;
     toggleCinemaMode: () => void;
+    toggleSync: () => void;
 }
 
 export interface ControlPanelEvent {
-    toggleSync?: boolean;
     toggleRemotePlayback?: boolean;
     remotelyRewind?: boolean;
 }
@@ -87,9 +98,7 @@ const Controls = (props: ControlsProps) => {
     function dispatchControlEvent(details = {} as ControlPanelEvent): boolean {
         return dispatchCustomEvent('controlPanelEvent', details)
     }
-    
 
-    const toggleSync = () => dispatchControlEvent({ toggleSync: true })
     const toggleRemotePlaybackStatus = () => dispatchControlEvent({ toggleRemotePlayback: true })
     const remotelyRewindAtCurrentTime = () => dispatchControlEvent({ remotelyRewind: true })
 
@@ -109,14 +118,14 @@ const Controls = (props: ControlsProps) => {
                 <div
                     title={cinemaModeTitle}
                     onClick={props.toggleCinemaMode}
-                    className="panel-controls__control"
+                    className={cn('panel-controls__control', 'panel-controls__control--cinema-mode', { 'panel-controls--highlight': props.cinemaMode })}
                 >
                     <i className="fa fa-film" />
                 </div>
                 {props.hasVideo && <div
                     title={syncTitle}
-                    onClick={toggleSync}
-                    className={cn(['panel-controls__control', 'panel-controls__control--sync'])}
+                    onClick={props.toggleSync}
+                    className={cn(['panel-controls__control', 'panel-controls__control--sync', { 'panel-controls--highlight': props.isSynced }])}
                 >
                     <i className="fa fa-sync" />
                 </div>}
@@ -221,10 +230,12 @@ interface MapState {
     remotePlaying: boolean;
     cinemaMode: boolean;
     hasVideo: boolean;
+    isSynced: boolean;
 }
 interface MapDispatch {
     togglePopup: (name: string) => void;
     toggleCinemaMode: () => void;
+    toggleSync: () => void;
 }
 
 const mapStateToProps = (state: State) => ({
@@ -233,13 +244,15 @@ const mapStateToProps = (state: State) => ({
     // TODO: revert back!!!
     // hasVideo: !!state.media.playlist[0],
     hasVideo: true,
+    isSynced: state.media.isSynced,
     remotePlaying: state.media.remotePlaying,
     cinemaMode: state.mainStates.cinemaMode,
 });
 
 const mapDispatchToProps = {
     togglePopup: (payload: string) => ({ type: types.TOGGLE_POPUP, payload }),
-    toggleCinemaMode: () => ({ type: types.TOGGLE_CINEMAMODE })
+    toggleCinemaMode: () => ({ type: types.TOGGLE_CINEMAMODE }),
+    toggleSync: () => ({ type: types.TOGGLE_SYNC }),
 };
 
 export default connect<MapState, typeof mapDispatchToProps>(
