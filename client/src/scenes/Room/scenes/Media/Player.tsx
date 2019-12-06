@@ -80,7 +80,7 @@ function Player(props: PlayerProps) {
         return () => {
             document.removeEventListener('controlPanelEvent', handleControlPanelAction);
         }
-    }, [props.isSynced])
+    }, [props.isSynced, playing, currentTime])
 
     function handleControlPanelAction({ detail }: CustomEvent<ControlPanelEvent>) {
         if (detail.toggleRemotePlayback) handleRemotePlaybackChange()
@@ -227,7 +227,7 @@ function Player(props: PlayerProps) {
                 {isDirectLink() && <div className="video-overlay" />}
                 <PlayerGlobalMessages remotelyPaused={!media.remotePlaying} />
                 <PlayerGlobalControls
-                    onToggleSync={toggleSynced}
+                    onToggleSync={props.toggleSync}
                     synced={props.isSynced}
                     hasVideo={!!url}
                     showRemoteRewind={remoteControlRewind}
@@ -243,10 +243,6 @@ function Player(props: PlayerProps) {
     }
 
     function handleRemoteRewind() {
-        if (!getCurrentUrl()) {
-            return
-        }
-
         const [, time] = safelyGetDurationAndTime()
         webSocketSend(api.REWIND_MEDIA({ time }), 'ticker')
             .then(() => props.setSync(true))
@@ -255,10 +251,6 @@ function Player(props: PlayerProps) {
     }
 
     function handleRemotePlaybackChange() {
-        if (!getCurrentUrl()) {
-            return
-        }
-
         const afterPause = () => {
             props.setSync(true)
             setPlaying(false)
@@ -268,8 +260,8 @@ function Player(props: PlayerProps) {
             props.setSync(true)
             setPlaying(true)
         }
-
-        if (playing) {
+        
+        if (!playing) {
             webSocketSend(api.RESUME_MEDIA(), 'resume')
                 .then(afterResume)
         } else {
