@@ -94,7 +94,6 @@ function Player(props: PlayerProps) {
         setCurrentTime(0)
     }
 
-
     function watchPlaylist({ detail }: CustomEvent) {
         const liveStream = get(detail, 'mediaAfter.live_stream') as boolean;
         const iframe = get(detail, 'mediaAfter.iframe') as boolean;
@@ -136,6 +135,7 @@ function Player(props: PlayerProps) {
     }
 
     function syncRemoteStates() {
+        // TODO: don't change video if it's remotely over but not over for user with synchronization disabled
         if (!props.isSynced) {
             return;
         }
@@ -290,10 +290,6 @@ function Player(props: PlayerProps) {
     //     remoteControlTimeRewind = setTimeout(() => setRemoteControlRewind(false), 5000);
     // }
 
-    function toggleSynced() {
-        // if (!synced) safelySeekTo(props.media.actualTime);
-    }
-
     function togglePlay() {
         if (props.isSynced) {
             // setSynced(false);
@@ -364,7 +360,7 @@ function Player(props: PlayerProps) {
                     minimized={minimized}
                     onToggleSubs={toggleSubs}
                     onTogglePlay={togglePlay}
-                    onToggleSynced={toggleSynced}
+                    onToggleSynced={props.toggleSync}
                     muted={props.media.muted}
                     onToggleMute={props.switchMute}
                     volume={props.media.volume}

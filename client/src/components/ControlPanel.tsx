@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { connect } from 'react-redux';
 import * as types from '../constants/actionTypes';
-import { PLAYLIST, SETTINGS, CONTROL_PANEL_EXPAND_DELAY, CONTROL_PANEL_COLLAPSE_DELAY, DEBUG } from '../constants';
+import { PLAYLIST, SETTINGS, CONTROL_PANEL_EXPAND_DELAY, CONTROL_PANEL_COLLAPSE_DELAY } from '../constants';
 import { Video } from '../utils/types';
 import { State } from '../reducers';
 import { Media } from '../reducers/media';
@@ -137,9 +137,8 @@ const Controls = (props: ControlsProps) => {
         const canPause = isPermit('player_event.pause')
         const canResume = isPermit('player_event.resume')
         const canRewind = isPermit('player_event.rewind')
-        
-        // TODO: Remove DEBUG check
-        if (!canPause && !canResume && !canRewind) {
+
+        if (!props.hasVideo || (!canPause && !canResume && !canRewind)) {
             return null
         }
 
@@ -241,9 +240,7 @@ interface MapDispatch {
 const mapStateToProps = (state: State) => ({
     profile: state.profile,
     playlist: state.media.playlist,
-    // TODO: revert back!!!
-    // hasVideo: !!state.media.playlist[0],
-    hasVideo: true,
+    hasVideo: !!state.media.playlist[0],
     isSynced: state.media.isSynced,
     remotePlaying: state.media.remotePlaying,
     cinemaMode: state.mainStates.cinemaMode,
