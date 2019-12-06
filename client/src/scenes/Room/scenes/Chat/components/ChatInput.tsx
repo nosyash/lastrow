@@ -315,6 +315,7 @@ function EmoteMenu({ list, onClick, onHideMenu, cinemaMode }) {
     return (
         <div style={{ left, width, bottom }} className="emote-menu">
             <div className="emote-menu__scroll">
+                {list.length === 0 && <div>No emotes :(</div>}
                 {list.map(emote => (
                     <span
                         key={emote.name + emote.url}

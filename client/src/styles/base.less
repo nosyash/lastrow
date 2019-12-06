@@ -209,7 +209,7 @@ body {
         }
 
         .chat-inner {
-            background: rgba(0, 3, 6, 0.5);
+            background: rgba(0, 3, 6, 0.6);
         }
     }
 
@@ -293,6 +293,7 @@ body {
     padding-right: 30px;
     width: calc(100% + 30px);
     position: relative;
+    will-change: scroll-position;
 
     height: 100%;
     // display: flex;
@@ -1102,6 +1103,7 @@ body {
 
             .cinema-mode & {
                 background: hsla(207, 42%, 36%, 0.18);
+                color: #1e81b3;
             }
         }
 
@@ -1852,9 +1854,11 @@ body {
     background: @popupHeaderBG;
     // height: 100%;
     box-shadow: none;
+    overflow: hidden;
 
     ul {
-        padding: 0;
+        padding: 0 10px;
+        overflow: hidden auto;
     }
 }
 
@@ -1906,7 +1910,7 @@ body {
 .popup.playlist {
     max-width: 600px;
     min-width: 500px;
-    max-height: 70vh;
+    max-height: 50vh;
     z-index: 9;
     // min-height: 200px;
 }
