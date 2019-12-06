@@ -16,7 +16,9 @@ type ControlPanelProps = MapState & MapDispatch & {
 
 function ControlPanel(props: ControlPanelProps) {
     const [collapsed, setCollapsed] = useState(props.cinemaMode)
-    const timer = useRef(null)
+    // const timer = useRef(null)
+
+    const controlItemsEl = useRef(null) as React.MutableRefObject<HTMLDivElement>
 
     function handleClick(id: string) {
         if (id === 'showPlaylist') props.togglePopup(PLAYLIST);
@@ -37,6 +39,16 @@ function ControlPanel(props: ControlPanelProps) {
     }
 
     const toggleCollapse = () => {
+        // const element = controlItemsEl.current
+        // if (element) {
+        //     const rect = element.getBoundingClientRect()
+        //     if (height === 0) {
+        //         setHeight(heightSave.current)
+        //     } else {
+        //         heightSave.current = rect.height
+        //         setHeight(0)
+        //     }
+        // }
         setCollapsed(!collapsed)
     }
 
@@ -59,23 +71,25 @@ function ControlPanel(props: ControlPanelProps) {
     }
 
     return (
-        <div onMouseLeave={delayedCollapse} className={classes}>
-            {/* {props.cinemaMode && ( */}
-            <div onClick={toggleCollapse} onMouseEnter={delayedExpand} className="control-panel__expander">
-                <i className={`fa fa-angle-up`} />
-            </div>
-            {/* )} */}
-            <div className={itemsClasses}>
-                <Controls {...controlsProps} />
-                <PlaylistInfo upNext={upNext} logged={logged} onClick={handleClick} />
-                <div className="divider" />
-                {logged && (
-                    <RenderProfile
-                        logged={logged}
-                        onSettings={() => props.togglePopup(SETTINGS)}
-                        profile={profile}
-                    />
-                )}
+        <div className="control-panel-container">
+            <div onMouseLeave={delayedCollapse} className={classes}>
+                {/* {props.cinemaMode && ( */}
+                <div onClick={toggleCollapse} onMouseEnter={delayedExpand} className="control-panel__expander">
+                    <i className={`fa fa-angle-up`} />
+                </div>
+                {/* )} */}
+                <div ref={controlItemsEl} className={itemsClasses}>
+                    <Controls {...controlsProps} />
+                    <PlaylistInfo upNext={upNext} logged={logged} onClick={handleClick} />
+                    <div className="divider" />
+                    {logged && (
+                        <RenderProfile
+                            logged={logged}
+                            onSettings={() => props.togglePopup(SETTINGS)}
+                            profile={profile}
+                        />
+                    )}
+                </div>
             </div>
         </div>
     );

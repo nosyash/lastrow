@@ -1,5 +1,8 @@
 @import (reference) "../styles/main.less";
 
+// .control-panel-container {
+//     overflow: hidden;
+// }
 .cinema-mode {
     .control-panel {
         border-radius: 0;
@@ -11,7 +14,7 @@
         margin-top: 0;
 
         transform: translateY(calc(100% - 20px));
-        transition: 0.15s transform;
+        transition: 0.15s;
         transition-timing-function: @bubble;
         will-change: transform;
 
@@ -23,6 +26,10 @@
             padding-bottom: 15px;
         }
 
+        .control-panel__collapsible-items {
+            max-height: unset !important;
+        }
+
         &__expander {
             padding: 4px 0;
         }
@@ -32,19 +39,24 @@
 .control-panel {
     border-radius: 5px;
     margin-top: 10px;
-    overflow: hidden;
+    // overflow: hidden;
     // height: 100px;
     background: @darkMain;
     box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
 
     .control-panel__collapsible-items {
-        margin-bottom: calc(-100% + 54px);
-        transition: 0.2s;
-
+        max-height: 0px;
+        transition: 0.15s;
+        transition-timing-function: @bubble;
+        overflow: hidden;
     }
 
     &--expanded .control-panel__collapsible-items {
-        margin-bottom: 0px;
+        max-height: 180px;
+    }
+
+    &--expanded {
+        overflow: unset;
     }
 
     &__expander {
@@ -53,6 +65,7 @@
         padding: 2px 0 1px;
         opacity: 0.4;
         transition: 0.1s opacity;
+        cursor: pointer;
 
         i {
             transition: 0.4s transform;
