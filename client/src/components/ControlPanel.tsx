@@ -55,7 +55,7 @@ function ControlPanel(props: ControlPanelProps) {
     const { profile, playlist } = props;
     const upNext = playlist[1];
     const { logged } = profile;
-    const classes = cn(['control-panel', { 'control-panel--expanded': !collapsed,  'control-panel--collapsed': collapsed }])
+    const classes = cn(['control-panel', { 'control-panel--expanded': !collapsed, 'control-panel--collapsed': collapsed }])
     const itemsClasses = cn([
         'control-panel__collapsible-items',
         { 'control-panel__collapsible-items--collapsed': collapsed }
@@ -68,6 +68,7 @@ function ControlPanel(props: ControlPanelProps) {
         hasVideo: props.hasVideo,
         toggleCinemaMode: props.toggleCinemaMode,
         remotePlaying: props.remotePlaying,
+        togglePlaylist: () => props.togglePopup(PLAYLIST)
     }
 
     return (
@@ -105,6 +106,7 @@ interface ControlsProps {
     isSynced: boolean;
     toggleCinemaMode: () => void;
     toggleSync: () => void;
+    togglePlaylist: () => void;
 }
 
 export interface ControlPanelEvent {
@@ -126,13 +128,21 @@ const Controls = (props: ControlsProps) => {
             <RenderAdminControls />
         </div>
     )
-    
     function RenderDefaultControls() {
         const syncTitle = 'Toggle synchronization'
         const cinemaModeTitle = 'Toggle cinema mode'
-        
+
         return (
             <div className={cn('panel-controls__container', 'panel-controls__container--default')}>
+                <div
+                    onClick={props.togglePlaylist}
+                    className="panel-controls__control panel-controls__playlist"
+                    title="Toggle playlist (Alt+P)"
+                >
+                    <span className="control item">
+                        <span className="control-svg show-playlist-icon" />
+                    </span>
+                </div>
                 <div
                     title={cinemaModeTitle}
                     onClick={props.toggleCinemaMode}
@@ -165,7 +175,7 @@ const Controls = (props: ControlsProps) => {
 
         const rewindClasses = cn('fa', 'fa-forward')
         const rewindTitle = 'Remotely rewind at current time'
-        
+
         return (
             <div className={cn('panel-controls__container', 'panel-controls__container--default')}>
                 {props.hasVideo && canResume && canPause && (
@@ -186,13 +196,6 @@ const Controls = (props: ControlsProps) => {
 
 const PlaylistInfo = ({ onClick, upNext }: any) => (
     <div className="playlister">
-        <RenderItem
-            dataId="showPlaylist"
-            onClick={onClick}
-            classes="control-svg show-playlist-icon"
-            text="Playlist"
-            title="Toggle playlist (Alt+P)"
-        />
         <div style={{ visibility: upNext ? 'visible' : 'hidden' }} className="item">
             <div className="up-nexts-sign">Up next: </div>
             <a
