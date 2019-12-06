@@ -233,7 +233,7 @@ function ChatInput(props) {
                 ref={inputEl}
                 value={inputValue}
                 autoFocus
-                placeholder="Write something..."
+                placeholder={props.cinemaMode ? '' : 'Write something...'}
                 onChange={handleInputChange}
                 className="chat-input"
                 id="chat-input"
