@@ -36,7 +36,7 @@ function PlayerGlobalControls(props: PlayerGlobalControlsProps) {
                 className={cn(['global-controls__item global-controls__sync', { 'is-visible': show }])}
             >
                 <i className="fa fa-sync mr-2" />
-                Sync with remote
+                Synchronize media
             </div>
         )
     }
