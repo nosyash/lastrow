@@ -139,9 +139,7 @@ const Controls = (props: ControlsProps) => {
                     className="panel-controls__control panel-controls__playlist"
                     title="Toggle playlist (Alt+P)"
                 >
-                    <span className="control item">
-                        <span className="control-svg show-playlist-icon" />
-                    </span>
+                    <i className="fa fa-list-ul" />
                 </div>
                 <div
                     title={cinemaModeTitle}
