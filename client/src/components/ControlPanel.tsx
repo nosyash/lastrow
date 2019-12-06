@@ -191,6 +191,7 @@ const PlaylistInfo = ({ onClick, upNext }: any) => (
             onClick={onClick}
             classes="control-svg show-playlist-icon"
             text="Playlist"
+            title="Toggle playlist (Alt+P)"
         />
         <div style={{ visibility: upNext ? 'visible' : 'hidden' }} className="item">
             <div className="up-nexts-sign">Up next: </div>
@@ -208,8 +209,8 @@ const PlaylistInfo = ({ onClick, upNext }: any) => (
     </div>
 );
 
-const RenderItem = ({ classes, onClick, dataId, text }: any) => (
-    <div>
+const RenderItem = ({ classes, onClick, dataId, text, title = '' }: any) => (
+    <div title={title}>
         <span onClick={() => onClick(dataId)} className="control item">
             <span className={classes} />
             {text}
