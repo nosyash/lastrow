@@ -37,6 +37,8 @@ export const TOGGLE_SUBS = 'TOGGLE_SUBS';
 export const FETCH_SUBS = 'FETCH_SUBS';
 export const ADD_TO_PLAYLIST = 'ADD_TO_PLAYLIST';
 export const TOGGLE_SYNC = 'TOGGLE_SYNC';
+export const SET_SYNC = 'SET_SYNC';
+
 export const SET_ADD_MEDIA_PENDING = 'SET_ADD_MEDIA_PENDING';
 
 export const SET_REMOTE_PLAYING = 'SET_REMOTE_PLAYING';

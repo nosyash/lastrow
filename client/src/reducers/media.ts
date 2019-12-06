@@ -19,7 +19,7 @@ export interface Media {
     actualTime: number;
     duration: number;
     width: number;
-    forceSync: boolean;
+    isSynced: boolean;
     height: number;
     muted: boolean;
     playbackRate: number;
@@ -36,7 +36,7 @@ const InitialState = {
     actualTime: 0,
     duration: 0,
     width: 0,
-    forceSync: true,
+    isSynced: true,
     height: 0,
     muted: false,
     playbackRate: 0,
@@ -62,7 +62,10 @@ const Player = (state = InitialState, action: any): Media => {
             return { ...state, playlist: action.payload };
 
         case types.TOGGLE_SYNC:
-            return { ...state, forceSync: !state.forceSync };
+            return { ...state, isSynced: !state.isSynced };
+
+        case types.SET_SYNC:
+            return { ...state, isSynced: action.payload };
 
         case types.SET_ADD_MEDIA_PENDING:
             return { ...state, addMediaPending: action.payload };

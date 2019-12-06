@@ -25,19 +25,21 @@ interface PlayerProps {
     playlist: Video[];
     remotePlaying: boolean;
     cinemaMode: boolean;
+    isSynced: boolean;
     updatePlayer: (payload: any) => void;
     resetMedia: () => void;
     switchMute: () => void;
     setVolume: (payload: any) => void;
     toggleCinemaMode: () => void;
     toggleSync: () => void;
+    setSync: (state: boolean) => void;
     toggleSubs: () => void;
     hideSubs: () => void;
 }
 
 function Player(props: PlayerProps) {
     const [minimized, setMinimized] = useState(false);
-    const [synced, setSynced] = useState(true);
+    // const [synced, setSynced] = useState(true);
     const [playing, setPlaying] = useState(true);
     // const setPlaying = (willPlaying: boolean) => playing !== willPlaying ? setPlaying_(willPlaying) : null
 
@@ -48,7 +50,7 @@ function Player(props: PlayerProps) {
     // In other cases we get time directly from video element for perfomance reason
     const [currentTime, setCurrentTime] = useState(0);
 
-    const lastTime = useRef(0);
+    // const lastTime = useRef(0);
     const minimizedRef = useRef(false);
     const playerRef = useRef(null);
 
@@ -84,18 +86,20 @@ function Player(props: PlayerProps) {
         return () => {
             document.removeEventListener('controlPanelEvent', handleControlPanelAction);
         }
-    }, [synced])
+    }, [props.isSynced])
 
     useEffect(() => {
-        if (synced) { document.body.classList.add('player-synced') }
-        else { document.body.classList.remove('player-synced') }
-    }, [synced])
+        // if (props.isSynced) { document.body.classList.add('player-synced') }
+        // else { document.body.classList.remove('player-synced') }
+    }, [props.isSynced])
 
     function handleControlPanelAction({ detail }: CustomEvent<ControlPanelEvent>) {
-        if (detail.toggleSync) setSynced(!synced)
+        if (detail.toggleSync) props.setSync(!props.isSynced)
+        if (detail.toggleRemotePlayback) handleRemotePlaybackChange()
+        if (detail.remotelyRewind) handleRemoteRewind()
     }
 
-    useEffect(() => { syncRemoteStates() }, [currentTime, props.media.actualTime, props.media.remotePlaying, synced]);
+    useEffect(() => { syncRemoteStates() }, [currentTime, props.media.actualTime, props.media.remotePlaying, props.isSynced]);
 
     // useEffect(() => {
     //     requestAnimationFrame(() => { lastTime.current = currentTime })
@@ -121,7 +125,7 @@ function Player(props: PlayerProps) {
 
         if (!liveStream && !iframe) {
             safelySeekTo(0);
-            setSynced(true);
+            props.setSync(true);
         }
         props.hideSubs();
     }
@@ -156,7 +160,7 @@ function Player(props: PlayerProps) {
     }
 
     function syncRemoteStates() {
-        if (!synced) {
+        if (!props.isSynced) {
             return;
         }
 
@@ -259,7 +263,7 @@ function Player(props: PlayerProps) {
                 <PlayerGlobalMessages remotelyPaused={!media.remotePlaying} />
                 <PlayerGlobalControls
                     onToggleSync={toggleSynced}
-                    synced={synced}
+                    synced={props.isSynced}
                     hasVideo={!!url}
                     showRemoteRewind={remoteControlRewind}
                     showRemotePlayback={remoteControlPlaying}
@@ -276,19 +280,19 @@ function Player(props: PlayerProps) {
     function handleRemoteRewind() {
         const [, time] = safelyGetDurationAndTime()
         webSocketSend(api.REWIND_MEDIA({ time }), 'ticker')
-            .then(() => setSynced(true))
+            .then(() => props.setSync(true))
 
         setRemoteControlRewind(false);
     }
 
     function handleRemotePlaybackChange() {
         const afterPause = () => {
-            setSynced(true)
+            props.setSync(true)
             setPlaying(false)
         }
 
         const afterResume = () => {
-            setSynced(true)
+            props.setSync(true)
             setPlaying(true)
         }
 
@@ -323,13 +327,13 @@ function Player(props: PlayerProps) {
 
     function toggleSynced() {
         if (!changingStateRemotely.current) {
-            setSynced(!synced)
+            props.setSync(!props.isSynced)
         }
         // if (!synced) safelySeekTo(props.media.actualTime);
     }
 
     function togglePlay() {
-        if (synced) {
+        if (props.isSynced) {
             // setSynced(false);
         }
 
@@ -385,7 +389,7 @@ function Player(props: PlayerProps) {
             {RenderPlayer()}
             {isDirectLink() && hasVideo && playerRef.current &&
                 <PlayerUI
-                    synced={synced}
+                    synced={props.isSynced}
                     playing={playing}
                     hasSubs={!!props.media.subs.raw}
                     showSubs={props.media.showSubs}
@@ -438,6 +442,7 @@ const mapStateToProps = (state: State) => ({
     playlist: state.media.playlist,
     remotePlaying: state.media.remotePlaying,
     cinemaMode: state.mainStates.cinemaMode,
+    isSynced: state.media.isSynced,
 });
 
 const mapDispatchToProps = {
@@ -447,6 +452,7 @@ const mapDispatchToProps = {
     setVolume: (payload: any) => ({ type: types.SET_VOLUME, payload }),
     toggleCinemaMode: () => ({ type: types.TOGGLE_CINEMAMODE }),
     toggleSync: () => ({ type: types.TOGGLE_SYNC }),
+    setSync: (payload: boolean) => ({ type: types.SET_SYNC, payload }),
     hideSubs: () => ({ type: types.HIDE_SUBS }),
     toggleSubs: () => ({ type: types.TOGGLE_SUBS }),
 };
