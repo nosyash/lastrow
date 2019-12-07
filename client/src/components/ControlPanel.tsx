@@ -57,8 +57,8 @@ function ControlPanel(props: ControlPanelProps) {
     const { logged } = profile;
     const classes = cn(['control-panel', { 'control-panel--expanded': !collapsed, 'control-panel--collapsed': collapsed }])
     const itemsClasses = cn([
-        'control-panel__collapsible-items',
-        { 'control-panel__collapsible-items--collapsed': collapsed }
+        'control-panel__collapsible',
+        { 'control-panel__collapsible--collapsed': collapsed }
     ])
 
     const controlsProps: ControlsProps = {
@@ -79,8 +79,8 @@ function ControlPanel(props: ControlPanelProps) {
                     <i className={`fa fa-angle-up`} />
                 </div>
                 {/* )} */}
+                <Controls {...controlsProps} />
                 <div ref={controlItemsEl} className={itemsClasses}>
-                    <Controls {...controlsProps} />
                     <PlaylistInfo upNext={upNext} logged={logged} onClick={handleClick} />
                     <div className="divider" />
                     {logged && (
@@ -139,9 +139,7 @@ const Controls = (props: ControlsProps) => {
                     className="panel-controls__control panel-controls__playlist"
                     title="Toggle playlist (Alt+P)"
                 >
-                    <span className="control item">
-                        <span className="control-svg show-playlist-icon" />
-                    </span>
+                    <i className="fa fa-list-ul" />
                 </div>
                 <div
                     title={cinemaModeTitle}

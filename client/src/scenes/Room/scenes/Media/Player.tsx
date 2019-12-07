@@ -260,7 +260,7 @@ function Player(props: PlayerProps) {
             props.setSync(true)
             setPlaying(true)
         }
-        
+
         if (!playing) {
             webSocketSend(api.RESUME_MEDIA(), 'resume')
                 .then(afterResume)
