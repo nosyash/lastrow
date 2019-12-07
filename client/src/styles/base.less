@@ -205,11 +205,12 @@ body {
         }
 
         .chat-message_header {
-            background: rgba(52, 52, 52, 0.21);
+            background: fadeout(@darkMain, 80%);
         }
 
         .chat-inner {
-            background: rgba(0, 3, 6, 0.6);
+            // background: hsla(210, 100%, 1%, 0.6);
+            background: fadeout(darken(@darkMain, 18%), 40%);
         }
     }
 
@@ -317,6 +318,7 @@ body {
     margin: 0 auto;
     padding: 10px 10px;
     background: hsla(210, 11%, 28%, 0.8);
+    background: desaturate(darken(fadeout(@bluish, 20%), 10%), 20%);
     text-align: center;
     color: #bbb;
     cursor: pointer;
@@ -353,17 +355,6 @@ body {
     max-height: 32px;
 }
 
-.chat-message.highlight {
-    // background: #334656;
-    // border-radius: 4px;
-    // padding: 2px 4px;
-
-    .emote {
-        // margin-top: 5px;
-    }
-}
-
-
 .chat-avatar {
     border-radius: 7px;
     transition: 0.2s background-image;
@@ -372,8 +363,8 @@ body {
     height: 42px;
     min-width: 35px;
     min-height: 35px;
-    background-image: url('https://up.bona.cafe/src/e2/bc820d04437e672d68a3f729e1dd99ad5b1c03.png'); // background: rgb(218, 63, 110);
-    background: @darkThird;
+    background-image: url('https://up.bona.cafe/src/e2/bc820d04437e672d68a3f729e1dd99ad5b1c03.png');
+    background: lighten(@darkSecond, 15%);
     background-size: cover;
     // mask-image: @squareMask;
     //   .border-squircle(50%;
@@ -410,28 +401,25 @@ body {
     flex-direction: row;
     align-items: center;
     margin-bottom: 9px;
-    // border-top: 1px solid #343434;
-    // padding-top: 12px;
-    background: #343434;
+    background: lighten(@darkMain, 1%);
     padding: 8px 10px;
-    // border-radius: 5px;
+    border-radius: 4px;
 }
 
 .chat-message.highlight .chat-message_header {
     border-top: none;
-    // padding-top: 0;
-
-    // background: hsla(0, 0%, 20%, 0.369);
     margin-top: 20px;
 }
 
+@messageHighlight: desaturate(darken(@bluish, 15%), 25%);
+
 .chat-message.highlight .chat-message_body {
-    background: #334656;
+    background: @messageHighlight;
     border-radius: 4px;
     padding: 4px 6px;
 
     .cinema-mode & {
-        background: #33465638;
+        background: fadeout(@messageHighlight, 80%);
     }
 }
 
@@ -516,7 +504,7 @@ body {
     display: flex;
     // max-width: 100px;
     overflow-x: auto;
-    background: hsla(0, 0%, 23%, 0.9);
+    background: lighten(@darkMain, 4%);
     backdrop-filter: blur(5px);
     z-index: 100000;
     border-radius: 4px;
@@ -547,7 +535,7 @@ body {
 }
 
 .emote-search__emote_selected {
-    background: #586a7c;
+    background: darken(desaturate(@buttonBG, 20%), 5%);
 }
 
 .emote-menu {
@@ -556,7 +544,7 @@ body {
     left: 0 !important;
     bottom: 100% !important;
     overflow-x: auto;
-    background: hsla(0, 0%, 23%, 0.9);
+    background: lighten(@darkMain, 4%);
     backdrop-filter: blur(5px);
     z-index: 100000;
     box-shadow: 0 1px 6px rgba(0, 0, 0, 0.15);
@@ -589,7 +577,6 @@ body {
     cursor: pointer;
 
     &:hover {
-        // background: #586a7c
         opacity: 0.6;
     }
 }
@@ -626,6 +613,7 @@ body {
     margin-left: auto;
     cursor: pointer;
     opacity: 0.5;
+
     &:hover {
         opacity: 1;
     }
@@ -900,14 +888,14 @@ body {
 
 .form-control {
     // padding: 0 45px;
-    background: @darkSecond;
+    background: lighten(@darkSecond, 4%);
     outline: none;
     color: @body;
     border: none;
 
     &:focus,
     &:active {
-        background: @darkSecond;
+        background: lighten(@darkSecond, 4%);
         outline: none;
         color: @body;
         border: none;
@@ -922,8 +910,7 @@ body {
 }
 
 .button {
-    // margin-top: 10px;
-    background: #3E6683;
+    background: @buttonBG;
     border-radius: 4px;
     width: 100%;
     color: white;
@@ -932,12 +919,10 @@ body {
     outline: none;
     transition: 0.2s;
     user-select: none;
-    // .border-squircle(5%;
-    // 40%);
 
     &:disabled {
         color: rgb(172, 172, 172);
-        background: #3e6683a1;
+        background: fadeout(@buttonBG, 40%)
     }
 
     &:not(:disabled):hover {
@@ -969,7 +954,7 @@ body {
 //     content: '';
 //     width: 100%;
 //     height: 150px;
-//     background: linear-gradient(0deg, #303030 5%, rgba(0, 0, 0, 0) 100%);
+//     background: linear-gradient(0deg, @darkMain 5%, rgba(0, 0, 0, 0) 100%);
 //     display: block;
 //     position: absolute;
 //     bottom: 0;
@@ -997,7 +982,7 @@ body {
     background-repeat: no-repeat;
     background-position: 50%;
     border-radius: 10px;
-    background-color: #aa9da3;
+    background-color: lighten(@darkSecond, 15%);
     // mask-image: @squareMask;
     // .border-squircle(45%;
     // 45%);
@@ -1090,63 +1075,63 @@ body {
         // border-left: 5px solid #1a1c1d;
         font-family: monospace;
     }
+}
 
+.markup {
+    &--reply {
+        font-weight: 700;
+        color: @replyColor;
+        font-style: normal;
+        background: @replyBG;
+        padding: 2px 4px;
+        border-radius: 2px;
 
+        .cinema-mode & {
+            background: fadeout(@replyBG, 20%);
+            color: desaturate(@replyColor, 40%);
+        }
+    }
 
+    &--quote {
+        font-style: normal;
+        color: @quoteColor;
+    }
 
+    &--me {
+        opacity: 0.7;
+    }
 
-    .markup {
-        &--reply {
-            font-weight: 700;
-            color: #0085c7;
-            font-style: normal;
-            background: hsla(207, 42%, 36%, 0.5);
-            padding: 2px 4px;
-            border-radius: 2px;
+    &--do {
+        width: 100%;
+        display: block;
+        text-align: center;
+        margin: 7px 0;
+        font-size: 1.1em;
+        padding: 0 20px;
+    }
 
-            .cinema-mode & {
-                background: hsla(207, 42%, 36%, 0.18);
-                color: #1e81b3;
-            }
+    &--spoiler {
+        border-radius: 2px;
+        padding: .25ex 1px .3ex;
+        box-decoration-break: clone;
+        background: lighten(@darkMain, 8%);
+        color: transparent;
+        text-decoration: none !important;
+
+        .cinema-mode & {
+            background: fadeout(lighten(@darkMain, 8%), 50%);
         }
 
-        &--quote {
-            font-style: normal;
-            color: #07b730;
-        }
-
-        &--me {
-            opacity: 0.7;
-        }
-
-        &--do {
-            width: 100%;
-            display: block;
-            text-align: center;
-            margin: 7px 0;
-            font-size: 1.1em;
-            padding: 0 20px;
-        }
-
-        &--spoiler {
-            border-radius: 2px;
-            padding: .25ex 1px .3ex;
-            box-decoration-break: clone;
-            background: hsla(0, 0%, 25%, 1);
-            color: transparent;
-            text-decoration: none !important;
-
-            &:hover {
-                color: @body;
-
-                .emote {
-                    opacity: 1;
-                }
-            }
+        &:hover {
+            color: @body;
 
             .emote {
-                opacity: 0;
+                opacity: 1;
             }
+        }
+
+        .emote {
+            opacity: 0;
         }
     }
 }
@@ -1160,8 +1145,8 @@ body {
     height: 70px;
     max-width: 800px;
     margin: auto;
-    background-color: rgba(37, 39, 40, 0.85);
-    backdrop-filter: saturate(200%) blur(18px);
+    background-color: darken(fadeout(@darkMain, 15%), 5%);
+    backdrop-filter: blur(18px);
     border-radius: 4px;
     user-select: none;
     display: flex;
@@ -1208,7 +1193,7 @@ body {
         // .player-minimized & {
         //     display: none;
         // }
-        background-color: rgba(37, 39, 40, 0.9);
+        background-color: darken(fadeout(@darkMain, 10%), 5%);
         backdrop-filter: unset;
         padding: 5px 20px 3px;
         margin: 4px auto;
@@ -1222,7 +1207,7 @@ body {
             pointer-events: auto;
             visibility: visible;
             cursor: pointer;
-            backdrop-filter: saturate(500%) blur(18px);
+            backdrop-filter: blur(18px);
         }
 
         &.global-controls__admin {
@@ -1266,7 +1251,7 @@ body {
     &__item {
         text-align: center;
         max-width: 360px;
-        background-color: rgba(37, 39, 40, 0.9);
+        background-color: darken(fadeout(@darkMain, 10%), 5%);
         backdrop-filter: saturate(500%) blur(18px);
         color: #ffffff87;
         padding: 5px 30px 3px;
@@ -1416,7 +1401,7 @@ body {
     font-style: normal;
     font-weight: 600;
     font-size: 12px;
-    color: #ACAFB3;
+    color: @lightMain;
     width: 60px;
 }
 
@@ -1457,7 +1442,7 @@ body {
 
 .player-minimized {
     .video-player {
-        background-color: rgba(37, 39, 40, 0.0);
+        background-color: hsla(200, 4%, 15%, 0);
         transform: translateY(10px);
         backdrop-filter: none;
     }
@@ -1501,13 +1486,13 @@ body {
 }
 
 .control {
-    color: #ACAFB3;
+    color: @lightMain;
     cursor: pointer;
     user-select: none;
     font-weight: 500;
 
     &:hover {
-        color: #ACAFB3;
+        color: @lightMain;
         opacity: 0.8;
         text-decoration: none;
     }
@@ -1572,27 +1557,10 @@ body {
 
 .cinema-mode .chat-message_body {
     color: rgba(255, 255, 255, 0.8);
-
-    pre {
-        // background: @darkSecondCinema + rgba(0, 0, 0, 0.6);
-    }
-
-    del {
-        background: @bodyBG;
-        // background: @darkSecondCinema + rgba(0, 0, 0, 0.6);
-        text-shadow: none;
-    }
 }
 
 .chat-message_p {
     white-space: pre-line;
-}
-
-.cinema-mode .chat-message.highlight {
-    // background: hsla(207, 26%, 27%, 0.555);
-    // border-radius: 4px;
-    // padding: 2px 4px;
-
 }
 
 
@@ -1647,7 +1615,6 @@ body {
     width: 100%;
     cursor: move;
     user-select: none;
-    background: @darkSecond;
     background: @popupHeaderBG;
     display: flex;
 
@@ -1662,7 +1629,7 @@ body {
 
 .guestAuth {
     .popup-header {
-        background: #303030;
+        background: @darkMain;
     }
 }
 
@@ -1725,7 +1692,7 @@ body {
 }
 
 .popup-element {
-    background: @darkMain;
+    background: @popupHeaderBG;
     width: 100%;
     // height: 100%;
     padding: 20px;
@@ -1848,13 +1815,13 @@ body {
     }
 
     >div:last-child {
-        background: #303030 !important;
+        background: @darkMain  !important;
     }
 }
 
 // Playlist
 .playlist_container {
-    background: @popupHeaderBG;
+    // background: @popupTransparentBG;
     // height: 100%;
     box-shadow: none;
     overflow: hidden;
@@ -1892,8 +1859,8 @@ body {
 
 
     &:first-child {
-        background: #acafb3;
-        color: #303030;
+        background: @lightMain;
+        color: @darkMain;
         padding: 1px 7px 0;
         border-radius: 4px;
         margin-left: -7px;
@@ -1901,11 +1868,11 @@ body {
         margin-bottom: 2px;
 
         a {
-            color: #303030;
+            color: @darkMain;
         }
 
         .control {
-            color: #303030;
+            color: @darkMain;
         }
     }
 }

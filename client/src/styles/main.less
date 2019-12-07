@@ -1,20 +1,24 @@
 // Main colors
 @red: #ff005e;
-@darkMain: #303030;
-@darkMainCinema: rgba(0, 3, 6, 0.6);
-@darkSecond: #3B3B3B;
-@darkSecondCinema: rgba(40, 43, 46, 0.4);
-@darkThird: #666768;
+@darkMain: hsl(0, 0%, 13%);
+@lightMain: hsl(214, 4%, 69%);
+@darkSecond: lighten(@darkMain, 3%);
+@bluish: hsl(205, 36%, 35%);
 
-// Font color
-@body: #A1A1A1;
-@link: #008bd0;
+// font color
+@link: hsl(200, 100%, 41%);
+@body: hsl(0, 0%, 63%);
 
-// Background
-@bodyBG: rgba(36, 38, 39, 1);
-@containerBG: #303030;
+// background
+@buttonBG: @bluish;
+@bodyBG: darken(spin(saturate(@darkMain, 4%), 200), 4%);
+@popupHeaderBG: hsla(0, 0%, 16%, 0.9);
+@popupTransparentBG: fadeout(darken(@darkMain, 4%), 10%);
 
-@popupHeaderBG: rgba(38, 38, 38, 0.9);
+// markup
+@replyColor: darken(@link, 3%);
+@replyBG: fadeout(desaturate(@bluish, 6%), 60%);
+@quoteColor: #07b730;
 
 // Transition
 @bubble: cubic-bezier(0, 0.8, 0.4, 1.25);
