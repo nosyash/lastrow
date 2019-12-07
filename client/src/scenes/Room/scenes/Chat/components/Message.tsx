@@ -15,7 +15,7 @@ interface MessageProps {
     highlight: boolean;
     body: string;
     name: string;
-    emojiList: Emoji[]
+    emojiList: Emoji[];
 }
 
 class Message extends Component<MessageProps, any> {
@@ -41,11 +41,11 @@ class Message extends Component<MessageProps, any> {
 
     pageIsVisible = () => document.visibilityState === 'visible';
 
-    handleSounds = highlight => {
+    handleSounds = () => {
         if (this.shown) return;
-        if (highlight && !this.pageIsVisible()) {
-            playSound();
-        }
+        if (this.pageIsVisible()) return
+
+        playSound();
     };
 
     handleNotification = (highlight, opts) => {
@@ -58,9 +58,11 @@ class Message extends Component<MessageProps, any> {
 
     render() {
         const { online, color, image, highlight, body } = this.props;
-        const { name, emojiList } = this.props;
+        const { name } = this.props;
 
-        // this.handleSounds(highlight);
+        if (highlight) {
+            // this.handleSounds();
+        }
         this.handleNotification(highlight, { name, body, image });
 
         // Markup cache
@@ -106,7 +108,7 @@ const RenderMessage = props => {
                 </div>
             )}
             <div className="chat-message_body">
-                <p className="chat-message_p" dangerouslySetInnerHTML={{ __html: bodyMarked }}></p>
+                <p className="chat-message_p" dangerouslySetInnerHTML={{ __html: bodyMarked }} />
             </div>
         </div>
     );

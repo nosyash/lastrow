@@ -1,5 +1,8 @@
 import ls from 'local-storage';
-import { notify, requestFullscreen } from '.';
+import { notify } from '.';
+
+const faviconEl = document.getElementById('favicon') as HTMLLinkElement
+const initialHref = faviconEl.href
 
 class Notification {
     replies: boolean;
@@ -14,12 +17,12 @@ class Notification {
 
     addUnread() {
         this.unread = true;
-        this._changeTitle();
+        this.makeNotification();
     }
 
     addReplies({ name, body, image }) {
         this.replies = true;
-        this._changeTitle();
+        this.makeNotification();
 
         if ((ls as any).get('notify')) notify(`Reply by ${name}`, { body, icon: image });
     }
@@ -27,7 +30,7 @@ class Notification {
     removeNotifications = () => {
         this.unread = false;
         this.replies = false;
-        this._changeTitle();
+        this.makeNotification();
     };
 
     setCurrentTitle(title) {
@@ -35,10 +38,29 @@ class Notification {
         document.title = title;
     }
 
-    _changeTitle() {
-        if (this.replies) document.title = `** ${this.currentTitle}`;
-        if (!this.replies && this.unread) document.title = `* ${this.currentTitle}`;
-        if (!this.replies && !this.unread) document.title = this.currentTitle;
+    makeNotification() {
+        if (this.replies) {
+            this.changeTitle('replies')
+            this.changeIcon('replies')
+        } else if (!this.replies && this.unread) {
+            this.changeTitle('unread')
+            this.changeIcon('unread')
+        } else if (!this.replies && !this.unread) {
+            this.changeTitle('')
+            this.changeIcon('')
+        }
+    }
+
+    changeTitle(option: string) {
+        if (option === 'replies') document.title = `** ${this.currentTitle}`;
+        if (option === 'unread') document.title = `* ${this.currentTitle}`;
+        if (option === '') document.title = this.currentTitle;
+    }
+
+    changeIcon(option: string) {
+        if (option === 'replies') faviconEl.setAttribute('href', '/icons/reply.png')
+        if (option === 'unread') faviconEl.setAttribute('href', '/icons/unread.png')
+        if (option === '') faviconEl.setAttribute('href', initialHref)
     }
 }
 
