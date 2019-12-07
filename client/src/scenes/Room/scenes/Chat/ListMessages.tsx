@@ -18,7 +18,7 @@ function ListMessages(props) {
     // const forceScroll = useRef(false)
 
     const lastScrollPosition = useRef(0);
-    
+
     const lastScroll = () => lastScrollPosition.current
     const setLastScroll = (val: number) => { lastScrollPosition.current = val }
 
@@ -39,7 +39,7 @@ function ListMessages(props) {
         //         setShouldScroll(true)
         //     }
         //     console.log('thr');
-            
+
         // }, 1024)
 
         const resizeObserver = new ResizeObserver(() => {
@@ -66,7 +66,7 @@ function ListMessages(props) {
         if (!getMessagesInner()) {
             return
         }
-        
+
         if (isEdge) {
             getMessagesInner().scrollTop = 1000000;
         } else {
@@ -105,7 +105,7 @@ function ListMessages(props) {
             scrollToBottom()
         }
 
-        
+
     }
 
     function getSingleMessage(currentMessage, i) {
@@ -152,7 +152,7 @@ function ListMessages(props) {
                 onScroll={handleScroll}
                 className={cn(['chat-messages', { 'scroll-smooth': shouldScroll }])}
             >
-                {props.roomsMessages.map((message, index) => getSingleMessage(message, index))}
+                {props.roomsMessages.map(getSingleMessage)}
             </div>
             {!shouldScroll && (
                 <div
