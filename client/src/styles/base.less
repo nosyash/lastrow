@@ -307,7 +307,10 @@ body {
 }
 
 .chat-message:last-child {
-    margin-bottom: 25px !important;
+    margin-bottom: 20px !important;
+    .cinema-mode & {
+        margin-bottom: 15px !important;
+    }
 }
 
 .chat-messages__scroll-to-bottom {
@@ -322,6 +325,10 @@ body {
     text-align: center;
     color: #bbb;
     cursor: pointer;
+
+    .cinema-mode & {
+        bottom: 90px;
+    }
 
     &:hover {
         opacity: 0.8;
@@ -339,6 +346,9 @@ body {
 .chat-message {
     position: relative;
     margin-bottom: 5px;
+    .cinema-mode & {
+        margin-bottom: 4px;
+    }
 
     &:first-child {
         margin-top: auto;
@@ -1565,15 +1575,13 @@ body {
 
 
 .cinema-mode {
-
     .chat-input,
     .chat-input__topbar {
         background: transparent;
-        // height: 48px;
     }
 
     .chat-input__topbar {
-        height: 48px;
+        height: 43px;
     }
 
     .chat-header {
@@ -1581,7 +1589,7 @@ body {
     }
 
     .chat-input textarea {
-        height: 42px;
+        height: 38px;
     }
 }
 
