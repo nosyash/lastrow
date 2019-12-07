@@ -86,12 +86,12 @@ export interface Rooms {
 
 const InitialState = {
     list: [] as Room[],
-    currentPermissions: DefaultPermissions,
+    currentPermissions: null,
 } as Rooms;
 
 const Rooms = (state = InitialState, action: any) => {
     if (action.type === types.UPDATE_ROOMLIST) {
-        return { list: action.payload };
+        return { ...state, list: action.payload };
     }
 
     if (action.type === types.SET_PERMISSIONS) {
