@@ -129,15 +129,16 @@ const Controls = (props: ControlsProps) => {
         </div>
     )
     function RenderDefaultControls() {
-        const syncTitle = 'Toggle synchronization'
-        const cinemaModeTitle = 'Toggle cinema mode'
+        const syncTitle = 'Toggle synchronization (Alt+S)'
+        const cinemaModeTitle = 'Toggle cinema mode (Alt+C)'
+        const playlistTitle = 'Toggle playlist (Alt+P)'
 
         return (
             <div className={cn('panel-controls__container', 'panel-controls__container--default')}>
                 <div
                     onClick={props.togglePlaylist}
                     className="panel-controls__control panel-controls__playlist"
-                    title="Toggle playlist (Alt+P)"
+                    title={playlistTitle}
                 >
                     <i className="fa fa-list-ul" />
                 </div>
