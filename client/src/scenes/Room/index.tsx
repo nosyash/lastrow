@@ -41,6 +41,8 @@ interface RoomBaseProps {
     removePopup: (popup: string) => void;
     togglePopup: (popup: string) => void;
     setCurrentLevel: (level: PermissionsMap) => void;
+    toggleCinemaMode: () => void;
+    toggleSync: () => void;
 }
 
 class RoomBase extends Component<RoomBaseProps, any> {
@@ -73,18 +75,14 @@ class RoomBase extends Component<RoomBaseProps, any> {
     }
 
     handleKeyDown = (e: KeyboardEvent) => {
-        const { altKey, code, keyCode, ctrlKey } = e;
-        const { togglePopup } = this.props;
+        const usedKeys = ['KeyP', 'KeyC', 'KeyS']
+        const { altKey, code, ctrlKey } = e;
         if (altKey) {
-
+            if (usedKeys.includes(code)) e.preventDefault();
             switch (code) {
-                case 'KeyP': {
-                    // TODO: Move prevent default somewhere
-                    e.preventDefault();
-                    return togglePopup(PLAYLIST)
-                }
-                case 'KeyF': return // TODO: handleFullScreen
-                // TODO: markup hotkeys
+                case 'KeyP': return this.props.togglePopup(PLAYLIST)
+                case 'KeyC': return this.props.toggleCinemaMode()
+                case 'KeyS': return this.props.toggleSync()
                 default: return;
             }
         }
@@ -217,7 +215,9 @@ const mapDispatchToProps = {
     addPopup: payload => ({ type: types.ADD_POPUP, payload }),
     clearPopups: () => ({ type: types.CLEAR_POPUPS }),
     updateProfile: payload => ({ type: types.UPDATE_PROFILE, payload }),
-    setCurrentLevel: payload => ({ type: types.SET_CURRENT_LEVEL, payload })
+    setCurrentLevel: payload => ({ type: types.SET_CURRENT_LEVEL, payload }),
+    toggleCinemaMode: () => ({ type: types.TOGGLE_CINEMAMODE }),
+    toggleSync: () => ({ type: types.TOGGLE_SYNC })
 };
 
 export default connect(
