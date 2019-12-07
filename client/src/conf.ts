@@ -3,6 +3,9 @@ export const playerConf = {
         host: 'http://www.youtube.com',
         playerVars: {
             host: 'http://www.youtube.com',
+            color: 'green',
+            modestbranding: 1,
+            start: 0,
             autoplay: 1,
             controls: 1,
             origin: 'https://www.youtube.com',
