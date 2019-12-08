@@ -202,6 +202,9 @@ function Player(props: PlayerProps) {
         const iframe = isIframe();
         return (
             <React.Fragment>
+                {!url && <div className="container-placeholder">
+                    <i className="container-placeholder__icon fa fa-play-circle" />
+                </div>}
                 {!iframe && <ReactPlayer
                     autoPlay
                     className="player-inner"

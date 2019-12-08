@@ -21,7 +21,8 @@ export default function VideoContainer() {
         <div
             id="video-container"
             style={{ background: fullscreen ? 'black' : '' }}
-            className="video-container">
+            className="video-container"
+        >
             <Player />
         </div>
     );
