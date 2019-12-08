@@ -15,6 +15,7 @@ function RoomListBase(props) {
 
     useEffect(() => {
         document.title = 'Backrow'
+        props.clearPermissions()
 
         props.clearPopups();
         props.updateMainStates({ roomID: '', uuid: '' })
@@ -103,6 +104,7 @@ const mapDispatchToProps = {
     updateProfile: payload => ({ type: types.UPDATE_PROFILE, payload }),
     updateMainStates: payload => ({ type: types.UPDATE_MAIN_STATES, payload }),
     clearPopups: () => ({ type: types.CLEAR_POPUPS }),
+    clearPermissions: () => ({ type: types.SET_PERMISSIONS, payload: null })
 };
 
 export default connect(

@@ -95,8 +95,7 @@ const Rooms = (state = InitialState, action: any) => {
     }
 
     if (action.type === types.SET_PERMISSIONS) {
-        if (!action.payload) return;
-        return { ...state, currentPermissions: { ...state.currentPermissions, ...action.payload }}
+        return { ...state, currentPermissions: action.payload }
     }
 
     return state;

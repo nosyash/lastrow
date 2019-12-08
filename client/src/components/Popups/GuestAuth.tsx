@@ -13,7 +13,7 @@ interface GuestAuthState {
 class GuestAuth extends Form {
 
     state = {
-        data: { name: '' },
+        data: { name: 'Guest' },
         errors: {},
     } as any;
 
@@ -75,9 +75,9 @@ const RenderForm = props => {
                 {renderInput(inputOpts)}
                 <div className="controls-container">
                     {renderButton('Save')}
-                    <button onClick={onClose} type="button" className="button button-cancel">
+                    {/* <button onClick={onClose} type="button" className="button button-cancel">
                         Skip
-                    </button>
+                    </button> */}
                 </div>
             </form>
         </div>
