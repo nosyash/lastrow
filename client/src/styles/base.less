@@ -91,8 +91,9 @@ body {
     &__icon {
         margin: auto;
         font-size: 11em;
-        text-shadow: -4px 4px 0px fadeout(@bodyBG, 5%);
-        color: fadeout(@darkSecond, 5%);
+        text-shadow: -4px 4px 0px @bodyBG;
+        color: @darkSecond;
+        opacity: 0.8;
     }
 }
 
