@@ -28,7 +28,7 @@ import ChatContainer from '../../scenes/Room/scenes/Chat';
 import ResizeObserver from 'resize-observer-polyfill'
 import { State } from '../../reducers';
 
-function Popups({ popups: p, cinemaMode, removePopup, insideOfRoom }) {
+function Popups({ popups: p, cinemaMode, removePopup, insideOfRoom, logged }) {
     useEffect(() => {
         document.addEventListener('keydown', handleKey);
 
@@ -50,13 +50,19 @@ function Popups({ popups: p, cinemaMode, removePopup, insideOfRoom }) {
 
     const popupsList = [
         { show: p[COLOR_PICKER], name: COLOR_PICKER, element: <ColorPicker /> },
-        { show: p[GUEST_AUTH], name: GUEST_AUTH, element: <GuestAuth /> },
-        { show: p[IMAGE_PICKER], name: IMAGE_PICKER, element: <ImagePicker /> },
+        {
+            show: p[GUEST_AUTH],
+            name: GUEST_AUTH,
+            element: <GuestAuth />,
+            opts: { hideClose: true, dontSavePosition: true }
+        },
+        { show: p[IMAGE_PICKER], name: IMAGE_PICKER, element: <ImagePicker />, opts: { dontSavePosition: true } },
         { show: p[LOG_FORM], name: LOG_FORM, element: <LogForm /> },
-        { show: p[NEW_ROOM], name: NEW_ROOM, element: <NewRoom /> },
-        { show: p[PLAYLIST], name: PLAYLIST, element: <Playlist /> },
+        { show: p[NEW_ROOM], name: NEW_ROOM, element: <NewRoom />, opts: { dontSavePosition: true } },
+        { show: p[PLAYLIST] && logged, name: PLAYLIST, element: <Playlist /> },
         { show: p[SETTINGS], name: SETTINGS, element: <Settings />, opts: { fixed: true, esc: true } },
-        { show: cinemaMode && insideOfRoom,
+        {
+            show: cinemaMode && insideOfRoom && logged,
             name: CHAT_FLOAT,
             element: <ChatContainer />,
             opts: { hideClose: true, resizable: true, minHeight: 325, minWidth: 150 }
@@ -121,6 +127,7 @@ interface PopupProps {
 
     fixed?: boolean;
     resizable?: boolean;
+    dontSavePosition?: boolean;
     esc?: boolean;
     hideClose?: boolean;
     minHeight?: number;
@@ -133,10 +140,15 @@ let offsetXRes = 0;
 let offsetYRes = 0;
 
 function Popup(props: PopupProps) {
-    const [width, setWidth] = useState(getPosition('width') || 0);
-    const [height, setHeight] = useState(getPosition('height') || '');
-    const [top, setTop] = useState(getPosition('top') || 0);
-    const [left, setLeft] = useState(getPosition('left') || 0);
+    const width_ = getPosition('width')
+    const height_ = getPosition('height')
+    const top_ = getPosition('top')
+    const left_ = getPosition('left')
+    const [width, setWidth] = useState(typeof width_ === 'number' ? width_ : 0);
+    const [height, setHeight] = useState(typeof height_ === 'number' ? height_ : '');
+    const [top, setTop] = useState(typeof top_ === 'number' ? top_ : 0);
+    const [left, setLeft] = useState(typeof left_ === 'number' ? left_ : 0);
+
     const [show, setShow] = useState(false);
 
     const popupEl = useRef(null) as React.MutableRefObject<HTMLDivElement>
@@ -172,9 +184,11 @@ function Popup(props: PopupProps) {
     }
 
     useEffect(() => {
-        if (!getPosition('left')) {
-            const { width: w, height: h } = popupEl.current.getBoundingClientRect();
-            setStates({ ...getCenteredRect(w, h) });
+        const hasSavedPosition = typeof getPosition('left') === 'number'
+        if (!hasSavedPosition) {
+            const rect = popupEl.current.getBoundingClientRect();
+            const centeredRect = getCenteredRect(rect.width, rect.height)
+            setStates({ top: centeredRect.top, left: centeredRect.left });
         }
         setShow(true);
 
@@ -291,14 +305,14 @@ function Popup(props: PopupProps) {
         }
 
         const rect = popupEl.current.getBoundingClientRect() as DOMRect;
-        
+
         if (isResizing()) {
             const newWidth = rect.width + (e.clientX - (rect.left + rect.width)) + offsetXRes
             const newHeight = rect.height + (e.clientY - (rect.top + rect.height)) + offsetYRes
 
             setBoundedSize({ width: newWidth, height: newHeight, rect });
-        } 
-        
+        }
+
         if (isMoving()) {
             const newLeft = rect.left + (e.clientX - (rect.left + offsetX));
             const newTop = rect.top + (e.clientY - (rect.top + offsetY));
@@ -308,6 +322,9 @@ function Popup(props: PopupProps) {
     }
 
     function savePosition(): void {
+        if (props.dontSavePosition) {
+            return
+        }
         const dims = props.resizable ? { width, height } : {}
         localStorage[props.name + 'Popup'] = JSON.stringify({ top, left, ...dims })
     }
@@ -384,7 +401,8 @@ function Popup(props: PopupProps) {
 const mapStateToProps = (state: State) => ({
     popups: state.popups,
     cinemaMode: state.mainStates.cinemaMode,
-    insideOfRoom: !!state.rooms.currentPermissions
+    insideOfRoom: !!state.rooms.currentPermissions,
+    logged: state.profile.logged,
 });
 
 const mapDispatchToProps = {
