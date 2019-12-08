@@ -150,8 +150,13 @@ function ListMessages(props) {
             <div
                 ref={messagesEl}
                 onScroll={handleScroll}
-                className={cn(['chat-messages', { 'scroll-smooth': shouldScroll }])}
+                className='chat-messages'
             >
+                {props.roomsMessages.length === 0 && (
+                    <div className="container-placeholder">
+                        <i className="container-placeholder__icon fa fa-comment-dots" />
+                    </div>
+                )}
                 {props.roomsMessages.map(getSingleMessage)}
             </div>
             {!shouldScroll && (
