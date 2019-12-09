@@ -152,11 +152,6 @@ function ListMessages(props) {
                 onScroll={handleScroll}
                 className='chat-messages'
             >
-                {props.roomsMessages.length === 0 && (
-                    <div className="container-placeholder">
-                        <i className="container-placeholder__icon fa fa-comment-dots" />
-                    </div>
-                )}
                 {props.roomsMessages.map(getSingleMessage)}
             </div>
             {!shouldScroll && (
