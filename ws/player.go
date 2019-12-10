@@ -10,7 +10,7 @@ var pauseLock sync.Mutex
 var resumeLock sync.Mutex
 var rewindLock sync.Mutex
 
-func (h *hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
+func (h *Hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 	switch req.Body.Event.Type {
 	case eTypePause:
 		pauseLock.Lock()

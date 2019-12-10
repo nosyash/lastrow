@@ -14,6 +14,9 @@ func (u *Users) addUser(payload *jwt.Payload) {
 		return
 	}
 
+	u.rm.Lock()
+	defer u.rm.Unlock()
+
 	u.users[payload.UUID] = &User{
 		Name:    userProfile.Name,
 		Color:   userProfile.Color,
@@ -28,12 +31,18 @@ func (u *Users) addUser(payload *jwt.Payload) {
 
 // AddGuest add guest user to the user cache
 func (u *Users) addGuest(user *User) {
+	u.rm.Lock()
+	defer u.rm.Unlock()
+
 	u.users[user.UUID] = user
 	u.UpdateUsers <- struct{}{}
 }
 
 // DelUser delete a user from the cache
 func (u *Users) delUser(uuid string) {
+	u.rm.Lock()
+	defer u.rm.Unlock()
+
 	delete(u.users, uuid)
 	u.DelFeedback <- struct{}{}
 }
@@ -80,6 +89,9 @@ func (u Users) UsersCount() int {
 func (u Users) GetAllUsers() []*User {
 	var users []*User
 
+	u.rm.RLock()
+	defer u.rm.RUnlock()
+
 	for _, user := range u.users {
 		users = append(users, &User{
 			Name:  user.Name,
@@ -89,6 +101,5 @@ func (u Users) GetAllUsers() []*User {
 			Guest: user.Guest,
 		})
 	}
-
 	return users
 }

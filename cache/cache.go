@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
 
 	"github.com/nosyash/backrow/db"
 	"github.com/nosyash/backrow/jwt"
@@ -39,6 +40,7 @@ func New(id string) *Cache {
 			make(chan struct{}),
 			make(chan struct{}),
 			db,
+			&sync.RWMutex{},
 		},
 		playlist{
 			make([]*Video, 0),

@@ -29,7 +29,7 @@ func HandleWsConnection(db *db.Database) {
 	hmacKey = os.Getenv("HS512_KEY")
 
 	rh := &roomsHub{
-		make(map[string]*hub),
+		make(map[string]*Hub),
 		db,
 	}
 

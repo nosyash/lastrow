@@ -17,7 +17,7 @@ var delUserLocker sync.Mutex
 var hmacKey string
 
 func readPacket(conn *websocket.Conn) (*packet, error) {
-	request := &packet{}
+	request := packet{}
 	err := websocket.ReadJSON(conn, &request)
 
 	if request.JWT != "" {
@@ -29,7 +29,7 @@ func readPacket(conn *websocket.Conn) (*packet, error) {
 		request.Payload = payload
 	}
 
-	return request, err
+	return &request, err
 }
 
 func (p packet) getUserUUID() string {
@@ -97,7 +97,7 @@ func extractPayload(token string) (*jwt.Payload, error) {
 	return jwt.UnmarshalPayload(token)
 }
 
-func (h hub) deleteAndClose(uuid string) (string, bool) {
+func (h Hub) deleteAndClose(uuid string) (string, bool) {
 	delUserLocker.Lock()
 	defer delUserLocker.Unlock()
 

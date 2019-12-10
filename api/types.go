@@ -74,7 +74,6 @@ type bannedList struct {
 const (
 	eTypeRegister      = "register"
 	eTypeLogin         = "login"
-	eTypeAccountLogout = "logout"
 	eTypeAccountUpdate = "update"
 )
 

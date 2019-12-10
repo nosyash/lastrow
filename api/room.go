@@ -23,6 +23,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// TODO: Move room updates to ws package
+
 var errNotHavePermission = errors.New("You don't have permissions for this action")
 
 func (server Server) roomHandler(w http.ResponseWriter, r *http.Request) {
