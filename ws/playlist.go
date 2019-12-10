@@ -26,7 +26,7 @@ const (
 	sleepBeforeStart = 3
 )
 
-func (h *hub) handlePlaylistEvent(req *packet, conn *websocket.Conn) {
+func (h *Hub) handlePlaylistEvent(req *packet, conn *websocket.Conn) {
 	switch req.Body.Event.Type {
 	case eTypePlAdd:
 		if !h.cache.Room.CheckPermissions(eTypePlAdd, h.id, req.Payload) {
@@ -114,7 +114,7 @@ func (h *hub) handlePlaylistEvent(req *packet, conn *websocket.Conn) {
 	}
 }
 
-func (h hub) updatePlaylist() {
+func (h Hub) updatePlaylist() {
 	packet := playlist{
 		Action: playlistEvent,
 		Body: plBody{
@@ -131,7 +131,7 @@ func (h hub) updatePlaylist() {
 	h.broadcast <- data
 }
 
-func (h *hub) syncElapsedTime() {
+func (h *Hub) syncElapsedTime() {
 	for {
 		if h.cache.Playlist.Size() == 0 {
 			if r := h.waitUpdates(); r {
@@ -170,7 +170,7 @@ func (h *hub) syncElapsedTime() {
 	}
 }
 
-func (h *hub) waitUpdates() bool {
+func (h *Hub) waitUpdates() bool {
 	h.syncer.isSleep = true
 
 	for {
@@ -184,7 +184,7 @@ func (h *hub) waitUpdates() bool {
 	}
 }
 
-func (h *hub) handleIframeOrStream(id string) bool {
+func (h *Hub) handleIframeOrStream(id string) bool {
 	for {
 		select {
 		case <-h.syncer.skip:
@@ -202,7 +202,7 @@ func (h *hub) handleIframeOrStream(id string) bool {
 	}
 }
 
-func (h *hub) elapsedTicker(video *cache.Video) int {
+func (h *Hub) elapsedTicker(video *cache.Video) int {
 	var ep elapsedTime
 	var d data
 	var ticker = time.Tick(syncPeriod * time.Second)
@@ -253,7 +253,7 @@ func (h *hub) elapsedTicker(video *cache.Video) int {
 	}
 }
 
-func (h *hub) pauseTicker() int {
+func (h *Hub) pauseTicker() int {
 	for {
 		select {
 		case <-h.syncer.resume:

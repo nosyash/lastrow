@@ -16,11 +16,11 @@ var Register chan *websocket.Conn
 var closeRoom chan string
 
 type roomsHub struct {
-	rhub map[string]*hub
+	rhub map[string]*Hub
 	db   *db.Database
 }
 
-type hub struct {
+type Hub struct {
 	db            *db.Database
 	hub           map[string]*websocket.Conn
 	broadcast     chan []byte

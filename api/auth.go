@@ -38,7 +38,7 @@ func (server Server) authHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (server Server) register(w http.ResponseWriter, r authRequest) {
-	if err := tags.ValidateFields(r.Body, "register"); err != nil {
+	if err := tags.ValidateFields(r.Body, eTypeRegister); err != nil {
 		sendJSON(w, http.StatusInternalServerError, message{
 			Error: err.Error(),
 		})
@@ -74,7 +74,7 @@ func (server Server) register(w http.ResponseWriter, r authRequest) {
 }
 
 func (server Server) login(w http.ResponseWriter, r authRequest) {
-	if err := tags.ValidateFields(r.Body, "login"); err != nil {
+	if err := tags.ValidateFields(r.Body, eTypeLogin); err != nil {
 		sendJSON(w, http.StatusBadRequest, message{
 			Error: err.Error(),
 		})

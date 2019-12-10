@@ -3,6 +3,7 @@ package cache
 import (
 	"github.com/nosyash/backrow/db"
 	"github.com/nosyash/backrow/jwt"
+	"sync"
 )
 
 // Cache is storage of users and playlist for a room
@@ -25,6 +26,7 @@ type Users struct {
 	DelFeedback chan struct{}
 	UpdateUsers chan struct{}
 	db          *db.Database
+	rm          *sync.RWMutex
 }
 
 type playlist struct {

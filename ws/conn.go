@@ -28,8 +28,9 @@ const pingTimeout = 45
 // Write timeout
 const writeTimeout = 10
 
-func NewRoomHub(id string, db *db.Database) *hub {
-	return &hub{
+// NewRoomHub ...
+func NewRoomHub(id string, db *db.Database) *Hub {
+	return &Hub{
 		db,
 		make(map[string]*websocket.Conn),
 		make(chan []byte),
@@ -64,21 +65,19 @@ func NewRoomHub(id string, db *db.Database) *hub {
 }
 
 // HandleActions handle internal room and client events one at time
-func (h hub) HandleActions() {
+func (h Hub) HandleActions() {
 	go h.cache.HandleCacheEvents()
 	go h.syncElapsedTime()
 	go storage.Add(h.cache, h.closeStorage)
-	var deadlineLocker sync.Mutex
+	go h.updateHandler()
 
 	for {
 		select {
 		case user := <-h.register:
-			deadlineLocker.Lock()
 			if h.closeDeadline {
 				h.cancelChan <- struct{}{}
 				h.closeDeadline = false
 			}
-			deadlineLocker.Unlock()
 			h.add(user)
 			go h.read(user.Conn)
 			go h.ping(user.Conn)
@@ -87,6 +86,15 @@ func (h hub) HandleActions() {
 			h.remove(conn)
 		case message := <-h.broadcast:
 			h.send(message)
+		case <-h.close:
+			return
+		}
+	}
+}
+
+func (h *Hub) updateHandler() {
+	for {
+		select {
 		case <-h.cache.Users.UpdateUsers:
 			go h.updateUserList()
 		case path := <-h.cache.Room.UpdateEmojis:
@@ -98,13 +106,11 @@ func (h hub) HandleActions() {
 			if h.syncer.isSleep && h.cache.Playlist.Size() > 0 {
 				h.syncer.wakeUp <- struct{}{}
 			}
-		case <-h.close:
-			return
 		}
 	}
 }
 
-func (h hub) add(user *user) {
+func (h *Hub) add(user *user) {
 	var uuid string
 
 	for key := range h.hub {
@@ -137,7 +143,7 @@ func (h hub) add(user *user) {
 	go h.updatesTo(user.Conn)
 }
 
-func (h *hub) remove(conn *websocket.Conn) {
+func (h *Hub) remove(conn *websocket.Conn) {
 	var uuid string
 
 	for u, c := range h.hub {
@@ -199,7 +205,7 @@ func (h *hub) remove(conn *websocket.Conn) {
 	}
 }
 
-func (h *hub) read(conn *websocket.Conn) {
+func (h *Hub) read(conn *websocket.Conn) {
 	defer func() {
 		h.unregister <- conn
 	}()
@@ -237,17 +243,17 @@ func (h *hub) read(conn *websocket.Conn) {
 	}
 }
 
-func (h hub) send(msg []byte) {
+func (h Hub) send(msg []byte) {
 	for _, conn := range h.hub {
 		go func(conn *websocket.Conn) {
 			if err := writeMessage(conn, websocket.TextMessage, msg); err != nil {
-				conn.Close()
+				h.errLogger.Println(err)
 			}
 		}(conn)
 	}
 }
 
-func (h hub) ping(conn *websocket.Conn) {
+func (h Hub) ping(conn *websocket.Conn) {
 	ticker := time.NewTicker(pingPeriod * time.Second)
 
 	defer func() {
@@ -267,7 +273,7 @@ func (h hub) ping(conn *websocket.Conn) {
 	}
 }
 
-func (h hub) pong(conn *websocket.Conn) {
+func (h Hub) pong(conn *websocket.Conn) {
 	conn.SetReadDeadline(time.Now().Add(pingTimeout * time.Second))
 	conn.SetPongHandler(func(string) error {
 		conn.SetReadDeadline(time.Now().Add(pingTimeout * time.Second))

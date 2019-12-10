@@ -16,7 +16,7 @@ const maxMessageSize = 400
 // TODO:
 // Move eTypeMsg to chat.go
 
-func (h hub) handleUserEvent(p *packet, conn *websocket.Conn) {
+func (h Hub) handleUserEvent(p *packet, conn *websocket.Conn) {
 	switch p.Body.Event.Type {
 	case eTypeMsg:
 		h.handleMessage(p)
@@ -31,7 +31,7 @@ func (h hub) handleUserEvent(p *packet, conn *websocket.Conn) {
 	}
 }
 
-func (h hub) handleMessage(p *packet) {
+func (h Hub) handleMessage(p *packet) {
 	uuid := p.getUserUUID()
 
 	if len(p.Body.Event.Data.Message) == 0 || len(p.Body.Event.Data.Message) > maxMessageSize {
@@ -70,13 +70,13 @@ func (h hub) handleMessage(p *packet) {
 	}
 }
 
-func (h hub) updateUserList() {
+func (h Hub) updateUserList() {
 	h.broadcast <- createPacket(userEvent, eTypeUpdUserList, &data{
 		Users: h.cache.Users.GetAllUsers(),
 	})
 }
 
-func (h hub) updatesTo(conn *websocket.Conn) {
+func (h *Hub) updatesTo(conn *websocket.Conn) {
 	if !h.syncer.isSleep && h.syncer.isPause {
 		writeMessage(conn, websocket.TextMessage, createPacket(playerEvent, eTypePause, nil))
 	}
@@ -112,7 +112,7 @@ func (h hub) updatesTo(conn *websocket.Conn) {
 	}
 }
 
-func (h hub) updateRole(role cache.NewRole) {
+func (h Hub) updateRole(role cache.NewRole) {
 	uuid := h.cache.Users.GetUUIDByID(role.ID)
 	user, result := h.cache.Users.GetUserByUUID(uuid)
 
@@ -141,7 +141,7 @@ func (h hub) updateRole(role cache.NewRole) {
 	h.cache.Room.UpdateRoles <- h.id
 }
 
-func (h hub) kickUser(conn *websocket.Conn, p *packet) {
+func (h Hub) kickUser(conn *websocket.Conn, p *packet) {
 	if !h.cache.Room.CheckPermissions(eTypeKick, h.id, p.Payload) {
 		sendFeedBack(conn, &feedback{
 			Error: errNotHavePermissions.Error(),
@@ -166,7 +166,7 @@ func (h hub) kickUser(conn *websocket.Conn, p *packet) {
 	}
 }
 
-func (h hub) banUser(conn *websocket.Conn, p *packet) {
+func (h Hub) banUser(conn *websocket.Conn, p *packet) {
 	if !h.cache.Room.CheckPermissions(eTypeBan, h.id, p.Payload) {
 		sendFeedBack(conn, &feedback{
 			Error: errNotHavePermissions.Error(),
@@ -223,7 +223,7 @@ func (h hub) banUser(conn *websocket.Conn, p *packet) {
 	}
 }
 
-func (h hub) unbanUser(conn *websocket.Conn, p *packet) {
+func (h Hub) unbanUser(conn *websocket.Conn, p *packet) {
 	if !h.cache.Room.CheckPermissions(eTypeUnban, h.id, p.Payload) {
 		sendFeedBack(conn, &feedback{
 			Error: errNotHavePermissions.Error(),
