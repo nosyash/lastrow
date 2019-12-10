@@ -1,5 +1,6 @@
 // Chat
 export const ADD_MESSAGE = 'ADD_MESSAGE';
+export const ADD_MESSAGES = 'ADD_MESSAGES';
 export const CLEAR_MESSAGE_LIST = 'CLEAR_MESSAGE_LIST';
 export const CLEAR_USERS = 'CLEAR_USERS';
 export const APPEND_TO_HISTORY = 'APPEND_TO_HISTORY';

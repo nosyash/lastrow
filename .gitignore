@@ -17,3 +17,5 @@ npm-debug.log*
 .info
 
 Dockerfile
+highload.js
+log
