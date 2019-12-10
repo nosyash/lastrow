@@ -141,6 +141,7 @@
     "react-less-watcher": "^1.1.4",
     "spritesmith-cli": "^1.1.2",
     "text-transform-loader": "^2.0.0",
+    "webpack-bundle-analyzer": "^3.6.0",
     "worker-loader": "^2.0.0"
   },
   "jest": {
