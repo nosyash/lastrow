@@ -61,6 +61,7 @@ func NewRoomHub(id string, db *db.Database) *Hub {
 		log.New(os.Stdout, "[WS]:   ", log.LstdFlags),
 		make(chan struct{}),
 		&sync.WaitGroup{},
+		&sync.RWMutex{},
 	}
 }
 
@@ -113,6 +114,7 @@ func (h *Hub) updateHandler() {
 func (h *Hub) add(user *user) {
 	var uuid string
 
+	h.lock.RLocker()
 	for key := range h.hub {
 		if user.Payload != nil {
 			uuid = user.Payload.UUID
@@ -126,6 +128,8 @@ func (h *Hub) add(user *user) {
 			return
 		}
 	}
+	h.lock.RUnlock()
+
 	if user.Guest {
 		h.cache.Users.AddGuest <- &cache.User{
 			Name:  user.Name,
@@ -146,12 +150,14 @@ func (h *Hub) add(user *user) {
 func (h *Hub) remove(conn *websocket.Conn) {
 	var uuid string
 
+	h.lock.RLock()
 	for u, c := range h.hub {
 		if c == conn {
 			uuid = u
 			break
 		}
 	}
+	h.lock.RUnlock()
 
 	if uuid != "" {
 		_, _ = h.deleteAndClose(uuid)
