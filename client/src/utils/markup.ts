@@ -1,7 +1,7 @@
 import { store } from '../store';
 
 import dompurify from 'dompurify';
-import showdown from 'showdown';
+import showdown from 'showdown/dist/showdown.min.js';
 import { User } from './types';
 import { Emojis } from '../reducers/emojis';
 

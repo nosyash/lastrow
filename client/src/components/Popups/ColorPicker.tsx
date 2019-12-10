@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChromePicker } from 'react-color';
+import ChromePicker from 'react-color/lib/components/chrome/Chrome.js';
 import { connect } from 'react-redux';
 import * as types from '../../constants/actionTypes';
 import { requestColorUpdate } from '../../actions';

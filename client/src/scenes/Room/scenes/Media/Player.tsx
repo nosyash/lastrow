@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { connect } from 'react-redux';
 import ReactPlayer from 'react-player';
 import cn from 'classnames';
-import { get } from 'lodash';
+import get from 'lodash-es/get';
 import * as types from '../../../../constants/actionTypes';
 import { PLAYER_MINIMIZE_TIMEOUT, MAX_VIDEO_SYNC_OFFSET } from '../../../../constants';
 import * as api from '../../../../constants/apiActions'

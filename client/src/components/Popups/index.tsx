@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, CSSProperties, ReactElement } from 'react';
 import { connect } from 'react-redux';
-import { get } from 'lodash';
+import get from 'lodash-es/get';
 import cn from 'classnames';
 import { getCenteredRect, safelyParseJson } from '../../utils';
 import * as types from '../../constants/actionTypes';

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { throttle } from 'lodash';
+import throttle from 'lodash-es/throttle'
 import { SEEK_SEL } from '../../../../../constants';
 
 interface ProgressBarProps {

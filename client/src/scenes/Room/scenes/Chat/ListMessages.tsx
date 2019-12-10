@@ -5,7 +5,6 @@ import Message from './components/Message';
 import { isEdge } from '../../../../constants';
 import ResizeObserver from 'resize-observer-polyfill'
 import { State } from '../../../../reducers';
-// import { throttle } from 'lodash'
 
 function ListMessages(props) {
     const [shouldScroll, setShouldScroll] = useState(true);

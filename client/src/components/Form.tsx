@@ -1,5 +1,5 @@
 import React, { Component, FormEvent } from 'react';
-import Joi from 'joi-browser';
+import Joi from 'joi';
 import Input from './Input';
 
 interface Form {

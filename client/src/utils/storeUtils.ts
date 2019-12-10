@@ -1,6 +1,6 @@
 import { store } from '../store';
 import { Profile } from '../reducers/profile';
-import { get } from 'lodash'
+import get from 'lodash-es/get'
 import { Permissions } from '../reducers/rooms';
 import { DEBUG_GRANT_ALL_PERMISSIONS } from '../constants';
 

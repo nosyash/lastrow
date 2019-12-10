@@ -3,7 +3,7 @@ import http from '../utils/httpServices';
 import * as api from '../constants/apiActions';
 import * as types from '../constants/actionTypes';
 import Axios from 'axios';
-import { get } from 'lodash';
+import get from 'lodash-es/get';
 
 import Socket, { SocketInterface } from '../utils/WebSocket';
 import { store } from '../store';
@@ -61,13 +61,13 @@ export const setRoomData = async () =>  {
         .then((room) => {
             const emojiList = get(room, 'emoji', [])
             emojiList.sort((a, b) => a.name > b.name ? 1 : -1);
-        
+
             store.dispatch({ type: types.UPDATE_MAIN_STATES, payload: { uuid: room.uuid } })
             store.dispatch({ type: types.ADD_EMOJIS, payload: emojiList })
             store.dispatch({ type: types.SET_PERMISSIONS, payload: room.permissions })
-        
+
             document.title = room.title;
-        
+
             return room
         })
 };

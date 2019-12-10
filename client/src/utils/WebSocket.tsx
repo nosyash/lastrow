@@ -1,4 +1,4 @@
-import { get } from 'lodash';
+import get from 'lodash-es/get';
 import * as api from '../constants/apiActions';
 import * as types from '../constants/actionTypes';
 import { store } from '../store';
