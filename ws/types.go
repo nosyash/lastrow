@@ -36,6 +36,7 @@ type Hub struct {
 	reqLogger     *log.Logger
 	cancelChan    chan struct{}
 	wg            *sync.WaitGroup
+	lock          *sync.RWMutex
 }
 
 type user struct {
