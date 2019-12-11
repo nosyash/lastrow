@@ -137,11 +137,14 @@ func (h *Hub) add(user *user) {
 			UUID:  user.UUID,
 			ID:    getHashOfString(user.UUID[:16]),
 		}
-
+		h.lock.Lock()
 		h.hub[user.UUID] = user.Conn
+		h.lock.Unlock()
 	} else {
 		h.cache.Users.AddUser <- user.Payload
+		h.lock.Lock()
 		h.hub[user.Payload.UUID] = user.Conn
+		h.lock.Unlock()
 	}
 
 	go h.updatesTo(user.Conn)
@@ -217,11 +220,14 @@ func (h *Hub) read(conn *websocket.Conn) {
 	}()
 
 	var uuid string
+
+	h.lock.RLock()
 	for u, c := range h.hub {
 		if c == conn {
 			uuid = u
 		}
 	}
+	h.lock.RUnlock()
 
 	for {
 		req, err := readPacket(conn)
@@ -250,6 +256,7 @@ func (h *Hub) read(conn *websocket.Conn) {
 }
 
 func (h Hub) send(msg []byte) {
+	h.lock.RLock()
 	for _, conn := range h.hub {
 		go func(conn *websocket.Conn) {
 			if err := writeMessage(conn, websocket.TextMessage, msg); err != nil {
@@ -257,6 +264,7 @@ func (h Hub) send(msg []byte) {
 			}
 		}(conn)
 	}
+	h.lock.RUnlock()
 }
 
 func (h Hub) ping(conn *websocket.Conn) {
