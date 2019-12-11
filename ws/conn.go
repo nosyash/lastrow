@@ -216,12 +216,12 @@ func (h *Hub) read(conn *websocket.Conn) {
 		h.unregister <- conn
 	}()
 
-	// var uuid string
-	// for u, c := range h.hub {
-	// 	if c == conn {
-	// 		uuid = u
-	// 	}
-	// }
+	var uuid string
+	for u, c := range h.hub {
+		if c == conn {
+			uuid = u
+		}
+	}
 
 	for {
 		req, err := readPacket(conn)
@@ -232,7 +232,7 @@ func (h *Hub) read(conn *websocket.Conn) {
 			break
 		}
 
-		// h.reqLogger.Printf("[%s:%s|%s] -> [%s:%s]\n", conn.RemoteAddr().String(), uuid[:16], h.id[:16], req.Action, req.Body.Event.Type)
+		h.reqLogger.Printf("[%s:%s|%s] -> [%s:%s]\n", conn.RemoteAddr().String(), uuid[:16], h.id[:16], req.Action, req.Body.Event.Type)
 
 		switch req.Action {
 		case userEvent:
