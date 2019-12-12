@@ -263,80 +263,6 @@ Lexer.prototype.token = function(src, top, bq) {
             continue;
         }
 
-        // list
-        // if (cap = this.rules.list.exec(src)) {
-        //     src = src.substring(cap[0].length);
-        //     bull = cap[2];
-
-        //     this.tokens.push({
-        //         type: 'list_start',
-        //         ordered: bull.length > 1
-        //     });
-
-        //     // Get each top-level item.
-        //     cap = cap[0].match(this.rules.item);
-
-        //     next = false;
-        //     l = cap.length;
-        //     i = 0;
-
-        //     for (; i < l; i++) {
-        //         item = cap[i];
-
-        //         // Remove the list item's bullet
-        //         // so it is seen as the next token.
-        //         space = item.length;
-        //         item = item.replace(/^ *([*+-]|\d+\.) +/, '');
-
-        //         // Outdent whatever the
-        //         // list item contains. Hacky.
-        //         if (~item.indexOf('\n ')) {
-        //             space -= item.length;
-        //             item = !this.options.pedantic
-        //                 ? item.replace(new RegExp('^ {1,' + space + '}', 'gm'), '')
-        //                 : item.replace(/^ {1,4}/gm, '');
-        //         }
-
-        //         // Determine whether the next list item belongs here.
-        //         // Backpedal if it does not belong in this list.
-        //         if (this.options.smartLists && i !== l - 1) {
-        //             b = block.bullet.exec(cap[i + 1])[0];
-        //             if (bull !== b && !(bull.length > 1 && b.length > 1)) {
-        //                 src = cap.slice(i + 1).join('\n') + src;
-        //                 i = l - 1;
-        //             }
-        //         }
-
-        //         // Determine whether item is loose or not.
-        //         // Use: /(^|\n)(?! )[^\n]+\n\n(?!\s*$)/
-        //         // for discount behavior.
-        //         loose = true || next || /\n\n(?!\s*$)/.test(item);
-        //         if (i !== l - 1) {
-        //             next = item.charAt(item.length - 1) === '\n';
-        //             if (!loose) loose = next;
-        //         }
-
-        //         this.tokens.push({
-        //             type: loose
-        //                 ? 'loose_item_start'
-        //                 : 'list_item_start'
-        //         });
-
-        //         // Recurse.
-        //         this.token(item, false, bq);
-
-        //         this.tokens.push({
-        //             type: 'list_item_end'
-        //         });
-        //     }
-
-        //     this.tokens.push({
-        //         type: 'list_end'
-        //     });
-
-        //     continue;
-        // }
-
         // html
         if (cap = this.rules.html.exec(src)) {
             src = src.substring(cap[0].length);
@@ -360,40 +286,6 @@ Lexer.prototype.token = function(src, top, bq) {
             };
             continue;
         }
-
-        // table (gfm)
-        // if (top && (cap = this.rules.table.exec(src))) {
-        //     src = src.substring(cap[0].length);
-
-        //     item = {
-        //         type: 'table',
-        //         header: cap[1].replace(/^ *| *\| *$/g, '').split(/ *\| */),
-        //         align: cap[2].replace(/^ *|\| *$/g, '').split(/ *\| */),
-        //         cells: cap[3].replace(/(?: *\| *)?\n$/, '').split('\n')
-        //     };
-
-        //     for (i = 0; i < item.align.length; i++) {
-        //         if (/^ *-+: *$/.test(item.align[i])) {
-        //             item.align[i] = 'right';
-        //         } else if (/^ *:-+: *$/.test(item.align[i])) {
-        //             item.align[i] = 'center';
-        //         } else if (/^ *:-+ *$/.test(item.align[i])) {
-        //             item.align[i] = 'left';
-        //         } else {
-        //             item.align[i] = null;
-        //         }
-        //     }
-
-        //     for (i = 0; i < item.cells.length; i++) {
-        //         item.cells[i] = item.cells[i]
-        //             .replace(/^ *\| *| *\| *$/g, '')
-        //             .split(/ *\| */);
-        //     }
-
-        //     this.tokens.push(item);
-
-        //     continue;
-        // }
 
         // top-level paragraph
         if (top && (cap = this.rules.paragraph.exec(src))) {
@@ -445,6 +337,7 @@ var inline = {
     br: /^ {2,}\n(?!\s*$)/,
     del: noop,
     emote: /^:([a-z0-9_]+):/,
+    spoiler: /^__([\s\S]+?)__(?!_)|^\%\%([\s\S]+?)\%\%(?!\*)/,
     // command: /^!(roll(?:0|[1-9][0-9]?)-[1-9][0-9]?[0-9]?|flip[1-9][0-9]?%)/,
     text: /^[\s\S]+?(?=[\\<!\[_*`:]| {2,}\n|$)/
 };
@@ -637,6 +530,13 @@ InlineLexer.prototype.output = function(src) {
             continue;
         }
 
+        // spoiler
+        if (cap = this.rules.spoiler.exec(src)) {
+            src = src.substring(cap[0].length);
+            out += this.renderer.spoiler(this.output(cap[2] || cap[1]));
+            continue;
+        }
+
         // em
         if (cap = this.rules.em.exec(src)) {
             src = src.substring(cap[0].length);
@@ -664,7 +564,6 @@ InlineLexer.prototype.output = function(src) {
             out += this.renderer.del(this.output(cap[1]));
             continue;
         }
-
         // emotes (cinema)
         if (cap = this.rules.emote.exec(src)) {
             const curEmote = emotes.find(emote => emote.name === cap[1])
@@ -674,6 +573,7 @@ InlineLexer.prototype.output = function(src) {
                 continue;
             }
         }
+
 
         // command (cutechan)
         // if (cap = this.rules.command.exec(src)) {
@@ -856,6 +756,10 @@ Renderer.prototype.del = function(text) {
 
 Renderer.prototype.emote = function(emote) {
     return `<img class="emote" src="${emote.path}" title=":${emote.name}:">`
+};
+
+Renderer.prototype.spoiler = function(text) {
+    return `<del class="markup--spoiler">${text}</del>`
 };
 
 Renderer.prototype.link = function(href, title, text) {

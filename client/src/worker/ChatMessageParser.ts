@@ -33,6 +33,7 @@ export default class MessageContext {
 
     constructor(props: MessageContextProps) {
         const highlight = props.message.includes(`@${props.mainUserName}`)
+        console.log('get body')
         this.templateFields = {
             avatarUrl: props.avatarUrl,
             color: props.color,
@@ -42,6 +43,7 @@ export default class MessageContext {
             classes: cn({ highlight, online: props.online, offline: !props.online }),
             body: parseBody(props.message, { postAuthorName: name, emojis: props.emojiList, userList: props.userList }),
         }
+        console.log('got body')
     }
 
     public render(): string {
