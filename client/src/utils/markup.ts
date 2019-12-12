@@ -49,7 +49,11 @@ function parseBody(input: string, params = {} as { postAuthorName: string; emoji
     const parsed = marked(input, { emotes, postAuthorName })
     const parsedWithReplies = getReplies(parsed)
 
-    cacheInstance.cacheMarkup(input, parsedWithReplies)
+    // parsing of replies skipped on initial chat load
+    if (userList.length > 0) {
+        cacheInstance.cacheMarkup(input, parsedWithReplies)
+    }
+
 
     return parsedWithReplies
 }

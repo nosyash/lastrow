@@ -15,7 +15,7 @@ export function WebSocketMiddleware({ message: data, context }: { message: strin
         }
 
         default: {
-            WebWorkerResponser.websocketData({ parsedData }, messageType)
+            return WebWorkerResponser.websocketData({ parsedData }, messageType)
         }
     }
 }

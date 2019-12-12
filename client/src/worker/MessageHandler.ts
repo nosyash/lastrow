@@ -15,13 +15,19 @@ const getLastMessages = (messages: any[]) => messages.slice(Math.max(messages.le
 
 setInterval(() => { console.log(queue) }, 1000)
 
-function watchMessages() {
-    const delay = 100;
+const getLastMessageId = () => get(chatMessages[chatMessages.length - 1], 'id')
+let lastMessageId = getLastMessageId()
 
-    setTimeout(() => {
+function watchMessages() {
+    const delay = 200;
+
+    const currentLastMessageId = getLastMessageId()
+    if (!currentLastMessageId || currentLastMessageId !== lastMessageId) {
+        lastMessageId = currentLastMessageId
         WebWorkerResponser.websocketData({ payload: chatMessages }, 'message')
-        watchMessages()
-    }, delay)
+    }
+
+    setTimeout(watchMessages, delay)
 }
 watchMessages()
 
