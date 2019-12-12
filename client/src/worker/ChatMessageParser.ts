@@ -40,7 +40,7 @@ export default class MessageContext {
             showHeader: props.showHeader,
             userId: props.userId,
             classes: cn({ highlight, online: props.online, offline: !props.online }),
-            body: parseBody(props.message, { postAuthorName: name, emojis: props.emojiList, userList: props.userList }),
+            body: parseBody(props.message, { postAuthorName: props.name, emojis: props.emojiList, userList: props.userList }),
         }
     }
 

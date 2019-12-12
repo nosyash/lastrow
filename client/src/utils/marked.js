@@ -6,7 +6,7 @@
  */
 
 let emotes = []
-
+let postAuthorName = ''
 /**
  * Block-Level Grammar
  */
@@ -337,6 +337,7 @@ var inline = {
     br: /^ {2,}\n(?!\s*$)/,
     del: noop,
     quote: /^ ?> ?([\s\S]*)(?!\*)/,
+    me: /^ ?\/me ?([\s\S]*)(?!\*)/,
     emote: /^:([a-z0-9_]+):/,
     spoiler: /^\%\%([\s\S]+?)\%\%(?!\*)/,
     // command: /^!(roll(?:0|[1-9][0-9]?)-[1-9][0-9]?[0-9]?|flip[1-9][0-9]?%)/,
@@ -545,6 +546,13 @@ InlineLexer.prototype.output = function(src) {
             continue;
         }
 
+        // me (cinema)
+        if (cap = this.rules.me.exec(src)) {
+            src = src.substring(cap[0].length);
+            out += this.renderer.me(this.output(cap[2] || cap[1]));
+            continue;
+        }
+
         // em
         if (cap = this.rules.em.exec(src)) {
             src = src.substring(cap[0].length);
@@ -740,7 +748,7 @@ Renderer.prototype.paragraph = function(text) {
 
 // span level renderer
 Renderer.prototype.strong = function(text) {
-    return `<strong class="markup--bold">${text}</strong>`
+    return `<strong class="markup markup--bold">${text}</strong>`
 };
 
 Renderer.prototype.em = function(text) {
@@ -764,11 +772,15 @@ Renderer.prototype.emote = function(emote) {
 };
 
 Renderer.prototype.quote = function(text) {
-    return `<del class="markup--quote">\> ${text}</del>`
+    return `<del class="markup markup--quote">\> ${text}</del>`
+};
+
+Renderer.prototype.me = function(text) {
+    return `<del class="markup markup--me">${postAuthorName} ${text}</del>`
 };
 
 Renderer.prototype.spoiler = function(text) {
-    return `<del class="markup--spoiler">${text}</del>`
+    return `<del class="markup markup--spoiler">${text}</del>`
 };
 
 Renderer.prototype.link = function(href, title, text) {
@@ -1117,6 +1129,7 @@ function marked(src, opt, callback) {
     try {
         if (opt) opt = merge({}, marked.defaults, opt);
         if (opt.emotes) emotes = opt.emotes
+        if (opt.postAuthorName) postAuthorName = opt.postAuthorName
         return Parser.parse(Lexer.lex(src, opt), opt);
     } catch (e) {
         e.message += '\nPlease report this to https://github.com/chjj/marked.';

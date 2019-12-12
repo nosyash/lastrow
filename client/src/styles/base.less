@@ -1120,6 +1120,8 @@ body {
 }
 
 .markup {
+    text-decoration: unset !important;
+
     &--reply {
         font-weight: 700;
         color: @replyColor;
@@ -1137,11 +1139,11 @@ body {
     &--quote {
         font-style: normal;
         color: @quoteColor;
-        text-decoration: unset;
     }
 
     &--me {
         opacity: 0.7;
+        font-style: italic;
     }
 
     &--do {
@@ -1159,7 +1161,6 @@ body {
         box-decoration-break: clone;
         background: lighten(@darkMain, 8%);
         color: transparent;
-        text-decoration: none !important;
 
         .cinema-mode & {
             background: fadeout(lighten(@darkMain, 8%), 50%);

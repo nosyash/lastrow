@@ -46,7 +46,7 @@ function parseBody(input: string, params = {} as { postAuthorName: string; emoji
     postAuthorName = params.postAuthorName;
     emotes = params.emojis;
     userList = params.userList;
-    const parsed = marked(input, { emotes })
+    const parsed = marked(input, { emotes, postAuthorName })
     const parsedWithReplies = getReplies(parsed)
 
     cacheInstance.cacheMarkup(input, parsedWithReplies)
