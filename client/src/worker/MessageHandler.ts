@@ -25,11 +25,13 @@ function watchMessages() {
 }
 watchMessages()
 
+const getPrevMessage = ()  => chatMessages[chatMessages.length - 1] || {} as RoomMessage
+
 export function onMessage(data: Message, context: WebSocketContextData) {
     queue++
 
     const processMessage = () => {
-        const { room_uuid, userList, emojis } = context;
+        const { room_uuid, userList, emojis, mainUserName } = context;
 
         if (queue > MAX_MESSAGES - 50) {
             queue--
@@ -40,28 +42,35 @@ export function onMessage(data: Message, context: WebSocketContextData) {
         }
         currentRoomUuid = room_uuid
 
+
         const message = get(data, 'body.event.data') as RoomMessage;
         message.id = messageID;
         message.roomID = room_uuid
         messageID++;
-        console.time('render')
-        message.html = new MessageContext(
-            message.color,
-            message.image,
-            true,
-            message.__id,
-            message.id,
-            true,
-            true,
-            message.message,
-            message.name,
-            emojis,
-            userList
-        ).render()
-        console.timeEnd('render')
+
+        const prevMessage = getPrevMessage()
+        const showHeader = message.__id !== prevMessage.__id
+
+        const params = {
+            color: message.color,
+            avatarUrl: message.image,
+            showHeader,
+            userId: message.__id,
+            messageId: message.id,
+            online: true,
+            message: message.message,
+            name: message.name,
+            emojiList: emojis,
+            userList: userList,
+            mainUserName,
+        }
+        message.html = new MessageContext(params).render()
 
         chatMessages.push(message)
-        if (chatMessages.length > MAX_MESSAGES) chatMessages = getLastMessages(chatMessages)
+        if (chatMessages.length > MAX_MESSAGES) {
+            chatMessages = getLastMessages(chatMessages)
+        }
+
         queue--
     }
 

@@ -235,21 +235,14 @@ class Socket implements SocketInterface {
     }
 
     private handleMessage = ({ data }: MessageEvent) => {
-        const { chat, emojis } = getState() as State
+        const { chat, emojis, profile } = getState() as State
 
-        const context = { room_uuid: this.room_uuid, userList: chat.users, emojis: emojis.list }
+        const context = { room_uuid: this.room_uuid, userList: chat.users, emojis: emojis.list, mainUserName: profile.name  }
         workerRequest.websocketData({ message: data, context })
     }
 
     private _handleMessage = ({ detail }: CustomEvent) => {
         const { parsedData, payload, messageType } = detail.data
-        // console.log(detail);
-        // return
-
-        // const parsedData: Message = safelyParseJson(data)
-        // const messageType = get(parsedData, 'body.event.type') as MessageType;
-
-        // eslint-disable-next-line no-unreachable
         switch (messageType) {
             case 'update_users': {
                 const _data = get(parsedData, 'body.event.data') as UpdateUsersData;
@@ -257,11 +250,6 @@ class Socket implements SocketInterface {
             }
 
             case 'message': {
-                // const message = get(parsedData, 'body.event.data') as ChatMessage;
-                // const payload = { ...message, roomID: this.room_uuid };
-                // this.tempMessages.push(payload)
-                // return
-                // return this.addThrottledMessage(payload)
                 return dispatch({ type: types.ADD_MESSAGES, payload });
             }
 

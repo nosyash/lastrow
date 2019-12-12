@@ -1,5 +1,5 @@
-import { Emoji } from "../reducers/emojis";
-import { User } from "../utils/types";
+import { Emoji } from '../reducers/emojis';
+import { User } from '../utils/types';
 
 export interface WorkerMessage {
     type: MESSAGE_TYPE;
@@ -32,4 +32,5 @@ export interface WebSocketContextData {
     room_uuid?: string;
     emojis?: Emoji[];
     userList?: User[];
+    mainUserName?: string;
 }
