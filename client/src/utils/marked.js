@@ -5,7 +5,7 @@
  * https://github.com/chjj/marked
  */
 
-let emotes = [{ name: 'nunu_smart', path: 'src/nunu_smart'}]
+let emotes = []
 
 /**
  * Block-Level Grammar
@@ -18,12 +18,12 @@ var block = {
     hr: noop,
     nptable: noop,
     lheading: noop,
-    blockquote: /^( *>[^>\n][^\n]*)/,
+    blockquote: noop,
     list: noop,
     html: /^ *(?:comment *(?:\n|\s*$)|closed *(?:\n{2,}|\s*$)|closing *(?:\n{2,}|\s*$))/,
     def: /^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +["(]([^\n]+)[")])? *(?:\n+|$)/,
     table: noop,
-    paragraph: /^((?:[^\n]+?(?!blockquote|tag|def))+)/,
+    paragraph: /^((?:[^\n]+?(?!tag|def))+)/,
     text: /^[^\n]+/
 };
 
@@ -38,9 +38,9 @@ block.item = replace(block.item, 'gm')
 //     ('def', '\\n+(?=' + block.def.source + ')')
 //     ();
 
-block.blockquote = replace(block.blockquote)
-    ('def', block.def)
-    ();
+// block.blockquote = replace(block.blockquote)
+//     ('def', block.def)
+//     ();
 
 block._tag = '(?!(?:'
     + 'a|em|strong|small|s|cite|q|dfn|abbr|data|time|code'
@@ -55,7 +55,7 @@ block.html = replace(block.html)
     ();
 
 block.paragraph = replace(block.paragraph)
-    ('blockquote', block.blockquote)
+    // ('blockquote', block.blockquote)
     ('tag', '<' + block._tag)
     ('def', block.def)
     ();
@@ -242,26 +242,26 @@ Lexer.prototype.token = function(src, top, bq) {
         // }
 
         // blockquote
-        if (cap = this.rules.blockquote.exec(src)) {
-            src = src.substring(cap[0].length);
+        // if (cap = this.rules.blockquote.exec(src)) {
+        //     src = src.substring(cap[0].length);
 
-            this.tokens.push({
-                type: 'blockquote_start'
-            });
+        //     this.tokens.push({
+        //         type: 'blockquote_start'
+        //     });
 
-            cap = cap[0].replace(/^ *> ?/gm, '');
+        //     cap = cap[0].replace(/^ *> ?/gm, '');
 
-            // Pass `top` to keep the current
-            // "toplevel" state. This is exactly
-            // how markdown.pl works.
-            this.token(cap, top, true);
+        //     // Pass `top` to keep the current
+        //     // "toplevel" state. This is exactly
+        //     // how markdown.pl works.
+        //     this.token(cap, top, true);
 
-            this.tokens.push({
-                type: 'blockquote_end'
-            });
+        //     this.tokens.push({
+        //         type: 'blockquote_end'
+        //     });
 
-            continue;
-        }
+        //     continue;
+        // }
 
         // html
         if (cap = this.rules.html.exec(src)) {
@@ -331,13 +331,14 @@ var inline = {
     link: /^!?\[(inside)\]\(href\)/,
     reflink: /^!?\[(inside)\]\s*\[([^\]]*)\]/,
     nolink: /^!?\[((?:\[[^\]]*\]|[^\[\]])*)\]/,
-    strong: /^__([\s\S]+?)__(?!_)|^\*\*([\s\S]+?)\*\*(?!\*)/,
-    em: /^\b_((?:[^_]|__)+?)_\b|^\*((?:\*\*|[\s\S])+?)\*(?!\*)/,
+    strong: /^\*\*([\s\S]+?)\*\*(?!\*)/,
+    em: /^\*((?:\*\*|[\s\S])+?)\*(?!\*)/,
     code: /^(`+)\s*([\s\S]*?[^`])\s*\1(?!`)/,
     br: /^ {2,}\n(?!\s*$)/,
     del: noop,
+    quote: /^ ?> ?([\s\S]*)(?!\*)/,
     emote: /^:([a-z0-9_]+):/,
-    spoiler: /^__([\s\S]+?)__(?!_)|^\%\%([\s\S]+?)\%\%(?!\*)/,
+    spoiler: /^\%\%([\s\S]+?)\%\%(?!\*)/,
     // command: /^!(roll(?:0|[1-9][0-9]?)-[1-9][0-9]?[0-9]?|flip[1-9][0-9]?%)/,
     text: /^[\s\S]+?(?=[\\<!\[_*`:]| {2,}\n|$)/
 };
@@ -530,10 +531,17 @@ InlineLexer.prototype.output = function(src) {
             continue;
         }
 
-        // spoiler
+        // spoiler (cinema)
         if (cap = this.rules.spoiler.exec(src)) {
             src = src.substring(cap[0].length);
             out += this.renderer.spoiler(this.output(cap[2] || cap[1]));
+            continue;
+        }
+
+        // quote (cinema)
+        if (cap = this.rules.quote.exec(src)) {
+            src = src.substring(cap[0].length);
+            out += this.renderer.quote(this.output(cap[2] || cap[1]));
             continue;
         }
 
@@ -564,6 +572,7 @@ InlineLexer.prototype.output = function(src) {
             out += this.renderer.del(this.output(cap[1]));
             continue;
         }
+
         // emotes (cinema)
         if (cap = this.rules.emote.exec(src)) {
             const curEmote = emotes.find(emote => emote.name === cap[1])
@@ -573,7 +582,6 @@ InlineLexer.prototype.output = function(src) {
                 continue;
             }
         }
-
 
         // command (cutechan)
         // if (cap = this.rules.command.exec(src)) {
@@ -685,9 +693,6 @@ Renderer.prototype.code = function(code, lang, escaped) {
         + '\n</code></pre>\n';
 };
 
-Renderer.prototype.blockquote = function(quote) {
-    return `<em class="markup--quote">${quote}</em>`
-};
 
 Renderer.prototype.html = function(html) {
     return html;
@@ -756,6 +761,10 @@ Renderer.prototype.del = function(text) {
 
 Renderer.prototype.emote = function(emote) {
     return `<img class="emote" src="${emote.path}" title=":${emote.name}:">`
+};
+
+Renderer.prototype.quote = function(text) {
+    return `<del class="markup--quote">\> ${text}</del>`
 };
 
 Renderer.prototype.spoiler = function(text) {
