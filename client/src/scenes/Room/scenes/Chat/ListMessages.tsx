@@ -74,9 +74,9 @@ function ListMessages(props) {
         const bottomPosition = target.scrollHeight - target.offsetHeight
         const currentPosition = target.scrollTop
 
-        // TODO: REVERT BACK!!!
-        // const scrollingUp = lastScroll() > currentPosition
-        const scrollingUp = false
+        // TODO: Fix scrolling on old messages remove
+        const scrollingUp = lastScroll() > currentPosition
+
         const reachedBottom = Math.abs(currentPosition - bottomPosition) < 2
 
         setLastScroll(currentPosition)
