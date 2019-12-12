@@ -27,6 +27,8 @@ import {
     DEBUG_EXPOSE,
     RESUME_MEDIA_WS_DEBUG_MESSAGE
 } from './__DEBUG__';
+import { workerRequest } from '../worker';
+import { State } from '../reducers';
 
 const { dispatch, getState } = store as Store;
 
@@ -71,6 +73,7 @@ class Socket implements SocketInterface {
         this.messagesCheckTimeout = 150
 
         this.watchMessages()
+        this.initEvents()
 
         DEBUG_EXPOSE('WEBSOCKET', this)
     }
@@ -209,9 +212,9 @@ class Socket implements SocketInterface {
 
     private addCollectedMessages = () => {
         this.addMessages(this.tempMessages)
-        console.log(this.tempMessages.length)
+        // console.log(this.tempMessages.length)
         const len = this.tempMessages.length
-        if (len < 10 ) this.messagesCheckTimeout = 100
+        if (len < 10) this.messagesCheckTimeout = 100
         if (len > 10 && len < 20) this.messagesCheckTimeout = 500
         if (len > 20 && len < 30) this.messagesCheckTimeout = 500
         if (len > 30 && len < 50) this.messagesCheckTimeout = 1000
@@ -223,14 +226,30 @@ class Socket implements SocketInterface {
 
     private watchMessages() {
         setTimeout(() => {
-            this.addCollectedMessages()
+            // this.addCollectedMessages()
         }, this.messagesCheckTimeout)
     }
 
-    private handleMessage = ({ data }: MessageEvent) => {
-        const parsedData: Message = safelyParseJson(data)
-        const messageType = get(parsedData, 'body.event.type') as MessageType;
+    private initEvents() {
+        document.addEventListener('websocketdata', this._handleMessage)
+    }
 
+    private handleMessage = ({ data }: MessageEvent) => {
+        const { chat, emojis } = getState() as State
+
+        const context = { room_uuid: this.room_uuid, userList: chat.users, emojis: emojis.list }
+        workerRequest.websocketData({ message: data, context })
+    }
+
+    private _handleMessage = ({ detail }: CustomEvent) => {
+        const { parsedData, payload, messageType } = detail.data
+        // console.log(detail);
+        // return
+
+        // const parsedData: Message = safelyParseJson(data)
+        // const messageType = get(parsedData, 'body.event.type') as MessageType;
+
+        // eslint-disable-next-line no-unreachable
         switch (messageType) {
             case 'update_users': {
                 const _data = get(parsedData, 'body.event.data') as UpdateUsersData;
@@ -238,12 +257,12 @@ class Socket implements SocketInterface {
             }
 
             case 'message': {
-                const message = get(parsedData, 'body.event.data') as ChatMessage;
-                const payload = { ...message, roomID: this.room_uuid };
-                this.tempMessages.push(payload)
-                return
+                // const message = get(parsedData, 'body.event.data') as ChatMessage;
+                // const payload = { ...message, roomID: this.room_uuid };
+                // this.tempMessages.push(payload)
+                // return
                 // return this.addThrottledMessage(payload)
-                // return dispatch({ type: types.ADD_MESSAGE, payload });
+                return dispatch({ type: types.ADD_MESSAGES, payload });
             }
 
             case 'resume': {

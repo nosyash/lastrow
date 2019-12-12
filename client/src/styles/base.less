@@ -88,6 +88,7 @@ body {
     position: absolute;
     display: flex;
     align-items: center;
+
     &__icon {
         margin: auto;
         font-size: 11em;
@@ -320,9 +321,11 @@ body {
 
     & .container-placeholder {
         position: unset;
+
         .cinema-mode & {
             display: none;
         }
+
         &__icon {
             font-size: 5em;
         }
@@ -331,6 +334,7 @@ body {
 
 .chat-message:last-child {
     margin-bottom: 20px !important;
+
     .cinema-mode & {
         margin-bottom: 15px !important;
     }
@@ -369,6 +373,7 @@ body {
 .chat-message {
     position: relative;
     margin-bottom: 5px;
+
     .cinema-mode & {
         margin-bottom: 4px;
     }
@@ -630,6 +635,7 @@ body {
     margin-right: 30px;
     display: flex;
     flex-direction: row;
+
     .user-icon i {
         vertical-align: text-bottom;
     }
@@ -1595,12 +1601,13 @@ body {
     color: rgba(255, 255, 255, 0.8);
 }
 
-.chat-message_p {
-    white-space: pre-line;
+.chat-message_inner {
+    // white-space: pre-line;
 }
 
 
 .cinema-mode {
+
     .chat-input,
     .chat-input__topbar {
         background: transparent;

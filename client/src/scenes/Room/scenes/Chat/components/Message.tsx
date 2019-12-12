@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import safelySetInnerHTML from '../../../../../utils/safelySetInnerHTML ';
-import parseBody from '../../../../../utils/markup';
 import playSound from '../../../../../utils/HandleSounds';
 import notifications from '../../../../../utils/notifications';
 import { Emoji } from '../../../../../reducers/emojis';
+import { workerRequest } from '../../../../../worker';
+import parse from 'html-react-parser';
+import { State } from '../../../../../reducers';
 
 interface MessageProps {
     online: boolean;
@@ -12,32 +13,16 @@ interface MessageProps {
     image: string;
     renderHeader: boolean;
     id: string;
+    messageId: string;
     highlight: boolean;
-    body: string;
+    message: string;
     name: string;
+    html: string;
     emojiList: Emoji[];
 }
 
 class Message extends Component<MessageProps, any> {
     shown = false;
-    bodyMarked = '';
-
-    getClassNames = classes => {
-        const { online } = classes;
-        let { highlight } = classes;
-
-        const onlineClass = online ? 'online' : 'offline';
-        highlight = highlight ? 'highlight' : '';
-
-        return { className: `chat-message ${onlineClass} ${highlight}` };
-    };
-
-    getStyles = (image: string, color: string) => {
-        const backgroundImage = image ? `url(${image})` : '';
-        const backgroundColor = color;
-
-        return { backgroundImage, backgroundColor };
-    };
 
     pageIsVisible = () => document.visibilityState === 'visible';
 
@@ -56,60 +41,21 @@ class Message extends Component<MessageProps, any> {
         else notifications.addUnread();
     };
 
+    componentDidMount() {
+        const { image, highlight, message, name } = this.props;
+
+        this.handleNotification(highlight, { name, body: message, image });
+    }
+
     render() {
-        const { online, color, image, highlight, body } = this.props;
-        const { name } = this.props;
-
-        if (highlight) {
-            // this.handleSounds();
-        }
-        this.handleNotification(highlight, { name, body, image });
-
-        // Markup cache
-        if (!this.bodyMarked) this.bodyMarked = parseBody(body, { postAuthorName: name });
-        const renderMessageArgs = {
-            ...this.getStyles(image, color),
-            ...this.getClassNames({ online, highlight }),
-            bodyMarked: this.bodyMarked,
-        };
-        return <RenderMessage {...renderMessageArgs} {...this.props} />
+        const { html } = this.props;
+        if (!html) return null
+        return parse(html)
     }
 }
 
-function mapStateToProps(state) {
+function mapStateToProps(state: State) {
     return { emojiList: state.emojis.list };
 }
 
 export default connect(mapStateToProps)(Message);
-
-const RenderMessage = props => {
-    const { color, className, backgroundColor, backgroundImage } = props;
-    const { _ref, id, name, bodyMarked } = props;
-    const { renderHeader, hideHeader } = props;
-    const { handleProfile, onAvatarClick } = props;
-    return (
-        <div data-id={id} className={className}>
-            {renderHeader && !hideHeader && (
-                <div className="chat-message_header">
-                    <div
-                        style={{ backgroundImage, backgroundColor }}
-                        onClick={onAvatarClick}
-                        className="chat-avatar"
-                    />
-                    <span
-                        ref={_ref}
-                        data-name={name}
-                        onClick={handleProfile}
-                        style={{ color }}
-                        className="chat-name reply-trigger"
-                    >
-                        {name}
-                    </span>
-                </div>
-            )}
-            <div className="chat-message_body">
-                <p className="chat-message_p" dangerouslySetInnerHTML={{ __html: bodyMarked }} />
-            </div>
-        </div>
-    );
-};

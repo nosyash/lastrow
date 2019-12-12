@@ -20,11 +20,11 @@ class Notification {
         this.makeNotification();
     }
 
-    addReplies({ name, body, image }) {
+    addReplies({ name, message, image }) {
         this.replies = true;
         this.makeNotification();
 
-        if ((ls as any).get('notify')) notify(`Reply by ${name}`, { body, icon: image });
+        if ((ls as any).get('notify')) notify(`Reply by ${name}`, { body: message, icon: image });
     }
 
     removeNotifications = () => {

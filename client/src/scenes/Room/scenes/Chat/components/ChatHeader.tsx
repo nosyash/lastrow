@@ -37,14 +37,14 @@ function ChatHeader({ userList }: ChatHeaderProps) {
     function handleHideProfile() {
         requestAnimationFrame(() => setShowProfile(false));
     }
-
+    const userListSliced = userList.slice(0, 15)
     return (
         <div className="chat-header">
             <CustomAnimation show={showProfile && !currentProfile.guest} classes={['mini-profile-animation']} duration={110}>
                 <MiniProfile hideProfile={handleHideProfile} currentProfile={currentProfile} />
             </CustomAnimation>
             <div className="chat-header_userlist">
-                {userList.map((userProfile, index) => (
+                {userListSliced.map((userProfile, index) => (
                     <UserIcon
                         onClick={() => handleUserClick(userProfile)}
                         key={index}

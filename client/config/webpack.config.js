@@ -297,6 +297,12 @@ module.exports = function(webpackEnv) {
                         },
                     ],
                 },
+                {
+                    test: /\.mustache$/,
+                    loader: 'raw-loader'
+                    // loader: 'mustache-loader?minify'
+                    // loader: 'mustache-loader?{ minify: { removeComments: false } }'
+                },
                 // Disable require.ensure as it's not a standard language feature.
                 { parser: { requireEnsure: false } },
 

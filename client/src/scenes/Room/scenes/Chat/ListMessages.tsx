@@ -25,31 +25,13 @@ function ListMessages(props) {
     const getMessagesInner = () => messagesEl.current
     const timer = useRef(null)
 
-    // const throttleResize = useRef(null)
-
     useEffect(() => {
         onMessage()
     }, [props.roomsMessages, props.users]);
 
     useEffect(() => {
-        // throttleResize.current = throttle(() => {
-        //     if (shouldScrollMutable.current) {
-        //         scrollToBottom()
-        //         setShouldScroll(true)
-        //     }
-        //     console.log('thr');
-
-        // }, 1024)
 
         const resizeObserver = new ResizeObserver(() => {
-            // settmi
-            // TODO: Handle scroll on resize
-            // if (!getMessagesInner()) {
-            //     return
-            // }
-            // // throttleResize.current()
-            // const currentPosition = getMessagesInner().scrollTop
-            // setLastScroll(currentPosition)
             clearTimeout(timer.current)
             timer.current = setTimeout(() => {
                 scrollToBottom()
@@ -92,7 +74,9 @@ function ListMessages(props) {
         const bottomPosition = target.scrollHeight - target.offsetHeight
         const currentPosition = target.scrollTop
 
-        const scrollingUp = lastScroll() > currentPosition
+        // TODO: REVERT BACK!!!
+        // const scrollingUp = lastScroll() > currentPosition
+        const scrollingUp = false
         const reachedBottom = Math.abs(currentPosition - bottomPosition) < 2
 
         setLastScroll(currentPosition)
@@ -138,8 +122,10 @@ function ListMessages(props) {
                 color={currentMessage.color}
                 name={currentMessage.name}
                 id={currentMessage.__id}
+                messageId={currentMessage.id}
                 image={currentMessage.image}
-                body={currentMessage.message}
+                message={currentMessage.message}
+                html={currentMessage.html}
             />
         );
     }

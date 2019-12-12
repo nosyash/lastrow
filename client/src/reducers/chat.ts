@@ -10,6 +10,11 @@ export interface RoomMessage {
     __id: string;
     roomID: string;
     id: number;
+    html: string;
+}
+export interface RawMessage {
+    html: string;
+    id: string;
 }
 
 export interface Chat {
@@ -22,6 +27,7 @@ export interface Chat {
 
 const initialState = {
     roomsMessages: [] as RoomMessage[],
+    rawMessages: [] as RawMessage[],
     history: [] as any[],
     users: [] as User[],
     connected: false as boolean,
@@ -57,19 +63,20 @@ const Messages = (state = initialState, action: any): any => {
             return { ...state, roomsMessages: roomsMessages as RoomMessage[] };
         }
         case types.ADD_MESSAGES: {
-            let messages: RoomMessage[] = action.payload;
+            // let messages: RoomMessage[] = action.payload;
 
-            if (messages.length > MAX_MESSAGES) messages = getLastMessages(messages)
-            messages.forEach(message => {
-                id++;
-                delete (message as any).type;
-                message.id = id;
-            })
+            // if (messages.length > MAX_MESSAGES) messages = getLastMessages(messages)
+            // messages.forEach(message => {
+            //     id++;
+            //     delete (message as any).type;
+            //     message.id = id;
+            // })
 
-            let roomsMessages = state.roomsMessages.concat(messages);
-            if (roomsMessages.length > MAX_MESSAGES) roomsMessages = getLastMessages(roomsMessages)
+            // let roomsMessages = state.roomsMessages.concat(messages);
+            // if (roomsMessages.length > MAX_MESSAGES) roomsMessages = getLastMessages(roomsMessages)
+            // console.log(action.payload)
 
-            return { ...state, roomsMessages: roomsMessages as RoomMessage[] };
+            return { ...state, roomsMessages: action.payload as RoomMessage[] };
         }
 
         case types.CLEAR_MESSAGE_LIST: {
