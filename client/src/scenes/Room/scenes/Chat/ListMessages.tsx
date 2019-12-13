@@ -17,13 +17,8 @@ interface ListMessagesProps {
 
 function ListMessages(props: ListMessagesProps) {
     const [shouldScroll, setShouldScroll] = useState(true);
-    // const shouldScrollMutable = useRef(true)
-    // const setShouldScroll = (val: boolean) => {
-    //     shouldScrollMutable.current = val
-    //     setShouldScroll_(val)
-    // }
 
-    // const forceScroll = useRef(false)
+    const forceScroll = useRef(false)
 
     const lastScrollPosition = useRef(0);
 
@@ -35,6 +30,11 @@ function ListMessages(props: ListMessagesProps) {
     const timer = useRef(null)
 
     useEffect(() => {
+        // When old messages removed, scroll handler might think that we are currently scrolling up.
+        // Force scroll until messages finish rendering, so it doesn't happen.
+        if (shouldScroll) { forceScroll.current = true }
+        requestAnimationFrame(() => { forceScroll.current = false });
+
         onMessage()
     }, [props.roomsMessages, props.users]);
 
@@ -83,46 +83,19 @@ function ListMessages(props: ListMessagesProps) {
         const bottomPosition = target.scrollHeight - target.offsetHeight
         const currentPosition = target.scrollTop
 
-        // TODO: Fix scrolling on old messages remove
         const scrollingUp = lastScroll() > currentPosition
 
         const reachedBottom = Math.abs(currentPosition - bottomPosition) < 2
 
         setLastScroll(currentPosition)
 
-        if (scrollingUp) {
+        if (scrollingUp && !forceScroll.current) {
             setShouldScroll(false)
         } else if (reachedBottom) {
             setShouldScroll(true)
             scrollToBottom()
         }
-
-
     }
-
-    // function RenderMessage({ currentMessage }) {
-    //     const { roomID, selfName } = props;
-    //     let highlight = false;
-
-
-    //     const hasYourName = currentMessage.message.includes(`@${selfName}`);
-    //     const hasEveryone = currentMessage.message.includes(`@everyone`);
-    //     if (hasYourName || hasEveryone) {
-    //         highlight = true;
-    //     }
-
-    //     const correctRoom = currentMessage.roomID === roomID;
-    //     if (!correctRoom) return null;
-
-    //     // const online = !!users.find(user => user.__id === currentMessage.__id);
-    //     return (
-    //         <Message
-    //             highlight={highlight}
-    //             key={currentMessage.id}
-    //             html={currentMessage.html}
-    //         />
-    //     );
-    // }
 
     return (
         <Fragment>
