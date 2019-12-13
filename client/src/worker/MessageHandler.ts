@@ -90,7 +90,7 @@ export function onMessage(data: Message, context: WebSocketContextData) {
 
         const params = {
             color: message.color,
-            avatarUrl: message.image,
+            avatar: message.image,
             showHeader,
             userId: message.__id,
             messageId: message.id,

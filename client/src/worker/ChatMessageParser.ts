@@ -8,7 +8,7 @@ import template from '!raw-loader!../mustache/chat-message.mustache'
 
 interface MessageContextProps {
     color: string;
-    avatarUrl: string;
+    avatar: string;
     showHeader: boolean;
     userId: string;
     messageId: number;
@@ -27,14 +27,14 @@ export default class MessageContext {
         userId: string;
         name: string;
         color: string;
-        avatarUrl: string;
+        avatar: string;
         classes: string;
     }
 
     constructor(props: MessageContextProps) {
         const highlight = props.message.includes(`@${props.mainUserName}`)
         this.templateFields = {
-            avatarUrl: props.avatarUrl,
+            avatar: props.avatar,
             color: props.color,
             name: props.name,
             showHeader: props.showHeader,
