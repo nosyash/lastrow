@@ -63,19 +63,6 @@ const Messages = (state = initialState, action: any): any => {
             return { ...state, roomsMessages: roomsMessages as RoomMessage[] };
         }
         case types.ADD_MESSAGES: {
-            // let messages: RoomMessage[] = action.payload;
-
-            // if (messages.length > MAX_MESSAGES) messages = getLastMessages(messages)
-            // messages.forEach(message => {
-            //     id++;
-            //     delete (message as any).type;
-            //     message.id = id;
-            // })
-
-            // let roomsMessages = state.roomsMessages.concat(messages);
-            // if (roomsMessages.length > MAX_MESSAGES) roomsMessages = getLastMessages(roomsMessages)
-            // console.log(action.payload)
-
             return { ...state, roomsMessages: action.payload as RoomMessage[] };
         }
 

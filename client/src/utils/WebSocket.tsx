@@ -243,6 +243,7 @@ class Socket implements SocketInterface {
 
     private _handleMessage = ({ detail }: CustomEvent) => {
         const { parsedData, payload, messageType } = detail.data
+
         switch (messageType) {
             case 'update_users': {
                 const _data = get(parsedData, 'body.event.data') as UpdateUsersData;
@@ -250,7 +251,7 @@ class Socket implements SocketInterface {
             }
 
             case 'message': {
-                return dispatch({ type: types.ADD_MESSAGES, payload });
+                return dispatch({ type: types.ADD_MESSAGES, payload })
             }
 
             case 'resume': {

@@ -5,8 +5,17 @@ import Message from './components/Message';
 import { isEdge } from '../../../../constants';
 import ResizeObserver from 'resize-observer-polyfill'
 import { State } from '../../../../reducers';
+import { User } from '../../../../utils/types';
+import { RoomMessage } from '../../../../reducers/chat';
 
-function ListMessages(props) {
+interface ListMessagesProps {
+    roomsMessages: RoomMessage[];
+    users: User[];
+    selfName: string;
+    roomID: string;
+}
+
+function ListMessages(props: ListMessagesProps) {
     const [shouldScroll, setShouldScroll] = useState(true);
     // const shouldScrollMutable = useRef(true)
     // const setShouldScroll = (val: boolean) => {
@@ -91,44 +100,29 @@ function ListMessages(props) {
 
     }
 
-    function getSingleMessage(currentMessage, i) {
-        const { roomID, selfName, users } = props;
-        let renderHeader = true;
-        let highlight = false;
+    // function RenderMessage({ currentMessage }) {
+    //     const { roomID, selfName } = props;
+    //     let highlight = false;
 
-        const previousMessage = props.roomsMessages[i - 1];
-        const sameAuthorMessage =
-            previousMessage && previousMessage.__id === currentMessage.__id;
-        if (sameAuthorMessage) {
-            renderHeader = false;
-        }
 
-        const hasYourName = currentMessage.message.includes(`@${selfName}`);
-        const hasEveryone = currentMessage.message.includes(`@everyone`);
-        if (hasYourName || hasEveryone) {
-            highlight = true;
-        }
+    //     const hasYourName = currentMessage.message.includes(`@${selfName}`);
+    //     const hasEveryone = currentMessage.message.includes(`@everyone`);
+    //     if (hasYourName || hasEveryone) {
+    //         highlight = true;
+    //     }
 
-        const correctRoom = currentMessage.roomID === roomID;
-        if (!correctRoom) return null;
+    //     const correctRoom = currentMessage.roomID === roomID;
+    //     if (!correctRoom) return null;
 
-        const online = !!users.find(user => user.__id === currentMessage.__id);
-        return (
-            <Message
-                highlight={highlight}
-                online={online}
-                renderHeader={renderHeader}
-                key={currentMessage.id}
-                color={currentMessage.color}
-                name={currentMessage.name}
-                id={currentMessage.__id}
-                messageId={currentMessage.id}
-                image={currentMessage.image}
-                message={currentMessage.message}
-                html={currentMessage.html}
-            />
-        );
-    }
+    //     // const online = !!users.find(user => user.__id === currentMessage.__id);
+    //     return (
+    //         <Message
+    //             highlight={highlight}
+    //             key={currentMessage.id}
+    //             html={currentMessage.html}
+    //         />
+    //     );
+    // }
 
     return (
         <Fragment>
@@ -137,7 +131,7 @@ function ListMessages(props) {
                 onScroll={handleScroll}
                 className='chat-messages'
             >
-                {props.roomsMessages.map(getSingleMessage)}
+                {props.roomsMessages.map((message) => <Message html={message.html} selfName={props.selfName} key={message.id} />)}
             </div>
             {!shouldScroll && (
                 <div

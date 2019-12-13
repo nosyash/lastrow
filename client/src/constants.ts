@@ -14,7 +14,7 @@ export const POPUP_RESIZE_HANDLER = '.popup__resize-handle';
 
 // Misc
 export const RESIZE_OFFSET = 10;
-export const MAX_MESSAGES = 180;
+export const MAX_MESSAGES = 100;
 export const MAX_HISTORY = 20;
 export const MAX_MESSAGE_LENGTH = 400;
 export const WEBSOCKET_TIMEOUT = 2000;

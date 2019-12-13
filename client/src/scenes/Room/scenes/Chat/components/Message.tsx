@@ -1,50 +1,52 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
+import { Component } from 'react';
 import playSound from '../../../../../utils/HandleSounds';
 import notifications from '../../../../../utils/notifications';
-import { Emoji } from '../../../../../reducers/emojis';
-import { workerRequest } from '../../../../../worker';
 import parse from 'html-react-parser';
-import { State } from '../../../../../reducers';
 
 interface MessageProps {
-    online: boolean;
-    color: string;
-    image: string;
-    renderHeader: boolean;
-    id: string;
-    messageId: string;
-    highlight: boolean;
-    message: string;
-    name: string;
+    // online: boolean;
+    // image: string;
+    // highlight: boolean;
+    selfName: string;
+    // message: string;
+    // name: string;
     html: string;
-    emojiList: Emoji[];
 }
 
 class Message extends Component<MessageProps, any> {
+
+    shouldComponentUpdate() {
+        return false
+    }
     shown = false;
 
     pageIsVisible = () => document.visibilityState === 'visible';
 
-    handleSounds = () => {
-        if (this.shown) return;
-        if (this.pageIsVisible()) return
+    // handleSounds = () => {
+    //     if (this.shown) return;
+    //     if (this.pageIsVisible()) return
 
-        playSound();
-    };
+    //     playSound();
+    // };
 
-    handleNotification = (highlight, opts) => {
+
+    handleNotification = (highlight: boolean) => {
         if (this.shown) return;
         this.shown = true;
-        if (this.pageIsVisible()) return;
-        if (highlight) notifications.addReplies(opts);
+
+        if (highlight) notifications.addReplies();
         else notifications.addUnread();
     };
 
     componentDidMount() {
-        const { image, highlight, message, name } = this.props;
+        const { html, selfName } = this.props;
 
-        this.handleNotification(highlight, { name, body: message, image });
+        if (this.pageIsVisible()) return;
+
+
+        const hasYourName = html.includes(`@${selfName}`);
+        const hasEveryone = html.includes(`@everyone`);
+        this.handleNotification(hasYourName || hasEveryone)
     }
 
     render() {
@@ -53,9 +55,4 @@ class Message extends Component<MessageProps, any> {
         return parse(html)
     }
 }
-
-function mapStateToProps(state: State) {
-    return { emojiList: state.emojis.list };
-}
-
-export default connect(mapStateToProps)(Message);
+export default Message

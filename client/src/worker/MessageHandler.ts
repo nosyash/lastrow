@@ -13,21 +13,51 @@ let queue = 0
 
 const getLastMessages = (messages: any[]) => messages.slice(Math.max(messages.length - MAX_MESSAGES + 70, 0))
 
-setInterval(() => { console.log(queue) }, 1000)
+// setInterval(() => { console.log(queue) }, 1000)
 
-const getLastMessageId = () => get(chatMessages[chatMessages.length - 1], 'id')
+const getLastMessageId = () => get(chatMessages[chatMessages.length - 1], 'id', 0)
 let lastMessageId = getLastMessageId()
+let time = Date.now()
+let msgPerSecondList = []
+
+let addMessageDelay = 100;
+function handleAddMessageDelay(msgPerSecond: number) {
+    if (msgPerSecond <= 20) addMessageDelay = 100
+    if (msgPerSecond > 20 && msgPerSecond <= 60) addMessageDelay = 300
+    if (msgPerSecond > 60 && msgPerSecond <= 90) addMessageDelay = 700
+    if (msgPerSecond > 90 && msgPerSecond <= 150) addMessageDelay = 900
+    if (msgPerSecond > 150 && msgPerSecond <= 200) addMessageDelay = 1300
+    if (msgPerSecond > 200 && msgPerSecond <= 500) addMessageDelay = 1800
+    if (msgPerSecond > 500) addMessageDelay = 2500
+}
+
+function calcAvgMsgPerSecond() {
+    const currentMessageId = getLastMessageId()
+    const messagesSince = currentMessageId - lastMessageId
+
+    const multi = 1000 / addMessageDelay
+    const delay = (messagesSince * multi)
+    msgPerSecondList.push(delay)
+
+    const msgPerSecodAvg = Math.round(msgPerSecondList.reduce((acc, curr) => acc + curr, 0) / msgPerSecondList.length)
+    if (msgPerSecondList.length > 20) msgPerSecondList = msgPerSecondList.slice(Math.max(msgPerSecondList.length - 20, 0))
+    handleAddMessageDelay(msgPerSecodAvg)
+    lastMessageId = currentMessageId
+}
 
 function watchMessages() {
-    const delay = 200;
+    const now = Date.now()
+    if (now - time > addMessageDelay) {
+        const hasNewMessages = lastMessageId !== getLastMessageId()
+        calcAvgMsgPerSecond()
 
-    const currentLastMessageId = getLastMessageId()
-    if (!currentLastMessageId || currentLastMessageId !== lastMessageId) {
-        lastMessageId = currentLastMessageId
-        WebWorkerResponser.websocketData({ payload: chatMessages }, 'message')
+        if (hasNewMessages) {
+            WebWorkerResponser.websocketData({ payload: chatMessages }, 'message')
+        }
+        time = now
     }
 
-    setTimeout(watchMessages, delay)
+    setTimeout(watchMessages, 110)
 }
 watchMessages()
 
@@ -37,12 +67,13 @@ export function onMessage(data: Message, context: WebSocketContextData) {
     queue++
 
     const processMessage = () => {
-        const { room_uuid, userList, emojis, mainUserName } = context;
-
         if (queue > MAX_MESSAGES - 50) {
             queue--
             return
         }
+
+        const { room_uuid, userList, emojis, mainUserName } = context;
+
         if (room_uuid !== currentRoomUuid) {
             chatMessages = []
         }
