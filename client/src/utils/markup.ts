@@ -2,6 +2,8 @@
 import { User } from './types';
 import { Emoji } from '../reducers/emojis';
 import marked from './marked'
+import twemoji from 'twemoji'
+
 marked.setOptions({
     renderer: new marked.Renderer(),
     pedantic: false,
@@ -37,6 +39,27 @@ const cacheInit = () => {
 }
 const cacheInstance = cacheInit()
 
+class Parser {
+    constructor(public string: string) {}
+
+    markup(opts: any) {
+        this.string = marked(this.string, opts)
+        return this
+    }
+    replies() {
+        this.string = getReplies(this.string)
+        return this
+    }
+    twemoji(opts: any) {
+        this.string = twemoji.parse(this.string, opts)
+        return this
+    }
+
+    output() {
+        return this.string
+    }
+}
+
 function parseBody(input: string, params = {} as { postAuthorName: string; emojis: Emoji[]; userList: User[] }): string {
     const cachedBody = cacheInstance.getCachedMarkup(input)
     if (cachedBody) {
@@ -46,16 +69,18 @@ function parseBody(input: string, params = {} as { postAuthorName: string; emoji
     postAuthorName = params.postAuthorName;
     emotes = params.emojis;
     userList = params.userList;
-    const parsed = marked(input, { emotes, postAuthorName })
-    const parsedWithReplies = getReplies(parsed)
+    const output = new Parser(input)
+        .markup( { emotes, postAuthorName })
+        .replies()
+        .twemoji({ className: 'emote twemoji'})
+        .output()
 
-    // parsing of replies skipped on initial chat load
+    // because replies are not parsed yet if there is no users
     if (userList.length > 0) {
-        cacheInstance.cacheMarkup(input, parsedWithReplies)
+        cacheInstance.cacheMarkup(input, output)
     }
 
-
-    return parsedWithReplies
+    return output
 }
 
 function getReplies(string: string) {
