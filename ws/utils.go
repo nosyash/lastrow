@@ -102,8 +102,7 @@ func (h Hub) deleteAndClose(uuid string) (string, bool) {
 	defer delUserLocker.Unlock()
 
 	var addr string
-	conn, ok := h.hub[uuid]
-	if ok {
+	if conn, ok := h.hub[uuid]; ok {
 		addr = conn.RemoteAddr().String()
 		conn.Close()
 	} else {

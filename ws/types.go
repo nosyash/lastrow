@@ -18,6 +18,7 @@ var closeRoom chan string
 type roomsHub struct {
 	rhub map[string]*Hub
 	db   *db.Database
+	lock *sync.RWMutex
 }
 
 type Hub struct {

@@ -17,13 +17,14 @@ const (
 	exitUpdateHead
 )
 
-var errNotHavePermissions = errors.New("You don't have permissions to do this action")
-
-var delLock sync.Mutex
-
 const (
 	syncPeriod       = 3
 	sleepBeforeStart = 3
+)
+
+var (
+	errNotHavePermissions = errors.New("You don't have permissions to do this action")
+	delLock               sync.Mutex
 )
 
 func (h *Hub) handlePlaylistEvent(req *packet, conn *websocket.Conn) {
@@ -74,13 +75,11 @@ func (h *Hub) handlePlaylistEvent(req *packet, conn *websocket.Conn) {
 		if ID != "" && len(ID) == 64 {
 
 			delLock.Lock()
-
 			if h.syncer.currentVideoID == ID {
 				h.syncer.skip <- struct{}{}
 				delLock.Unlock()
 				return
 			}
-
 			delLock.Unlock()
 
 			h.cache.Playlist.DelVideo <- ID

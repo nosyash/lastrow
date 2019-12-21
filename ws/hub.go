@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/nosyash/backrow/db"
 
@@ -31,6 +32,7 @@ func HandleWsConnection(db *db.Database) {
 	rh := &roomsHub{
 		make(map[string]*Hub),
 		db,
+		&sync.RWMutex{},
 	}
 
 	for {
@@ -38,8 +40,10 @@ func HandleWsConnection(db *db.Database) {
 		case conn := <-Register:
 			go rh.registerNewConn(conn)
 		case roomID := <-closeRoom:
-			rh.rhub[roomID].close <- struct{}{}
-			delete(rh.rhub, roomID)
+			if _, ok := rh.rhub[roomID]; ok {
+				rh.rhub[roomID].close <- struct{}{}
+				delete(rh.rhub, roomID)
+			}
 		}
 	}
 }
@@ -88,7 +92,6 @@ func (rh *roomsHub) registerNewConn(conn *websocket.Conn) {
 			return
 		}
 
-		// Check by UUID
 		for _, u := range room.BannedUsers {
 			if user.Payload.UUID == u.UUID {
 				sendError(conn, ErrBannedInARoom)
@@ -97,7 +100,6 @@ func (rh *roomsHub) registerNewConn(conn *websocket.Conn) {
 			}
 		}
 
-		// And by IP
 		address := strings.Split(conn.RemoteAddr().String(), ":")[0]
 		for _, u := range room.BannedIps {
 			if address == u.IP {
@@ -108,15 +110,20 @@ func (rh *roomsHub) registerNewConn(conn *websocket.Conn) {
 		}
 	}
 
+	rh.lock.RLock()
 	for room := range rh.rhub {
 		if room == roomUUID {
 			rh.rhub[roomUUID].register <- user
 			return
 		}
 	}
+	rh.lock.RUnlock()
 
 	hub := NewRoomHub(roomUUID, rh.db)
+
+	rh.lock.Lock()
 	rh.rhub[roomUUID] = hub
+	rh.lock.Unlock()
 
 	go rh.rhub[roomUUID].HandleActions()
 	rh.rhub[roomUUID].register <- user
