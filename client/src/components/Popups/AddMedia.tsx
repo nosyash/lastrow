@@ -1,13 +1,13 @@
 import React, { Component, ChangeEvent } from 'react';
 import { connect } from 'react-redux';
-import Joi from 'joi-browser';
+import Joi from 'joi';
 import * as api from '../../constants/apiActions';
 import * as types from '../../constants/actionTypes';
 import { webSocketSend } from '../../actions';
 import { toastOpts } from '../../conf';
 import { toast } from 'react-toastify';
 import { MAXIMUM_SUBTITLES_SIZE } from '../../constants';
-import { get } from 'lodash';
+import get from 'lodash-es/get';
 import { isSrt } from '../../utils/subtitles';
 
 // import * as types from '../../constants/ActionTypes';

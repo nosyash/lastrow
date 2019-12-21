@@ -10,6 +10,11 @@ export interface RoomMessage {
     __id: string;
     roomID: string;
     id: number;
+    html: string;
+}
+export interface RawMessage {
+    html: string;
+    id: string;
 }
 
 export interface Chat {
@@ -22,6 +27,7 @@ export interface Chat {
 
 const initialState = {
     roomsMessages: [] as RoomMessage[],
+    rawMessages: [] as RawMessage[],
     history: [] as any[],
     users: [] as User[],
     connected: false as boolean,
@@ -38,6 +44,8 @@ let id = 0;
 //     return [];
 // };
 
+const getLastMessages = (messages: any[]) => messages.slice(Math.max(messages.length - MAX_MESSAGES + 50, 0))
+
 const Messages = (state = initialState, action: any): any => {
     const historyTemp = Object.assign([], [...state.history, action.payload]);
 
@@ -45,26 +53,17 @@ const Messages = (state = initialState, action: any): any => {
         case types.ADD_MESSAGE: {
             id++;
             const message = { ...action.payload };
-            const { roomID } = message;
 
-            // delete message.roomID;
             delete message.type;
             message.id = id;
 
-            // const room = state.roomsMessages.find(item => item.roomID === roomID);
-            // const currentList = getRoomMessages(room);
+            let roomsMessages = [...state.roomsMessages, message];
+            if (roomsMessages.length > MAX_MESSAGES) roomsMessages = getLastMessages(roomsMessages)
 
-            // const roomUpdated = Object.assign({}, { ...room, list: currentList });
-            // roomUpdated.roomID = roomID;
-            // roomUpdated.list.push(message);
-            // const currentRoom = [...(list[roomID] || []), { ...message, id }] || [message];
-            const roomsMessages = [...state.roomsMessages, message];
-            if (roomsMessages.length > MAX_MESSAGES) roomsMessages.shift();
-            // list[roomID] = currentRoom;
-            // const roomsMessages = state.roomsMessages;
-
-            // return { ...state, roomsMessages: [...state.roomsMessages, roomUpdated] };
             return { ...state, roomsMessages: roomsMessages as RoomMessage[] };
+        }
+        case types.ADD_MESSAGES: {
+            return { ...state, roomsMessages: action.payload as RoomMessage[] };
         }
 
         case types.CLEAR_MESSAGE_LIST: {

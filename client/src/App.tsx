@@ -1,9 +1,9 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Route, Switch, Redirect, BrowserRouter } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
-import { connect, Provider } from 'react-redux';
+import { connect } from 'react-redux';
 import { get as lsGet } from 'local-storage';
-import { get } from 'lodash'
+import get from 'lodash-es/get'
 // import RoomBase from './scenes/Room';
 // import RoomListBase from './scenes/Home/index';
 const RoomBase = lazy(() => import(/* webpackChunkName: "room" */ './scenes/Room/index'));
@@ -14,7 +14,6 @@ import Popups from './components/Popups';
 import * as types from './constants/actionTypes';
 import { getProfile } from './utils/apiRequests';
 import { getRandom, getCookie, getJWTBody } from './utils';
-import { store } from './store';
 import { Profile } from './reducers/profile';
 import { State } from './reducers';
 
@@ -55,7 +54,7 @@ function App(props: any) {
         updateProfile({ ...profile, logged: true });
         const jwt = getJWTBody(getCookie('jwt'));
         const roles = get(jwt, 'roles', [])
-        
+
         if (roles.length === 0) {
             setCurrentLevel(1)
         }

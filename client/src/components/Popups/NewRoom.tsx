@@ -1,5 +1,5 @@
 import React from 'react';
-import Joi from 'joi-browser';
+import Joi from 'joi';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import Form from '../Form';

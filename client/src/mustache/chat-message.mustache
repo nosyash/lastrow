@@ -1,0 +1,13 @@
+<div data-id="{{ userId }}" class="chat-message {{ classes }}">
+    {{#showHeader}}
+        <div class="chat-message_header">
+            <div style="background-image: url('{{ avatarUrl }}'); background-color: '{{ color }}';" class="chat-avatar"></div>
+            <span data-name="{{ name }}" style="color: {{ color }}" class="chat-name reply-trigger">
+                {{ name }}
+            </span>
+        </div>
+    {{/showHeader}}
+    <div class="chat-message_body">
+        {{{ body }}}
+    </div>
+</div>

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, Dispatch, Component } from 'react';
 import ReactRedux, { connect, MapStateToProps } from 'react-redux';
 import ReactPlayer from 'react-player';
 import cn from 'classnames';
-import { get } from 'lodash';
+import get from 'lodash-es/get';
 import * as types from '../../../../../constants/actionTypes';
 import { formatTime, requestFullscreen } from '../../../../../utils';
 import { PLAYER_MINIMIZE_TIMEOUT, MAX_VIDEO_SYNC_OFFSET } from '../../../../../constants';

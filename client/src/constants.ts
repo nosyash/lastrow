@@ -31,9 +31,16 @@ export const MAX_VIDEO_SYNC_OFFSET = 6; // sec
 // export const PIXELS_TO_DISABLE_AUTOSCROLL = 40;
 
 // API
-const origin = window.location.origin;
-const https = window.location.protocol === 'https:';
-const hostname = window.location.host;
+const getWindow = () => {
+    try {
+        return window
+    } catch (error) {
+        return null
+    }
+}
+const origin = getWindow() ? getWindow().location.origin : '';
+const https = getWindow() ? getWindow().location.protocol === 'https:' : '';
+const hostname = getWindow() ? getWindow().location.host : '';
 export const API_ENDPOINT = `${origin}/api`;
 export const SOCKET_ENDPOINT = `${https ? 'wss' : 'ws'}:${hostname}/api/ws`;
 
@@ -57,7 +64,7 @@ export const OPEN = 1;
 export const CLOSING = 2;
 export const CLOSED = 3;
 
-export const isEdge = window.navigator.userAgent.indexOf('Edge') > -1;
+export const isEdge = getWindow() ? getWindow().navigator.userAgent.indexOf('Edge') > -1 : false;
 
 // popups
 export const COLOR_PICKER = 'colorPicker';

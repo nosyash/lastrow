@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import Joi from 'joi-browser';
+import Joi from 'joi';
 import * as types from '../../constants/actionTypes';
 import Form from '../Form';
 import { GUEST_AUTH } from '../../constants';

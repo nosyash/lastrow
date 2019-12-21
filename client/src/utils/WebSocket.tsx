@@ -1,4 +1,5 @@
-import { get } from 'lodash';
+import get from 'lodash-es/get';
+import throttle from 'lodash-es/throttle';
 import * as api from '../constants/apiActions';
 import * as types from '../constants/actionTypes';
 import { store } from '../store';
@@ -18,7 +19,7 @@ import { Store } from 'redux';
 import { Emoji } from '../reducers/emojis';
 import httpServices from './httpServices';
 import { wait, safelyParseJson } from '.';
-import { DEBUG } from '../constants';
+import { DEBUG, MAX_MESSAGES } from '../constants';
 import {
     UPDATE_PLAYLIST_WS_DEBUG_MESSAGE,
     PAUSE_MEDIA_WS_DEBUG_MESSAGE,
@@ -26,6 +27,8 @@ import {
     DEBUG_EXPOSE,
     RESUME_MEDIA_WS_DEBUG_MESSAGE
 } from './__DEBUG__';
+import { workerRequest } from '../worker';
+import { State } from '../reducers';
 
 const { dispatch, getState } = store as Store;
 
@@ -48,7 +51,11 @@ class Socket implements SocketInterface {
     room_uuid: string;
     uuid: string;
     timer: NodeJS.Timeout;
+    timer2: NodeJS.Timeout;
     reconnectTimer: NodeJS.Timeout;
+    lastTime: number;
+    tempMessages: any[]
+    messagesCheckTimeout: number
     constructor(props: SocketInterface) {
         this.url = props.url;
         this.guest = props.guest;
@@ -57,8 +64,16 @@ class Socket implements SocketInterface {
         this.uuid = props.uuid;
 
         this.timer = null;
+        this.timer2 = null;
         this.reconnectTimer = null;
         this.initWebSocket();
+
+        this.lastTime = Date.now()
+        this.tempMessages = []
+        this.messagesCheckTimeout = 150
+
+        this.watchMessages()
+        this.initEvents()
 
         DEBUG_EXPOSE('WEBSOCKET', this)
     }
@@ -193,9 +208,41 @@ class Socket implements SocketInterface {
         dispatch({ type: types.SET_SOCKET_CONNECTED, payload: true });
     }
 
+    private addMessages = (payload: any[]) => dispatch({ type: types.ADD_MESSAGES, payload });
+
+    private addCollectedMessages = () => {
+        this.addMessages(this.tempMessages)
+        // console.log(this.tempMessages.length)
+        const len = this.tempMessages.length
+        if (len < 10) this.messagesCheckTimeout = 100
+        if (len > 10 && len < 20) this.messagesCheckTimeout = 500
+        if (len > 20 && len < 30) this.messagesCheckTimeout = 500
+        if (len > 30 && len < 50) this.messagesCheckTimeout = 1000
+        if (len > 50 && len < 100) this.messagesCheckTimeout = 2000
+        if (len > 100) this.messagesCheckTimeout = 4000
+        this.tempMessages = []
+        this.watchMessages()
+    }
+
+    private watchMessages() {
+        setTimeout(() => {
+            // this.addCollectedMessages()
+        }, this.messagesCheckTimeout)
+    }
+
+    private initEvents() {
+        document.addEventListener('websocketdata', this._handleMessage)
+    }
+
     private handleMessage = ({ data }: MessageEvent) => {
-        const parsedData: Message = safelyParseJson(data)
-        const messageType = get(parsedData, 'body.event.type') as MessageType;
+        const { chat, emojis, profile } = getState() as State
+
+        const context = { room_uuid: this.room_uuid, userList: chat.users, emojis: emojis.list, mainUserName: profile.name  }
+        workerRequest.websocketData({ message: data, context })
+    }
+
+    private _handleMessage = ({ detail }: CustomEvent) => {
+        const { parsedData, payload, messageType } = detail.data
 
         switch (messageType) {
             case 'update_users': {
@@ -204,9 +251,7 @@ class Socket implements SocketInterface {
             }
 
             case 'message': {
-                const message = get(parsedData, 'body.event.data') as ChatMessage;
-                const payload = { ...message, roomID: this.room_uuid };
-                return dispatch({ type: types.ADD_MESSAGE, payload });
+                return dispatch({ type: types.ADD_MESSAGES, payload })
             }
 
             case 'resume': {

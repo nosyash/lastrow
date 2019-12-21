@@ -5,17 +5,20 @@ import Message from './components/Message';
 import { isEdge } from '../../../../constants';
 import ResizeObserver from 'resize-observer-polyfill'
 import { State } from '../../../../reducers';
-// import { throttle } from 'lodash'
+import { User } from '../../../../utils/types';
+import { RoomMessage } from '../../../../reducers/chat';
 
-function ListMessages(props) {
+interface ListMessagesProps {
+    roomsMessages: RoomMessage[];
+    users: User[];
+    selfName: string;
+    roomID: string;
+}
+
+function ListMessages(props: ListMessagesProps) {
     const [shouldScroll, setShouldScroll] = useState(true);
-    // const shouldScrollMutable = useRef(true)
-    // const setShouldScroll = (val: boolean) => {
-    //     shouldScrollMutable.current = val
-    //     setShouldScroll_(val)
-    // }
 
-    // const forceScroll = useRef(false)
+    const forceScroll = useRef(false)
 
     const lastScrollPosition = useRef(0);
 
@@ -26,31 +29,18 @@ function ListMessages(props) {
     const getMessagesInner = () => messagesEl.current
     const timer = useRef(null)
 
-    // const throttleResize = useRef(null)
-
     useEffect(() => {
+        // When old messages removed, scroll handler might think that we are currently scrolling up.
+        // Force scroll until messages finish rendering, so it doesn't happen.
+        if (shouldScroll) { forceScroll.current = true }
+        requestAnimationFrame(() => { forceScroll.current = false });
+
         onMessage()
     }, [props.roomsMessages, props.users]);
 
     useEffect(() => {
-        // throttleResize.current = throttle(() => {
-        //     if (shouldScrollMutable.current) {
-        //         scrollToBottom()
-        //         setShouldScroll(true)
-        //     }
-        //     console.log('thr');
-
-        // }, 1024)
 
         const resizeObserver = new ResizeObserver(() => {
-            // settmi
-            // TODO: Handle scroll on resize
-            // if (!getMessagesInner()) {
-            //     return
-            // }
-            // // throttleResize.current()
-            // const currentPosition = getMessagesInner().scrollTop
-            // setLastScroll(currentPosition)
             clearTimeout(timer.current)
             timer.current = setTimeout(() => {
                 scrollToBottom()
@@ -94,55 +84,17 @@ function ListMessages(props) {
         const currentPosition = target.scrollTop
 
         const scrollingUp = lastScroll() > currentPosition
+
         const reachedBottom = Math.abs(currentPosition - bottomPosition) < 2
 
         setLastScroll(currentPosition)
 
-        if (scrollingUp) {
+        if (scrollingUp && !forceScroll.current) {
             setShouldScroll(false)
         } else if (reachedBottom) {
             setShouldScroll(true)
             scrollToBottom()
         }
-
-
-    }
-
-    function getSingleMessage(currentMessage, i) {
-        const { roomID, selfName, users } = props;
-        let renderHeader = true;
-        let highlight = false;
-
-        const previousMessage = props.roomsMessages[i - 1];
-        const sameAuthorMessage =
-            previousMessage && previousMessage.__id === currentMessage.__id;
-        if (sameAuthorMessage) {
-            renderHeader = false;
-        }
-
-        const hasYourName = currentMessage.message.includes(`@${selfName}`);
-        const hasEveryone = currentMessage.message.includes(`@everyone`);
-        if (hasYourName || hasEveryone) {
-            highlight = true;
-        }
-
-        const correctRoom = currentMessage.roomID === roomID;
-        if (!correctRoom) return null;
-
-        const online = !!users.find(user => user.__id === currentMessage.__id);
-        return (
-            <Message
-                highlight={highlight}
-                online={online}
-                renderHeader={renderHeader}
-                key={currentMessage.id}
-                color={currentMessage.color}
-                name={currentMessage.name}
-                id={currentMessage.__id}
-                image={currentMessage.image}
-                body={currentMessage.message}
-            />
-        );
     }
 
     return (
@@ -152,7 +104,7 @@ function ListMessages(props) {
                 onScroll={handleScroll}
                 className='chat-messages'
             >
-                {props.roomsMessages.map(getSingleMessage)}
+                {props.roomsMessages.map((message) => <Message html={message.html} selfName={props.selfName} key={message.id} />)}
             </div>
             {!shouldScroll && (
                 <div

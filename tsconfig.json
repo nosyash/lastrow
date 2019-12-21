@@ -6,7 +6,7 @@
         "noImplicitAny": false,
         "target": "ES5",
         "isolatedModules": false,
-        "skipLibCheck": true,
+        // "skipLibCheck": true,
         "removeComments": true,
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
@@ -17,6 +17,11 @@
         "jsx": "react"
     },
     "exclude": [
-        "**/*.worker.ts"
+        "**/*.worker.ts",
+        "node_modules/",
+    ],
+    "include": [
+        "node_modules/@types/**/*.d.ts",
+        "client/src/**/*"
     ]
 }

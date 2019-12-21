@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import Joi from 'joi-browser';
+import Joi from 'joi';
 import { toast } from 'react-toastify';
 import Form from '../../../Form';
 import * as api from '../../../../constants/apiActions';

@@ -1,115 +1,58 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import safelySetInnerHTML from '../../../../../utils/safelySetInnerHTML ';
-import parseBody from '../../../../../utils/markup';
+import { Component } from 'react';
 import playSound from '../../../../../utils/HandleSounds';
 import notifications from '../../../../../utils/notifications';
-import { Emoji } from '../../../../../reducers/emojis';
+import parse from 'html-react-parser';
 
 interface MessageProps {
-    online: boolean;
-    color: string;
-    image: string;
-    renderHeader: boolean;
-    id: string;
-    highlight: boolean;
-    body: string;
-    name: string;
-    emojiList: Emoji[];
+    // online: boolean;
+    // image: string;
+    // highlight: boolean;
+    selfName: string;
+    // message: string;
+    // name: string;
+    html: string;
 }
 
 class Message extends Component<MessageProps, any> {
+
+    shouldComponentUpdate() {
+        return false
+    }
     shown = false;
-    bodyMarked = '';
-
-    getClassNames = classes => {
-        const { online } = classes;
-        let { highlight } = classes;
-
-        const onlineClass = online ? 'online' : 'offline';
-        highlight = highlight ? 'highlight' : '';
-
-        return { className: `chat-message ${onlineClass} ${highlight}` };
-    };
-
-    getStyles = (image: string, color: string) => {
-        const backgroundImage = image ? `url(${image})` : '';
-        const backgroundColor = color;
-
-        return { backgroundImage, backgroundColor };
-    };
 
     pageIsVisible = () => document.visibilityState === 'visible';
 
-    handleSounds = () => {
-        if (this.shown) return;
-        if (this.pageIsVisible()) return
+    // handleSounds = () => {
+    //     if (this.shown) return;
+    //     if (this.pageIsVisible()) return
 
-        playSound();
-    };
+    //     playSound();
+    // };
 
-    handleNotification = (highlight, opts) => {
+
+    handleNotification = (highlight: boolean) => {
         if (this.shown) return;
         this.shown = true;
-        if (this.pageIsVisible()) return;
-        if (highlight) notifications.addReplies(opts);
+
+        if (highlight) notifications.addReplies();
         else notifications.addUnread();
     };
 
+    componentDidMount() {
+        const { html, selfName } = this.props;
+
+        if (this.pageIsVisible()) return;
+
+
+        const hasYourName = html.includes(`@${selfName}`);
+        const hasEveryone = html.includes(`@everyone`);
+        this.handleNotification(hasYourName || hasEveryone)
+    }
+
     render() {
-        const { online, color, image, highlight, body } = this.props;
-        const { name } = this.props;
-
-        if (highlight) {
-            // this.handleSounds();
-        }
-        this.handleNotification(highlight, { name, body, image });
-
-        // Markup cache
-        if (!this.bodyMarked) this.bodyMarked = parseBody(body, { postAuthorName: name });
-        const renderMessageArgs = {
-            ...this.getStyles(image, color),
-            ...this.getClassNames({ online, highlight }),
-            bodyMarked: this.bodyMarked,
-        };
-        return <RenderMessage {...renderMessageArgs} {...this.props} />
+        const { html } = this.props;
+        if (!html) return null
+        return parse(html)
     }
 }
-
-function mapStateToProps(state) {
-    return { emojiList: state.emojis.list };
-}
-
-export default connect(mapStateToProps)(Message);
-
-const RenderMessage = props => {
-    const { color, className, backgroundColor, backgroundImage } = props;
-    const { _ref, id, name, bodyMarked } = props;
-    const { renderHeader, hideHeader } = props;
-    const { handleProfile, onAvatarClick } = props;
-    return (
-        <div data-id={id} className={className}>
-            {renderHeader && !hideHeader && (
-                <div className="chat-message_header">
-                    <div
-                        style={{ backgroundImage, backgroundColor }}
-                        onClick={onAvatarClick}
-                        className="chat-avatar"
-                    />
-                    <span
-                        ref={_ref}
-                        data-name={name}
-                        onClick={handleProfile}
-                        style={{ color }}
-                        className="chat-name reply-trigger"
-                    >
-                        {name}
-                    </span>
-                </div>
-            )}
-            <div className="chat-message_body">
-                <p className="chat-message_p" dangerouslySetInnerHTML={{ __html: bodyMarked }} />
-            </div>
-        </div>
-    );
-};
+export default Message

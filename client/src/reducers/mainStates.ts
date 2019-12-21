@@ -1,5 +1,5 @@
 import * as types from '../constants/actionTypes';
-import { get } from 'lodash'
+import get from 'lodash-es/get'
 
 export interface MainStates {
     cinemaMode: boolean;
