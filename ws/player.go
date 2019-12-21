@@ -6,14 +6,12 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var pauseLock sync.Mutex
-var resumeLock sync.Mutex
-var rewindLock sync.Mutex
+var videoStateLock sync.Mutex
 
 func (h *Hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 	switch req.Body.Event.Type {
 	case eTypePause:
-		pauseLock.Lock()
+		videoStateLock.Lock()
 
 		if !h.syncer.isPause && !h.syncer.isSleep && !h.syncer.isStreamOrFrame {
 			if !h.cache.Room.CheckPermissions(eTypePause, h.id, req.Payload) {
@@ -24,18 +22,18 @@ func (h *Hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 			}
 
 			h.syncer.pause <- struct{}{}
+			h.syncer.isPause = true
 
 			h.broadcast <- createPacket(playerEvent, eTypePause, nil)
-			h.syncer.isPause = true
 
 			sendFeedBack(conn, &feedback{
 				Message: "success",
 			})
 		}
 
-		pauseLock.Unlock()
+		videoStateLock.Unlock()
 	case eTypeResume:
-		resumeLock.Lock()
+		videoStateLock.Lock()
 
 		if h.syncer.isPause && !h.syncer.isSleep && !h.syncer.isStreamOrFrame {
 			if !h.cache.Room.CheckPermissions(eTypeResume, h.id, req.Payload) {
@@ -55,7 +53,7 @@ func (h *Hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 			})
 		}
 
-		resumeLock.Unlock()
+		videoStateLock.Unlock()
 
 	case eTypeRewind:
 		if !h.syncer.isSleep && !h.syncer.isStreamOrFrame {
@@ -65,7 +63,7 @@ func (h *Hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 				})
 				return
 			}
-			rewindLock.Lock()
+			videoStateLock.Lock()
 
 			if req.Body.Event.Data.RewindTime >= 0 && req.Body.Event.Data.RewindTime <= h.syncer.duration {
 				var ep elapsedTime
@@ -89,7 +87,7 @@ func (h *Hub) handlePlayerEvent(req *packet, conn *websocket.Conn) {
 				})
 			}
 
-			rewindLock.Unlock()
+			videoStateLock.Unlock()
 		}
 	}
 }

@@ -205,11 +205,15 @@ func (h *Hub) remove(conn *websocket.Conn) {
 				return
 			}()
 		} else {
+			h.lock.RLock()
 			for _, u := range h.hub {
+				h.lock.RUnlock()
 				writeMessage(u, websocket.TextMessage, createPacket(userEvent, eTypeUpdUserList, &data{
 					Users: h.cache.Users.GetAllUsers(),
 				}))
+				h.lock.RLock()
 			}
+			h.lock.RUnlock()
 		}
 	}
 }
@@ -258,11 +262,13 @@ func (h *Hub) read(conn *websocket.Conn) {
 func (h Hub) send(msg []byte) {
 	h.lock.RLock()
 	for _, conn := range h.hub {
+		h.lock.RUnlock()
 		go func(conn *websocket.Conn) {
 			if err := writeMessage(conn, websocket.TextMessage, msg); err != nil {
 				h.errLogger.Println(err)
 			}
 		}(conn)
+		h.lock.RLock()
 	}
 	h.lock.RUnlock()
 }
