@@ -50,6 +50,9 @@ function ListMessages(props: ListMessagesProps) {
         if (getMessagesInner()) {
             resizeObserver.observe(getMessagesInner());
         }
+        return () => {
+            resizeObserver.unobserve(getMessagesInner())
+        }
     }, [])
 
     function scrollToBottom(cb = () => null) {

@@ -241,8 +241,20 @@ class Socket implements SocketInterface {
         workerRequest.websocketData({ message: data, context })
     }
 
+    private handleProxyMessage(data: any) {
+        const text = get(data, 'error.message')
+        if (text && !toast.isActive(text)) {
+            toast.warn(text, { toastId: text, hideProgressBar: true, autoClose: 2000 })
+        }
+    }
+
     private _handleMessage = ({ detail }: CustomEvent) => {
         const { parsedData, payload, messageType } = detail.data
+
+        const proxyServerMessage = get(parsedData, '__PROXY_SERVER__')
+        if (proxyServerMessage) {
+            return this.handleProxyMessage(proxyServerMessage)
+        }
 
         switch (messageType) {
             case 'update_users': {

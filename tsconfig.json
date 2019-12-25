@@ -6,22 +6,23 @@
         "noImplicitAny": false,
         "target": "ES5",
         "isolatedModules": false,
-        // "skipLibCheck": true,
+        "skipLibCheck": true,
         "removeComments": true,
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
         "moduleResolution": "node",
         "module": "esnext",
-        "lib": ["webworker", "es6", "scripthost", "dom"],
-        "sourceMap": true,
+        "lib": ["webworker", "es5", "scripthost", "dom"],
+        "sourceMap": false,
         "jsx": "react"
     },
-    "exclude": [
-        "**/*.worker.ts",
-        "node_modules/",
-    ],
+    // "exclude": [
+    //     "**/*.worker.ts",
+    //     "node_modules"
+    // ],
     "include": [
-        "node_modules/@types/**/*.d.ts",
-        "client/src/**/*"
+        "client/src/**/*",
+        "node_modules/typescript/lib/lib.dom.d.ts",
+        "client/src/**/*.d.ts"
     ]
 }

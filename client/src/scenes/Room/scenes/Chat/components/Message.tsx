@@ -43,7 +43,6 @@ class Message extends Component<MessageProps, any> {
 
         if (this.pageIsVisible()) return;
 
-
         const hasYourName = html.includes(`@${selfName}`);
         const hasEveryone = html.includes(`@everyone`);
         this.handleNotification(hasYourName || hasEveryone)
