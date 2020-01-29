@@ -8,8 +8,19 @@ export interface MainStates {
     chatWidth: number;
 }
 
+function setCinemaModeClasses(toSet = false) {
+    const classList = document.documentElement.classList
+    if (toSet) {
+        classList.add('cinema-mode')
+    } else {
+        classList.remove('cinema-mode')
+    }
+}
+
+const _initialCinemaMode = JSON.parse(get(localStorage, 'cinemaMode', false))
+setCinemaModeClasses(_initialCinemaMode)
 const initialState: MainStates = {
-    cinemaMode: JSON.parse(get(localStorage, 'cinemaMode', false)),
+    cinemaMode: _initialCinemaMode,
     roomID: '',
     uuid: '',
     chatWidth: JSON.parse(get(localStorage, 'chatWidth', 300)),
@@ -22,6 +33,7 @@ const mainStates = (state = initialState, action: any) => {
 
     if (action.type === types.TOGGLE_CINEMAMODE) {
         localStorage.cinemaMode = !state.cinemaMode;
+        setCinemaModeClasses(!state.cinemaMode)
         return { ...state, cinemaMode: !state.cinemaMode };
     }
 

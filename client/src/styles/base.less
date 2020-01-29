@@ -111,6 +111,39 @@ body {
     // overflow: hidden;
 }
 
+html.cinema-mode {
+    .video-container {
+        background: darken(@darkMain, 12%)
+    }
+
+    .container-placeholder__icon {
+        color: darken(@darkSecond, 7%);
+        text-shadow: -4px 4px 0px darken(@bodyBG, 7%);
+    }
+
+    .popup-header {
+        background: darken(@popupHeaderBG, 7%);
+    }
+
+    .control-panel {
+        background: darken(fadein(@popupHeaderBG, 7%), 7%);
+    }
+
+    .user-icon,
+    .chat-input__topbar .emote-icon {
+        opacity: 0.6;
+    }
+
+    #root {
+        padding: 0px;
+    }
+
+    .popup-element {
+        background: darken(@popupHeaderBG, 7%);
+    }
+}
+
+
 .room-container_disconected {
 
     .video-container,
