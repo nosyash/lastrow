@@ -33,7 +33,11 @@ function ListMessages(props: ListMessagesProps) {
         // When old messages removed, scroll handler might think that we are currently scrolling up.
         // Force scroll until messages finish rendering, so it doesn't happen.
         if (shouldScroll) { forceScroll.current = true }
-        requestAnimationFrame(() => { forceScroll.current = false });
+        // requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            forceScroll.current = false
+        })
+        // });
 
         onMessage()
     }, [props.roomsMessages, props.users]);

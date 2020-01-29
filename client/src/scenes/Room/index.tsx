@@ -76,7 +76,9 @@ class RoomBase extends Component<RoomBaseProps, any> {
 
     handleKeyDown = (e: KeyboardEvent) => {
         const usedKeys = ['KeyP', 'KeyC', 'KeyS']
-        const { altKey, code, ctrlKey } = e;
+        const { altKey, code, ctrlKey, metaKey, keyCode } = e;
+        const ESCAPE = keyCode === 27
+
         if (altKey) {
             if (usedKeys.includes(code)) e.preventDefault();
             switch (code) {
@@ -87,8 +89,9 @@ class RoomBase extends Component<RoomBaseProps, any> {
             }
         }
 
-        if (!ctrlKey && !code.includes('Arrow'))
-            return this.focusInput();
+        if (!metaKey && !ESCAPE && !ctrlKey && !code.includes('Arrow')) {
+            this.focusInput();
+        }
     }
 
 
