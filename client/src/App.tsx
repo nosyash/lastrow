@@ -43,9 +43,17 @@ function App(props: any) {
 
     function initProfile() {
         getProfile()
-            .then(handleUserProfile)
+            .then(onResponse)
             .catch(handleAnonymousProfile)
             .finally(() => setLoaded(true))
+    }
+
+    function onResponse(res: any) {
+        if (!res) {
+            handleAnonymousProfile()
+        } else {
+            handleUserProfile(res)
+        }
     }
 
     function handleUserProfile(profile: Profile) {
@@ -68,15 +76,13 @@ function App(props: any) {
         const uuid = getRandom(64);
         updateProfile({ logged: false, uuid, guest: true });
     }
-
     return (
         <BrowserRouter>
             {loaded && (
                 <React.Fragment>
                     <ToastContainer />
                     <Popups />
-                    <div className="top-nav">
-                    </div>
+                    <div className="top-nav" />
                     <Switch>
                         <Route path="/r/:id" component={RoomSuspended} />
                         <Route exact path="/" component={RoomListSuspended} />
