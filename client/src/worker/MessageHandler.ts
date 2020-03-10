@@ -13,14 +13,14 @@ let queue = 0
 
 const getLastMessages = (messages: any[]) => messages.slice(Math.max(messages.length - MAX_MESSAGES + 70, 0))
 
-// setInterval(() => { console.log(queue) }, 1000)
-
-const getLastMessageId = () => get(chatMessages[chatMessages.length - 1], 'id', 0)
+// Initial value should always be different, otherwise first message will not be shown
+const getLastMessageId = () => get(chatMessages[chatMessages.length - 1], 'id', -1)
 let lastMessageId = getLastMessageId()
 let time = Date.now()
 let msgPerSecondList = []
 
 let addMessageDelay = 100;
+// Map amount of messages per second to delay
 function handleAddMessageDelay(msgPerSecond: number) {
     if (msgPerSecond <= 20) addMessageDelay = 100
     if (msgPerSecond > 20 && msgPerSecond <= 60) addMessageDelay = 300
